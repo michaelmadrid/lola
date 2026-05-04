@@ -299,7 +299,7 @@
   .cal-dow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-mid); text-align: center; padding: 4px 0; }
   .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; border-radius: 8px; }
   .cal-day.empty { background: none; }
-  .cal-day.inactive { color: var(--gray-light); opacity: 0.5; }
+  .cal-day.inactive { color: var(--gray-mid); background: var(--gray-xlight); opacity: 0.45; }
   .cal-day.trip { background: white; color: var(--black); box-shadow: var(--shadow-sm); }
   .cal-day.transit { background: var(--accent); color: white; font-weight: 600; }
   .cal-day.today-dot { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -1248,33 +1248,34 @@ function renderSummary() {
   let html = `<div style="padding:1.5rem 1rem 0.75rem;"><div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${tripName}</div>${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} &ndash; ${fmtD(allDates[allDates.length-1])} &middot; ${allDates.length} days</div>` : ''}</div>`;
 
   cityGroups.forEach(group => {
-    const nights = group.dates.length;
     const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
+
+    // Find next travel day to determine real checkout
+    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
+    const nextTravelDay = _tripData.days.slice(cityEndIdx + 1).find(d => d.type === 'travel');
+    const checkoutDate = nextTravelDay ? nextTravelDay.date : null;
+
+    // Nights = arrival to departure date
+    const firstDate = group.dates[0];
+    const displayEndDate = checkoutDate || group.dates[group.dates.length - 1];
+    const nights = checkoutDate
+      ? Math.round((new Date(checkoutDate) - new Date(firstDate)) / (1000*60*60*24))
+      : group.dates.length;
     const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
-    const datesLabel = `${fmt(group.dates[0])} – ${fmt(group.dates[group.dates.length-1])}`;
+    const datesLabel = `${fmt(firstDate)} – ${fmt(displayEndDate)}`;
 
     const k = cacheKey(TRIP_ID, group.city);
     const links = _cache.links[k] || [];
     const note = _cache.notes[k] || '';
 
-    // Find travel legs arriving into this city
-    const arrivingLegs = travelDays.filter(td => {
-      const nextDay = _tripData.days.find(d => {
-        const tIdx = _tripData.days.indexOf(td);
-        return _tripData.days.indexOf(d) > tIdx && (d.type === 'arrive' || d.type === 'stay') && d.location === group.city;
-      });
-      return !!nextDay;
-    });
-
-    // Find the travel day just before this city
+    // Travel day just before this city
     const cityStartIdx = _tripData.days.findIndex(d => d.date === group.dates[0]);
     const prevTravelDay = cityStartIdx > 0 ? _tripData.days.slice(0, cityStartIdx).reverse().find(d => d.type === 'travel') : null;
     const incomingLegs = prevTravelDay ? getLegsForDay(prevTravelDay.id) : [];
-
-    // Find departure travel day
-    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
-    const nextTravelDay = _tripData.days.slice(cityEndIdx + 1).find(d => d.type === 'travel');
     const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id) : [];
+
+    // Incoming label shows the travel date clearly
+    const incomingLabel = prevTravelDay ? `Getting there · ${fmt(prevTravelDay.date)}` : 'Getting there';
 
     html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
       <div class="trip-card-header">
@@ -1287,15 +1288,13 @@ function renderSummary() {
         </div>
       </div>`;
 
-    // Incoming travel
     if (incomingLegs.length) {
       html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
-        <div class="section-label" style="margin-bottom:8px;">Getting there</div>
+        <div class="section-label" style="margin-bottom:8px;">${incomingLabel}</div>
         ${renderTravelLegs(incomingLegs)}
       </div>`;
     }
 
-    // Stay info from first stay day
     const stayInfo = group.days.find(d => d.stay);
     if (stayInfo && stayInfo.stay) {
       html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
@@ -1304,14 +1303,12 @@ function renderSummary() {
       </div>`;
     }
 
-    // Notes preview
     if (note) {
       html += `<div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
         <div style="font-size:13px;color:var(--gray-mid);white-space:pre-line;line-height:1.6;">${note}</div>
       </div>`;
     }
 
-    // Links preview
     if (links.length) {
       html += `<div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">`;
       links.forEach(link => {
@@ -1455,12 +1452,14 @@ function renderCityListFromData(tripId, days, legs) {
 
   // Editable trip name header
   if (trip) {
-    html += `<div style="padding:1.25rem 1rem 0.75rem;">
+    html += `<div style="padding:1.25rem 1rem 1rem;display:flex;align-items:center;gap:8px;">
       <input id="trip-name-input" value="${trip.name}"
-        style="font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--black);background:none;border:none;border-bottom:2px solid transparent;outline:none;width:100%;transition:border-color 0.15s;padding-bottom:2px;"
-        onfocus="this.style.borderColor='var(--accent)'"
-        onblur="saveTripName(${tripId},this.value)"
-        onkeydown="if(event.key==='Enter')this.blur()" />
+        style="font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--black);background:none;border:none;border-bottom:2px solid transparent;outline:none;flex:1;transition:border-color 0.15s;padding-bottom:2px;"
+        onfocus="this.style.borderColor='var(--accent)';document.getElementById('trip-name-save').style.opacity='1'"
+        onblur="setTimeout(()=>document.getElementById('trip-name-save').style.opacity='0',200)"
+        onkeydown="if(event.key==='Enter'){saveTripName(${tripId},this.value);this.blur()}" />
+      <button id="trip-name-save" onclick="saveTripName(${tripId},document.getElementById('trip-name-input').value)"
+        style="opacity:0;transition:opacity 0.15s;background:var(--accent);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-family:var(--font-body);cursor:pointer;white-space:nowrap;">Save</button>
     </div>`;
   }
 
