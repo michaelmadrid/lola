@@ -617,21 +617,13 @@
 
 <!-- IDLE VIEW -->
 <div id="view-idle" class="view">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding-bottom:80px;">
-    <canvas id="snake-canvas" width="280" height="280" style="border:1.5px solid var(--gray-xlight);border-radius:var(--radius);background:var(--card);display:block;"></canvas>
-    <div style="margin-top:1.25rem;display:flex;gap:8px;">
-      <button onclick="snakeStart()" style="font-family:var(--font-body);font-size:13px;padding:8px 20px;background:var(--black);color:white;border:none;border-radius:20px;cursor:pointer;">Play</button>
-      <button onclick="snakePause()" style="font-family:var(--font-body);font-size:13px;padding:8px 20px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Pause</button>
-    </div>
-    <div id="snake-score" style="margin-top:0.75rem;font-family:var(--font-mono);font-size:12px;color:var(--gray-mid);">Score: 0</div>
-    <!-- Touch controls -->
-    <div style="margin-top:1rem;display:grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;gap:4px;">
-      <div></div>
-      <button ontouchstart="snakeDir(0,-1)" onclick="snakeDir(0,-1)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">↑</button>
-      <div></div>
-      <button ontouchstart="snakeDir(-1,0)" onclick="snakeDir(-1,0)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">←</button>
-      <button ontouchstart="snakeDir(0,1)" onclick="snakeDir(0,1)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">↓</button>
-      <button ontouchstart="snakeDir(1,0)" onclick="snakeDir(1,0)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">→</button>
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;padding-bottom:20px;">
+    <div id="snake-grid" style="display:grid;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:320px;padding:0 4px;">
+      <div id="snake-score" style="font-family:var(--font-mono);font-size:12px;color:var(--gray-mid);">Score: 0</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-light);">arrows · space</div>
+      <button onclick="_snakeRunning ? snakePause() : snakeStart()" id="snake-btn"
+        style="font-family:var(--font-body);font-size:12px;padding:6px 16px;background:var(--black);color:white;border:none;border-radius:20px;cursor:pointer;">Play</button>
     </div>
   </div>
 </div>
@@ -2138,90 +2130,111 @@ document.addEventListener('touchend', e => {
 // INIT
 // ─────────────────────────────────────────
 // ─────────────────────────────────────────
-// SNAKE GAME
+// SNAKE GAME — CSS grid
 // ─────────────────────────────────────────
-const SNAKE_GRID = 20;
+let _snakeCols = 16, _snakeRows = 16;
 let _snake = [], _snakeDir = {x:1,y:0}, _snakeNext = {x:1,y:0};
-let _apple = {x:10,y:10}, _snakeScore = 0, _snakeLoop = null, _snakeRunning = false;
+let _apple = {x:8,y:8}, _snakeScore = 0, _snakeLoop = null, _snakeRunning = false;
+let _snakeCells = [];
 
 function snakeInit() {
-  const canvas = document.getElementById('snake-canvas');
-  if (!canvas) return;
-  const cols = Math.floor(canvas.width / SNAKE_GRID);
-  const rows = Math.floor(canvas.height / SNAKE_GRID);
-  _snake = [{x:Math.floor(cols/2), y:Math.floor(rows/2)}];
+  const container = document.getElementById('snake-grid');
+  if (!container) return;
+
+  // Size grid to viewport
+  const vw = Math.min(window.innerWidth, 400);
+  const vh = window.innerHeight - 160; // minus nav + score bar
+  const size = Math.min(vw, vh);
+  const cellSize = Math.floor(size / _snakeCols);
+  const gridSize = cellSize * _snakeCols;
+
+  container.style.width = gridSize + 'px';
+  container.style.height = gridSize + 'px';
+  container.style.gridTemplateColumns = 'repeat(' + _snakeCols + ', ' + cellSize + 'px)';
+  container.style.gridTemplateRows = 'repeat(' + _snakeRows + ', ' + cellSize + 'px)';
+  container.style.gap = '1px';
+  container.style.background = 'var(--gray-xlight)';
+
+  container.innerHTML = '';
+  _snakeCells = [];
+  for (let y = 0; y < _snakeRows; y++) {
+    _snakeCells[y] = [];
+    for (let x = 0; x < _snakeCols; x++) {
+      const cell = document.createElement('div');
+      cell.style.background = 'var(--card)';
+      cell.style.borderRadius = '2px';
+      container.appendChild(cell);
+      _snakeCells[y][x] = cell;
+    }
+  }
+
+  const midX = Math.floor(_snakeCols / 2);
+  const midY = Math.floor(_snakeRows / 2);
+  _snake = [{x: midX, y: midY}];
   _snakeDir = {x:1,y:0}; _snakeNext = {x:1,y:0};
   _snakeScore = 0;
   _snakeRunning = false;
+  document.getElementById('snake-score').textContent = 'Score: 0';
+  document.getElementById('snake-btn').textContent = 'Play';
   snakePlaceApple();
   snakeDraw();
-  document.getElementById('snake-score').textContent = 'Score: 0';
 }
 
 function snakePlaceApple() {
-  const canvas = document.getElementById('snake-canvas');
-  const cols = Math.floor(canvas.width / SNAKE_GRID);
-  const rows = Math.floor(canvas.height / SNAKE_GRID);
   let pos;
-  do { pos = {x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows)}; }
+  do { pos = {x: Math.floor(Math.random()*_snakeCols), y: Math.floor(Math.random()*_snakeRows)}; }
   while (_snake.some(s => s.x === pos.x && s.y === pos.y));
   _apple = pos;
 }
 
 function snakeDraw() {
-  const canvas = document.getElementById('snake-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const style = getComputedStyle(document.documentElement);
-  const bg = style.getPropertyValue('--card').trim() || '#fff';
-  const accent = style.getPropertyValue('--accent').trim() || '#2a4ed4';
-  const black = style.getPropertyValue('--black').trim() || '#0d0d0d';
-
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Apple
-  ctx.fillStyle = '#e74c3c';
-  ctx.fillRect(_apple.x*SNAKE_GRID+2, _apple.y*SNAKE_GRID+2, SNAKE_GRID-4, SNAKE_GRID-4);
-
-  // Snake
-  _snake.forEach((seg, i) => {
-    ctx.fillStyle = i === 0 ? black : accent;
-    ctx.fillRect(seg.x*SNAKE_GRID+1, seg.y*SNAKE_GRID+1, SNAKE_GRID-2, SNAKE_GRID-2);
-  });
+  if (!_snakeCells.length) return;
+  for (let y = 0; y < _snakeRows; y++) {
+    for (let x = 0; x < _snakeCols; x++) {
+      const cell = _snakeCells[y][x];
+      const isHead = _snake[0] && _snake[0].x === x && _snake[0].y === y;
+      const isBody = !isHead && _snake.some((s,i) => i > 0 && s.x === x && s.y === y);
+      const isApple = _apple.x === x && _apple.y === y;
+      if (isHead) cell.style.background = 'var(--black)';
+      else if (isBody) cell.style.background = 'var(--accent)';
+      else if (isApple) cell.style.background = '#e74c3c';
+      else cell.style.background = 'var(--card)';
+    }
+  }
 }
 
 function snakeStart() {
   if (_snakeRunning) return;
-  if (_snake.length === 0) snakeInit();
+  if (!_snakeCells.length) snakeInit();
   _snakeRunning = true;
+  document.getElementById('snake-btn').textContent = 'Pause';
   _snakeLoop = setInterval(snakeTick, 130);
 }
 
 function snakePause() {
   _snakeRunning = false;
   clearInterval(_snakeLoop);
+  document.getElementById('snake-btn').textContent = 'Play';
 }
 
 function snakeTick() {
-  const canvas = document.getElementById('snake-canvas');
-  const cols = Math.floor(canvas.width / SNAKE_GRID);
-  const rows = Math.floor(canvas.height / SNAKE_GRID);
   _snakeDir = {x: _snakeNext.x, y: _snakeNext.y};
-  const head = {x: (_snake[0].x + _snakeDir.x + cols) % cols, y: (_snake[0].y + _snakeDir.y + rows) % rows};
+  const head = {
+    x: (_snake[0].x + _snakeDir.x + _snakeCols) % _snakeCols,
+    y: (_snake[0].y + _snakeDir.y + _snakeRows) % _snakeRows
+  };
 
-  // Self collision
   if (_snake.some(s => s.x === head.x && s.y === head.y)) {
     snakePause();
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 10);
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Score: ' + _snakeScore, canvas.width/2, canvas.height/2 + 15);
+    // Game over overlay
+    const container = document.getElementById('snake-grid');
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--radius);';
+    overlay.innerHTML = '<div style="font-family:var(--font-display);font-size:22px;font-weight:600;color:white;margin-bottom:4px;">Game Over</div>'
+      + '<div style="font-family:var(--font-mono);font-size:13px;color:rgba(255,255,255,0.7);">Score: ' + _snakeScore + '</div>';
+    overlay.onclick = () => { overlay.remove(); snakeInit(); };
+    container.style.position = 'relative';
+    container.appendChild(overlay);
     return;
   }
 
@@ -2237,17 +2250,34 @@ function snakeTick() {
 }
 
 function snakeDir(dx, dy) {
-  // Prevent reversing
   if (dx !== 0 && _snakeDir.x !== 0) return;
   if (dy !== 0 && _snakeDir.y !== 0) return;
   _snakeNext = {x: dx, y: dy};
+  if (!_snakeRunning) snakeStart();
 }
+
+// Touch swipe for snake
+let _snakeTouchX = 0, _snakeTouchY = 0;
+document.addEventListener('touchstart', e => {
+  if (!document.getElementById('view-idle')?.classList.contains('active')) return;
+  _snakeTouchX = e.touches[0].clientX;
+  _snakeTouchY = e.touches[0].clientY;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+  if (!document.getElementById('view-idle')?.classList.contains('active')) return;
+  const dx = e.changedTouches[0].clientX - _snakeTouchX;
+  const dy = e.changedTouches[0].clientY - _snakeTouchY;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+  if (Math.abs(dx) > Math.abs(dy)) snakeDir(dx > 0 ? 1 : -1, 0);
+  else snakeDir(0, dy > 0 ? 1 : -1);
+}, {passive: true});
 
 document.addEventListener('keydown', e => {
   if (!document.getElementById('view-idle')?.classList.contains('active')) return;
   const map = {'ArrowUp':[0,-1],'ArrowDown':[0,1],'ArrowLeft':[-1,0],'ArrowRight':[1,0]};
   if (map[e.key]) { e.preventDefault(); snakeDir(...map[e.key]); }
-  if (e.key === ' ') { _snakeRunning ? snakePause() : snakeStart(); }
+  if (e.key === ' ') { e.preventDefault(); _snakeRunning ? snakePause() : snakeStart(); }
 });
 
 // ─────────────────────────────────────────
