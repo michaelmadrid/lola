@@ -152,6 +152,26 @@ app.get('/api/trips/:id', authenticate, async (req, res) => {
   }
 });
 
+// Rename trip
+app.patch('/api/trips/:id', authenticate, async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  try {
+    const member = await pool.query(
+      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
+    const result = await pool.query(
+      'UPDATE trips SET name = $1 WHERE id = $2 RETURNING *',
+      [name.trim(), req.params.id]
+    );
+    res.json({ trip: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Delete trip
 app.delete('/api/trips/:id', authenticate, async (req, res) => {
   try {

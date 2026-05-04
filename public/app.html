@@ -52,7 +52,7 @@
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
-    padding-top: calc(44px + env(safe-area-inset-top));
+    padding-top: calc(56px + env(safe-area-inset-top));
     padding-bottom: calc(90px + max(env(safe-area-inset-bottom), 20px));
   }
 
@@ -296,10 +296,10 @@
   .cal-month { margin-bottom: 1.75rem; }
   .cal-month-name { font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 0.625rem; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-  .cal-dow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-light); text-align: center; padding: 4px 0; }
+  .cal-dow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-mid); text-align: center; padding: 4px 0; }
   .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; border-radius: 8px; }
   .cal-day.empty { background: none; }
-  .cal-day.inactive { color: var(--gray-light); }
+  .cal-day.inactive { color: var(--gray-light); opacity: 0.5; }
   .cal-day.trip { background: white; color: var(--black); box-shadow: var(--shadow-sm); }
   .cal-day.transit { background: var(--accent); color: white; font-weight: 600; }
   .cal-day.today-dot { outline: 2px solid var(--accent); outline-offset: -2px; }
@@ -524,7 +524,7 @@
     <span id="level2-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--accent);"></span>
   </div>
   <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
-    <div id="trips-city-list" style="max-width:540px;margin:0 auto;"></div>
+    <div id="trips-city-list" style="max-width:540px;margin:0 auto;padding-top:1rem;"></div>
   </div>
 </div>
 
@@ -893,6 +893,14 @@ function showView(name, btn) {
   document.getElementById(`view-${name}`).classList.add('active');
   if (btn) btn.classList.add('active');
   document.body.style.overflow = '';
+  // Close any open panels
+  ['trips-level-2','trips-level-3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== 'none') {
+      el.style.transform = 'translateX(100%)';
+      setTimeout(() => el.style.display = 'none', 280);
+    }
+  });
   if (name === 'plan') renderPlanView();
 }
 
@@ -1439,22 +1447,46 @@ function closeLevel2() {
 function renderCityListFromData(tripId, days, legs) {
   const el = document.getElementById('trips-city-list');
   if (!el) return;
+  const trip = _allTrips.find(t => t.id === tripId);
   const stayDays = days.filter(d => d.type === 'stay' || d.type === 'arrive');
   const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
+
+  let html = '';
+
+  // Editable trip name header
+  if (trip) {
+    html += `<div style="padding:1.25rem 1rem 0.75rem;">
+      <input id="trip-name-input" value="${trip.name}"
+        style="font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--black);background:none;border:none;border-bottom:2px solid transparent;outline:none;width:100%;transition:border-color 0.15s;padding-bottom:2px;"
+        onfocus="this.style.borderColor='var(--accent)'"
+        onblur="saveTripName(${tripId},this.value)"
+        onkeydown="if(event.key==='Enter')this.blur()" />
+    </div>`;
+  }
+
   if (!cities.length) {
-    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:14px;color:var(--gray-mid);">No cities found. Import your itinerary first.</div>`;
+    html += `<div style="padding:0 1rem;">
+      <div class="manage-card" style="padding:2rem 1.25rem;text-align:center;">
+        <div style="font-size:14px;color:var(--gray-mid);margin-bottom:4px;">No cities yet</div>
+        <div style="font-size:12px;color:var(--gray-light);">Go to Plan to import your itinerary</div>
+      </div>
+    </div>`;
+    el.innerHTML = html;
     return;
   }
-  let html = `<div class="manage-card">`;
+
+  html += `<div class="manage-card" style="margin:0 1rem 1rem;">`;
   cities.forEach(city => {
     const k = cacheKey(tripId, city);
     const links = _cache.links[k] || [];
     const note = _cache.notes[k] || '';
-    const sub = [links.length > 0 ? `${links.length} link${links.length !== 1 ? 's' : ''}` : '', note ? 'notes' : ''].filter(Boolean).join(' · ') || 'Nothing saved yet';
+    const parts = [links.length > 0 ? `${links.length} link${links.length !== 1 ? 's' : ''}` : '', note ? 'note' : ''].filter(Boolean);
+    const sub = parts.length ? parts.join(' · ') : '';
+
     html += `<div class="manage-row" onclick="openLevel3(${tripId},'${city}')">
       <div style="flex:1;min-width:0;">
         <div class="manage-row-title">${city}</div>
-        <div class="manage-row-sub">${sub}</div>
+        ${sub ? `<div class="manage-row-sub">${sub}</div>` : ''}
       </div>
       <span class="manage-chevron">›</span>
     </div>`;
@@ -1465,6 +1497,22 @@ function renderCityListFromData(tripId, days, legs) {
 
 function renderCityList(tripId) {
   renderCityListFromData(tripId, _tripData.days, _tripData.legs);
+}
+
+async function saveTripName(tripId, name) {
+  name = name.trim();
+  if (!name) {
+    // Restore old name
+    const trip = _allTrips.find(t => t.id === tripId);
+    const input = document.getElementById('trip-name-input');
+    if (input && trip) input.value = trip.name;
+    return;
+  }
+  const trip = _allTrips.find(t => t.id === tripId);
+  if (trip && trip.name === name) return; // no change
+  await api('PATCH', `/api/trips/${tripId}`, { name });
+  if (trip) { trip.name = name; document.getElementById('level2-title').textContent = name; }
+  renderManageList();
 }
 
 // ─────────────────────────────────────────
