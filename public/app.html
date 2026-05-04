@@ -1700,6 +1700,29 @@ const CAL_DAYS = {
 
 <script>
 // ─────────────────────────────────────────
+// API — database connection
+// ─────────────────────────────────────────
+const TRIP_ID = 1;
+const API_TOKEN = () => localStorage.getItem('lola_token');
+
+async function api(method, path, body) {
+  try {
+    const res = await fetch(path, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN()}`
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return res.json();
+  } catch(e) {
+    console.warn('API error:', e);
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────
 function toKey(date) {
@@ -1945,16 +1968,32 @@ function renderToday(key) {
     html += `<div class="today-alert">${day.alert}</div>`;
   }
 
-  // daily journal
+  // daily journal — load from API then localStorage fallback
   const journalNote = localStorage.getItem(`journal-${key}`) || '';
   html += `<div style="margin-top:1.5rem;">
     <div class="today-label">Journal</div>
     <textarea
+      id="journal-textarea-${key}"
       placeholder="What happened today..."
       style="width:100%;min-height:90px;font-family:var(--font-body);font-size:16px;line-height:1.7;border:none;outline:none;background:none;color:var(--black);resize:none;padding:6px 0;"
-      oninput="localStorage.setItem('journal-${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+      oninput="saveJournalEntry('${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
     >${journalNote}</textarea>
   </div>`;
+
+  html += `</div></div>`;
+  document.getElementById('view-today').innerHTML = html;
+
+  // Try loading from API and update if found
+  api('GET', `/api/journal/${TRIP_ID}/${key}`).then(data => {
+    if (data && data.entry && data.entry.content) {
+      const ta = document.getElementById(`journal-textarea-${key}`);
+      if (ta && !ta.value) {
+        ta.value = data.entry.content;
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+      }
+    }
+  });
 
   html += `</div></div>`;
   document.getElementById('view-today').innerHTML = html;
@@ -2225,6 +2264,16 @@ function saveGuideItem(tripId, city, item) {
   const saved = JSON.parse(localStorage.getItem(`guide-${tripId}-${key}`) || '[]');
   saved.push(item);
   localStorage.setItem(`guide-${tripId}-${key}`, JSON.stringify(saved));
+  // Also save to API if it's a link
+  if (item.type === 'link') {
+    api('POST', `/api/links/${tripId}/${city}`, { title: item.title, url: item.url }).then(data => {
+      if (data && data.link) {
+        // Store API id alongside local item for deletion
+        item._apiId = data.link.id;
+        localStorage.setItem(`guide-${tripId}-${key}`, JSON.stringify(saved));
+      }
+    });
+  }
 }
 
 function deleteGuideItem(tripId, city, itemId) {
@@ -2232,12 +2281,19 @@ function deleteGuideItem(tripId, city, itemId) {
   const parts = itemId.split('-');
   if (parts[0] === 'local') {
     const saved = JSON.parse(localStorage.getItem(`guide-${tripId}-${key}`) || '[]');
-    saved.splice(parseInt(parts[1]), 1);
+    const idx = parseInt(parts[1]);
+    // If has API id, delete from API too
+    if (saved[idx] && saved[idx]._apiId) {
+      api('DELETE', `/api/links/${saved[idx]._apiId}`);
+    }
+    saved.splice(idx, 1);
     localStorage.setItem(`guide-${tripId}-${key}`, JSON.stringify(saved));
   } else {
     const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${key}`) || '[]');
     if (!deleted.includes(itemId)) deleted.push(itemId);
     localStorage.setItem(`guide-deleted-${tripId}-${key}`, JSON.stringify(deleted));
+    // Try delete from API
+    api('DELETE', `/api/links/${itemId}`);
   }
   const flags = JSON.parse(localStorage.getItem(`guide-flags-${tripId}-${key}`) || '{}');
   delete flags[itemId];
@@ -2871,6 +2927,21 @@ function renderCityDetail(tripId, city) {
   const ta = document.getElementById(`city-freeform-${key}`);
   if (ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
 
+  // Load note from API if empty locally
+  if (!savedNote) {
+    api('GET', `/api/notes/${tripId}/${city}`).then(data => {
+      if (data && data.note && data.note.content) {
+        const noteEl = document.getElementById(`city-freeform-${key}`);
+        if (noteEl) {
+          noteEl.value = data.note.content;
+          localStorage.setItem(`city-note-${tripId}-${key}`, data.note.content);
+          noteEl.style.height = 'auto';
+          noteEl.style.height = noteEl.scrollHeight + 'px';
+        }
+      }
+    });
+  }
+
   // Wire up swipe-to-delete
   visibleItems.forEach(item => {
     const safeId = `${key}-${item._id.replace(/[^a-z0-9]/gi,'-')}`;
@@ -2878,12 +2949,27 @@ function renderCityDetail(tripId, city) {
   });
 }
 
+// Journal debounce timer
+let _journalTimer = null;
+function saveJournalEntry(date, content) {
+  localStorage.setItem(`journal-${date}`, content);
+  clearTimeout(_journalTimer);
+  _journalTimer = setTimeout(() => {
+    api('POST', `/api/journal/${TRIP_ID}/${date}`, { content });
+  }, 800);
+}
+
+let _noteTimer = null;
 function saveCityNote(tripId, cityKey, value) {
   if (value.trim()) {
     localStorage.setItem(`city-note-${tripId}-${cityKey}`, value);
   } else {
     localStorage.removeItem(`city-note-${tripId}-${cityKey}`);
   }
+  clearTimeout(_noteTimer);
+  _noteTimer = setTimeout(() => {
+    api('POST', `/api/notes/${tripId}/${cityKey}`, { content: value });
+  }, 800);
 }
 
 function initSwipeDelete(safeId) {
