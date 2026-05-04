@@ -179,6 +179,10 @@ app.post('/api/trips/import', authenticate, async (req, res) => {
     );
     if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
 
+    const today = new Date().toISOString().split('T')[0];
+    const currentYear = new Date().getFullYear();
+    const nextYear = currentYear + 1;
+
     const message = await anthropic.messages.create({
       model: 'claude-opus-4-6',
       max_tokens: 4096,
@@ -218,8 +222,9 @@ Rules:
 - location for transit days should describe the journey e.g. "Bali - Taipei - Paris"
 - Extract ALL days including stay days with no travel
 - For stay days just include date, type, location, stay if known
-- Infer missing dates from context
-- dates must be full YYYY-MM-DD format
+- Today's date is ${today}
+- If no year is specified, use ${nextYear} for future travel dates and ${currentYear} for past dates
+- All dates must be full YYYY-MM-DD format
 
 Itinerary:
 ${text}`

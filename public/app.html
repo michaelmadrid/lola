@@ -462,7 +462,7 @@
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <span class="top-bar-title" id="top-bar-title">Lola</span>
+  <span></span>
   <div class="top-bar-right">
     <div id="dest-clock" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);display:none;padding:4px 6px;"></div>
     <button onclick="toggleSettings()" id="gear-btn" style="background:none;border:none;cursor:pointer;font-size:19px;color:var(--gray-mid);padding:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.15s;" onmouseover="this.style.background='var(--gray-xlight)'" onmouseout="this.style.background='none'">⊙</button>
@@ -827,7 +827,8 @@ function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
 async function loadTripData() {
   const data = await api('GET', `/api/trips/${TRIP_ID}`);
   if (!data || !data.days) return;
-  _tripData.days = data.days;
+  // Normalize dates — DB returns ISO strings like "2026-05-12T00:00:00.000Z"
+  _tripData.days = data.days.map(d => ({ ...d, date: d.date.substring(0, 10) }));
   _tripData.legs = data.legs || [];
 }
 
@@ -892,10 +893,6 @@ function showView(name, btn) {
   document.getElementById(`view-${name}`).classList.add('active');
   if (btn) btn.classList.add('active');
   document.body.style.overflow = '';
-
-  const titles = { home: 'Lola', trips: 'Trips', discover: 'Discover', plan: 'Plan' };
-  document.getElementById('top-bar-title').textContent = titles[name] || 'Lola';
-
   if (name === 'plan') renderPlanView();
 }
 
@@ -1209,15 +1206,18 @@ function renderSummary() {
   // Get travel legs for each city
   const travelDays = _tripData.days.filter(d => d.type === 'travel');
 
-  let html = '';
+  const trip = _allTrips.find(t => t.id === TRIP_ID);
+  const tripName = trip ? trip.name : 'Trip';
+  const allDates = _tripData.days.map(d => d.date).sort();
+  const MONTHS_S = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmtD = k => { if (!k) return ''; const [y,m,d] = k.split('-'); return MONTHS_S[+m-1]+' '+(+d); };
+  let html = `<div style="padding:1.5rem 1rem 0.75rem;"><div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${tripName}</div>${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} 2013 ${fmtD(allDates[allDates.length-1])} 00b7 ${allDates.length} days</div>` : ''}</div>`;
 
   cityGroups.forEach(group => {
     const nights = group.dates.length;
-    const firstDate = new Date(group.dates[0]);
-    const lastDate = new Date(group.dates[group.dates.length - 1]);
-    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
     const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
-    const datesLabel = `${fmt(firstDate)} – ${fmt(lastDate)}`;
+    const datesLabel = `${fmt(group.dates[0])} – ${fmt(group.dates[group.dates.length-1])}`;
 
     const k = cacheKey(TRIP_ID, group.city);
     const links = _cache.links[k] || [];
@@ -1352,7 +1352,11 @@ function renderManageList() {
     const dates = tripDays.map(d => d.date).sort();
     const start = dates[0];
     const end = dates[dates.length - 1];
-    const fmt = k => { if (!k) return '?'; const [y,m,d] = k.split('-'); return `${MONTHS[+m-1]} ${+d}`; };
+    const fmt = k => {
+      if (!k) return '?';
+      const [y,m,d] = k.substring(0,10).split('-');
+      return `${MONTHS[+m-1]} ${+d}`;
+    };
     const today = toKey(new Date());
     let status, statusStyle;
     if (!start) { status = 'No data'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
