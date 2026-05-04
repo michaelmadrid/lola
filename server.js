@@ -189,7 +189,7 @@ app.delete('/api/trips/:id', authenticate, async (req, res) => {
 
 // Import trip via Claude
 app.post('/api/trips/import', authenticate, async (req, res) => {
-  const { tripId, text } = req.body;
+  const { tripId, text, mode = 'replace' } = req.body;
   if (!tripId || !text) return res.status(400).json({ error: 'tripId and text required' });
 
   try {
@@ -198,6 +198,10 @@ app.post('/api/trips/import', authenticate, async (req, res) => {
       [tripId, req.user.id]
     );
     if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
+
+    // Check existing day count for confirmation
+    const existing = await pool.query('SELECT COUNT(*) FROM trip_days WHERE trip_id = $1', [tripId]);
+    const existingCount = parseInt(existing.rows[0].count);
 
     const today = new Date().toISOString().split('T')[0];
     const currentYear = new Date().getFullYear();
@@ -254,8 +258,49 @@ ${text}`
     const raw = message.content[0].text.trim();
     const json = JSON.parse(raw.replace(/```json\n?|\n?```/g, ''));
 
-    // Clear existing days for this trip
-    await pool.query('DELETE FROM trip_days WHERE trip_id = $1', [tripId]);
+    if (mode === 'update') {
+      // Update mode — upsert each day, don't touch other days
+      for (const day of json.days) {
+        // Check if day exists
+        const existing = await pool.query(
+          'SELECT id FROM trip_days WHERE trip_id = $1 AND date = $2',
+          [tripId, day.date]
+        );
+
+        let dayId;
+        if (existing.rows[0]) {
+          // Update existing day
+          await pool.query(
+            `UPDATE trip_days SET type=$1, location=$2, stay=$3, alert=$4 WHERE id=$5`,
+            [day.type || 'stay', day.location, day.stay || null, day.alert || null, existing.rows[0].id]
+          );
+          dayId = existing.rows[0].id;
+          // Clear old legs for this day
+          await pool.query('DELETE FROM travel_legs WHERE day_id = $1', [dayId]);
+        } else {
+          // Insert new day
+          const result = await pool.query(
+            `INSERT INTO trip_days (trip_id, date, type, location, stay, alert) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+            [tripId, day.date, day.type || 'stay', day.location, day.stay || null, day.alert || null]
+          );
+          dayId = result.rows[0].id;
+        }
+
+        if (day.travel && day.travel.length > 0) {
+          for (let i = 0; i < day.travel.length; i++) {
+            const leg = day.travel[i];
+            await pool.query(
+              `INSERT INTO travel_legs (day_id, from_city, to_city, dep_time, arr_time, arr_note, carrier, ref, ref_code, note, sort_order)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+              [dayId, leg.from, leg.to, leg.dep, leg.arr, leg.arrNote || null,
+               leg.carrier, leg.ref, leg.refCode || null, leg.note || null, i]
+            );
+          }
+        }
+      }
+    } else {
+      // Replace mode — clear and reimport
+      await pool.query('DELETE FROM trip_days WHERE trip_id = $1', [tripId]);
 
     // Insert days and legs
     for (const day of json.days) {
@@ -279,7 +324,9 @@ ${text}`
       }
     }
 
-    res.json({ success: true, days: json.days.length });
+    } // end replace mode
+
+    res.json({ success: true, days: json.days.length, mode });
 
   } catch (err) {
     console.error('Import error:', err);

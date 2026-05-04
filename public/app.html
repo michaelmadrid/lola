@@ -598,6 +598,28 @@
         onblur="this.style.borderColor='var(--gray-xlight)'" />
     </div>
 
+    <!-- Mode selector -->
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
+      <button id="mode-update" onclick="setPlanMode('update')"
+        style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">
+        Update trip
+      </button>
+      <button id="mode-replace" onclick="setPlanMode('replace')"
+        style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">
+        Replace all
+      </button>
+    </div>
+    <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
+
+    <!-- Replace confirmation -->
+    <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+      <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
+        <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+
     <!-- Parse button -->
     <button id="parse-btn" onclick="parseTripWithClaude()"
       style="width:100%;font-family:var(--font-display);font-size:15px;font-weight:600;padding:16px;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;"
@@ -702,6 +724,7 @@ let _currentTripId = null;
 let _currentCity = null;
 let _viewedKey = null;
 let _selectedPlanTripId = null;
+let _planMode = 'update';
 let _settingsOpen = false;
 let _allTrips = []; // list of user's trips from DB
 
@@ -1827,6 +1850,23 @@ function renderPlanView() {
   ).join('');
 }
 
+function setPlanMode(mode) {
+  _planMode = mode;
+  const updateBtn = document.getElementById('mode-update');
+  const replaceBtn = document.getElementById('mode-replace');
+  const desc = document.getElementById('mode-description');
+  if (!updateBtn) return;
+  if (mode === 'update') {
+    updateBtn.style.background = 'var(--accent)'; updateBtn.style.color = 'white'; updateBtn.style.borderColor = 'var(--accent)';
+    replaceBtn.style.background = 'none'; replaceBtn.style.color = 'var(--gray-mid)'; replaceBtn.style.borderColor = 'var(--gray-xlight)';
+    desc.textContent = 'Add or update specific days without touching the rest of your trip.';
+  } else {
+    replaceBtn.style.background = 'var(--accent)'; replaceBtn.style.color = 'white'; replaceBtn.style.borderColor = 'var(--accent)';
+    updateBtn.style.background = 'none'; updateBtn.style.color = 'var(--gray-mid)'; updateBtn.style.borderColor = 'var(--gray-xlight)';
+    desc.textContent = 'Wipe all existing days and reimport from scratch. Use for full re-imports only.';
+  }
+}
+
 async function parseTripWithClaude() {
   const text = document.getElementById('plan-text').value.trim();
   const newName = document.getElementById('plan-new-name').value.trim();
@@ -1844,8 +1884,26 @@ async function parseTripWithClaude() {
     return;
   }
 
-  // Lock UI
+  // Warn on replace mode if trip has data
+  if (_planMode === 'replace' && _selectedPlanTripId) {
+    const confirmEl = document.getElementById('replace-confirm');
+    if (confirmEl) confirmEl.style.display = 'block';
+    return;
+  }
+
+  await _doImport();
+}
+
+async function _doImport() {
+  const text = document.getElementById('plan-text').value.trim();
+  const newName = document.getElementById('plan-new-name').value.trim();
+  const btn = document.getElementById('parse-btn');
+  const status = document.getElementById('parse-status');
   const textarea = document.getElementById('plan-text');
+  const confirmEl = document.getElementById('replace-confirm');
+  if (confirmEl) confirmEl.style.display = 'none';
+
+  // Lock UI
   textarea.disabled = true;
   btn.textContent = 'Parsing... please wait 10–15 seconds';
   btn.disabled = true;
@@ -1863,16 +1921,15 @@ async function parseTripWithClaude() {
       _allTrips.push(data.trip);
     }
 
-    const result = await api('POST', '/api/trips/import', { tripId, text });
+    const result = await api('POST', '/api/trips/import', { tripId, text, mode: _planMode });
 
     if (result && result.success) {
-      btn.textContent = `✓ ${result.days} days imported`;
+      btn.textContent = `✓ ${result.days} days ${_planMode === 'update' ? 'updated' : 'imported'}`;
       btn.classList.remove('btn-parsing');
       document.getElementById('plan-text').value = '';
       document.getElementById('plan-new-name').value = '';
       _selectedPlanTripId = null;
 
-      // Reload trip data if it's the active trip
       if (tripId === TRIP_ID) {
         await loadTripData();
         await preloadCityData();
@@ -1881,13 +1938,11 @@ async function parseTripWithClaude() {
         renderCalendar();
       }
 
-      // Navigate to Trips summary after a beat
       setTimeout(() => {
         btn.textContent = 'Parse with Claude →';
         btn.disabled = false;
         textarea.disabled = false;
         renderPlanView();
-        // Switch to trips summary so user can see result
         showView('trips', document.getElementById('nav-trips'));
         switchTripsView('summary');
       }, 1500);
