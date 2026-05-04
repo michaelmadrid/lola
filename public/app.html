@@ -547,22 +547,24 @@
           onblur="this.style.borderColor='var(--gray-xlight)'" />
       </div>
       <!-- Mode selector -->
-      <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
-        <button id="mode-update" onclick="setPlanMode('update')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">Update trip</button>
-        <button id="mode-replace" onclick="setPlanMode('replace')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">Replace all</button>
-      </div>
-      <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
-      <!-- Replace confirmation -->
-      <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
-        <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
-          <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+      <div style="padding:0 1rem;">
+        <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
+          <button id="mode-update" onclick="setPlanMode('update')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">Update trip</button>
+          <button id="mode-replace" onclick="setPlanMode('replace')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">Replace all</button>
         </div>
+        <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
+        <!-- Replace confirmation -->
+        <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+          <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
+            <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+        <!-- Parse button -->
+        <button id="parse-btn" onclick="parseTripWithClaude()" style="width:100%;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px;background:var(--black);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:opacity 0.15s;">Parse with Claude →</button>
+        <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
       </div>
-      <!-- Parse button -->
-      <button id="parse-btn" onclick="parseTripWithClaude()" style="width:100%;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px;background:var(--black);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:opacity 0.15s;">Parse with Claude →</button>
-      <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
     </div>
   </div>
 </div>
@@ -617,13 +619,26 @@
 
 <!-- IDLE VIEW -->
 <div id="view-idle" class="view">
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:1rem;padding-bottom:20px;">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:0.75rem;padding-bottom:20px;">
     <div id="snake-grid" style="display:grid;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:320px;padding:0 4px;">
       <div id="snake-score" style="font-family:var(--font-mono);font-size:12px;color:var(--gray-mid);">Score: 0</div>
-      <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-light);">arrows · space</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-light);">swipe or arrows</div>
       <button onclick="_snakeRunning ? snakePause() : snakeStart()" id="snake-btn"
         style="font-family:var(--font-body);font-size:12px;padding:6px 16px;background:var(--black);color:white;border:none;border-radius:20px;cursor:pointer;">Play</button>
+    </div>
+    <!-- Arrow controls for mobile -->
+    <div style="display:grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;gap:4px;">
+      <div></div>
+      <button ontouchstart="event.preventDefault();snakeDir(0,-1)" onclick="snakeDir(0,-1)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↑</button>
+      <div></div>
+      <button ontouchstart="event.preventDefault();snakeDir(-1,0)" onclick="snakeDir(-1,0)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">←</button>
+      <button ontouchstart="event.preventDefault();snakeDir(0,1)" onclick="snakeDir(0,1)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">↓</button>
+      <button ontouchstart="event.preventDefault();snakeDir(1,0)" onclick="snakeDir(1,0)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">→</button>
     </div>
   </div>
 </div>
@@ -2132,7 +2147,7 @@ document.addEventListener('touchend', e => {
 // ─────────────────────────────────────────
 // SNAKE GAME — CSS grid
 // ─────────────────────────────────────────
-let _snakeCols = 14, _snakeRows = 14;
+let _snakeCols = 22, _snakeRows = 22;
 let _snake = [], _snakeDir = {x:1,y:0}, _snakeNext = {x:1,y:0};
 let _apple = {x:8,y:8}, _snakeScore = 0, _snakeLoop = null, _snakeRunning = false;
 let _snakeCells = [];
@@ -2141,9 +2156,9 @@ function snakeInit() {
   const container = document.getElementById('snake-grid');
   if (!container) return;
 
-  // Size grid to viewport - aim for ~20px cells
-  const vw = Math.min(window.innerWidth - 32, 400);
-  const vh = window.innerHeight - 180;
+  // Size grid — slightly smaller than viewport
+  const vw = Math.min(window.innerWidth - 48, 340);
+  const vh = window.innerHeight - 260;
   const size = Math.min(vw, vh);
   const cellSize = Math.floor(size / _snakeCols);
   const gridSize = cellSize * _snakeCols;
