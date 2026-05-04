@@ -1,0 +1,258 @@
+require('dotenv').config();
+const express = require('express');
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const app = express();
+const port = 3000;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+// Database
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+});
+
+// Auth middleware
+function authenticate(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'No token' });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+// Health check
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'connected' });
+  } catch (err) {
+    res.json({ status: 'ok', db: 'error', error: err.message });
+  }
+});
+
+// Register
+app.post('/api/auth/register', async (req, res) => {
+  const { email, name, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  try {
+    const hash = await bcrypt.hash(password, 10);
+    const result = await pool.query(
+      'INSERT INTO users (email, name, password_hash) VALUES ($1, $2, $3) RETURNING id, email, name',
+      [email, name, hash]
+    );
+    const user = result.rows[0];
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user });
+  } catch (err) {
+    if (err.code === '23505') return res.status(400).json({ error: 'Email already exists' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Login
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const user = result.rows[0];
+    if (!user) return res.status(401).json({ error: 'Invalid email or password' });
+    const match = await bcrypt.compare(password, user.password_hash);
+    if (!match) return res.status(401).json({ error: 'Invalid email or password' });
+    const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get current user
+app.get('/api/auth/me', authenticate, (req, res) => {
+  res.json({ user: req.user });
+});
+
+
+// Get all trips for user
+app.get('/api/trips', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT t.* FROM trips t
+       JOIN trip_members tm ON t.id = tm.trip_id
+       WHERE tm.user_id = $1
+       ORDER BY t.created_at DESC`,
+      [req.user.id]
+    );
+    res.json({ trips: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Create trip
+app.post('/api/trips', authenticate, async (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name required' });
+  try {
+    const result = await pool.query(
+      'INSERT INTO trips (name, created_by) VALUES ($1, $2) RETURNING *',
+      [name, req.user.id]
+    );
+    const trip = result.rows[0];
+    // Add creator as owner member
+    await pool.query(
+      'INSERT INTO trip_members (trip_id, user_id, role) VALUES ($1, $2, $3)',
+      [trip.id, req.user.id, 'owner']
+    );
+    res.json({ trip });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get single trip with days
+app.get('/api/trips/:id', authenticate, async (req, res) => {
+  try {
+    const trip = await pool.query(
+      `SELECT t.* FROM trips t
+       JOIN trip_members tm ON t.id = tm.trip_id
+       WHERE t.id = $1 AND tm.user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    if (!trip.rows[0]) return res.status(404).json({ error: 'Trip not found' });
+
+    const days = await pool.query(
+      'SELECT * FROM trip_days WHERE trip_id = $1 ORDER BY date ASC',
+      [req.params.id]
+    );
+
+    const legs = await pool.query(
+      `SELECT tl.*, td.date FROM travel_legs tl
+       JOIN trip_days td ON tl.day_id = td.id
+       WHERE td.trip_id = $1`,
+      [req.params.id]
+    );
+
+    res.json({ trip: trip.rows[0], days: days.rows, legs: legs.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete trip
+app.delete('/api/trips/:id', authenticate, async (req, res) => {
+  try {
+    const member = await pool.query(
+      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2 AND role = $3',
+      [req.params.id, req.user.id, 'owner']
+    );
+    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
+    await pool.query('DELETE FROM trips WHERE id = $1', [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Journal
+app.get('/api/journal/:tripId/:date', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM journal WHERE trip_id = $1 AND user_id = $2 AND date = $3',
+      [req.params.tripId, req.user.id, req.params.date]
+    );
+    res.json({ entry: result.rows[0] || null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/journal/:tripId/:date', authenticate, async (req, res) => {
+  const { content } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO journal (trip_id, user_id, date, content, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (trip_id, user_id, date)
+       DO UPDATE SET content = $4, updated_at = NOW()
+       RETURNING *`,
+      [req.params.tripId, req.user.id, req.params.date, content]
+    );
+    res.json({ entry: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// City notes
+app.post('/api/notes/:tripId/:city', authenticate, async (req, res) => {
+  const { content } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO city_notes (trip_id, user_id, city, content, updated_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (trip_id, user_id, city)
+       DO UPDATE SET content = $4, updated_at = NOW()
+       RETURNING *`,
+      [req.params.tripId, req.user.id, req.params.city, content]
+    );
+    res.json({ note: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// City links
+app.get('/api/links/:tripId/:city', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM city_links WHERE trip_id = $1 AND user_id = $2 AND city = $3 ORDER BY created_at ASC',
+      [req.params.tripId, req.user.id, req.params.city]
+    );
+    res.json({ links: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/links/:tripId/:city', authenticate, async (req, res) => {
+  const { title, url } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO city_links (trip_id, user_id, city, title, url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [req.params.tripId, req.user.id, req.params.city, title, url]
+    );
+    res.json({ link: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/links/:id', authenticate, async (req, res) => {
+  try {
+    await pool.query(
+      'DELETE FROM city_links WHERE id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
+app.listen(port, () => {
+  console.log(`Lola running on port ${port}`);
+});
