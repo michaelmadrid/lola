@@ -2324,104 +2324,8 @@ function getDomain(url) {
   catch { return url; }
 }
 
-function renderGuide() {
-  const el = document.getElementById('guide-content');
-  if (!el) return;
-  const trip = Object.values(TRIPS).find(t => t.active);
-  if (!trip) {
-    el.innerHTML = `<div style="font-size:14px;color:var(--gray-mid);">No active trip.</div>`;
-    return;
-  }
-  const cities = trip.summary.map(leg => leg.city);
-  let html = '';
-  cities.forEach((city, ci) => {
-    const items = getGuideItems(trip.id, city);
-    const key = ck(city);
-    const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${trip.id}-${key}`) || '[]');
-    const visibleItems = items.filter(item => !deleted.includes(item._id));
+function renderGuide() {} // removed - guide tab gone
 
-    html += `<div class="${ci > 0 ? 'guide-section-divider' : ''}">
-      <div class="guide-city-header">${city}</div>
-    </div>`;
-
-    if (visibleItems.length === 0) {
-      html += `<div class="guide-empty">Nothing saved yet.</div>`;
-    } else {
-      html += `<div>`;
-      visibleItems.forEach((item) => {
-        const flagged = isFlagged(trip.id, city, item._id);
-        const safeId = `${ck(city)}-${item._id.replace(/[^a-z0-9]/gi, '-')}`;
-        const flagBtn = `<button onclick="toggleFlag('${trip.id}','${city}','${item._id}')" title="${flagged ? 'Remove reminder' : 'Remind me'}" style="background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;font-size:28px;line-height:1;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;color:${flagged ? 'var(--accent)' : 'var(--gray-light)'};transition:color 0.15s;margin-right:2px;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='${flagged ? 'var(--accent)' : 'var(--gray-light)'}'">●</button>`;
-        const deleteBtn = `<span style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-          <button id="del-x-${safeId}" onclick="showDeleteConfirm('${safeId}')" style="background:none;border:none;cursor:pointer;color:var(--gray-light);font-size:20px;padding:0;line-height:1;transition:color 0.15s;" onmouseover="this.style.color='#c0392b'" onmouseout="this.style.color='var(--gray-light)'">×</button>
-          <button id="del-confirm-${safeId}" onclick="deleteGuideItem('${trip.id}','${city}','${item._id}')" style="display:none;font-family:var(--font-body);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:#c0392b;color:white;border:none;cursor:pointer;">Delete</button>
-        </span>`;
-        if (item.type === 'link') {
-          html += `<div class="guide-item">${flagBtn}<div style="flex:1;"><a href="${item.url}" target="_blank" class="guide-item-link">${item.title}</a><span class="guide-item-domain">${getDomain(item.url)}</span></div>${deleteBtn}</div>`;
-        } else {
-          html += `<div class="guide-item">${flagBtn}<span class="guide-item-text">${item.text}</span>${deleteBtn}</div>`;
-        }
-      });
-      html += `</div>`;
-    }
-
-    html += `
-      <div class="guide-add-form" id="guide-form-${ci}">
-        <div id="guide-input-type-${ci}" style="display:flex;gap:8px;margin-bottom:10px;">
-          <button class="guide-form-btn primary" onclick="showGuideInput(${ci},'note')">Write a note</button>
-          <button class="guide-form-btn secondary" onclick="showGuideInput(${ci},'link')">Paste a link</button>
-        </div>
-        <div id="guide-input-area-${ci}" style="display:none;">
-          <input class="guide-input" id="guide-input-${ci}" placeholder="..." />
-          <div class="guide-form-actions">
-            <button class="guide-form-btn primary" onclick="submitGuideItem('${trip.id}','${city}',${ci})">Save</button>
-            <button class="guide-form-btn secondary" onclick="closeGuideForm(${ci})">Cancel</button>
-          </div>
-        </div>
-      </div>
-      <button class="guide-add-btn" id="guide-add-${ci}" onclick="openGuideForm(${ci})">
-        <span style="font-size:16px;line-height:1;color:var(--gray-light);">+</span> Add
-      </button>`;
-  });
-  el.innerHTML = html;
-}
-
-let currentGuideInputType = {};
-
-function openGuideForm(ci) {
-  document.getElementById(`guide-form-${ci}`).classList.add('open');
-  document.getElementById(`guide-add-${ci}`).style.display = 'none';
-  document.getElementById(`guide-input-type-${ci}`).style.display = 'flex';
-  document.getElementById(`guide-input-area-${ci}`).style.display = 'none';
-}
-
-function closeGuideForm(ci) {
-  document.getElementById(`guide-form-${ci}`).classList.remove('open');
-  document.getElementById(`guide-add-${ci}`).style.display = 'flex';
-  document.getElementById(`guide-input-${ci}`).value = '';
-}
-
-function showGuideInput(ci, type) {
-  currentGuideInputType[ci] = type;
-  const input = document.getElementById(`guide-input-${ci}`);
-  input.placeholder = type === 'link' ? 'https://...' : 'e.g. Cash only, arrive early';
-  document.getElementById(`guide-input-type-${ci}`).style.display = 'none';
-  document.getElementById(`guide-input-area-${ci}`).style.display = 'block';
-  input.focus();
-}
-
-function submitGuideItem(tripId, city, ci) {
-  const input = document.getElementById(`guide-input-${ci}`);
-  const val = input.value.trim();
-  if (!val) return;
-  const type = currentGuideInputType[ci] || 'note';
-  const item = type === 'link'
-    ? { type: 'link', title: val.startsWith('http') ? getDomain(val) : val, url: val.startsWith('http') ? val : '#' }
-    : { type: 'note', text: val };
-  saveGuideItem(tripId, city, item);
-  closeGuideForm(ci);
-  renderGuide();
-}
 // ─────────────────────────────────────────
 // ─────────────────────────────────────────
 // EXPLORE SUBNAV
@@ -2891,7 +2795,7 @@ function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
     html += `<div class="swipe-items-container">`;
     links.forEach(item => {
       const safeId = `${key}-${item._id}`;
-      const deleteAction = `deleteGuideItem('${tripId}','${city}','${item._id}');renderCityDetail('${tripId}','${city}')`;
+      const deleteAction = `deleteGuideItem('${tripId}','${city}','${item._id}')`;
       if (item.type === 'link') {
         html += `<div class="swipe-item" id="swipe-${safeId}">
           <div class="swipe-delete-bg" onclick="${deleteAction}">Delete</div>
