@@ -220,35 +220,59 @@ Format:
     {
       "date": "YYYY-MM-DD",
       "type": "travel|stay|arrive",
-      "location": "City name or transit description e.g. Paris - Marseille",
-      "stay": "Address or hotel name if staying",
-      "alert": "Any important note for this day",
+      "location": "City name or transit description",
+      "stay": "Hotel name and address if known",
+      "alert": "Important note for this day e.g. early departure",
       "travel": [
         {
           "from": "departure city or airport code",
           "to": "arrival city or airport code",
           "dep": "departure time e.g. 4:30pm",
           "arr": "arrival time e.g. 10:00pm",
-          "arrNote": "next day note if applicable e.g. May 13",
-          "carrier": "airline or train operator",
-          "ref": "flight/train number",
+          "arrNote": "if arriving next day, write e.g. May 13",
+          "carrier": "airline or train operator name",
+          "ref": "flight or train number e.g. BR256",
           "refCode": "booking reference code",
-          "note": "any extra notes"
+          "note": "any seat info or extra notes"
         }
       ]
     }
   ]
 }
 
-Rules:
-- type is "travel" for transit days, "stay" for regular days, "arrive" for first day in a new city
-- Include travel array only on transit days
-- location for transit days should describe the journey e.g. "Bali - Taipei - Paris"
-- Extract ALL days including stay days with no travel
-- For stay days just include date, type, location, stay if known
+CRITICAL RULES — follow exactly:
+
+DAY TYPES:
+- "travel" = a day where you are physically in transit between cities. Include a "travel" array with legs.
+- "arrive" = the day you arrive in a new city after a travel day. NO travel array.
+- "stay" = any day you are staying in a city with no travel. NO travel array.
+
+TRAVEL DAYS:
+- A travel day belongs to the DATE the journey DEPARTS, not arrives.
+- If a flight departs May 12 and arrives May 13, create ONE travel day on May 12 with arrNote "May 13".
+- Do NOT create a travel day on the arrival date — create an "arrive" day instead.
+- location for travel days = "City A - City B" showing the journey direction.
+
+STAY/ARRIVE DAYS:
+- Do NOT include a travel array on stay or arrive days.
+- Create a "stay" day for EVERY night in a city, including the arrival night.
+- The "arrive" type is for the first day only when arriving from a travel day.
+
+DATES:
 - Today's date is ${today}
-- If no year is specified, use ${nextYear} for future travel dates and ${currentYear} for past dates
-- All dates must be full YYYY-MM-DD format
+- If no year given, use ${nextYear} for future dates, ${currentYear} for past.
+- All dates must be YYYY-MM-DD format.
+- Generate ALL days continuously — no gaps. Every single day of the trip needs a row.
+
+EXAMPLE — Flight May 12 Bali→Paris (arrives May 13), stay Paris May 13-17, train May 18 to Marseille:
+- 2026-05-12: type=travel, location="Bali - Paris", travel=[{from:DPS, to:CDG, dep:4:30pm, arr:8:25am, arrNote:May 13}]
+- 2026-05-13: type=arrive, location=Paris
+- 2026-05-14: type=stay, location=Paris
+- 2026-05-15: type=stay, location=Paris
+- 2026-05-16: type=stay, location=Paris
+- 2026-05-17: type=stay, location=Paris
+- 2026-05-18: type=travel, location="Paris - Marseille", travel=[{from:Paris, to:Marseille, dep:9:38am, arr:12:57pm}]
+- 2026-05-18 is a travel day — the traveler departs Paris that day. DO NOT make it a Paris stay day.
 
 Itinerary:
 ${text}`
