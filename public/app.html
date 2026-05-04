@@ -1273,25 +1273,20 @@ function renderSummary() {
   cityGroups.forEach(group => {
     const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
 
-    const nights = group.dates.length;
-    const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
-    const datesLabel = `${fmt(group.dates[0])} – ${fmt(group.dates[group.dates.length-1])}`;
-
-    const k = cacheKey(TRIP_ID, group.city);
-    const links = _cache.links[k] || [];
-    const note = _cache.notes[k] || '';
-
-    // Find travel day immediately before first day of this city
+    // Find travel day immediately before and after this city
     const cityStartIdx = _tripData.days.findIndex(d => d.date === group.dates[0]);
+    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
     const dayBefore = cityStartIdx > 0 ? _tripData.days[cityStartIdx - 1] : null;
+    const dayAfter = cityEndIdx < _tripData.days.length - 1 ? _tripData.days[cityEndIdx + 1] : null;
     const prevTravelDay = (dayBefore && dayBefore.type === 'travel') ? dayBefore : null;
+    const nextTravelDay = (dayAfter && dayAfter.type === 'travel') ? dayAfter : null;
     const incomingLegs = prevTravelDay ? getLegsForDay(prevTravelDay.id) : [];
 
-    // Find travel day immediately after last day of this city
-    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
-    const dayAfter = cityEndIdx < _tripData.days.length - 1 ? _tripData.days[cityEndIdx + 1] : null;
-    const nextTravelDay = (dayAfter && dayAfter.type === 'travel') ? dayAfter : null;
-    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id) : [];
+    const nights = group.dates.length;
+    const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
+    // Show end date as the departure travel day so Paris shows May 13-18 not May 13-17
+    const displayEndDate = nextTravelDay ? nextTravelDay.date : group.dates[group.dates.length - 1];
+    const datesLabel = `${fmt(group.dates[0])} – ${fmt(displayEndDate)}`;
 
     html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
       <div class="trip-card-header">
@@ -1310,12 +1305,27 @@ function renderSummary() {
       </div>`;
     }
 
-    const stayInfo = group.days.find(d => d.stay);
-    if (stayInfo && stayInfo.stay) {
+    // Group distinct stays
+    const stayGroups = [];
+    group.days.forEach(d => {
+      if (!d.stay) return;
+      const last = stayGroups[stayGroups.length - 1];
+      if (last && last.stay === d.stay) {
+        last.dates.push(d.date);
+      } else {
+        stayGroups.push({ stay: d.stay, dates: [d.date] });
+      }
+    });
+
+    if (stayGroups.length) {
       html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
-        <div class="section-label" style="margin-bottom:4px;">Stay</div>
-        <div class="section-content">${stayInfo.stay}</div>
-      </div>`;
+        <div class="section-label" style="margin-bottom:4px;">Stay</div>`;
+      stayGroups.forEach((sg, i) => {
+        const showDates = stayGroups.length > 1;
+        const dateRange = showDates ? `<span style="font-size:11px;color:var(--gray-mid);margin-left:6px;">${fmt(sg.dates[0])}${sg.dates.length > 1 ? ` – ${fmt(sg.dates[sg.dates.length-1])}` : ''}</span>` : '';
+        html += `<div class="section-content"${i > 0 ? ' style="margin-top:6px;"' : ''}>${sg.stay}${dateRange}</div>`;
+      });
+      html += `</div>`;
     }
 
     if (note) {
