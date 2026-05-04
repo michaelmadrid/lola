@@ -1394,8 +1394,13 @@ function renderSummary() {
       html += `</div>`;
     }
 
-    // Outgoing travel legs
-    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id, group.tripId) : [];
+    // Outgoing travel legs — collect all consecutive travel days after city
+    const outgoingLegs = [];
+    let nextIdx = cityEndIdx + 1;
+    while (nextIdx < tripDays.length && tripDays[nextIdx].type === 'travel') {
+      getLegsForDay(tripDays[nextIdx].id, group.tripId).forEach(l => outgoingLegs.push(l));
+      nextIdx++;
+    }
     if (outgoingLegs.length) {
       html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">
         ${renderTravelLegs(outgoingLegs)}
