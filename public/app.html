@@ -492,7 +492,7 @@
 
   <div id="trips-summary" style="display:block;">
     <div style="padding:0 0 0.5rem;max-width:540px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:0.75rem 1rem 0;">
-      <input id="summary-search" type="search" placeholder="Search cities..." oninput="filterSummary(this.value)"
+      <input id="summary-search" type="search" placeholder="Search..." oninput="filterSummary(this.value)"
         style="flex:1;font-family:var(--font-body);font-size:14px;padding:8px 12px;border:1.5px solid var(--gray-xlight);border-radius:20px;background:var(--card);color:var(--black);outline:none;transition:border-color 0.15s;"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'" />
     </div>
@@ -1046,26 +1046,56 @@ function renderHome(key) {
   if (!key) {
     if (!tripStart) {
       html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">No trip loaded</div><div style="font-size:14px;color:var(--gray-mid);line-height:1.6;">Go to Plan to import your itinerary.</div></div>`;
+      html += `</div>`;
+      el.innerHTML = html;
+      return;
     } else if (today < tripStart) {
-      const daysLeft = Math.ceil((new Date(tripStart) - new Date()) / (1000*60*60*24));
+      const daysLeft = Math.ceil((new Date(tripStart) - new Date(today)) / (1000*60*60*24));
+      const [sy,sm,sd] = tripStart.split('-').map(Number);
       html += `<div class="pretrip-card">
         <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:8px;">Coming up</div>
-        <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:4px;">${daysLeft} days</div>
-        <div style="font-size:14px;color:var(--gray-mid);">Trip starts ${new Date(tripStart).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</div>
+        <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:4px;">${daysLeft} day${daysLeft !== 1 ? 's' : ''}</div>
+        <div style="font-size:14px;color:var(--gray-mid);">Trip starts ${new Date(sy,sm-1,sd).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</div>
       </div>`;
-      // show journal for today anyway
+      // Fall through to show journal for today
       key = today;
     } else {
-      html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">Trip complete</div><div style="font-size:14px;color:var(--gray-mid);">Europe 26 is done. What a ride.</div></div>`;
+      html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">Trip complete</div><div style="font-size:14px;color:var(--gray-mid);">What a ride.</div></div>`;
+      html += `</div>`;
+      el.innerHTML = html;
+      return;
     }
-    html += `</div>`;
-    el.innerHTML = html;
-    return;
   }
 
   const day = getDayData(key);
-  if (!day) {
-    el.innerHTML = html + `</div>`;
+  const allKeys = _tripData.days.map(d => d.date).sort();
+  const keyInTrip = allKeys.indexOf(key) !== -1;
+
+  if (!day || !keyInTrip) {
+    // Show just a journal for days outside the trip
+    const journalKey = `${TRIP_ID}-${key}`;
+    const journalContent = _cache.journal[journalKey] || '';
+    html += `<div class="today-card" style="min-height:unset;">
+      <div style="margin-bottom:0.75rem;">
+        <div class="today-date">${formatDate(key)}</div>
+      </div>
+      <div class="today-label">Journal</div>
+      <textarea id="journal-ta-${key}" placeholder="Notes for today..."
+        style="width:100%;min-height:90px;font-family:var(--font-body);font-size:16px;line-height:1.7;border:none;outline:none;background:none;color:var(--black);resize:none;padding:6px 0;"
+        oninput="saveJournalEntry('${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+      >${journalContent}</textarea>
+    </div>`;
+    html += `</div>`;
+    el.innerHTML = html;
+    if (!_cache.journal[journalKey]) {
+      api('GET', `/api/journal/${TRIP_ID}/${key}`).then(data => {
+        if (data && data.entry && data.entry.content) {
+          _cache.journal[journalKey] = data.entry.content;
+          const ta = document.getElementById(`journal-ta-${key}`);
+          if (ta && !ta.value) { ta.value = data.entry.content; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+        }
+      });
+    }
     return;
   }
 
@@ -1211,7 +1241,7 @@ function renderSummary() {
   const allDates = _tripData.days.map(d => d.date).sort();
   const MONTHS_S = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const fmtD = k => { if (!k) return ''; const [y,m,d] = k.split('-'); return MONTHS_S[+m-1]+' '+(+d); };
-  let html = `<div style="padding:1.5rem 1rem 0.75rem;"><div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${tripName}</div>${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} 2013 ${fmtD(allDates[allDates.length-1])} 00b7 ${allDates.length} days</div>` : ''}</div>`;
+  let html = `<div style="padding:1.5rem 1rem 0.75rem;"><div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${tripName}</div>${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} &ndash; ${fmtD(allDates[allDates.length-1])} &middot; ${allDates.length} days</div>` : ''}</div>`;
 
   cityGroups.forEach(group => {
     const nights = group.dates.length;
