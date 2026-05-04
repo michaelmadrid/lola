@@ -1056,17 +1056,32 @@ function getMoonPhase(key) {
   return { name: 'Waning Crescent', pct };
 }
 
-function moonSVG(key, size = 18) {
+function moonSVG(key, size = 16) {
   const moon = getMoonPhase(key);
   const pct = moon.pct;
-  if (pct === 0) return '🌑';
-  if (pct < 0.25) return '🌒';
-  if (pct < 0.275) return '🌓';
-  if (pct < 0.475) return '🌔';
-  if (pct < 0.525) return '🌕';
-  if (pct < 0.725) return '🌖';
-  if (pct < 0.775) return '🌗';
-  return '🌘';
+  const r = size / 2;
+  const cx = r, cy = r;
+  const ri = r - 1.5; // inner radius
+
+  let fill;
+  if (pct === 0) {
+    // New moon — empty circle
+    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="none" stroke="var(--gray-light)" stroke-width="1.5"/>`;
+  } else if (pct >= 0.475 && pct <= 0.525) {
+    // Full moon — solid accent
+    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="var(--accent)" opacity="0.7"/>`;
+  } else {
+    // Crescent/gibbous — clip to show lit portion
+    const lit = pct < 0.5 ? pct * 2 : (1 - pct) * 2;
+    const dx = (1 - lit) * ri;
+    const waxing = pct < 0.5;
+    // Base circle
+    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="${waxing ? 'none' : 'var(--accent)'}" stroke="var(--gray-light)" stroke-width="1.5" opacity="0.7"/>`;
+    // Overlay ellipse for shadow/light
+    fill += `<ellipse cx="${cx + (waxing ? dx : -dx)}" cy="${cy}" rx="${Math.max(0.5, Math.abs(dx))}" ry="${ri}" fill="${waxing ? 'var(--accent)' : 'var(--bg)'}" opacity="0.7"/>`;
+  }
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;margin-left:4px;" title="${moon.name}">${fill}</svg>`;
 }
 
 // ─────────────────────────────────────────
@@ -1187,7 +1202,7 @@ function renderHome(key) {
   }
 
   if (day.alert) {
-    html += `<div class="alert-bar">⚡ ${day.alert}</div>`;
+    html += `<div class="alert-bar">${day.alert}</div>`;
   }
 
   // Journal — scoped to this trip
@@ -1245,11 +1260,18 @@ function saveJournalEntry(date, tripId, content) {
 // TRIPS SUMMARY
 // ─────────────────────────────────────────
 function filterSummary(query) {
-  const cards = document.querySelectorAll('#summary-content .trip-card');
-  const headers = document.querySelectorAll('#summary-content .summary-trip-header');
-  const q = query.toLowerCase();
-  cards.forEach(card => {
-    card.style.display = (!q || card.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  const q = query.toLowerCase().trim();
+  const sections = document.querySelectorAll('#summary-content .summary-trip-section');
+  sections.forEach(section => {
+    const cards = section.querySelectorAll('.trip-card');
+    let anyVisible = false;
+    cards.forEach(card => {
+      const show = !q || card.textContent.toLowerCase().includes(q);
+      card.style.display = show ? '' : 'none';
+      if (show) anyVisible = true;
+    });
+    // Hide whole section if no cards match
+    section.style.display = (!q || anyVisible) ? '' : 'none';
   });
 }
 
@@ -1277,7 +1299,8 @@ function renderSummary() {
     const allDates = td.days.map(d => d.date).sort();
 
     // Trip header
-    html += `<div style="padding:1.5rem 1rem 0.75rem;">
+    html += `<div class="summary-trip-section" data-trip-id="${trip.id}">
+    <div style="padding:1.5rem 1rem 0.75rem;">
       <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${trip.name}</div>
       ${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} &ndash; ${fmtD(allDates[allDates.length-1])} &middot; ${allDates.length} days</div>` : ''}
     </div>`;
@@ -1392,7 +1415,7 @@ function renderSummary() {
     html += `</div>`; // close trip-card
     });
 
-    html += `<div style="height:1rem;"></div>`; // spacing between trips
+    html += `<div style="height:1rem;"></div></div>`; // spacing + close summary-trip-section
   }); // end sortedTrips.forEach
 
   el.innerHTML = html;
@@ -1431,7 +1454,26 @@ function renderCalendar() {
   }
 
   const cal = document.getElementById('cal-content');
-  if (cal) cal.innerHTML = buildMonth('May', 2026, 4) + buildMonth('June', 2026, 5);
+  if (!cal) return;
+
+  const allDays = getAllDays();
+  if (!allDays.length) { cal.innerHTML = ''; return; }
+
+  // Find date range across all trips
+  const firstDate = new Date(allDays[0].date);
+  const lastDate = new Date(allDays[allDays.length - 1].date);
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let calHtml = '';
+  let y = firstDate.getFullYear(), m = firstDate.getMonth();
+  const endY = lastDate.getFullYear(), endM = lastDate.getMonth();
+
+  while (y < endY || (y === endY && m <= endM)) {
+    calHtml += buildMonth(MONTH_NAMES[m], y, m);
+    m++;
+    if (m > 11) { m = 0; y++; }
+  }
+  cal.innerHTML = calHtml;
 }
 
 // ─────────────────────────────────────────
@@ -1448,9 +1490,15 @@ function renderManageList() {
   }
 
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let html = `<div class="manage-card">`;
+  const sortedForManage = _allTrips.filter(t => _tripsData[t.id])
+    .sort((a, b) => {
+      const aStart = _tripsData[a.id]?.days[0]?.date || 'z';
+      const bStart = _tripsData[b.id]?.days[0]?.date || 'z';
+      return aStart.localeCompare(bStart);
+    });
 
-  _allTrips.forEach(trip => {
+  let html = `<div class="manage-card">`;
+  sortedForManage.forEach(trip => {
     const tripDays = _tripsData[trip.id] ? _tripsData[trip.id].days : [];
     const dates = tripDays.map(d => d.date).sort();
     const start = dates[0];
@@ -1550,10 +1598,60 @@ function renderCityListFromData(tripId, days, legs) {
         ${sub ? `<div class="manage-row-sub">${sub}</div>` : ''}
       </div>
       <span class="manage-chevron">›</span>
-    </div>`;
   });
   html += `</div>`;
+
+  // Delete trip
+  const tripForDelete = _allTrips.find(t => t.id === tripId);
+  html += `<div style="padding:1rem 1rem 2rem;">
+    <div id="delete-trip-confirm" style="display:none;background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);">
+      <div style="font-size:13px;color:var(--gray-mid);margin-bottom:6px;">Type the trip name to confirm deletion:</div>
+      <div style="font-size:15px;font-weight:500;color:var(--black);margin-bottom:10px;">${tripForDelete ? tripForDelete.name : ''}</div>
+      <input id="delete-trip-input" type="text" placeholder="Type trip name..."
+        style="width:100%;font-family:var(--font-body);font-size:14px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;margin-bottom:10px;transition:border-color 0.15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'"
+        oninput="validateDeleteInput(${tripId})" />
+      <div style="display:flex;gap:8px;">
+        <button id="delete-trip-btn" onclick="confirmDeleteTrip(${tripId})" disabled
+          style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Delete</button>
+        <button onclick="document.getElementById('delete-trip-confirm').style.display='none'"
+          style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+    <button onclick="document.getElementById('delete-trip-confirm').style.display='block'"
+      style="font-family:var(--font-body);font-size:13px;color:var(--gray-light);background:none;border:none;cursor:pointer;padding:4px 0;"
+      onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='var(--gray-light)'">Delete this trip</button>
+  </div>`;
+
   el.innerHTML = html;
+}
+
+
+function validateDeleteInput(tripId) {
+  const trip = _allTrips.find(t => t.id === tripId);
+  const input = document.getElementById('delete-trip-input');
+  const btn = document.getElementById('delete-trip-btn');
+  if (!trip || !input || !btn) return;
+  const match = input.value.trim() === trip.name.trim();
+  btn.disabled = !match;
+  btn.style.opacity = match ? '1' : '0.4';
+  btn.style.cursor = match ? 'pointer' : 'default';
+}
+
+async function confirmDeleteTrip(tripId) {
+  const trip = _allTrips.find(t => t.id === tripId);
+  const input = document.getElementById('delete-trip-input');
+  if (!trip || !input || input.value.trim() !== trip.name.trim()) return;
+  const result = await api('DELETE', `/api/trips/${tripId}`);
+  if (result && result.success) {
+    _allTrips = _allTrips.filter(t => t.id !== tripId);
+    delete _tripsData[tripId];
+    closeLevel2();
+    renderManageList();
+    renderSummary();
+    renderCalendar();
+    renderHome(getTodayKey() || toKey(new Date()));
+  }
 }
 
 function renderCityList(tripId) {
@@ -1749,8 +1847,15 @@ async function submitCityItem(tripId, city) {
   const val = input.value.trim();
   if (!val) return;
   const url = normalizeUrl(val);
-  const item = { type: 'link', title: getDomain(url.startsWith('http') ? url : val), url: url.startsWith('http') ? url : val };
+  // Validate — must look like a URL (has a dot, no spaces)
+  if (!url.startsWith('http') || url.includes(' ')) {
+    input.style.borderColor = '#e74c3c';
+    input.placeholder = 'Enter a valid URL e.g. google.com';
+    setTimeout(() => { input.style.borderColor = ''; input.placeholder = 'https:// or domain.com...'; }, 2000);
+    return;
+  }
   closeCityInput();
+  const item = { type: 'link', title: getDomain(url), url };
   await saveGuideItem(tripId, city, item);
   delete _cache.links[cacheKey(tripId, city)];
   await loadCityLinks(tripId, city);
