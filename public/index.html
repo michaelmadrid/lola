@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lola">
+  <title>Lola</title>
+  <style>
+	* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+	:root {
+	  --bg: #f0f0ee;
+	  --card: #ffffff;
+	  --black: #0d0d0d;
+	  --gray-mid: #6b6b6b;
+	  --gray-light: #c8c8c6;
+	  --gray-xlight: #e8e8e6;
+	  --accent: #2a4ed4;
+	  --accent-light: #eef1ff;
+	  --radius: 12px;
+	  --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	  --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	}
+
+	body {
+	  background: var(--bg);
+	  font-family: var(--font-body);
+	  min-height: 100vh;
+	  display: flex;
+	  align-items: center;
+	  justify-content: center;
+	  padding: 2rem 1rem;
+	}
+
+	.login-wrap {
+	  width: 100%;
+	  max-width: 380px;
+	}
+
+	.login-title {
+	  font-size: 32px;
+	  font-weight: 600;
+	  letter-spacing: -0.02em;
+	  color: var(--black);
+	  margin-bottom: 6px;
+	}
+
+	.login-sub {
+	  font-size: 15px;
+	  color: var(--gray-mid);
+	  margin-bottom: 2rem;
+	}
+
+	.login-card {
+	  background: var(--card);
+	  border-radius: var(--radius);
+	  padding: 1.5rem;
+	  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+	}
+
+	.field {
+	  margin-bottom: 1rem;
+	}
+
+	.field label {
+	  display: block;
+	  font-size: 11px;
+	  letter-spacing: 0.08em;
+	  text-transform: uppercase;
+	  color: var(--gray-mid);
+	  margin-bottom: 6px;
+	}
+
+	.field input {
+	  width: 100%;
+	  font-family: var(--font-body);
+	  font-size: 16px;
+	  padding: 12px 14px;
+	  border: 1.5px solid var(--gray-xlight);
+	  border-radius: 8px;
+	  background: var(--bg);
+	  color: var(--black);
+	  outline: none;
+	  transition: border-color 0.15s;
+	}
+
+	.field input:focus { border-color: var(--accent); }
+
+	.login-btn {
+	  width: 100%;
+	  font-family: var(--font-body);
+	  font-size: 15px;
+	  font-weight: 600;
+	  padding: 14px;
+	  background: var(--accent);
+	  color: white;
+	  border: none;
+	  border-radius: var(--radius);
+	  cursor: pointer;
+	  margin-top: 0.5rem;
+	  transition: opacity 0.15s;
+	}
+
+	.login-btn:hover { opacity: 0.9; }
+	.login-btn:disabled { opacity: 0.5; cursor: default; }
+
+	.login-error {
+	  font-size: 13px;
+	  color: #e74c3c;
+	  margin-top: 0.75rem;
+	  text-align: center;
+	  display: none;
+	}
+
+	.login-toggle {
+	  text-align: center;
+	  margin-top: 1rem;
+	  font-size: 13px;
+	  color: var(--gray-mid);
+	}
+
+	.login-toggle a {
+	  color: var(--accent);
+	  cursor: pointer;
+	  text-decoration: none;
+	}
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-title">Lola</div>
+  <div class="login-sub" id="login-sub">Sign in to your account</div>
+
+  <div class="login-card">
+	<div class="field" id="name-field" style="display:none;">
+	  <label>Your Name</label>
+	  <input type="text" id="input-name" placeholder="Michael" />
+	</div>
+	<div class="field">
+	  <label>Email</label>
+	  <input type="email" id="input-email" placeholder="you@example.com" />
+	</div>
+	<div class="field">
+	  <label>Password</label>
+	  <input type="password" id="input-password" placeholder="••••••••" 
+		onkeydown="if(event.key==='Enter')submitAuth()" />
+	</div>
+	<button class="login-btn" id="auth-btn" onclick="submitAuth()">Sign In</button>
+	<div class="login-error" id="login-error"></div>
+  </div>
+
+  <div class="login-toggle">
+	<span id="toggle-text">Don't have an account?</span>
+	<a onclick="toggleMode()"> <span id="toggle-link">Create one</span></a>
+  </div>
+</div>
+
+<script>
+  let isRegister = false;
+
+  // Check if already logged in
+  const token = localStorage.getItem('lola_token');
+  if (token) {
+	// Verify token is still valid
+	fetch('/api/auth/me', {
+	  headers: { 'Authorization': `Bearer ${token}` }
+	}).then(r => r.json()).then(data => {
+	  if (data.user) {
+		window.location.href = '/app.html';
+	  } else {
+		localStorage.removeItem('lola_token');
+		localStorage.removeItem('lola_user');
+	  }
+	}).catch(() => {});
+  }
+
+  function toggleMode() {
+	isRegister = !isRegister;
+	document.getElementById('name-field').style.display = isRegister ? 'block' : 'none';
+	document.getElementById('login-sub').textContent = isRegister ? 'Create your account' : 'Sign in to your account';
+	document.getElementById('auth-btn').textContent = isRegister ? 'Create Account' : 'Sign In';
+	document.getElementById('toggle-text').textContent = isRegister ? 'Already have an account?' : "Don't have an account?";
+	document.getElementById('toggle-link').textContent = isRegister ? 'Sign in' : 'Create one';
+	document.getElementById('login-error').style.display = 'none';
+  }
+
+  async function submitAuth() {
+	const email = document.getElementById('input-email').value.trim();
+	const password = document.getElementById('input-password').value;
+	const name = document.getElementById('input-name').value.trim();
+	const btn = document.getElementById('auth-btn');
+	const err = document.getElementById('login-error');
+
+	if (!email || !password) {
+	  showError('Please enter your email and password');
+	  return;
+	}
+
+	btn.disabled = true;
+	btn.textContent = isRegister ? 'Creating...' : 'Signing in...';
+	err.style.display = 'none';
+
+	try {
+	  const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
+	  const body = isRegister ? { email, password, name } : { email, password };
+
+	  const res = await fetch(endpoint, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body)
+	  });
+
+	  const data = await res.json();
+
+	  if (data.error) {
+		showError(data.error);
+		btn.disabled = false;
+		btn.textContent = isRegister ? 'Create Account' : 'Sign In';
+		return;
+	  }
+
+	  localStorage.setItem('lola_token', data.token);
+	  localStorage.setItem('lola_user', JSON.stringify(data.user));
+	  window.location.href = '/app.html';
+
+	} catch (e) {
+	  showError('Something went wrong. Try again.');
+	  btn.disabled = false;
+	  btn.textContent = isRegister ? 'Create Account' : 'Sign In';
+	}
+  }
+
+  function showError(msg) {
+	const err = document.getElementById('login-error');
+	err.textContent = msg;
+	err.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
