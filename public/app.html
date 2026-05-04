@@ -993,21 +993,14 @@ function getMoonPhase(key) {
 function moonSVG(key, size = 18) {
   const moon = getMoonPhase(key);
   const pct = moon.pct;
-  const r = size / 2;
-  let inner = '';
-  if (pct === 0) {
-    inner = `<circle cx="${r}" cy="${r}" r="${r-1}" fill="#1a1a2e"/>`;
-  } else if (pct === 0.5) {
-    inner = `<circle cx="${r}" cy="${r}" r="${r-1}" fill="#f5e642"/>`;
-  } else {
-    const lit = pct < 0.5 ? pct / 0.5 : (1 - pct) / 0.5;
-    const dx = (1 - lit * 2) * (r - 1);
-    const fill = pct < 0.5 ? '#f5e642' : '#1a1a2e';
-    const bg = pct < 0.5 ? '#1a1a2e' : '#f5e642';
-    inner = `<circle cx="${r}" cy="${r}" r="${r-1}" fill="${bg}"/>
-      <ellipse cx="${r}" cy="${r}" rx="${Math.abs(dx)}" ry="${r-1}" fill="${fill}"/>`;
-  }
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;opacity:0.7;" title="${moon.name}">${inner}</svg>`;
+  if (pct === 0) return '🌑';
+  if (pct < 0.25) return '🌒';
+  if (pct < 0.275) return '🌓';
+  if (pct < 0.475) return '🌔';
+  if (pct < 0.525) return '🌕';
+  if (pct < 0.725) return '🌖';
+  if (pct < 0.775) return '🌗';
+  return '🌘';
 }
 
 // ─────────────────────────────────────────
@@ -1108,7 +1101,7 @@ function renderHome(key) {
   html += `<div class="today-card">
     <div class="today-header">
       <div>
-        <div class="today-date">${formatDate(key)} ${moonSVG(key)}</div>
+        <div class="today-date">${formatDate(key)}</div>
         <div class="today-location">${day.location || ''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
