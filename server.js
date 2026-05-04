@@ -82,7 +82,6 @@ app.get('/api/auth/me', authenticate, (req, res) => {
   res.json({ user: req.user });
 });
 
-
 // Get all trips for user
 app.get('/api/trips', authenticate, async (req, res) => {
   try {
@@ -109,7 +108,6 @@ app.post('/api/trips', authenticate, async (req, res) => {
       [name, req.user.id]
     );
     const trip = result.rows[0];
-    // Add creator as owner member
     await pool.query(
       'INSERT INTO trip_members (trip_id, user_id, role) VALUES ($1, $2, $3)',
       [trip.id, req.user.id, 'owner']
@@ -194,8 +192,22 @@ app.post('/api/journal/:tripId/:date', authenticate, async (req, res) => {
   }
 });
 
-// City notes
+// City notes — GET and POST
+app.get('/api/notes/:tripId/:city', authenticate, async (req, res) => {
+  const city = decodeURIComponent(req.params.city);
+  try {
+    const result = await pool.query(
+      'SELECT * FROM city_notes WHERE trip_id = $1 AND user_id = $2 AND city = $3',
+      [req.params.tripId, req.user.id, city]
+    );
+    res.json({ note: result.rows[0] || null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/notes/:tripId/:city', authenticate, async (req, res) => {
+  const city = decodeURIComponent(req.params.city);
   const { content } = req.body;
   try {
     const result = await pool.query(
@@ -204,7 +216,7 @@ app.post('/api/notes/:tripId/:city', authenticate, async (req, res) => {
        ON CONFLICT (trip_id, user_id, city)
        DO UPDATE SET content = $4, updated_at = NOW()
        RETURNING *`,
-      [req.params.tripId, req.user.id, req.params.city, content]
+      [req.params.tripId, req.user.id, city, content]
     );
     res.json({ note: result.rows[0] });
   } catch (err) {
@@ -212,12 +224,13 @@ app.post('/api/notes/:tripId/:city', authenticate, async (req, res) => {
   }
 });
 
-// City links
+// City links — GET, POST, DELETE
 app.get('/api/links/:tripId/:city', authenticate, async (req, res) => {
+  const city = decodeURIComponent(req.params.city);
   try {
     const result = await pool.query(
       'SELECT * FROM city_links WHERE trip_id = $1 AND user_id = $2 AND city = $3 ORDER BY created_at ASC',
-      [req.params.tripId, req.user.id, req.params.city]
+      [req.params.tripId, req.user.id, city]
     );
     res.json({ links: result.rows });
   } catch (err) {
@@ -226,11 +239,12 @@ app.get('/api/links/:tripId/:city', authenticate, async (req, res) => {
 });
 
 app.post('/api/links/:tripId/:city', authenticate, async (req, res) => {
+  const city = decodeURIComponent(req.params.city);
   const { title, url } = req.body;
   try {
     const result = await pool.query(
       'INSERT INTO city_links (trip_id, user_id, city, title, url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [req.params.tripId, req.user.id, req.params.city, title, url]
+      [req.params.tripId, req.user.id, city, title, url]
     );
     res.json({ link: result.rows[0] });
   } catch (err) {
@@ -249,9 +263,6 @@ app.delete('/api/links/:id', authenticate, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
-
 
 app.listen(port, () => {
   console.log(`Lola running on port ${port}`);
