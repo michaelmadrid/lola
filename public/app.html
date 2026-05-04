@@ -2578,9 +2578,10 @@ function renderPlanTripPicker() {
   if (!trips.length) { el.innerHTML = ''; return; }
   let html = '';
   trips.forEach(trip => {
-    html += `<div onclick="selectPlanTrip('${trip.id}')" id="plan-pick-${trip.id}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;border-bottom:1px solid var(--gray-xlight);">
+    const dbId = TRIP_ID; // use real DB id
+    html += `<div onclick="selectPlanTrip(${dbId})" id="plan-pick-${dbId}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;border-bottom:1px solid var(--gray-xlight);">
       <span style="font-size:14px;color:var(--black);">${trip.name}</span>
-      <span id="plan-pick-check-${trip.id}" style="color:var(--accent);font-size:16px;display:none;">✓</span>
+      <span id="plan-pick-check-${dbId}" style="color:var(--accent);font-size:16px;display:none;">✓</span>
     </div>`;
   });
   el.innerHTML = html;
