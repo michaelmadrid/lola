@@ -207,12 +207,39 @@ app.post('/api/trips/import', authenticate, async (req, res) => {
     const currentYear = new Date().getFullYear();
     const nextYear = currentYear + 1;
 
+    // Step 1: Have Claude clarify/normalize the itinerary first
+    const clarifyMsg = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2048,
+      messages: [{
+        role: 'user',
+        content: `I have a travel itinerary that needs clarifying before parsing. Please rewrite it as a clean, unambiguous day-by-day list.
+
+Rules:
+- Use the STAY DATES section as the source of truth for when someone is in each city
+- Transport bookings may appear under a date that is just the booking reference date, not the actual travel date
+- Cross-reference transport with stay dates to determine the real travel date
+- Output format: one line per day, "YYYY-MM-DD: [type] [location] | [details]"
+- type = TRAVEL, ARRIVE, or STAY
+- For TRAVEL days include the transport details
+- List every single day with no gaps
+
+Itinerary:
+${text}
+
+Output the clarified day-by-day list only, no explanation.`
+      }]
+    });
+
+    const clarified = clarifyMsg.content[0].text.trim();
+
+    // Step 2: Parse the clarified itinerary into JSON
     const message = await anthropic.messages.create({
-      model: 'claude-opus-4-6',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       messages: [{
         role: 'user',
-        content: `Extract this travel itinerary into structured JSON. Return ONLY valid JSON, no explanation, no markdown.
+        content: `Convert this clarified travel itinerary into structured JSON. Return ONLY valid JSON, no explanation, no markdown.
 
 Format:
 {
@@ -222,62 +249,31 @@ Format:
       "type": "travel|stay|arrive",
       "location": "City name or transit description",
       "stay": "Hotel name and address if known",
-      "alert": "Important note for this day e.g. early departure",
+      "alert": "Important note for this day",
       "travel": [
         {
           "from": "departure city or airport code",
           "to": "arrival city or airport code",
           "dep": "departure time e.g. 4:30pm",
           "arr": "arrival time e.g. 10:00pm",
-          "arrNote": "if arriving next day, write e.g. May 13",
-          "carrier": "airline or train operator name",
-          "ref": "flight or train number e.g. BR256",
+          "arrNote": "if arriving next day e.g. May 13",
+          "carrier": "airline or train operator",
+          "ref": "flight or train number",
           "refCode": "booking reference code",
-          "note": "any seat info or extra notes"
+          "note": "any extra notes"
         }
       ]
     }
   ]
 }
 
-CRITICAL RULES — follow exactly:
-
-DAY TYPES:
-- "travel" = a day where you are physically in transit between cities. Include a "travel" array with legs.
-- "arrive" = the day you arrive in a new city after a travel day. NO travel array.
-- "stay" = any day you are staying in a city with no travel. NO travel array.
-
-TRAVEL DAYS:
-- A travel day belongs to the DATE the journey DEPARTS.
-- If a flight departs May 12 and arrives May 13, create ONE travel day on May 12 with arrNote "May 13".
-- Do NOT create a travel day on the arrival date — create an "arrive" day instead.
-- location for travel days = "City A - City B" showing the journey direction.
-
-STAY/ARRIVE DAYS:
-- Do NOT include a travel array on stay or arrive days.
-- Create a "stay" day for EVERY night in a city.
-- The "arrive" type is for the first day only when arriving from a travel day.
-
-IMPORTANT — USE HOTEL/STAY DATES AS THE SOURCE OF TRUTH:
-- If the itinerary lists hotel dates for a city (e.g. "PARIS, MAY 13-18"), those dates define exactly when the person is in that city.
-- Transport bookings listed under a date header (e.g. "MAY 13: TGV Paris→Marseille") may show the booking reference date, NOT the actual travel date. Always verify against the hotel dates.
-- In the example above, if hotels say Paris May 13-18, then the TGV must depart May 18, not May 13.
-
-DATES:
-- Today's date is ${today}
-- If no year given, use ${nextYear} for future dates, ${currentYear} for past.
-- All dates must be YYYY-MM-DD format.
-- Generate ALL days continuously — no gaps.
-
-EXAMPLE — Flight May 12 Bali→Paris (arrives May 13), stay Paris May 13-17, train May 18 to Marseille:
-- 2026-05-12: type=travel, location="Bali - Paris", travel=[{from:DPS, to:CDG, dep:4:30pm, arr:8:25am, arrNote:May 13}]
-- 2026-05-13: type=arrive, location=Paris
-- 2026-05-14 through 2026-05-17: type=stay, location=Paris
-- 2026-05-18: type=travel, location="Paris - Marseille", travel=[{from:Paris, to:Marseille, dep:9:38am, arr:12:57pm}]
-- 2026-05-18 is a travel day — the traveler departs Paris that day.
+Rules:
+- travel days have a travel array, stay/arrive days do not
+- Generate every single day, no gaps
+- All dates YYYY-MM-DD format
 
 Itinerary:
-${text}`
+${clarified}`
       }]
     });
 
