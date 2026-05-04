@@ -1308,6 +1308,7 @@ function renderSummary() {
     const cityEndIdx = tripDays.findIndex(d => d.date === group.dates[group.dates.length - 1]);
     const dayBefore = cityStartIdx > 0 ? tripDays[cityStartIdx - 1] : null;
     const dayAfter = cityEndIdx < tripDays.length - 1 ? tripDays[cityEndIdx + 1] : null;
+    const prevTravelDay = (dayBefore && dayBefore.type === 'travel') ? dayBefore : null;
     const nextTravelDay = (dayAfter && dayAfter.type === 'travel') ? dayAfter : null;
     const incomingLegs = prevTravelDay ? getLegsForDay(prevTravelDay.id, group.tripId) : [];
 
