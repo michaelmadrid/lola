@@ -209,7 +209,7 @@ app.post('/api/trips/import', authenticate, async (req, res) => {
 
     // Step 1: Have Claude clarify/normalize the itinerary first
     const clarifyMsg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [{
         role: 'user',
@@ -235,7 +235,7 @@ Output the clarified day-by-day list only, no explanation.`
 
     // Step 2: Parse the clarified itinerary into JSON
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4096,
       messages: [{
         role: 'user',

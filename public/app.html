@@ -1288,6 +1288,9 @@ function renderSummary() {
     const displayEndDate = nextTravelDay ? nextTravelDay.date : group.dates[group.dates.length - 1];
     const datesLabel = `${fmt(group.dates[0])} – ${fmt(displayEndDate)}`;
 
+    const k = cacheKey(TRIP_ID, group.city);
+    const links = _cache.links[k] || [];
+    const note = _cache.notes[k] || '';
     html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
       <div class="trip-card-header">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
