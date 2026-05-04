@@ -1068,7 +1068,6 @@ function renderHome(key) {
   }
 
   const day = getDayData(key);
-  const allKeys = _tripData.days.map(d => d.date).sort();
   const keyInTrip = allKeys.indexOf(key) !== -1;
 
   if (!day || !keyInTrip) {
