@@ -1649,31 +1649,55 @@ function exportTrip(tripId) {
   const td = getTripData(tripId);
   if (!td || !td.days.length) { alert('No data to export.'); return; }
 
-  const lines = [];
   const tripName = trip ? trip.name : 'Trip';
-  lines.push(tripName.toUpperCase());
-  lines.push('');
+  const lines = [tripName.toUpperCase(), ''];
+  const days = td.days;
+  const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}); };
+  const fmtShort = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
 
-  td.days.forEach(day => {
-    const legs = getLegsForDay(day.id, tripId);
+  let i = 0;
+  while (i < days.length) {
+    const day = days[i];
+
     if (day.type === 'travel') {
-      lines.push('● ' + day.date + ' — ' + day.location);
+      const legs = getLegsForDay(day.id, tripId);
       legs.forEach(l => {
-        const times = [l.dep_time, l.arr_time].filter(Boolean).join(' → ');
+        const route = [l.from_city, l.to_city].filter(Boolean).join(' → ');
+        const times = [l.dep_time, l.arr_time].filter(Boolean).join(' - ');
+        const arrNote = l.arr_note ? ' (' + l.arr_note + ')' : '';
+        const carrier = [l.carrier, l.ref].filter(Boolean).join(' ');
         const ref = l.ref_code ? ' #' + l.ref_code : '';
-        lines.push('  ' + (l.from_city || '') + ' → ' + (l.to_city || '') + '  ' + times + (l.arr_note ? ' (' + l.arr_note + ')' : '') + ref);
-        if (l.carrier || l.ref) lines.push('  ' + [l.carrier, l.ref].filter(Boolean).join(' '));
-        if (l.note) lines.push('  ' + l.note);
+        lines.push(route + ' ' + fmt(day.date));
+        if (carrier || ref) lines.push(carrier + ref);
+        if (times) lines.push(times + arrNote);
       });
-    } else if (day.type === 'arrive' || day.type === 'stay') {
-      if (day.type === 'arrive') lines.push('');
-      const stay = day.stay ? ' — ' + day.stay : '';
-      lines.push((day.type === 'arrive' ? '● ' : '  ') + day.date + ' ' + (day.location || '') + stay);
-    }
-    if (day.alert) lines.push('  ⚑ ' + day.alert);
-  });
+      lines.push('');
+      i++;
 
-  const text = lines.join('\n');
+    } else if (day.type === 'arrive' || day.type === 'stay') {
+      // Group all consecutive days in same city with same stay
+      const city = day.location;
+      const stay = day.stay;
+      let j = i;
+      while (j < days.length && (days[j].type === 'stay' || days[j].type === 'arrive') && days[j].location === city) {
+        j++;
+      }
+      const firstDate = days[i].date;
+      const lastDate = days[j-1].date;
+      const dateRange = firstDate === lastDate
+        ? fmtShort(firstDate)
+        : fmtShort(firstDate) + ' - ' + fmtShort(lastDate);
+      const stayStr = stay ? ', ' + stay : '';
+      lines.push(city + ' ' + dateRange + stayStr);
+      lines.push('');
+      i = j;
+
+    } else {
+      i++;
+    }
+  }
+
+  const text = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   const blob = new Blob([text], {type: 'text/plain'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
