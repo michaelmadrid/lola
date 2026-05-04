@@ -705,7 +705,7 @@ async function api(method, path, body) {
   try {
     const res = await fetch(path, {
       method,
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_TOKEN() + '' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_TOKEN()}` },
       body: body ? JSON.stringify(body) : undefined
     });
     return res.json();
@@ -849,7 +849,7 @@ function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
 // TRIP DATA — load from API
 // ─────────────────────────────────────────
 async function loadTripData(tripId) {
-  const data = await api('GET', '/api/trips/' + tripId + '');
+  const data = await api('GET', `/api/trips/${tripId}`);
   if (!data || !data.days) return;
   _tripsData[tripId] = {
     days: data.days.map(d => ({ ...d, date: d.date.substring(0, 10) })),
@@ -863,7 +863,9 @@ async function loadAllTripsData() {
 
 // Get all days across all trips, sorted by date
 function getAllDays() {
-  return Object.entries(_tripsData).flatMap(([tripId, td]) => td.days.map(d => ({ ...d, tripId: parseInt(tripId) }))).sort((a, b) => a.date.localeCompare(b.date));
+  return Object.entries(_tripsData).flatMap(([tripId, td]) =>
+    td.days.map(d => ({ ...d, tripId: parseInt(tripId) }))
+  ).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 // Get trip data for a specific trip
@@ -913,14 +915,14 @@ function getLastTripDay() {
 // ─────────────────────────────────────────
 async function loadCityLinks(tripId, city) {
   const k = cacheKey(tripId, city);
-  const data = await api('GET', '/api/links/' + tripId + '/' + encodeURIComponent(city) + '');
+  const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
   _cache.links[k] = (data && data.links) ? data.links.map(l => ({...l, _id: String(l.id), type:'link'})) : [];
   return _cache.links[k];
 }
 
 async function loadCityNote(tripId, city) {
   const k = cacheKey(tripId, city);
-  const data = await api('GET', '/api/notes/' + tripId + '/' + encodeURIComponent(city) + '');
+  const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
   _cache.notes[k] = (data && data.note) ? data.note.content : '';
   return _cache.notes[k];
 }
@@ -946,7 +948,7 @@ async function preloadCityData() {
 function showView(name, btn) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById(`view-${name}`).classList.add('active');
   if (btn) btn.classList.add('active');
   document.body.style.overflow = '';
   // Close any open panels
@@ -1058,27 +1060,19 @@ function moonSVG(key, size = 16) {
   const moon = getMoonPhase(key);
   const pct = moon.pct;
   const r = size / 2;
-  const cx = r, cy = r;
-  const ri = r - 1.5; // inner radius
-
+  const ri = r - 1.5;
   let fill;
   if (pct === 0) {
-    // New moon — empty circle
-    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="none" stroke="var(--gray-light)" stroke-width="1.5"/>`;
+    fill = '<circle cx="' + r + '" cy="' + r + '" r="' + ri + '" fill="none" stroke="var(--gray-light)" stroke-width="1.5"/>';
   } else if (pct >= 0.475 && pct <= 0.525) {
-    // Full moon — solid accent
-    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="var(--accent)" opacity="0.7"/>`;
+    fill = '<circle cx="' + r + '" cy="' + r + '" r="' + ri + '" fill="var(--accent)" opacity="0.7"/>';
   } else {
-    // Crescent/gibbous — clip to show lit portion
     const lit = pct < 0.5 ? pct * 2 : (1 - pct) * 2;
     const dx = (1 - lit) * ri;
     const waxing = pct < 0.5;
-    // Base circle
-    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="${waxing ? 'none' : 'var(--accent)'}" stroke="var(--gray-light)" stroke-width="1.5" opacity="0.7"/>`;
-    // Overlay ellipse for shadow/light
-    fill += `<ellipse cx="${cx + (waxing ? dx : -dx)}" cy="${cy}" rx="${Math.max(0.5, Math.abs(dx))}" ry="${ri}" fill="${waxing ? 'var(--accent)' : 'var(--bg)'}" opacity="0.7"/>`;
+    fill = '<circle cx="' + r + '" cy="' + r + '" r="' + ri + '" fill="' + (waxing ? 'none' : 'var(--accent)') + '" stroke="var(--gray-light)" stroke-width="1.5" opacity="0.7"/>';
+    fill += '<ellipse cx="' + (r + (waxing ? dx : -dx)) + '" cy="' + r + '" rx="' + Math.max(0.5, Math.abs(dx)) + '" ry="' + ri + '" fill="' + (waxing ? 'var(--accent)' : 'var(--bg)') + '" opacity="0.7"/>';
   }
-
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;margin-left:4px;" title="' + moon.name + '">' + fill + '</svg>';
 }
 
@@ -1119,7 +1113,7 @@ function renderHome(key) {
   if (!key) {
     if (!tripStart) {
       html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">No trips yet</div><div style="font-size:14px;color:var(--gray-mid);line-height:1.6;">Go to Plan to import your itinerary.</div></div>`;
-      html += '</div>';
+      html += `</div>`;
       el.innerHTML = html;
       return;
     } else if (today < tripStart) {
@@ -1135,7 +1129,7 @@ function renderHome(key) {
       key = today;
     } else {
       html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">All done</div><div style="font-size:14px;color:var(--gray-mid);">What a ride.</div></div>`;
-      html += '</div>';
+      html += `</div>`;
       el.innerHTML = html;
       return;
     }
@@ -1214,11 +1208,11 @@ function renderHome(key) {
     >${journalContent}</textarea>
   </div>`;
 
-  html += '</div></div>';
+  html += `</div></div>`;
   el.innerHTML = html;
 
   if (!_cache.journal[journalKey]) {
-    api('GET', '/api/journal/' + tripId + '/' + key + '').then(data => {
+    api('GET', `/api/journal/${tripId}/${key}`).then(data => {
       if (data && data.entry && data.entry.content) {
         _cache.journal[journalKey] = data.entry.content;
         const ta = document.getElementById(`journal-ta-${key}`);
@@ -1250,7 +1244,7 @@ function saveJournalEntry(date, tripId, content) {
   _cache.journal[k] = content;
   clearTimeout(_journalTimer);
   _journalTimer = setTimeout(() => {
-    api('POST', '/api/journal/' + tripId + '/' + date + '', { content });
+    api('POST', `/api/journal/${tripId}/${date}`, { content });
   }, 800);
 }
 
@@ -1259,8 +1253,7 @@ function saveJournalEntry(date, tripId, content) {
 // ─────────────────────────────────────────
 function filterSummary(query) {
   const q = query.toLowerCase().trim();
-  const sections = document.querySelectorAll('#summary-content .summary-trip-section');
-  sections.forEach(section => {
+  document.querySelectorAll('#summary-content .summary-trip-section').forEach(section => {
     const cards = section.querySelectorAll('.trip-card');
     let anyVisible = false;
     cards.forEach(card => {
@@ -1268,7 +1261,6 @@ function filterSummary(query) {
       card.style.display = show ? '' : 'none';
       if (show) anyVisible = true;
     });
-    // Hide whole section if no cards match
     section.style.display = (!q || anyVisible) ? '' : 'none';
   });
 }
@@ -1297,8 +1289,8 @@ function renderSummary() {
     const allDates = td.days.map(d => d.date).sort();
 
     // Trip header
-    html += `<div class="summary-trip-section" data-trip-id="${trip.id}">
-    <div style="padding:1.5rem 1rem 0.75rem;">
+    html += `<div class="summary-trip-section">`;
+    html += `<div style="padding:1.5rem 1rem 0.75rem;">
       <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${trip.name}</div>
       ${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} &ndash; ${fmtD(allDates[allDates.length-1])} &middot; ${allDates.length} days</div>` : ''}
     </div>`;
@@ -1382,7 +1374,7 @@ function renderSummary() {
         const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(sg.stay)}`;
         html += `<div class="section-content"${i > 0 ? ' style="margin-top:6px;"' : ''}><a href="${mapsUrl}" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px solid var(--gray-xlight);">${sg.stay}</a>${dateRange}</div>`;
       });
-      html += '</div>';
+      html += `</div>`;
     }
 
     if (note) {
@@ -1394,21 +1386,26 @@ function renderSummary() {
     if (links.length) {
       html += `<div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">`;
       links.forEach(link => {
-        html += '<div style="display:flex;align-items:center;gap:7px;padding:3px 0;"><span style="color:var(--accent);font-size:12px;">↗</span><a href="' + link.url + '" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:none;">' + link.title + '</a></div>';
+        html += `<div style="display:flex;align-items:center;gap:7px;padding:3px 0;">
+          <span style="color:var(--accent);font-size:12px;">↗</span>
+          <a href="${link.url}" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:none;">${link.title}</a>
+        </div>`;
       });
-      html += '</div>';
+      html += `</div>`;
     }
 
     // Outgoing travel legs
     const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id, group.tripId) : [];
     if (outgoingLegs.length) {
-      html += '<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">' + renderTravelLegs(outgoingLegs) + '</div>';
+      html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">
+        ${renderTravelLegs(outgoingLegs)}
+      </div>`;
     }
 
-    html += '</div>'; // close trip-card
+    html += `</div>`; // close trip-card
     });
 
-    html += '<div style="height:1rem;"></div></div>'; // spacing + close summary-trip-section
+    html += `<div style="height:1rem;"></div></div>`; // spacing + close summary-trip-section
   }); // end sortedTrips.forEach
 
   el.innerHTML = html;
@@ -1417,53 +1414,48 @@ function renderSummary() {
 // ─────────────────────────────────────────
 // CALENDAR
 // ─────────────────────────────────────────
-function buildMonth(name, year, month, dayMap, today) {
-  const firstDay = new Date(year, month, 1).getDay();
-  const offset = (firstDay === 0) ? 6 : firstDay - 1;
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const DOWS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-  let html = '<div class="cal-month"><div class="cal-month-name">' + name + '</div><div class="cal-grid">';
-  DOWS.forEach(d => { html += '<div class="cal-dow">' + d + '</div>'; });
-  for (let i = 0; i < offset; i++) html += '<div class="cal-day empty"></div>';
-  for (let d = 1; d <= daysInMonth; d++) {
-    const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
-    const day = dayMap[key];
-    let cls = 'cal-day';
-    let tag = '';
-    if (!day) cls += ' inactive';
-    else if (day.type === 'travel') { cls += ' transit'; tag = day.location ? day.location.split(' - ')[0].substring(0,3).toUpperCase() : 'TRV'; }
-    else { cls += ' trip'; tag = day.location ? day.location.substring(0,3).toUpperCase() : ''; }
-    if (key === today) cls += ' today-dot';
-    html += '<div class="' + cls + '"><span class="day-num">' + d + '</span>' + (tag ? '<span class="day-tag">' + tag + '</span>' : '') + '</div>';
-  }
-  html += '</div></div>';
-  return html;
-}
-
 function renderCalendar() {
   const today = toKey(new Date());
   const dayMap = {};
   getAllDays().forEach(d => { dayMap[d.date] = d; });
 
+  function buildMonth(name, year, month) {
+    const firstDay = new Date(year, month, 1).getDay();
+    const offset = (firstDay === 0) ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const DOWS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+    let html = `<div class="cal-month"><div class="cal-month-name">${name}</div><div class="cal-grid">`;
+    DOWS.forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+    for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const day = dayMap[key];
+      let cls = 'cal-day';
+      let tag = '';
+      if (!day) cls += ' inactive';
+      else if (day.type === 'travel') { cls += ' transit'; tag = day.location ? day.location.split(' - ')[0].substring(0,3).toUpperCase() : 'TRV'; }
+      else { cls += ' trip'; tag = day.location ? day.location.substring(0,3).toUpperCase() : ''; }
+      if (key === today) cls += ' today-dot';
+      html += `<div class="${cls}"><span class="day-num">${d}</span>${tag?`<span class="day-tag">${tag}</span>`:''}`;
+      html += `</div>`;
+    }
+    html += `</div></div>`;
+    return html;
+  }
+
   const cal = document.getElementById('cal-content');
   if (!cal) return;
-
   const allDays = getAllDays();
   if (!allDays.length) { cal.innerHTML = ''; return; }
-
-  // Find date range across all trips
   const firstDate = new Date(allDays[0].date);
   const lastDate = new Date(allDays[allDays.length - 1].date);
   const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
   let calHtml = '';
   let y = firstDate.getFullYear(), m = firstDate.getMonth();
   const endY = lastDate.getFullYear(), endM = lastDate.getMonth();
-
   while (y < endY || (y === endY && m <= endM)) {
-    calHtml += buildMonth(MONTH_NAMES[m], y, m, dayMap, today);
-    m++;
-    if (m > 11) { m = 0; y++; }
+    calHtml += buildMonth(MONTH_NAMES[m], y, m);
+    m++; if (m > 11) { m = 0; y++; }
   }
   cal.innerHTML = calHtml;
 }
@@ -1482,14 +1474,13 @@ function renderManageList() {
   }
 
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const sortedForManage = _allTrips.filter(t => _tripsData[t.id])
-    .sort((a, b) => {
-      const aStart = _tripsData[a.id]?.days[0]?.date || 'z';
-      const bStart = _tripsData[b.id]?.days[0]?.date || 'z';
-      return aStart.localeCompare(bStart);
-    });
-
   let html = `<div class="manage-card">`;
+
+  const sortedForManage = [..._allTrips].sort((a, b) => {
+    const aStart = _tripsData[a.id]?.days[0]?.date || 'z';
+    const bStart = _tripsData[b.id]?.days[0]?.date || 'z';
+    return aStart.localeCompare(bStart);
+  });
   sortedForManage.forEach(trip => {
     const tripDays = _tripsData[trip.id] ? _tripsData[trip.id].days : [];
     const dates = tripDays.map(d => d.date).sort();
@@ -1518,7 +1509,7 @@ function renderManageList() {
       </div>
     </div>`;
   });
-  html += '</div>';
+  html += `</div>`;
   el.innerHTML = html;
 }
 
@@ -1590,43 +1581,31 @@ function renderCityListFromData(tripId, days, legs) {
         ${sub ? `<div class="manage-row-sub">${sub}</div>` : ''}
       </div>
       <span class="manage-chevron">›</span>
+    </div>`;
   });
-  html += "</div>";
+  html += `</div>`;
 
-  // Delete trip
+  // Delete trip section
   const tripForDelete = _allTrips.find(t => t.id === tripId);
   const tname = tripForDelete ? tripForDelete.name : '';
-  html += '<div style="padding:1rem 1rem 2rem;" data-delete-trip="' + tripId + '">'
+  html += '<div style="padding:1rem 1rem 2rem;">'
     + '<div id="delete-trip-confirm" style="display:none;background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);">'
     + '<div style="font-size:13px;color:var(--gray-mid);margin-bottom:6px;">Type the trip name to confirm deletion:</div>'
     + '<div style="font-size:15px;font-weight:500;color:var(--black);margin-bottom:10px;">' + tname + '</div>'
-    + '<input id="delete-trip-input" type="text" placeholder="Type trip name..." style="width:100%;font-family:var(--font-body);font-size:14px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;margin-bottom:10px;" />'
+    + '<input id="delete-trip-input" type="text" placeholder="Type trip name..." style="width:100%;font-family:var(--font-body);font-size:14px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;margin-bottom:10px;" oninput="validateDeleteInput(' + tripId + ')" />'
     + '<div style="display:flex;gap:8px;">'
-    + '<button id="delete-trip-btn" data-trip-id="' + tripId + '" onclick="confirmDeleteTrip(this.dataset.tripId)" disabled style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Delete</button>'
-    + '<button id="delete-cancel-btn" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>'
+    + '<button id="delete-trip-btn" onclick="confirmDeleteTrip(' + tripId + ')" disabled style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Delete</button>'
+    + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'none\'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>'
     + '</div></div>'
-    + '<button id="delete-show-btn" style="font-family:var(--font-body);font-size:13px;color:var(--gray-light);background:none;border:none;cursor:pointer;padding:4px 0;">Delete this trip</button>'
+    + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'block\'" style="font-family:var(--font-body);font-size:13px;color:var(--gray-light);background:none;border:none;cursor:pointer;padding:4px 0;">Delete this trip</button>'
     + '</div>';
-
-  // Wire up delete UI after render via delegated events
-  document.addEventListener('click', function _delHandler(e) {
-    if (e.target.id === 'delete-show-btn') {
-      document.getElementById('delete-trip-confirm').style.display = 'block';
-    } else if (e.target.id === 'delete-cancel-btn') {
-      document.getElementById('delete-trip-confirm').style.display = 'none';
-      const inp = document.getElementById('delete-trip-input'); if(inp) inp.value = '';
-    }
-  }, { once: false });
-
-  document.addEventListener('input', function _delInputHandler(e) {
-    if (e.target.id === 'delete-trip-input') validateDeleteInput(tripId);
-  }, { once: false });
 
   el.innerHTML = html;
 }
 
+function renderCityList(tripId) {
+  const td = getTripData(tripId); renderCityListFromData(tripId, td.days, td.legs);
 }
-
 
 function validateDeleteInput(tripId) {
   const trip = _allTrips.find(t => t.id === tripId);
@@ -1655,10 +1634,6 @@ async function confirmDeleteTrip(tripId) {
   }
 }
 
-function renderCityList(tripId) {
-  const td = getTripData(tripId); renderCityListFromData(tripId, td.days, td.legs);
-}
-
 async function saveTripName(tripId, name) {
   name = name.trim();
   if (!name) {
@@ -1670,7 +1645,7 @@ async function saveTripName(tripId, name) {
   }
   const trip = _allTrips.find(t => t.id === tripId);
   if (trip && trip.name === name) return; // no change
-  await api('PATCH', '/api/trips/' + tripId + '', { name });
+  await api('PATCH', `/api/trips/${tripId}`, { name });
   if (trip) { trip.name = name; document.getElementById('level2-title').textContent = name; }
   renderManageList();
 }
@@ -1765,9 +1740,9 @@ function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
         </div>
       </div>`;
     });
-    html += '</div>';
+    html += `</div>`;
   }
-  html += '</div>';
+  html += `</div>`;
 
   // Add link
   html += `<div style="padding:0 1rem 3rem;">
@@ -1804,13 +1779,13 @@ function saveCityNote(tripId, city, value) {
   _cache.notes[k] = value;
   clearTimeout(_noteTimer);
   _noteTimer = setTimeout(async () => {
-    await api('POST', '/api/notes/' + tripId + '/' + encodeURIComponent(city) + '', { content: value });
+    await api('POST', `/api/notes/${tripId}/${encodeURIComponent(city)}`, { content: value });
     renderSummary();
   }, 800);
 }
 
 function saveGuideItem(tripId, city, item) {
-  return api('POST', '/api/links/' + tripId + '/' + encodeURIComponent(city) + '', { title: item.title, url: item.url })
+  return api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
     .then(data => {
       if (data && data.link) {
         const k = cacheKey(tripId, city);
@@ -1825,7 +1800,7 @@ function deleteGuideItem(tripId, city, itemId) {
   if (_cache.links[k]) {
     _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
   }
-  api('DELETE', '/api/links/' + itemId + '');
+  api('DELETE', `/api/links/${itemId}`);
   _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');
 }
 
@@ -1848,15 +1823,8 @@ async function submitCityItem(tripId, city) {
   const val = input.value.trim();
   if (!val) return;
   const url = normalizeUrl(val);
-  // Validate — must look like a URL (has a dot, no spaces)
-  if (!url.startsWith('http') || url.includes(' ')) {
-    input.style.borderColor = '#e74c3c';
-    input.placeholder = 'Enter a valid URL e.g. google.com';
-    setTimeout(() => { input.style.borderColor = ''; input.placeholder = 'https:// or domain.com...'; }, 2000);
-    return;
-  }
+  const item = { type: 'link', title: getDomain(url.startsWith('http') ? url : val), url: url.startsWith('http') ? url : val };
   closeCityInput();
-  const item = { type: 'link', title: getDomain(url), url };
   await saveGuideItem(tripId, city, item);
   delete _cache.links[cacheKey(tripId, city)];
   await loadCityLinks(tripId, city);
@@ -1990,7 +1958,7 @@ function renderPlanView() {
   if (!list) return;
 
   if (!_allTrips.length) {
-    list.innerHTML = '<div style="font-size:13px;color:var(--gray-mid);padding:4px 0 8px;">No trips yet — create one below.</div>';
+    list.innerHTML = `<div style="font-size:13px;color:var(--gray-mid);padding:4px 0 8px;">No trips yet — create one below.</div>`;
     return;
   }
 
@@ -2076,7 +2044,7 @@ async function _doImport() {
     const result = await api('POST', '/api/trips/import', { tripId, text, mode: _planMode });
 
     if (result && result.success) {
-      btn.textContent = '✓ ' + result.days + ' days ' + _planMode === 'update' ? 'updated' : 'imported' + '';
+      btn.textContent = `✓ ${result.days} days ${_planMode === 'update' ? 'updated' : 'imported'}`;
       btn.classList.remove('btn-parsing');
       document.getElementById('plan-text').value = '';
       document.getElementById('plan-new-name').value = '';
