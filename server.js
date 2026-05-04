@@ -208,12 +208,21 @@ app.post('/api/trips/import', authenticate, async (req, res) => {
     const nextYear = currentYear + 1;
 
     // Step 1: Have Claude clarify/normalize the itinerary first
-    const clarifyMsg = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      messages: [{
-        role: 'user',
-        content: `I have a travel itinerary that needs clarifying before parsing. Please rewrite it as a clean, unambiguous day-by-day list.
+    const clarifyPrompt = mode === 'update'
+      ? `Extract only the specific days/bookings mentioned in this travel update. Do NOT fill in gaps or infer missing days.
+
+Rules:
+- Only output days that are explicitly mentioned
+- Output format: one line per day, "YYYY-MM-DD: [type] [location] | [details]"
+- type = TRAVEL, ARRIVE, or STAY
+- For TRAVEL days include the transport details
+- Today is ${today}, use ${nextYear} for unspecified future years
+
+Input:
+${text}
+
+Output only the explicitly mentioned days, nothing else.`
+      : `I have a travel itinerary that needs clarifying before parsing. Please rewrite it as a clean, unambiguous day-by-day list.
 
 Rules:
 - Use the STAY DATES section as the source of truth for when someone is in each city
@@ -223,12 +232,17 @@ Rules:
 - type = TRAVEL, ARRIVE, or STAY
 - For TRAVEL days include the transport details
 - List every single day with no gaps
+- Today is ${today}, use ${nextYear} for unspecified future years
 
 Itinerary:
 ${text}
 
-Output the clarified day-by-day list only, no explanation.`
-      }]
+Output the clarified day-by-day list only, no explanation.`;
+
+    const clarifyMsg = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2048,
+      messages: [{ role: 'user', content: clarifyPrompt }]
     });
 
     const clarified = clarifyMsg.content[0].text.trim();
@@ -269,7 +283,7 @@ Format:
 
 Rules:
 - travel days have a travel array, stay/arrive days do not
-- Generate every single day, no gaps
+- Generate ${mode === 'update' ? 'ONLY the days listed above, no extras' : 'every single day, no gaps'}
 - All dates YYYY-MM-DD format
 
 Itinerary:
