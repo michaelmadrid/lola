@@ -2050,13 +2050,13 @@ function renderSummary() {
 
     // Each city is its own card
     trip.summary.forEach(leg => {
-      const freeNote = _cache.notes[cacheKey(trip.id, leg.city)] || '';
-      const visible = _cache.links[cacheKey(trip.id, leg.city)] || [];
+      const freeNote = _cache.notes[cacheKey(TRIP_ID, leg.city)] || '';
+      const visible = _cache.links[cacheKey(TRIP_ID, leg.city)] || [];
 
       html += `<div class="manage-card" style="margin:0 1rem 0.75rem;overflow:hidden;">`;
 
       // City header
-      html += `<div onclick="openCityFromSummary('${trip.id}','${leg.city}')" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);cursor:pointer;">
+      html += `<div onclick="openCityFromSummary('${TRIP_ID}','${leg.city}')" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);cursor:pointer;">
         <span style="font-family:var(--font-display);font-size:18px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${leg.city}</span>
         <span style="display:flex;align-items:center;gap:8px;">
           <span class="nights-badge">${leg.nights}</span>
@@ -3185,8 +3185,8 @@ async function preloadTripData() {
   const trip = Object.values(TRIPS).find(t => t.active);
   if (!trip) return;
   await Promise.all(trip.summary.flatMap(leg => [
-    loadCityLinks(trip.id, leg.city),
-    loadCityNote(trip.id, leg.city)
+    loadCityLinks(TRIP_ID, leg.city),
+    loadCityNote(TRIP_ID, leg.city)
   ]));
   renderSummary();
   renderManageList();
