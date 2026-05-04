@@ -2132,7 +2132,7 @@ document.addEventListener('touchend', e => {
 // ─────────────────────────────────────────
 // SNAKE GAME — CSS grid
 // ─────────────────────────────────────────
-let _snakeCols = 16, _snakeRows = 16;
+let _snakeCols = 20, _snakeRows = 20;
 let _snake = [], _snakeDir = {x:1,y:0}, _snakeNext = {x:1,y:0};
 let _apple = {x:8,y:8}, _snakeScore = 0, _snakeLoop = null, _snakeRunning = false;
 let _snakeCells = [];
@@ -2141,9 +2141,9 @@ function snakeInit() {
   const container = document.getElementById('snake-grid');
   if (!container) return;
 
-  // Size grid to viewport
-  const vw = Math.min(window.innerWidth, 400);
-  const vh = window.innerHeight - 160; // minus nav + score bar
+  // Size grid to viewport - aim for ~20px cells
+  const vw = Math.min(window.innerWidth - 32, 400);
+  const vh = window.innerHeight - 180;
   const size = Math.min(vw, vh);
   const cellSize = Math.floor(size / _snakeCols);
   const gridSize = cellSize * _snakeCols;
@@ -2170,7 +2170,13 @@ function snakeInit() {
 
   const midX = Math.floor(_snakeCols / 2);
   const midY = Math.floor(_snakeRows / 2);
-  _snake = [{x: midX, y: midY}];
+  // Start with 4 segments so it looks like a snake immediately
+  _snake = [
+    {x: midX, y: midY},
+    {x: midX-1, y: midY},
+    {x: midX-2, y: midY},
+    {x: midX-3, y: midY},
+  ];
   _snakeDir = {x:1,y:0}; _snakeNext = {x:1,y:0};
   _snakeScore = 0;
   _snakeRunning = false;
