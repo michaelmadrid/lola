@@ -9,13 +9,6 @@
 <title>Europe 26</title>
 
 <script>
-
-// Auth check
-const _token = localStorage.getItem('lola_token');
-if (!_token) window.location.href = '/';
-const _user = JSON.parse(localStorage.getItem('lola_user') || '{}');
-
-
 // ─────────────────────────────────────────
 // LANGUAGES — phrase data per country
 // categories: Basics, Around, Food, Emergency
@@ -561,13 +554,24 @@ const CAL_DAYS = {
     --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   }
 
-  /* ── BOTTOM NAV ── */
+  /* ── DARK MODE ── */
+  [data-theme="dark"] {
+    --bg: #111111;
+    --card: #1c1c1e;
+    --black: #f0f0ee;
+    --gray-dark: #e0e0de;
+    --gray-mid: #8e8e93;
+    --gray-light: #3a3a3c;
+    --gray-xlight: #2c2c2e;
+    --white: #1c1c1e;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+  }
   .nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(250,250,248,0.95);
+    background: var(--card);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-top: 1px solid var(--gray-xlight);
@@ -765,7 +769,7 @@ const CAL_DAYS = {
 
   /* ── TRIPS / DOC ── */
   .doc {
-    padding: 1.25rem 1rem 3rem;
+    padding: 0.5rem 0 3rem;
     max-width: 540px;
     margin: 0 auto;
   }
@@ -1422,60 +1426,66 @@ const CAL_DAYS = {
   <button onclick="toggleSettings()" id="gear-btn" style="background:none;border:none;cursor:pointer;font-size:19px;color:var(--gray-mid);padding:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.15s;" onmouseover="this.style.background='var(--gray-xlight)'" onmouseout="this.style.background='none'">⊙</button>
 </div>
 
-<!-- SETTINGS PANEL — slides in from right -->
+<!-- SETTINGS PANEL — slides up full screen -->
 <div id="settings-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:500;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);">
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);background:var(--bg);position:sticky;top:0;">
-    <span style="font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:-0.01em;">Settings</span>
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;padding-top:calc(1rem + env(safe-area-inset-top));position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:1px solid var(--gray-xlight);">
+    <span style="font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:-0.01em;color:var(--black);">Settings</span>
     <button onclick="toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--gray-mid);padding:4px 8px;min-width:44px;min-height:44px;">×</button>
   </div>
-  <div style="padding:1.25rem;">
-    
-   <!-- Logout -->
-   <div class="settings-row" style="border-bottom:none;">
-     <span class="settings-row-label">Account</span>
-     <button onclick="logout()" style="font-size:11px;padding:5px 12px;border:1px solid var(--gray-light);border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;">Sign Out</button>
-   </div>
 
-    <!-- Appearance -->
-    <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:0.75rem;">Appearance</div>
-    <div class="manage-card" style="margin:0 0 1.5rem;">
+  <div style="max-width:540px;margin:0 auto;padding:1.25rem 0 3rem;">
+
+    <!-- Account -->
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Account</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row">
-        <span class="settings-row-label">Dark Mode</span>
-        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+        <div>
+          <div class="settings-row-label" id="settings-user-name">—</div>
+          <div style="font-size:12px;color:var(--gray-mid);" id="settings-user-email">—</div>
+        </div>
       </div>
-      <div class="settings-row">
-        <span class="settings-row-label">Accent Color</span>
-        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label" style="color:#e74c3c;">Sign Out</span>
+        <button onclick="logout()" style="font-size:11px;padding:6px 14px;border:1.5px solid #e74c3c;border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;transition:all 0.15s;">Sign Out</button>
       </div>
     </div>
 
-    <!-- Account -->
-    <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:0.75rem;">Account</div>
-    <div class="manage-card" style="margin:0 0 1.5rem;">
-      <div class="settings-row">
-        <span class="settings-row-label">Sign In</span>
-        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+    <!-- Appearance -->
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Appearance</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">Dark Mode</span>
+        <!-- Toggle switch -->
+        <div onclick="toggleDarkMode()" id="dark-toggle" style="width:48px;height:28px;border-radius:14px;background:var(--gray-xlight);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;">
+          <div id="dark-toggle-knob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s;"></div>
+        </div>
       </div>
+    </div>
+
+    <!-- Trips -->
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Trips</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row">
         <span class="settings-row-label">Share a Trip</span>
         <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
       </div>
-    </div>
-
-    <!-- Data -->
-    <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:0.75rem;">Data</div>
-    <div class="manage-card" style="margin:0 0 1.5rem;">
-      <div class="settings-row">
-        <span class="settings-row-label">Export Trip</span>
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">Export</span>
         <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
       </div>
+    </div>
+
+    <!-- About -->
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">About</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row" style="border-bottom:none;">
-        <span class="settings-row-label">Print Booklet</span>
-        <button onclick="window.print()" style="font-size:11px;padding:5px 12px;border:1px solid var(--gray-light);border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);">Print</button>
+        <span class="settings-row-label">app.summer-holiday.com</span>
+        <span style="font-size:12px;color:var(--gray-mid);">v0.1</span>
       </div>
     </div>
 
-    <div style="font-size:11px;color:var(--gray-light);padding:0.5rem 0;">app.summer-holiday.com &middot; v0.1</div>
   </div>
 </div>
 
@@ -1689,16 +1699,6 @@ const CAL_DAYS = {
 <div id="print-days" style="display:none;"></div>
 
 <script>
-
-
-
-function logout() {
-  localStorage.removeItem('lola_token');
-  localStorage.removeItem('lola_user');
-  window.location.href = '/';
-}
-
-
 // ─────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────
@@ -1745,10 +1745,11 @@ function calcDuration(dep, arr) {
 
 function renderTravelLegs(legs) {
   if (!legs || !Array.isArray(legs)) return '';
-  return legs.map(leg => {
+  return legs.map((leg, i) => {
+    const isLast = i === legs.length - 1;
     const duration = leg.dep && leg.arr ? calcDuration(leg.dep, leg.arr) : null;
     const arrDisplay = leg.arrNote ? `${leg.arr} (${leg.arrNote})` : (leg.arr || '');
-    let html = `<div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--gray-light);">`;
+    let html = `<div style="margin-bottom:${isLast ? '0' : '1rem'};padding-bottom:${isLast ? '0' : '1rem'};${isLast ? '' : 'border-bottom:1px solid var(--gray-xlight);'}">`;
 
     if (leg.from && leg.to) {
       html += `<div class="travel-route">${leg.from} &rarr; ${leg.to}</div>`;
@@ -2664,6 +2665,47 @@ function handleTripFile(input) {
 }
 
 // ─────────────────────────────────────────
+// ─────────────────────────────────────────
+// DARK MODE
+// ─────────────────────────────────────────
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const toggle = document.getElementById('dark-toggle');
+  const knob = document.getElementById('dark-toggle-knob');
+  if (toggle) toggle.style.background = dark ? 'var(--accent)' : 'var(--gray-xlight)';
+  if (knob) knob.style.transform = dark ? 'translateX(20px)' : 'translateX(0)';
+}
+
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  localStorage.setItem('lola_theme', !isDark ? 'dark' : 'light');
+  applyTheme(!isDark);
+}
+
+const _savedTheme = localStorage.getItem('lola_theme');
+if (_savedTheme) {
+  applyTheme(_savedTheme === 'dark');
+} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  applyTheme(true);
+}
+
+// ─────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('lola_token');
+  localStorage.removeItem('lola_user');
+  window.location.href = '/';
+}
+
+function populateSettingsUser() {
+  const user = JSON.parse(localStorage.getItem('lola_user') || '{}');
+  const nameEl = document.getElementById('settings-user-name');
+  const emailEl = document.getElementById('settings-user-email');
+  if (nameEl) nameEl.textContent = user.name || 'Your account';
+  if (emailEl) emailEl.textContent = user.email || '';
+}
+
 let settingsOpen = false;
 
 // ─────────────────────────────────────────
@@ -2716,8 +2758,11 @@ function toggleSettings() {
   const panel = document.getElementById('settings-panel');
   const overlay = document.getElementById('settings-overlay');
   if (settingsOpen) {
+    populateSettingsUser();
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    applyTheme(isDark); // sync toggle state
     panel.style.display = 'block';
-    overlay.style.display = 'none'; // no overlay needed for full screen
+    overlay.style.display = 'none';
     requestAnimationFrame(() => panel.style.transform = 'translateY(0)');
   } else {
     panel.style.transform = 'translateY(100%)';
