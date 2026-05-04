@@ -180,7 +180,25 @@ app.delete('/api/trips/:id', authenticate, async (req, res) => {
       [req.params.id, req.user.id, 'owner']
     );
     if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
-    await pool.query('DELETE FROM trips WHERE id = $1', [req.params.id]);
+
+    const tripId = req.params.id;
+
+    // Delete travel legs first (child of trip_days)
+    await pool.query(`
+      DELETE FROM travel_legs WHERE day_id IN (
+        SELECT id FROM trip_days WHERE trip_id = $1
+      )`, [tripId]);
+
+    // Delete all related tables
+    await pool.query('DELETE FROM trip_days WHERE trip_id = $1', [tripId]);
+    await pool.query('DELETE FROM trip_members WHERE trip_id = $1', [tripId]);
+    await pool.query('DELETE FROM city_notes WHERE trip_id = $1', [tripId]);
+    await pool.query('DELETE FROM city_links WHERE trip_id = $1', [tripId]);
+    await pool.query('DELETE FROM journal WHERE trip_id = $1', [tripId]);
+
+    // Finally delete the trip itself
+    await pool.query('DELETE FROM trips WHERE id = $1', [tripId]);
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
