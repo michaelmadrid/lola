@@ -440,42 +440,7 @@ const TRIPS = {
     // type: "link" | "note"
     // link: { title, url }
     // note: { text }
-    guide: {
-      "Paris": [
-        { type: "note", text: "Hôtel Fabric checkin after 3pm" },
-        { type: "link", title: "Best bookshops in Paris", url: "https://www.timeout.com/paris/shopping/best-bookshops-in-paris" },
-        { type: "note", text: "Oberkampf / Canal St-Martin for coffee and walks" }
-      ],
-      "Marseille": [
-        { type: "note", text: "Cours Julien market — Wednesday mornings" },
-        { type: "note", text: "Chez Etienne — pizza, cash only, arrive early" },
-        { type: "link", title: "Calanques boat tickets", url: "https://www.calanques-parcnational.fr" },
-        { type: "note", text: "Vieux-Port once is enough. Le Panier mornings only." }
-      ],
-      "Lisbon": [],
-      "Portugal Coast": [
-        { type: "note", text: "Comporta — rice fields, pine forest, beach 5min by bike" }
-      ],
-      "Porto": [],
-      "Umbria": [
-        { type: "note", text: "Norcia — truffle, cured meats, earthquake ruins worth seeing" },
-        { type: "note", text: "Castelluccio plateau — lentil fields in bloom late May" }
-      ],
-      "Tuscany Coast": [
-        { type: "note", text: "Pitigliano day trip — ancient city built on tuff rock, extraordinary" },
-        { type: "note", text: "Maremma park — wild horses and Butteri cowboys" }
-      ],
-      "Rome": [
-        { type: "note", text: "Testaccio market every morning — across the street" },
-        { type: "note", text: "Pigneto for natural wine at night" },
-        { type: "link", title: "Ostia Antica — ancient Roman port", url: "https://www.ostia-antica.org" }
-      ],
-      "Berlin": [
-        { type: "link", title: "Do You Read Me bookshop", url: "https://doyoureadme.de" },
-        { type: "note", text: "Mauerpark flea market — Sunday mornings" },
-        { type: "note", text: "Neukölln — Weserstrasse / Schillerkiez for bars and food" }
-      ]
-    }
+    guide: {}
   }
 
   // future trips go here:
@@ -1341,6 +1306,30 @@ const CAL_DAYS = {
     color: var(--black);
   }
 
+  /* ── DESKTOP DELETE ── */
+  .desktop-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--gray-light);
+    padding: 4px 8px;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .swipe-item:hover .desktop-delete-btn { opacity: 1; }
+  .desktop-delete-btn:hover { color: #e74c3c !important; }
+
+  /* Hide on touch devices */
+  @media (hover: none) {
+    .desktop-delete-btn { display: none; }
+  }
+
   /* ── SWIPE TO DELETE ── */
   .swipe-item {
     position: relative;
@@ -1973,8 +1962,9 @@ function renderToday(key) {
     html += `<div class="today-alert">${day.alert}</div>`;
   }
 
-  // daily journal — load from API then localStorage fallback
-  const journalNote = localStorage.getItem(`journal-${key}`) || '';
+  // daily journal — load from cache or API
+  const journalCacheKey = `${TRIP_ID}-${key}`;
+  const journalNote = _cache.journal[journalCacheKey] || '';
   html += `<div style="margin-top:1.5rem;">
     <div class="today-label">Journal</div>
     <textarea
@@ -1988,17 +1978,20 @@ function renderToday(key) {
   html += `</div></div>`;
   document.getElementById('view-today').innerHTML = html;
 
-  // Try loading from API and update if found
-  api('GET', `/api/journal/${TRIP_ID}/${key}`).then(data => {
-    if (data && data.entry && data.entry.content) {
-      const ta = document.getElementById(`journal-textarea-${key}`);
-      if (ta && !ta.value) {
-        ta.value = data.entry.content;
-        ta.style.height = 'auto';
-        ta.style.height = ta.scrollHeight + 'px';
+  // Load from API if not in cache
+  if (!_cache.journal[journalCacheKey]) {
+    api('GET', `/api/journal/${TRIP_ID}/${key}`).then(data => {
+      if (data && data.entry && data.entry.content) {
+        _cache.journal[journalCacheKey] = data.entry.content;
+        const ta = document.getElementById(`journal-textarea-${key}`);
+        if (ta && !ta.value) {
+          ta.value = data.entry.content;
+          ta.style.height = 'auto';
+          ta.style.height = ta.scrollHeight + 'px';
+        }
       }
-    }
-  });
+    });
+  }
 
   html += `</div></div>`;
   document.getElementById('view-today').innerHTML = html;
@@ -2057,11 +2050,8 @@ function renderSummary() {
 
     // Each city is its own card
     trip.summary.forEach(leg => {
-      const cityKey2 = ck(leg.city);
-      const guideItems = getGuideItems(trip.id, leg.city);
-      const deletedItems = JSON.parse(localStorage.getItem(`guide-deleted-${trip.id}-${cityKey2}`) || '[]');
-      const visible = guideItems.filter(i => !deletedItems.includes(i._id));
-      const freeNote = localStorage.getItem(`city-note-${trip.id}-${cityKey2}`) || '';
+      const freeNote = _cache.notes[cacheKey(trip.id, leg.city)] || '';
+      const visible = _cache.links[cacheKey(trip.id, leg.city)] || [];
 
       html += `<div class="manage-card" style="margin:0 1rem 0.75rem;overflow:hidden;">`;
 
@@ -2232,79 +2222,78 @@ function getTripCountries(trip) {
   return countries.size;
 }
 
+// ─────────────────────────────────────────
+// IN-MEMORY CACHE — replaces localStorage for guide data
+// ─────────────────────────────────────────
+const _cache = {
+  links: {},    // key: `${tripId}-${city}` → array of link objects
+  notes: {},    // key: `${tripId}-${city}` → string content
+  journal: {},  // key: `${tripId}-${date}` → string content
+};
+
+function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
+
+// Load links for a city from API into cache
+async function loadCityLinks(tripId, city) {
+  const k = cacheKey(tripId, city);
+  if (_cache.links[k] !== undefined) return _cache.links[k];
+  const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
+  _cache.links[k] = (data && data.links) ? data.links : [];
+  return _cache.links[k];
+}
+
+// Load note for a city from API into cache
+async function loadCityNote(tripId, city) {
+  const k = cacheKey(tripId, city);
+  if (_cache.notes[k] !== undefined) return _cache.notes[k];
+  const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
+  _cache.notes[k] = (data && data.note) ? data.note.content : '';
+  return _cache.notes[k];
+}
+
 function getGuideItems(tripId, city) {
-  const key = ck(city);
-  const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${key}`) || '[]');
-  const base = (TRIPS[tripId]?.guide?.[city] || [])
-    .map((item, i) => ({ ...item, _id: `base-${i}`, _isLocal: false }))
-    .filter(item => !deleted.includes(item._id));
-  const saved = JSON.parse(localStorage.getItem(`guide-${tripId}-${key}`) || '[]')
-    .map((item, i) => ({ ...item, _id: `local-${i}`, _isLocal: true }));
-  return [...base, ...saved];
-}
-
-function getFlaggedItems(tripId, city) {
-  const key = ck(city);
-  const flags = JSON.parse(localStorage.getItem(`guide-flags-${tripId}-${key}`) || '{}');
-  const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${key}`) || '[]');
-  return getGuideItems(tripId, city).filter(item => flags[item._id] && !deleted.includes(item._id));
-}
-
-function toggleFlag(tripId, city, itemId) {
-  const key = ck(city);
-  const flags = JSON.parse(localStorage.getItem(`guide-flags-${tripId}-${key}`) || '{}');
-  flags[itemId] = !flags[itemId];
-  localStorage.setItem(`guide-flags-${tripId}-${key}`, JSON.stringify(flags));
-  renderGuide();
-}
-
-function isFlagged(tripId, city, itemId) {
-  const key = ck(city);
-  const flags = JSON.parse(localStorage.getItem(`guide-flags-${tripId}-${key}`) || '{}');
-  return !!flags[itemId];
+  const k = cacheKey(tripId, city);
+  const links = _cache.links[k] || [];
+  // Map DB link objects to the format the UI expects
+  return links.map(l => ({
+    _id: String(l.id),
+    type: 'link',
+    title: l.title,
+    url: l.url
+  }));
 }
 
 function saveGuideItem(tripId, city, item) {
-  const key = ck(city);
-  const saved = JSON.parse(localStorage.getItem(`guide-${tripId}-${key}`) || '[]');
-  saved.push(item);
-  localStorage.setItem(`guide-${tripId}-${key}`, JSON.stringify(saved));
-  // Also save to API if it's a link
-  if (item.type === 'link') {
-    api('POST', `/api/links/${tripId}/${city}`, { title: item.title, url: item.url }).then(data => {
+  // Optimistic update — add to cache immediately
+  const k = cacheKey(tripId, city);
+  if (!_cache.links[k]) _cache.links[k] = [];
+  // Save to API
+  api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
+    .then(data => {
       if (data && data.link) {
-        // Store API id alongside local item for deletion
-        item._apiId = data.link.id;
-        localStorage.setItem(`guide-${tripId}-${key}`, JSON.stringify(saved));
+        _cache.links[k].push({
+          id: data.link.id,
+          title: data.link.title,
+          url: data.link.url
+        });
       }
     });
-  }
 }
 
 function deleteGuideItem(tripId, city, itemId) {
-  const key = ck(city);
-  const parts = itemId.split('-');
-  if (parts[0] === 'local') {
-    const saved = JSON.parse(localStorage.getItem(`guide-${tripId}-${key}`) || '[]');
-    const idx = parseInt(parts[1]);
-    // If has API id, delete from API too
-    if (saved[idx] && saved[idx]._apiId) {
-      api('DELETE', `/api/links/${saved[idx]._apiId}`);
-    }
-    saved.splice(idx, 1);
-    localStorage.setItem(`guide-${tripId}-${key}`, JSON.stringify(saved));
-  } else {
-    const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${key}`) || '[]');
-    if (!deleted.includes(itemId)) deleted.push(itemId);
-    localStorage.setItem(`guide-deleted-${tripId}-${key}`, JSON.stringify(deleted));
-    // Try delete from API
-    api('DELETE', `/api/links/${itemId}`);
+  const k = cacheKey(tripId, city);
+  // Remove from cache
+  if (_cache.links[k]) {
+    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId));
   }
-  const flags = JSON.parse(localStorage.getItem(`guide-flags-${tripId}-${key}`) || '{}');
-  delete flags[itemId];
-  localStorage.setItem(`guide-flags-${tripId}-${key}`, JSON.stringify(flags));
+  // Delete from API
+  api('DELETE', `/api/links/${itemId}`);
   renderGuide();
 }
+
+function isFlagged() { return false; } // flagging removed
+function toggleFlag() {}
+function getFlaggedItems() { return []; }
 
 function showDeleteConfirm(safeId) {
   document.querySelectorAll('[id^="del-confirm-"]').forEach(el => el.style.display = 'none');
@@ -2854,63 +2843,63 @@ function renderCityList(tripId) {
 
 function renderCityDetail(tripId, city) {
   const key = ck(city);
-  const items = getGuideItems(tripId, city);
-  const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${key}`) || '[]');
-  const visibleItems = items.filter(item => !deleted.includes(item._id));
-  const savedNote = localStorage.getItem(`city-note-${tripId}-${key}`) || '';
+  const el = document.getElementById('trips-city-detail');
 
+  // Show loading state
+  el.innerHTML = `<div style="padding:2rem 1rem;font-size:14px;color:var(--gray-mid);">Loading...</div>`;
+
+  // Load both links and note from API in parallel
+  Promise.all([
+    loadCityLinks(tripId, city),
+    loadCityNote(tripId, city)
+  ]).then(([links, noteContent]) => {
+    _renderCityDetailHTML(tripId, city, key, links, noteContent);
+  });
+}
+
+function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
   let html = '';
 
-  // Freeform notes — white card, full bleed textarea
+  // Freeform notes card
   html += `<div class="manage-card" style="margin:1rem;padding:1.25rem;">
     <div class="section-label" style="margin-bottom:8px;">Notes</div>
     <textarea class="city-notes-area" id="city-freeform-${key}" placeholder="Anything about ${city}..."
-      oninput="saveCityNote('${tripId}','${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
-    >${savedNote}</textarea>
+      oninput="saveCityNote('${tripId}','${city}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+    >${savedNote || ''}</textarea>
   </div>`;
 
-  // Links & saves — white card, no add button inside
+  // Links card
   html += `<div class="manage-card" style="margin:0 1rem;overflow:hidden;">`;
   html += `<div style="padding:0.875rem 1.25rem 0.625rem;border-bottom:1px solid var(--gray-xlight);">
     <div class="section-label">Links & Saves</div>
   </div>`;
 
-  if (visibleItems.length === 0) {
+  if (links.length === 0) {
     html += `<div style="padding:1rem 1.25rem;font-size:14px;color:var(--gray-light);font-style:italic;">Nothing saved yet.</div>`;
   } else {
     html += `<div class="swipe-items-container">`;
-    visibleItems.forEach(item => {
-      const safeId = `${key}-${item._id.replace(/[^a-z0-9]/gi,'-')}`;
+    links.forEach(item => {
+      const safeId = `${key}-${item._id}`;
       const deleteAction = `deleteGuideItem('${tripId}','${city}','${item._id}');renderCityDetail('${tripId}','${city}')`;
-
       if (item.type === 'link') {
         html += `<div class="swipe-item" id="swipe-${safeId}">
           <div class="swipe-delete-bg" onclick="${deleteAction}">Delete</div>
           <div class="swipe-item-content" id="swipe-content-${safeId}" style="padding:0.625rem 1.25rem;min-height:44px;display:flex;align-items:center;gap:10px;background:var(--card);">
             <span style="color:var(--accent);font-size:14px;flex-shrink:0;line-height:1;">↗</span>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:15px;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</div>
+              <a href="${item.url}" target="_blank" style="font-size:15px;color:var(--accent);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</a>
               <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-mid);margin-top:1px;">${getDomain(item.url)}</div>
             </div>
-          </div>
-        </div>`;
-      } else {
-        html += `<div class="swipe-item" id="swipe-${safeId}">
-          <div class="swipe-delete-bg" onclick="${deleteAction}">Delete</div>
-          <div class="swipe-item-content" id="swipe-content-${safeId}" style="padding:0.625rem 1.25rem;min-height:44px;display:flex;align-items:center;gap:10px;background:var(--card);">
-            <span style="color:var(--gray-light);font-size:7px;flex-shrink:0;line-height:1;">●</span>
-            <span style="font-size:15px;color:var(--black);flex:1;">${item.text}</span>
+            <button onclick="${deleteAction}" class="desktop-delete-btn">×</button>
           </div>
         </div>`;
       }
     });
     html += `</div>`;
   }
-
-  // Close the links card
   html += `</div>`;
 
-  // Add button outside the card
+  // Add link button
   html += `<div style="padding:0 1rem 3rem;">
     <div id="city-input-area" style="display:none;margin:0.75rem 0 0;">
       <input class="guide-input" id="city-input" placeholder="https:// or domain.com..." style="margin-bottom:8px;" />
@@ -2930,34 +2919,19 @@ function renderCityDetail(tripId, city) {
 
   // Auto-resize textarea
   const ta = document.getElementById(`city-freeform-${key}`);
-  if (ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
-
-  // Load note from API if empty locally
-  if (!savedNote) {
-    api('GET', `/api/notes/${tripId}/${city}`).then(data => {
-      if (data && data.note && data.note.content) {
-        const noteEl = document.getElementById(`city-freeform-${key}`);
-        if (noteEl) {
-          noteEl.value = data.note.content;
-          localStorage.setItem(`city-note-${tripId}-${key}`, data.note.content);
-          noteEl.style.height = 'auto';
-          noteEl.style.height = noteEl.scrollHeight + 'px';
-        }
-      }
-    });
-  }
+  if (ta && ta.value) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
 
   // Wire up swipe-to-delete
-  visibleItems.forEach(item => {
-    const safeId = `${key}-${item._id.replace(/[^a-z0-9]/gi,'-')}`;
-    initSwipeDelete(safeId);
+  links.forEach(item => {
+    initSwipeDelete(`${key}-${item._id}`);
   });
 }
 
-// Journal debounce timer
+  let html = '';
+
 let _journalTimer = null;
 function saveJournalEntry(date, content) {
-  localStorage.setItem(`journal-${date}`, content);
+  _cache.journal[`${TRIP_ID}-${date}`] = content;
   clearTimeout(_journalTimer);
   _journalTimer = setTimeout(() => {
     api('POST', `/api/journal/${TRIP_ID}/${date}`, { content });
@@ -2965,15 +2939,14 @@ function saveJournalEntry(date, content) {
 }
 
 let _noteTimer = null;
-function saveCityNote(tripId, cityKey, value) {
-  if (value.trim()) {
-    localStorage.setItem(`city-note-${tripId}-${cityKey}`, value);
-  } else {
-    localStorage.removeItem(`city-note-${tripId}-${cityKey}`);
-  }
+function saveCityNote(tripId, city, value) {
+  // Update memory cache immediately
+  const k = cacheKey(tripId, city);
+  _cache.notes[k] = value;
+  // Debounce API save
   clearTimeout(_noteTimer);
   _noteTimer = setTimeout(() => {
-    api('POST', `/api/notes/${tripId}/${cityKey}`, { content: value });
+    api('POST', `/api/notes/${tripId}/${encodeURIComponent(city)}`, { content: value });
   }, 800);
 }
 
@@ -3071,12 +3044,9 @@ function renderTripDetail(tripId) {
   html += `<div style="padding:0 1rem 0.5rem;"><div class="section-label">Cities</div></div>`;
   html += `<div class="manage-card" style="margin:0 1rem 0.75rem;">`;
   trip.summary.forEach(leg => {
-    const cityKey2 = ck(leg.city);
-    const items = getGuideItems(tripId, leg.city);
-    const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${cityKey2}`) || '[]');
-    const count = items.filter(i => !deleted.includes(i._id)).length;
-    const note = localStorage.getItem(`city-note-${tripId}-${cityKey2}`) || '';
-    const sub = [count > 0 ? `${count} saved` : '', note ? 'notes' : ''].filter(Boolean).join(' · ') || 'Nothing saved yet';
+    const links = _cache.links[cacheKey(tripId, leg.city)] || [];
+    const note = _cache.notes[cacheKey(tripId, leg.city)] || '';
+    const sub = [links.length > 0 ? `${links.length} saved` : '', note ? 'notes' : ''].filter(Boolean).join(' · ') || 'Nothing saved yet';
     html += `<div class="manage-row" onclick="openLevel3('${tripId}','${leg.city}')">
       <div style="flex:1;">
         <div class="manage-row-title">${leg.city}</div>
@@ -3202,7 +3172,17 @@ function getTripStatus(trip) {
   return { label: 'Current', style: 'background:var(--accent);color:white;' };
 }
 
-function renderManageList() {
+// Preload all city data for active trip
+async function preloadTripData() {
+  const trip = Object.values(TRIPS).find(t => t.active);
+  if (!trip) return;
+  await Promise.all(trip.summary.flatMap(leg => [
+    loadCityLinks(trip.id, leg.city),
+    loadCityNote(trip.id, leg.city)
+  ]));
+  renderSummary();
+  renderManageList();
+}
   const el = document.getElementById('manage-trips-list');
   if (!el) return;
   const trips = Object.values(TRIPS);
@@ -3316,6 +3296,8 @@ renderPrintDays();
 renderManageList();
 renderLingo();
 updateDestClock();
+setInterval(updateDestClock, 1000);
+preloadTripData(); // load all city data from API
 setInterval(updateDestClock, 1000);
 </script>
 
