@@ -2233,19 +2233,15 @@ const _cache = {
 
 function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
 
-// Load links for a city from API into cache
 async function loadCityLinks(tripId, city) {
   const k = cacheKey(tripId, city);
-  if (_cache.links[k] !== undefined) return _cache.links[k];
   const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
-  _cache.links[k] = (data && data.links) ? data.links : [];
+  _cache.links[k] = (data && data.links) ? data.links.map(l => ({ ...l, _id: String(l.id), type: 'link' })) : [];
   return _cache.links[k];
 }
 
-// Load note for a city from API into cache
 async function loadCityNote(tripId, city) {
   const k = cacheKey(tripId, city);
-  if (_cache.notes[k] !== undefined) return _cache.notes[k];
   const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
   _cache.notes[k] = (data && data.note) ? data.note.content : '';
   return _cache.notes[k];
@@ -2264,29 +2260,41 @@ function getGuideItems(tripId, city) {
 }
 
 function saveGuideItem(tripId, city, item) {
-  // Optimistic update — add to cache immediately
   const k = cacheKey(tripId, city);
   if (!_cache.links[k]) _cache.links[k] = [];
-  // Save to API
-  api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
+  // Save to API and update cache with real ID from response
+  return api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
     .then(data => {
       if (data && data.link) {
         _cache.links[k].push({
           id: data.link.id,
+          _id: String(data.link.id),
           title: data.link.title,
-          url: data.link.url
+          url: data.link.url,
+          type: 'link'
         });
       }
     });
 }
 
+async function submitCityItem(tripId, city) {
+  const val = document.getElementById('city-input').value.trim();
+  if (!val) return;
+  const url = normalizeUrl(val);
+  const isUrl = url.startsWith('http');
+  const item = isUrl
+    ? { type: 'link', title: getDomain(url), url }
+    : { type: 'note', text: val };
+  closeCityInput();
+  await saveGuideItem(tripId, city, item);
+  renderCityDetail(tripId, city);
+}
+
 function deleteGuideItem(tripId, city, itemId) {
   const k = cacheKey(tripId, city);
-  // Remove from cache
   if (_cache.links[k]) {
-    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId));
+    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
   }
-  // Delete from API
   api('DELETE', `/api/links/${itemId}`);
   renderGuide();
 }
