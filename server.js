@@ -248,31 +248,33 @@ DAY TYPES:
 - "stay" = any day you are staying in a city with no travel. NO travel array.
 
 TRAVEL DAYS:
-- A travel day belongs to the DATE the journey DEPARTS, not arrives.
+- A travel day belongs to the DATE the journey DEPARTS.
 - If a flight departs May 12 and arrives May 13, create ONE travel day on May 12 with arrNote "May 13".
 - Do NOT create a travel day on the arrival date — create an "arrive" day instead.
 - location for travel days = "City A - City B" showing the journey direction.
 
 STAY/ARRIVE DAYS:
 - Do NOT include a travel array on stay or arrive days.
-- Create a "stay" day for EVERY night in a city, including the arrival night.
+- Create a "stay" day for EVERY night in a city.
 - The "arrive" type is for the first day only when arriving from a travel day.
+
+IMPORTANT — USE HOTEL/STAY DATES AS THE SOURCE OF TRUTH:
+- If the itinerary lists hotel dates for a city (e.g. "PARIS, MAY 13-18"), those dates define exactly when the person is in that city.
+- Transport bookings listed under a date header (e.g. "MAY 13: TGV Paris→Marseille") may show the booking reference date, NOT the actual travel date. Always verify against the hotel dates.
+- In the example above, if hotels say Paris May 13-18, then the TGV must depart May 18, not May 13.
 
 DATES:
 - Today's date is ${today}
 - If no year given, use ${nextYear} for future dates, ${currentYear} for past.
 - All dates must be YYYY-MM-DD format.
-- Generate ALL days continuously — no gaps. Every single day of the trip needs a row.
+- Generate ALL days continuously — no gaps.
 
 EXAMPLE — Flight May 12 Bali→Paris (arrives May 13), stay Paris May 13-17, train May 18 to Marseille:
 - 2026-05-12: type=travel, location="Bali - Paris", travel=[{from:DPS, to:CDG, dep:4:30pm, arr:8:25am, arrNote:May 13}]
 - 2026-05-13: type=arrive, location=Paris
-- 2026-05-14: type=stay, location=Paris
-- 2026-05-15: type=stay, location=Paris
-- 2026-05-16: type=stay, location=Paris
-- 2026-05-17: type=stay, location=Paris
+- 2026-05-14 through 2026-05-17: type=stay, location=Paris
 - 2026-05-18: type=travel, location="Paris - Marseille", travel=[{from:Paris, to:Marseille, dep:9:38am, arr:12:57pm}]
-- 2026-05-18 is a travel day — the traveler departs Paris that day. DO NOT make it a Paris stay day.
+- 2026-05-18 is a travel day — the traveler departs Paris that day.
 
 Itinerary:
 ${text}`
