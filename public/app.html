@@ -2913,7 +2913,8 @@ function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
   // Add link button
   html += `<div style="padding:0 1rem 3rem;">
     <div id="city-input-area" style="display:none;margin:0.75rem 0 0;">
-      <input class="guide-input" id="city-input" placeholder="https:// or domain.com..." style="margin-bottom:8px;" />
+      <input class="guide-input" id="city-input" placeholder="https:// or domain.com..." style="margin-bottom:8px;"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();submitCityItem('${tripId}','${city}')}" />
       <div class="guide-form-actions">
         <button class="guide-form-btn primary" onclick="submitCityItem('${tripId}','${city}')">Save</button>
         <button class="guide-form-btn secondary" onclick="closeCityInput()">Cancel</button>
@@ -2951,13 +2952,12 @@ function saveJournalEntry(date, content) {
 
 let _noteTimer = null;
 function saveCityNote(tripId, city, value) {
-  // Update memory cache immediately
   const k = cacheKey(tripId, city);
   _cache.notes[k] = value;
-  // Debounce API save
   clearTimeout(_noteTimer);
-  _noteTimer = setTimeout(() => {
-    api('POST', `/api/notes/${tripId}/${encodeURIComponent(city)}`, { content: value });
+  _noteTimer = setTimeout(async () => {
+    await api('POST', `/api/notes/${tripId}/${encodeURIComponent(city)}`, { content: value });
+    renderSummary();
   }, 800);
 }
 
@@ -3163,19 +3163,6 @@ function normalizeUrl(val) {
   if (/^https?:\/\//i.test(val)) return val;
   if (val.includes('.') && !val.includes(' ')) return 'https://' + val;
   return val; // not a URL — treat as plain text
-}
-
-function submitCityItem(tripId, city) {
-  const val = document.getElementById('city-input').value.trim();
-  if (!val) return;
-  const url = normalizeUrl(val);
-  const isUrl = url.startsWith('http');
-  const item = isUrl
-    ? { type: 'link', title: getDomain(url), url }
-    : { type: 'note', text: val };
-  saveGuideItem(tripId, city, item);
-  closeCityInput();
-  renderCityDetail(tripId, city);
 }
 
 function getTripStatus(trip) {
