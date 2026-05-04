@@ -9,6 +9,13 @@
 <title>Europe 26</title>
 
 <script>
+
+// Auth check
+const _token = localStorage.getItem('lola_token');
+if (!_token) window.location.href = '/';
+const _user = JSON.parse(localStorage.getItem('lola_user') || '{}');
+
+
 // ─────────────────────────────────────────
 // LANGUAGES — phrase data per country
 // categories: Basics, Around, Food, Emergency
@@ -1422,6 +1429,12 @@ const CAL_DAYS = {
     <button onclick="toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--gray-mid);padding:4px 8px;min-width:44px;min-height:44px;">×</button>
   </div>
   <div style="padding:1.25rem;">
+    
+   <!-- Logout -->
+   <div class="settings-row" style="border-bottom:none;">
+     <span class="settings-row-label">Account</span>
+     <button onclick="logout()" style="font-size:11px;padding:5px 12px;border:1px solid var(--gray-light);border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;">Sign Out</button>
+   </div>
 
     <!-- Appearance -->
     <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:0.75rem;">Appearance</div>
@@ -1676,6 +1689,16 @@ const CAL_DAYS = {
 <div id="print-days" style="display:none;"></div>
 
 <script>
+
+
+
+function logout() {
+  localStorage.removeItem('lola_token');
+  localStorage.removeItem('lola_user');
+  window.location.href = '/';
+}
+
+
 // ─────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────
