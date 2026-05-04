@@ -1,0 +1,2163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Lola">
+<title>Lola</title>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #f0f0ee;
+    --card: #ffffff;
+    --black: #0d0d0d;
+    --gray-dark: #1f1f1f;
+    --gray-mid: #6b6b6b;
+    --gray-light: #c8c8c6;
+    --gray-xlight: #e8e8e6;
+    --accent: #2a4ed4;
+    --accent-light: #eef1ff;
+    --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --font-display: 'Plus Jakarta Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  [data-theme="dark"] {
+    --bg: #111111;
+    --card: #1c1c1e;
+    --black: #f0f0ee;
+    --gray-dark: #e0e0de;
+    --gray-mid: #8e8e93;
+    --gray-light: #3a3a3c;
+    --gray-xlight: #2c2c2e;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--black);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    padding-top: calc(56px + env(safe-area-inset-top));
+    padding-bottom: calc(90px + max(env(safe-area-inset-bottom), 20px));
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(44px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 1.25rem;
+    padding-right: 0.5rem;
+    z-index: 100;
+    border-bottom: 1px solid var(--gray-xlight);
+  }
+
+  .top-bar-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--black);
+  }
+
+  .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--gray-xlight);
+    display: flex;
+    align-items: flex-start;
+    z-index: 400;
+    padding: 10px 8px 0;
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+    gap: 4px;
+  }
+
+  .nav-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+    font-size: 13px;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--gray-mid);
+    transition: all 0.2s;
+    padding: 8px 4px;
+    min-height: 48px;
+    border-radius: 10px;
+  }
+  .nav-tab:hover { color: var(--gray-dark); background: var(--gray-xlight); }
+  .nav-tab.active { color: var(--accent); font-weight: 600; background: none; }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ── HOME ── */
+  .today-wrap { max-width: 540px; margin: 0 auto; padding: 1rem 0 2rem; }
+
+  .home-greeting { padding: 1rem 1rem 0.75rem; }
+  .home-greeting-text {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--black);
+  }
+
+  .today-card {
+    margin: 0 1rem 1rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.25rem;
+    overflow: hidden;
+  }
+
+  .today-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--gray-xlight);
+  }
+
+  .today-date {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: var(--black);
+  }
+
+  .today-location {
+    font-size: 13px;
+    color: var(--gray-mid);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .today-badge {
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    margin-top: 3px;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  .today-badge.travel, .today-badge.arrive { background: var(--accent); color: white; }
+  .today-badge.stay { color: var(--gray-mid); background: var(--gray-xlight); }
+
+  .today-label {
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    margin-bottom: 5px;
+  }
+
+  .today-content {
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--black);
+    white-space: pre-line;
+  }
+
+  .alert-bar {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .day-nav-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 22px;
+    color: var(--gray-light);
+    padding: 4px 8px;
+    min-width: 40px;
+    min-height: 40px;
+    line-height: 1;
+    transition: color 0.15s;
+    border-radius: var(--radius-sm);
+  }
+  .day-nav-btn:hover:not(:disabled) { color: var(--gray-dark); background: var(--gray-xlight); }
+  .day-nav-btn:disabled { cursor: default; opacity: 0.3; }
+
+  .pretrip-card {
+    margin: 0 1rem 1rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 2.5rem 1.5rem;
+  }
+
+  /* ── TRIPS / DOC ── */
+  .doc { padding: 0.5rem 0 3rem; max-width: 540px; margin: 0 auto; }
+
+  .doc-header { padding: 1.5rem 1rem 0.875rem; max-width: 540px; margin: 0 auto; }
+  .doc-eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 3px; }
+  .doc-title { font-family: var(--font-display); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; color: var(--black); }
+
+  .trip-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin: 0 1rem 1rem; overflow: hidden; }
+  .trip-card-header { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--gray-xlight); }
+  .trip-card-name { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--accent); margin-bottom: 2px; }
+  .trip-card-meta { font-size: 12px; color: var(--gray-mid); }
+
+  .nights-badge { font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-mid); background: var(--gray-xlight); padding: 2px 8px; border-radius: 20px; }
+
+  .section-label { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 3px; }
+  .section-content { font-size: 14px; line-height: 1.65; color: var(--black); white-space: pre-line; }
+
+  /* ── TRAVEL LEGS ── */
+  .travel-route { font-family: var(--font-display); font-size: 16px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 3px; color: var(--black); }
+  .travel-times { font-family: var(--font-mono); font-size: 12px; color: var(--gray-dark); margin-bottom: 2px; }
+  .travel-ref { font-family: var(--font-mono); font-size: 10px; color: var(--gray-mid); }
+  .travel-note { font-size: 13px; color: var(--gray-mid); margin-top: 5px; white-space: pre-line; line-height: 1.55; }
+
+  /* ── SUBNAV ── */
+  .trips-subnav {
+    display: flex;
+    padding: 0 1rem;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--gray-xlight);
+    padding-top: 4px;
+  }
+  .subnav-tab {
+    font-family: var(--font-body);
+    font-size: 13px;
+    padding: 14px 0;
+    margin-right: 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    color: var(--gray-mid);
+    transition: all 0.15s;
+    min-height: 52px;
+  }
+  .subnav-tab.active { color: var(--black); border-bottom: 2px solid var(--black); font-weight: 500; }
+
+  /* ── CALENDAR ── */
+  .cal { padding: 1.25rem 1rem 3rem; max-width: 540px; margin: 0 auto; }
+  .cal-header { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 1.25rem; padding-bottom: 0.875rem; border-bottom: 1px solid var(--gray-xlight); }
+  .cal-month { margin-bottom: 1.75rem; }
+  .cal-month-name { font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 0.625rem; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+  .cal-dow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-mid); text-align: center; padding: 4px 0; }
+  .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; border-radius: 8px; }
+  .cal-day.empty { background: none; }
+  .cal-day.inactive { color: var(--gray-mid); background: var(--gray-xlight); opacity: 0.45; }
+  .cal-day.trip { background: white; color: var(--black); box-shadow: var(--shadow-sm); }
+  .cal-day.transit { background: var(--accent); color: white; font-weight: 600; }
+  .cal-day.today-dot { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .cal-day .day-num { font-size: 11px; line-height: 1; }
+  .cal-day .day-tag { font-size: 7px; color: var(--gray-mid); margin-top: 1px; line-height: 1; }
+  .cal-day.transit .day-tag { color: rgba(255,255,255,0.7); }
+  .cal-legend { display: flex; gap: 20px; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--gray-xlight); }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-mid); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 4px; }
+  .legend-dot.transit { background: var(--accent); }
+  .legend-dot.stay { background: white; border: 1px solid var(--gray-light); box-shadow: var(--shadow-sm); }
+
+  /* ── MANAGE / CARDS ── */
+  .manage-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin: 0 1rem 1rem; overflow: hidden; }
+  .manage-row { display: flex; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-xlight); cursor: pointer; min-height: 60px; transition: background 0.1s; }
+  .manage-row:last-child { border-bottom: none; }
+  .manage-row:active { background: var(--bg); }
+  .manage-row-title { font-family: var(--font-display); font-size: 16px; font-weight: 500; color: var(--black); letter-spacing: -0.01em; }
+  .manage-row-sub { font-size: 12px; color: var(--gray-mid); margin-top: 2px; }
+  .manage-chevron { color: var(--gray-light); font-size: 18px; flex-shrink: 0; }
+
+  /* ── CITY NOTES TEXTAREA ── */
+  .city-notes-area {
+    width: 100%;
+    min-height: 120px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    border: none;
+    outline: none;
+    background: none;
+    color: var(--black);
+    resize: none;
+    padding: 0;
+  }
+  .city-notes-area::placeholder { color: var(--gray-light); }
+
+  /* ── SWIPE TO DELETE ── */
+  .swipe-item { position: relative; overflow: hidden; touch-action: pan-y; background: var(--card); }
+  .swipe-items-container .swipe-item + .swipe-item { border-top: 1px solid var(--gray-xlight); }
+
+  .swipe-delete-bg {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 80px;
+    background: #e74c3c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+  }
+
+  .swipe-item-content { transition: transform 0.2s ease; }
+
+  /* ── DESKTOP DELETE ── */
+  .desktop-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--gray-light);
+    padding: 4px 8px;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .swipe-item:hover .desktop-delete-btn { opacity: 1; }
+  .desktop-delete-btn:hover { color: #e74c3c !important; }
+  @media (hover: none) { .desktop-delete-btn { display: none; } }
+
+  /* ── FORM ELEMENTS ── */
+  .guide-input {
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-xlight);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .guide-input:focus { border-color: var(--accent); }
+  .guide-input::placeholder { color: var(--gray-light); }
+
+  .guide-form-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+  .guide-form-btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 44px;
+  }
+  .guide-form-btn.primary { background: var(--accent); color: white; border: none; }
+  .guide-form-btn.primary:hover { opacity: 0.9; }
+  .guide-form-btn.secondary { background: none; color: var(--gray-mid); border: 1.5px solid var(--gray-xlight); }
+  .guide-form-btn.secondary:hover { border-color: var(--black); color: var(--black); }
+
+  /* ── EXPLORE / LANGUAGE ── */
+  .explore-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin: 0 1rem 1rem; padding: 1.25rem; overflow: hidden; }
+  .local-phrase { padding: 0.875rem 0; border-bottom: 1px solid var(--gray-xlight); cursor: pointer; }
+  .local-phrase:last-child { border-bottom: none; }
+  .local-phrase:hover .local-phrase-local { color: var(--accent); }
+  .local-phrase-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .local-phrase-local { font-family: var(--font-display); font-size: 16px; font-weight: 500; letter-spacing: -0.01em; color: var(--black); line-height: 1.3; transition: color 0.15s; }
+  .local-phrase-toggle { font-size: 18px; color: var(--gray-light); flex-shrink: 0; margin-left: 10px; font-weight: 300; line-height: 1; }
+  .local-phrase-english { font-size: 12px; color: var(--gray-mid); margin-top: 3px; }
+  .local-phrase-phonetic { font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-top: 8px; letter-spacing: 0.02em; display: none; }
+  .lang-pill { font-family: var(--font-body); font-size: 12px; padding: 6px 14px; cursor: pointer; border: 1px solid var(--gray-light); border-radius: 20px; background: none; color: var(--gray-mid); transition: all 0.15s; }
+  .lang-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .lang-pill.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* ── SETTINGS ── */
+  .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-xlight); min-height: 56px; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 15px; color: var(--black); }
+
+  /* ── PLAN VIEW ── */
+  .plan-trip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--gray-xlight);
+  }
+  .plan-trip-row:last-child { border-bottom: none; }
+  .plan-trip-row:hover .plan-trip-name { color: var(--accent); }
+  .plan-trip-name { font-size: 15px; color: var(--black); transition: color 0.15s; }
+  .plan-trip-check { color: var(--accent); font-size: 16px; display: none; }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(42, 78, 212, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(42, 78, 212, 0); }
+  }
+  .btn-parsing { animation: pulse-glow 1.5s ease-in-out infinite; }
+
+  /* ── PRINT ── */
+  @media print {
+    @page { size: A6 portrait; margin: 12mm 10mm; }
+    html, body { margin: 0; padding: 0; background: white !important; }
+    .nav, .top-bar, #view-today, #view-trips, #view-discover, #view-new { display: none !important; }
+    #print-days { display: block !important; background: white !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <span></span>
+  <div class="top-bar-right">
+    <div id="dest-clock" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);display:none;padding:4px 6px;"></div>
+    <button onclick="toggleSettings()" id="gear-btn" style="background:none;border:none;cursor:pointer;font-size:19px;color:var(--gray-mid);padding:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.15s;" onmouseover="this.style.background='var(--gray-xlight)'" onmouseout="this.style.background='none'">⊙</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-tab active" id="nav-home" onclick="showView('home',this)">Home</button>
+  <button class="nav-tab" id="nav-trips" onclick="showView('trips',this)">Trips</button>
+  <button class="nav-tab" id="nav-discover" onclick="showView('discover',this)">Discover</button>
+  <button class="nav-tab" id="nav-plan" onclick="showView('plan',this)">Plan</button>
+</nav>
+
+<!-- HOME VIEW -->
+<div id="view-home" class="view active">
+  <div id="home-content"></div>
+</div>
+
+<!-- TRIPS VIEW -->
+<div id="view-trips" class="view">
+  <div class="trips-subnav">
+    <button id="tab-summary" class="subnav-tab active" onclick="switchTripsView('summary')">Summary</button>
+    <button id="tab-cal" class="subnav-tab" onclick="switchTripsView('cal')">Calendar</button>
+    <button id="tab-manage" class="subnav-tab" onclick="switchTripsView('manage')">Manage</button>
+  </div>
+
+  <div id="trips-summary" style="display:block;">
+    <div style="padding:0 0 0.5rem;max-width:540px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:1rem 1rem 0.5rem;">
+      <input id="summary-search" type="search" placeholder="Search..." oninput="filterSummary(this.value)"
+        style="flex:1;font-family:var(--font-body);font-size:14px;padding:8px 12px;border:1.5px solid var(--gray-xlight);border-radius:20px;background:var(--card);color:var(--black);outline:none;transition:border-color 0.15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'" />
+    </div>
+    <div class="doc"><div id="summary-content"></div></div>
+  </div>
+
+  <div id="trips-cal" style="display:none;">
+    <div class="cal">
+      <div class="cal-header" id="cal-header">2026</div>
+      <div id="cal-content"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot transit"></div>Transit</div>
+        <div class="legend-item"><div class="legend-dot stay"></div>Stay</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="trips-manage" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div id="manage-trips-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Level 2: Trip detail -->
+<div id="trips-level-2" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
+  <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
+    <button onclick="closeLevel2()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">← Trips</button>
+    <span id="level2-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--accent);"></span>
+  </div>
+  <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
+    <div id="trips-city-list" style="max-width:540px;margin:0 auto;padding-top:1rem;"></div>
+  </div>
+</div>
+
+<!-- Level 3: City detail -->
+<div id="trips-level-3" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
+  <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
+    <button onclick="closeLevel3()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">←</button>
+    <span id="level3-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;"></span>
+  </div>
+  <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
+    <div id="trips-city-detail" style="max-width:540px;margin:0 auto;"></div>
+  </div>
+</div>
+
+<!-- DISCOVER VIEW -->
+<div id="view-discover" class="view">
+  <div class="trips-subnav">
+    <button id="tab-recs" onclick="switchExploreView('recs')" class="subnav-tab active">Recs</button>
+    <button id="tab-speak" onclick="switchExploreView('speak')" class="subnav-tab">Speak</button>
+  </div>
+  <div id="explore-recs">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div class="manage-card">
+        <a href="https://outliersguide.com" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Outliers Guide</div><div class="manage-row-sub">Curated hotels and places</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://amigo.app" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Amigo</div><div class="manage-row-sub">Friend recommendations</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://trippin.world" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Trippin</div><div class="manage-row-sub">Travel editorial</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://monocle.com/travel" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Monocle Travel</div><div class="manage-row-sub">City guides and culture</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://www.cntraveler.com" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Condé Nast Traveler</div><div class="manage-row-sub">Travel inspiration</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://www.theguardian.com/travel" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Guardian Travel</div><div class="manage-row-sub">Independent travel writing</div></div><span class="manage-chevron">↗</span></a>
+      </div>
+    </div>
+  </div>
+  <div id="explore-speak" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div style="padding:0 1rem 0.75rem;display:flex;gap:6px;flex-wrap:wrap;" id="local-lang-switcher"></div>
+      <div class="manage-card" style="padding:0 1.25rem;"><div id="local-content"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN VIEW -->
+<div id="view-plan" class="view">
+  <div style="max-width:540px;margin:0 auto;padding:1.25rem 1rem 3rem;">
+
+    <div style="padding:1rem 0 1.25rem;">
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">Plan</div>
+    </div>
+
+    <!-- Paste area -->
+    <div class="manage-card" style="padding:1.25rem;margin-bottom:1rem;">
+      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Paste your itinerary</div>
+      <textarea id="plan-text" placeholder="Paste flights, hotels, confirmations — anything. Claude will extract the structure automatically." style="width:100%;min-height:180px;font-family:var(--font-body);font-size:14px;line-height:1.65;border:none;outline:none;background:none;color:var(--black);resize:vertical;"></textarea>
+    </div>
+
+    <!-- Trip selector -->
+    <div class="manage-card" style="margin-bottom:1.25rem;padding:1.25rem;">
+      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:12px;">Add to trip</div>
+      <div id="plan-trip-list"></div>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
+        <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+        <span style="font-size:11px;color:var(--gray-light);">or create new</span>
+        <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+      </div>
+
+      <!-- New trip name -->
+      <input id="plan-new-name" type="text" placeholder="New trip name..."
+        style="width:100%;font-family:var(--font-body);font-size:15px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;transition:border-color 0.15s;"
+        onfocus="clearPlanSelection();this.style.borderColor='var(--accent)'"
+        onblur="this.style.borderColor='var(--gray-xlight)'" />
+    </div>
+
+    <!-- Mode selector -->
+    <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
+      <button id="mode-update" onclick="setPlanMode('update')"
+        style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">
+        Update trip
+      </button>
+      <button id="mode-replace" onclick="setPlanMode('replace')"
+        style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">
+        Replace all
+      </button>
+    </div>
+    <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
+
+    <!-- Replace confirmation -->
+    <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+      <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
+        <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Parse button -->
+    <button id="parse-btn" onclick="parseTripWithClaude()"
+      style="width:100%;font-family:var(--font-display);font-size:15px;font-weight:600;padding:16px;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;"
+      onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      Parse with Claude →
+    </button>
+    <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
+
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:500;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;padding-top:calc(1rem + env(safe-area-inset-top));position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:1px solid var(--gray-xlight);">
+    <span style="font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:-0.01em;color:var(--black);">Settings</span>
+    <button onclick="toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--gray-mid);padding:4px 8px;min-width:44px;min-height:44px;">×</button>
+  </div>
+  <div style="max-width:540px;margin:0 auto;padding:1.25rem 0 3rem;">
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Account</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label" id="settings-user-name">—</div>
+          <div style="font-size:12px;color:var(--gray-mid);" id="settings-user-email">—</div>
+        </div>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label" style="color:#e74c3c;">Sign Out</span>
+        <button onclick="logout()" style="font-size:11px;padding:6px 14px;border:1.5px solid #e74c3c;border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;">Sign Out</button>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Appearance</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">Dark Mode</span>
+        <div onclick="toggleDarkMode()" id="dark-toggle" style="width:48px;height:28px;border-radius:14px;background:var(--gray-xlight);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;">
+          <div id="dark-toggle-knob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Trips</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row">
+        <span class="settings-row-label">Share a Trip</span>
+        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">Export</span>
+        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">About</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">app.summer-holiday.com</span>
+        <span style="font-size:12px;color:var(--gray-mid);">v0.2</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRINT ONLY -->
+<div id="print-days" style="display:none;"></div>
+
+<script>
+// ─────────────────────────────────────────
+// CONSTANTS & AUTH
+// ─────────────────────────────────────────
+const TRIP_ID = 1;
+const API_TOKEN = () => localStorage.getItem('lola_token');
+
+if (!localStorage.getItem('lola_token')) window.location.href = '/';
+
+// ─────────────────────────────────────────
+// API HELPER
+// ─────────────────────────────────────────
+async function api(method, path, body) {
+  try {
+    const res = await fetch(path, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_TOKEN()}` },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    return res.json();
+  } catch(e) {
+    console.warn('API error:', path, e);
+    return null;
+  }
+}
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let _tripsData = {}; // keyed by trip id: { 1: {days,legs}, 2: {days,legs} }
+let _cache = { links: {}, notes: {}, journal: {} };
+let _currentTripId = null;
+let _currentCity = null;
+let _viewedKey = null;
+let _viewedTripId = null; // which trip the home view is showing
+let _selectedPlanTripId = null;
+let _planMode = 'update';
+let _settingsOpen = false;
+let _allTrips = []; // list of user's trips from DB
+
+// ─────────────────────────────────────────
+// CITY DATA (static — timezone + language mapping)
+// ─────────────────────────────────────────
+const CITY_DATA = {
+  'Paris':          { country: 'France',    lang: 'France',    tz: 'Europe/Paris' },
+  'Marseille':      { country: 'France',    lang: 'France',    tz: 'Europe/Paris' },
+  'Lisbon':         { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Lisbon Coast':   { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Portugal Coast': { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Porto':          { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Umbria':         { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Tuscany Coast':  { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Rome':           { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Berlin':         { country: 'Germany',   lang: 'Germany',   tz: 'Europe/Berlin' },
+  'Bali':           { country: 'Indonesia', lang: null,        tz: 'Asia/Makassar' },
+};
+
+// ─────────────────────────────────────────
+// LANGUAGE DATA (loaded from JSON)
+// ─────────────────────────────────────────
+let LANGUAGES = {};
+
+async function loadLanguages() {
+  try {
+    const res = await fetch('/languages.json');
+    LANGUAGES = await res.json();
+  } catch(e) {
+    console.warn('Could not load languages.json');
+  }
+}
+
+// ─────────────────────────────────────────
+// THEME
+// ─────────────────────────────────────────
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  const toggle = document.getElementById('dark-toggle');
+  const knob = document.getElementById('dark-toggle-knob');
+  if (toggle) toggle.style.background = dark ? 'var(--accent)' : 'var(--gray-xlight)';
+  if (knob) knob.style.transform = dark ? 'translateX(20px)' : 'translateX(0)';
+}
+
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  localStorage.setItem('lola_theme', !isDark ? 'dark' : 'light');
+  applyTheme(!isDark);
+}
+
+const _savedTheme = localStorage.getItem('lola_theme');
+if (_savedTheme) applyTheme(_savedTheme === 'dark');
+else if (window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme(true);
+
+// ─────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────
+function logout() {
+  localStorage.removeItem('lola_token');
+  localStorage.removeItem('lola_user');
+  window.location.href = '/';
+}
+
+function populateSettingsUser() {
+  const user = JSON.parse(localStorage.getItem('lola_user') || '{}');
+  const nameEl = document.getElementById('settings-user-name');
+  const emailEl = document.getElementById('settings-user-email');
+  if (nameEl) nameEl.textContent = user.name || 'Your account';
+  if (emailEl) emailEl.textContent = user.email || '';
+}
+
+// ─────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────
+function toKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+
+function parseTime(str) {
+  if (!str) return null;
+  const m = str.match(/(\d+):(\d+)(am|pm)/i);
+  if (!m) return null;
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toLowerCase() === 'pm' && h < 12) h += 12;
+  if (m[3].toLowerCase() === 'am' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+function calcDuration(dep, arr) {
+  const d = parseTime(dep), a = parseTime(arr);
+  if (d === null || a === null) return null;
+  const diff = (a - d + 1440) % 1440;
+  const h = Math.floor(diff / 60), m = diff % 60;
+  return m > 0 ? `${h}h${String(m).padStart(2,'0')}m` : `${h}h`;
+}
+
+function getDomain(url) {
+  try { return new URL(url).hostname.replace('www.',''); }
+  catch { return url; }
+}
+
+function normalizeUrl(val) {
+  val = val.trim();
+  if (!val) return '';
+  if (/^https?:\/\//i.test(val)) return val;
+  if (val.includes('.') && !val.includes(' ')) return 'https://' + val;
+  return val;
+}
+
+function ck(city) { return city.toLowerCase().replace(/\s+/g,'_'); }
+function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
+
+// ─────────────────────────────────────────
+// TRIP DATA — load from API
+// ─────────────────────────────────────────
+async function loadTripData(tripId) {
+  const data = await api('GET', `/api/trips/${tripId}`);
+  if (!data || !data.days) return;
+  _tripsData[tripId] = {
+    days: data.days.map(d => ({ ...d, date: d.date.substring(0, 10) })),
+    legs: data.legs || []
+  };
+}
+
+async function loadAllTripsData() {
+  await Promise.all(_allTrips.map(t => loadTripData(t.id)));
+}
+
+// Get all days across all trips, sorted by date
+function getAllDays() {
+  return Object.entries(_tripsData).flatMap(([tripId, td]) =>
+    td.days.map(d => ({ ...d, tripId: parseInt(tripId) }))
+  ).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+// Get trip data for a specific trip
+function getTripData(tripId) {
+  return _tripsData[tripId] || { days: [], legs: [] };
+}
+
+function getDayData(key, tripId) {
+  if (tripId) return getTripData(tripId).days.find(d => d.date === key) || null;
+  // Search all trips
+  for (const td of Object.values(_tripsData)) {
+    const day = td.days.find(d => d.date === key);
+    if (day) return day;
+  }
+  return null;
+}
+
+function getDayTripId(key) {
+  for (const [tripId, td] of Object.entries(_tripsData)) {
+    if (td.days.find(d => d.date === key)) return parseInt(tripId);
+  }
+  return null;
+}
+
+function getLegsForDay(dayId, tripId) {
+  const legs = tripId ? getTripData(tripId).legs : Object.values(_tripsData).flatMap(td => td.legs);
+  return legs.filter(l => l.day_id === dayId).sort((a,b) => a.sort_order - b.sort_order);
+}
+
+function getTodayKey() {
+  const today = toKey(new Date());
+  return getAllDays().find(d => d.date === today) ? today : null;
+}
+
+function getFirstTripDay() {
+  const all = getAllDays();
+  return all.length ? all[0].date : null;
+}
+
+function getLastTripDay() {
+  const all = getAllDays();
+  return all.length ? all[all.length - 1].date : null;
+}
+
+// ─────────────────────────────────────────
+// CITY CACHE — API-backed
+// ─────────────────────────────────────────
+async function loadCityLinks(tripId, city) {
+  const k = cacheKey(tripId, city);
+  const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
+  _cache.links[k] = (data && data.links) ? data.links.map(l => ({...l, _id: String(l.id), type:'link'})) : [];
+  return _cache.links[k];
+}
+
+async function loadCityNote(tripId, city) {
+  const k = cacheKey(tripId, city);
+  const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
+  _cache.notes[k] = (data && data.note) ? data.note.content : '';
+  return _cache.notes[k];
+}
+
+async function preloadCityData() {
+  const promises = [];
+  for (const [tripId, td] of Object.entries(_tripsData)) {
+    const stayDays = td.days.filter(d => d.type === 'stay' || d.type === 'arrive');
+    const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
+    cities.forEach(city => {
+      promises.push(loadCityLinks(parseInt(tripId), city));
+      promises.push(loadCityNote(parseInt(tripId), city));
+    });
+  }
+  await Promise.all(promises);
+  renderSummary();
+  renderManageList();
+}
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+  document.body.style.overflow = '';
+  // Close any open panels
+  ['trips-level-2','trips-level-3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.style.display !== 'none') {
+      el.style.transform = 'translateX(100%)';
+      setTimeout(() => el.style.display = 'none', 280);
+    }
+  });
+  if (name === 'plan') renderPlanView();
+}
+
+function switchTripsView(name) {
+  ['summary','cal','manage'].forEach(v => {
+    document.getElementById(`trips-${v}`).style.display = v === name ? 'block' : 'none';
+    document.getElementById(`tab-${v}`).classList.toggle('active', v === name);
+  });
+}
+
+function switchExploreView(name) {
+  document.getElementById('explore-recs').style.display = name === 'recs' ? 'block' : 'none';
+  document.getElementById('explore-speak').style.display = name === 'speak' ? 'block' : 'none';
+  document.getElementById('tab-recs').classList.toggle('active', name === 'recs');
+  document.getElementById('tab-speak').classList.toggle('active', name === 'speak');
+}
+
+// ─────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────
+function toggleSettings() {
+  _settingsOpen = !_settingsOpen;
+  const panel = document.getElementById('settings-panel');
+  if (_settingsOpen) {
+    populateSettingsUser();
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark');
+    panel.style.display = 'block';
+    requestAnimationFrame(() => panel.style.transform = 'translateY(0)');
+  } else {
+    panel.style.transform = 'translateY(100%)';
+    setTimeout(() => panel.style.display = 'none', 300);
+  }
+}
+
+// ─────────────────────────────────────────
+// DESTINATION CLOCK
+// ─────────────────────────────────────────
+function getDestCity() {
+  const today = toKey(new Date());
+  const current = getAllDays().find(d => d.date === today);
+  if (current) return current.location;
+  const tripStart = getFirstTripDay();
+  const tripEnd = getLastTripDay();
+  if (tripStart && today < tripStart) {
+    // find first city
+    const first = getAllDays().find(d => d.type === 'arrive' || d.type === 'stay');
+    return first ? first.location : null;
+  }
+  return null;
+}
+
+function getDestTZ(city) {
+  if (!city) return null;
+  const data = CITY_DATA[city];
+  if (data) return data.tz;
+  // Try matching partial
+  for (const [k, v] of Object.entries(CITY_DATA)) {
+    if (city.includes(k) || k.includes(city)) return v.tz;
+  }
+  return null;
+}
+
+function updateDestClock() {
+  const el = document.getElementById('dest-clock');
+  if (!el) return;
+  const city = getDestCity();
+  const tz = getDestTZ(city);
+  if (!tz || !city) { el.style.display = 'none'; return; }
+  const local = toKey(new Date());
+  const destDate = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+  const time = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
+  const isDiff = destDate !== local;
+  el.style.display = 'block';
+  el.textContent = isDiff ? `${city.split(' ')[0]} ${time}` : `${city.split(' ')[0]} ${time}`;
+}
+
+// ─────────────────────────────────────────
+// MOON PHASE
+// ─────────────────────────────────────────
+function getMoonPhase(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  const date = new Date(y,m-1,d);
+  const ref = new Date(2026,3,16);
+  const diff = (date - ref)/(1000*60*60*24);
+  const cycle = 29.53058867;
+  const phase = ((diff % cycle) + cycle) % cycle;
+  const pct = phase / cycle;
+  if (pct < 0.025 || pct >= 0.975) return { name: 'New Moon', pct: 0 };
+  if (pct < 0.25) return { name: 'Waxing Crescent', pct };
+  if (pct < 0.275) return { name: 'First Quarter', pct: 0.25 };
+  if (pct < 0.475) return { name: 'Waxing Gibbous', pct };
+  if (pct < 0.525) return { name: 'Full Moon', pct: 0.5 };
+  if (pct < 0.725) return { name: 'Waning Gibbous', pct };
+  if (pct < 0.775) return { name: 'Last Quarter', pct: 0.75 };
+  return { name: 'Waning Crescent', pct };
+}
+
+function moonSVG(key, size = 16) {
+  const moon = getMoonPhase(key);
+  const pct = moon.pct;
+  const r = size / 2;
+  const cx = r, cy = r;
+  const ri = r - 1.5; // inner radius
+
+  let fill;
+  if (pct === 0) {
+    // New moon — empty circle
+    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="none" stroke="var(--gray-light)" stroke-width="1.5"/>`;
+  } else if (pct >= 0.475 && pct <= 0.525) {
+    // Full moon — solid accent
+    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="var(--accent)" opacity="0.7"/>`;
+  } else {
+    // Crescent/gibbous — clip to show lit portion
+    const lit = pct < 0.5 ? pct * 2 : (1 - pct) * 2;
+    const dx = (1 - lit) * ri;
+    const waxing = pct < 0.5;
+    // Base circle
+    fill = `<circle cx="${cx}" cy="${cy}" r="${ri}" fill="${waxing ? 'none' : 'var(--accent)'}" stroke="var(--gray-light)" stroke-width="1.5" opacity="0.7"/>`;
+    // Overlay ellipse for shadow/light
+    fill += `<ellipse cx="${cx + (waxing ? dx : -dx)}" cy="${cy}" rx="${Math.max(0.5, Math.abs(dx))}" ry="${ri}" fill="${waxing ? 'var(--accent)' : 'var(--bg)'}" opacity="0.7"/>`;
+  }
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;margin-left:4px;" title="${moon.name}">${fill}</svg>`;
+}
+
+// ─────────────────────────────────────────
+// TRAVEL LEGS RENDERER
+// ─────────────────────────────────────────
+function renderTravelLegs(legs) {
+  if (!legs || !legs.length) return '';
+  return legs.map((leg, i) => {
+    const isLast = i === legs.length - 1;
+    const duration = leg.dep_time && leg.arr_time ? calcDuration(leg.dep_time, leg.arr_time) : null;
+    const arrDisplay = leg.arr_note ? `${leg.arr_time} (${leg.arr_note})` : (leg.arr_time || '');
+    const refs = [leg.carrier, leg.ref, leg.ref_code ? `#${leg.ref_code}` : null].filter(Boolean);
+    return `<div style="margin-bottom:${isLast?'0':'1rem'};padding-bottom:${isLast?'0':'1rem'};${isLast?'':'border-bottom:1px solid var(--gray-xlight);'}">
+      ${leg.from_city && leg.to_city ? `<div class="travel-route">${leg.from_city} → ${leg.to_city}</div>` : ''}
+      ${(leg.dep_time || leg.arr_time) ? `<div class="travel-times">${leg.dep_time||''}${leg.dep_time&&leg.arr_time?' – ':''}${arrDisplay}${duration?`<span style="color:var(--gray-mid);margin-left:10px;">${duration}</span>`:''}</div>` : ''}
+      ${refs.length ? `<div class="travel-ref">${refs.join('  ')}</div>` : ''}
+      ${leg.note ? `<div class="travel-note">${leg.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// HOME / TODAY VIEW
+// ─────────────────────────────────────────
+function renderHome(key) {
+  _viewedKey = key;
+  const el = document.getElementById('home-content');
+  const today = toKey(new Date());
+  const allDays = getAllDays(); // all days across all trips, sorted
+  const allKeys = allDays.map(d => d.date);
+  const tripStart = allKeys[0];
+  const tripEnd = allKeys[allKeys.length - 1];
+
+  let html = `<div class="today-wrap">`;
+
+  // Pre/post trip state
+  if (!key) {
+    if (!tripStart) {
+      html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">No trips yet</div><div style="font-size:14px;color:var(--gray-mid);line-height:1.6;">Go to Plan to import your itinerary.</div></div>`;
+      html += `</div>`;
+      el.innerHTML = html;
+      return;
+    } else if (today < tripStart) {
+      const daysLeft = Math.ceil((new Date(tripStart) - new Date(today)) / (1000*60*60*24));
+      const [sy,sm,sd] = tripStart.split('-').map(Number);
+      // Find which trip starts first
+      const firstTrip = _allTrips.find(t => getTripData(t.id).days.find(d => d.date === tripStart));
+      html += `<div class="pretrip-card">
+        <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:8px;">Coming up${firstTrip ? ` · ${firstTrip.name}` : ''}</div>
+        <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:4px;">${daysLeft} day${daysLeft !== 1 ? 's' : ''}</div>
+        <div style="font-size:14px;color:var(--gray-mid);">Starts ${new Date(sy,sm-1,sd).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</div>
+      </div>`;
+      key = today;
+    } else {
+      html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">All done</div><div style="font-size:14px;color:var(--gray-mid);">What a ride.</div></div>`;
+      html += `</div>`;
+      el.innerHTML = html;
+      return;
+    }
+  }
+
+  // Find the day and which trip it belongs to
+  const dayObj = allDays.find(d => d.date === key);
+  const tripId = dayObj ? dayObj.tripId : getDayTripId(key);
+  const day = dayObj || null;
+  const keyIndex = allKeys.indexOf(key);
+
+  if (!day) {
+    // Day outside any trip — just journal
+    const journalTripId = tripId || (Object.keys(_tripsData)[0] ? parseInt(Object.keys(_tripsData)[0]) : 1);
+    const journalKey = `${journalTripId}-${key}`;
+    const journalContent = _cache.journal[journalKey] || '';
+    html += `<div class="today-card" style="min-height:unset;">
+      <div style="margin-bottom:0.75rem;"><div class="today-date">${formatDate(key)}</div></div>
+      <div class="today-label">Journal</div>
+      <textarea id="journal-ta-${key}" placeholder="Notes for today..."
+        style="width:100%;min-height:90px;font-family:var(--font-body);font-size:16px;line-height:1.7;border:none;outline:none;background:none;color:var(--black);resize:none;padding:6px 0;"
+        oninput="saveJournalEntry('${key}',${journalTripId},this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+      >${journalContent}</textarea>
+    </div></div>`;
+    el.innerHTML = html;
+    return;
+  }
+
+  const prevKey = keyIndex > 0 ? allKeys[keyIndex - 1] : null;
+  const nextKey = keyIndex < allKeys.length - 1 ? allKeys[keyIndex + 1] : null;
+  const legs = getLegsForDay(day.id, tripId);
+  const tripName = _allTrips.find(t => t.id === tripId)?.name || '';
+
+  html += `<div class="today-card">
+    <div class="today-header">
+      <div>
+        <div class="today-date">${formatDate(key)} ${moonSVG(key)}</div>
+        <div class="today-location">${day.location || ''}${tripName ? `<span style="color:var(--gray-light);margin-left:6px;">· ${tripName}</span>` : ''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div class="today-badge ${day.type}">${day.type}</div>
+        <div style="display:flex;gap:0;">
+          <button class="day-nav-btn" onclick="navigateDay(-1)" ${!prevKey?'disabled':''}>‹</button>
+          <button class="day-nav-btn" onclick="navigateDay(1)" ${!nextKey?'disabled':''}>›</button>
+        </div>
+      </div>
+    </div>`;
+
+  if (legs.length) {
+    html += `<div style="margin-bottom:1.25rem;">
+      <div class="today-label">Travel</div>
+      ${renderTravelLegs(legs)}
+    </div>`;
+  }
+
+  if (day.stay) {
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(day.stay)}`;
+    html += `<div style="margin-bottom:1.25rem;">
+      <div class="today-label">Stay</div>
+      <div class="today-content"><a href="${mapsUrl}" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px solid var(--gray-xlight);">${day.stay}</a></div>
+    </div>`;
+  }
+
+  if (day.alert) {
+    html += `<div class="alert-bar">${day.alert}</div>`;
+  }
+
+  // Journal — scoped to this trip
+  const journalKey = `${tripId}-${key}`;
+  const journalContent = _cache.journal[journalKey] || '';
+  html += `<div style="margin-top:1.5rem;">
+    <div class="today-label">Journal</div>
+    <textarea id="journal-ta-${key}" placeholder="What happened today..."
+      style="width:100%;min-height:90px;font-family:var(--font-body);font-size:16px;line-height:1.7;border:none;outline:none;background:none;color:var(--black);resize:none;padding:6px 0;"
+      oninput="saveJournalEntry('${key}',${tripId},this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+    >${journalContent}</textarea>
+  </div>`;
+
+  html += `</div></div>`;
+  el.innerHTML = html;
+
+  if (!_cache.journal[journalKey]) {
+    api('GET', `/api/journal/${tripId}/${key}`).then(data => {
+      if (data && data.entry && data.entry.content) {
+        _cache.journal[journalKey] = data.entry.content;
+        const ta = document.getElementById(`journal-ta-${key}`);
+        if (ta && !ta.value) { ta.value = data.entry.content; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+      }
+    });
+  }
+
+  const ta = document.getElementById(`journal-ta-${key}`);
+  if (ta && ta.value) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+}
+
+function navigateDay(dir) {
+  const allKeys = getAllDays().map(d => d.date);
+  const idx = allKeys.indexOf(_viewedKey);
+  if (idx === -1) {
+    if (dir > 0 && allKeys.length) { _viewedKey = allKeys[0]; renderHome(_viewedKey); }
+    return;
+  }
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= allKeys.length) return;
+  _viewedKey = allKeys[newIdx];
+  renderHome(_viewedKey);
+}
+
+let _journalTimer = null;
+function saveJournalEntry(date, tripId, content) {
+  const k = `${tripId}-${date}`;
+  _cache.journal[k] = content;
+  clearTimeout(_journalTimer);
+  _journalTimer = setTimeout(() => {
+    api('POST', `/api/journal/${tripId}/${date}`, { content });
+  }, 800);
+}
+
+// ─────────────────────────────────────────
+// TRIPS SUMMARY
+// ─────────────────────────────────────────
+function filterSummary(query) {
+  const q = query.toLowerCase().trim();
+  const sections = document.querySelectorAll('#summary-content .summary-trip-section');
+  sections.forEach(section => {
+    const cards = section.querySelectorAll('.trip-card');
+    let anyVisible = false;
+    cards.forEach(card => {
+      const show = !q || card.textContent.toLowerCase().includes(q);
+      card.style.display = show ? '' : 'none';
+      if (show) anyVisible = true;
+    });
+    // Hide whole section if no cards match
+    section.style.display = (!q || anyVisible) ? '' : 'none';
+  });
+}
+
+function renderSummary() {
+  const el = document.getElementById('summary-content');
+  if (!el) return;
+
+  const allTripData = Object.entries(_tripsData);
+  if (!allTripData.length) { el.innerHTML = ''; return; }
+
+  // Sort trips by their first day
+  const sortedTrips = _allTrips.filter(t => _tripsData[t.id] && _tripsData[t.id].days.length)
+    .sort((a, b) => {
+      const aStart = _tripsData[a.id].days[0]?.date || '';
+      const bStart = _tripsData[b.id].days[0]?.date || '';
+      return aStart.localeCompare(bStart);
+    });
+
+  const MONTHS_S = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmtD = k => { if (!k) return ''; const [y,m,d] = k.split('-'); return MONTHS_S[+m-1]+' '+(+d); };
+  let html = '';
+
+  sortedTrips.forEach(trip => {
+    const td = _tripsData[trip.id];
+    const allDates = td.days.map(d => d.date).sort();
+
+    // Trip header
+    html += `<div class="summary-trip-section" data-trip-id="${trip.id}">
+    <div style="padding:1.5rem 1rem 0.75rem;">
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${trip.name}</div>
+      ${allDates.length ? `<div style="font-size:13px;color:var(--gray-mid);margin-top:2px;">${fmtD(allDates[0])} &ndash; ${fmtD(allDates[allDates.length-1])} &middot; ${allDates.length} days</div>` : ''}
+    </div>`;
+
+    // Build city groups for this trip
+    const cityGroups = [];
+    let current = null;
+    td.days.forEach(day => {
+      if (day.type === 'stay' || day.type === 'arrive') {
+        if (!current || current.city !== day.location) {
+          if (current) cityGroups.push(current);
+          current = { city: day.location, dates: [], days: [], tripId: trip.id };
+        }
+        current.dates.push(day.date);
+        current.days.push(day);
+      } else if (day.type === 'travel') {
+        if (current) { cityGroups.push(current); current = null; }
+      }
+    });
+    if (current) cityGroups.push(current);
+
+  cityGroups.forEach(group => {
+    const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
+
+    // Find travel day immediately before and after this city
+    const tripDays = getTripData(group.tripId).days;
+    const cityStartIdx = tripDays.findIndex(d => d.date === group.dates[0]);
+    const cityEndIdx = tripDays.findIndex(d => d.date === group.dates[group.dates.length - 1]);
+    const dayBefore = cityStartIdx > 0 ? tripDays[cityStartIdx - 1] : null;
+    const dayAfter = cityEndIdx < tripDays.length - 1 ? tripDays[cityEndIdx + 1] : null;
+    const prevTravelDay = (dayBefore && dayBefore.type === 'travel') ? dayBefore : null;
+    const nextTravelDay = (dayAfter && dayAfter.type === 'travel') ? dayAfter : null;
+    const incomingLegs = prevTravelDay ? getLegsForDay(prevTravelDay.id, group.tripId) : [];
+
+    const nights = group.dates.length;
+    const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
+    // Start date = incoming travel day if there is one (e.g. May 18 TGV arrives Marseille)
+    const displayStartDate = prevTravelDay ? prevTravelDay.date : group.dates[0];
+    // End date = outgoing travel day if there is one (e.g. May 18 TGV departs Paris)
+    const displayEndDate = nextTravelDay ? nextTravelDay.date : group.dates[group.dates.length - 1];
+    const datesLabel = `${fmt(displayStartDate)} – ${fmt(displayEndDate)}`;
+
+    const k = cacheKey(group.tripId, group.city);
+    const links = _cache.links[k] || [];
+    const note = _cache.notes[k] || '';
+    html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
+      <div class="trip-card-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div onclick="openCityFromSummary(${group.tripId},'${group.city}')" style="cursor:pointer;" class="trip-card-name">${group.city}</div>
+            <div class="trip-card-meta">${datesLabel} · ${nightsLabel}</div>
+          </div>
+          <div onclick="openCityFromSummary(${group.tripId},'${group.city}')" style="cursor:pointer;color:var(--gray-light);font-size:18px;padding-top:4px;">›</div>
+        </div>
+      </div>`;
+
+    if (incomingLegs.length) {
+      html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
+        ${renderTravelLegs(incomingLegs)}
+      </div>`;
+    }
+
+    // Group distinct stays
+    const stayGroups = [];
+    group.days.forEach(d => {
+      if (!d.stay) return;
+      const last = stayGroups[stayGroups.length - 1];
+      if (last && last.stay === d.stay) {
+        last.dates.push(d.date);
+      } else {
+        stayGroups.push({ stay: d.stay, dates: [d.date] });
+      }
+    });
+
+    if (stayGroups.length) {
+      html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
+        <div class="section-label" style="margin-bottom:4px;">Stay</div>`;
+      stayGroups.forEach((sg, i) => {
+        const showDates = stayGroups.length > 1;
+        const dateRange = showDates ? `<span style="font-size:11px;color:var(--gray-mid);margin-left:6px;">${fmt(sg.dates[0])}${sg.dates.length > 1 ? ` – ${fmt(sg.dates[sg.dates.length-1])}` : ''}</span>` : '';
+        const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(sg.stay)}`;
+        html += `<div class="section-content"${i > 0 ? ' style="margin-top:6px;"' : ''}><a href="${mapsUrl}" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px solid var(--gray-xlight);">${sg.stay}</a>${dateRange}</div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (note) {
+      html += `<div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
+        <div style="font-size:13px;color:var(--gray-mid);white-space:pre-line;line-height:1.6;">${note}</div>
+      </div>`;
+    }
+
+    if (links.length) {
+      html += `<div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">`;
+      links.forEach(link => {
+        html += `<div style="display:flex;align-items:center;gap:7px;padding:3px 0;">
+          <span style="color:var(--accent);font-size:12px;">↗</span>
+          <a href="${link.url}" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:none;">${link.title}</a>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Outgoing travel legs
+    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id, group.tripId) : [];
+    if (outgoingLegs.length) {
+      html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">
+        ${renderTravelLegs(outgoingLegs)}
+      </div>`;
+    }
+
+    html += `</div>`; // close trip-card
+    });
+
+    html += `<div style="height:1rem;"></div></div>`; // spacing + close summary-trip-section
+  }); // end sortedTrips.forEach
+
+  el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────
+// CALENDAR
+// ─────────────────────────────────────────
+function renderCalendar() {
+  const today = toKey(new Date());
+  const dayMap = {};
+  getAllDays().forEach(d => { dayMap[d.date] = d; });
+
+  function buildMonth(name, year, month) {
+    const firstDay = new Date(year, month, 1).getDay();
+    const offset = (firstDay === 0) ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const DOWS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+    let html = `<div class="cal-month"><div class="cal-month-name">${name}</div><div class="cal-grid">`;
+    DOWS.forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+    for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const day = dayMap[key];
+      let cls = 'cal-day';
+      let tag = '';
+      if (!day) cls += ' inactive';
+      else if (day.type === 'travel') { cls += ' transit'; tag = day.location ? day.location.split(' - ')[0].substring(0,3).toUpperCase() : 'TRV'; }
+      else { cls += ' trip'; tag = day.location ? day.location.substring(0,3).toUpperCase() : ''; }
+      if (key === today) cls += ' today-dot';
+      html += `<div class="${cls}"><span class="day-num">${d}</span>${tag?`<span class="day-tag">${tag}</span>`:''}`;
+      html += `</div>`;
+    }
+    html += `</div></div>`;
+    return html;
+  }
+
+  const cal = document.getElementById('cal-content');
+  if (!cal) return;
+
+  const allDays = getAllDays();
+  if (!allDays.length) { cal.innerHTML = ''; return; }
+
+  // Find date range across all trips
+  const firstDate = new Date(allDays[0].date);
+  const lastDate = new Date(allDays[allDays.length - 1].date);
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let calHtml = '';
+  let y = firstDate.getFullYear(), m = firstDate.getMonth();
+  const endY = lastDate.getFullYear(), endM = lastDate.getMonth();
+
+  while (y < endY || (y === endY && m <= endM)) {
+    calHtml += buildMonth(MONTH_NAMES[m], y, m);
+    m++;
+    if (m > 11) { m = 0; y++; }
+  }
+  cal.innerHTML = calHtml;
+}
+
+// ─────────────────────────────────────────
+// MANAGE LIST
+// ─────────────────────────────────────────
+function renderManageList() {
+  const el = document.getElementById('manage-trips-list');
+  if (!el) return;
+
+  // Use the loaded trips list
+  if (!_allTrips.length) {
+    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:14px;color:var(--gray-mid);">No trips yet. Go to Plan to create one.</div>`;
+    return;
+  }
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const sortedForManage = _allTrips.filter(t => _tripsData[t.id])
+    .sort((a, b) => {
+      const aStart = _tripsData[a.id]?.days[0]?.date || 'z';
+      const bStart = _tripsData[b.id]?.days[0]?.date || 'z';
+      return aStart.localeCompare(bStart);
+    });
+
+  let html = `<div class="manage-card">`;
+  sortedForManage.forEach(trip => {
+    const tripDays = _tripsData[trip.id] ? _tripsData[trip.id].days : [];
+    const dates = tripDays.map(d => d.date).sort();
+    const start = dates[0];
+    const end = dates[dates.length - 1];
+    const fmt = k => {
+      if (!k) return '?';
+      const [y,m,d] = k.substring(0,10).split('-');
+      return `${MONTHS[+m-1]} ${+d}`;
+    };
+    const today = toKey(new Date());
+    let status, statusStyle;
+    if (!start) { status = 'No data'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
+    else if (today < start) { status = 'Upcoming'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
+    else if (today > end) { status = 'Past'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
+    else { status = 'Current'; statusStyle = 'background:var(--accent);color:white;'; }
+
+    html += `<div class="manage-row" onclick="openLevel2(${trip.id})">
+      <div style="flex:1;min-width:0;">
+        <div class="manage-row-title">${trip.name}</div>
+        <div class="manage-row-sub">${start ? `${fmt(start)} – ${fmt(end)} · ${dates.length} days` : 'Import itinerary to get started'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;">
+        <span style="font-size:10px;letter-spacing:0.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;${statusStyle}">${status}</span>
+        <span class="manage-chevron">›</span>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────
+// LEVEL 2 — Trip city list
+// ─────────────────────────────────────────
+async function openLevel2(tripId) {
+  _currentTripId = tripId;
+  const trip = _allTrips.find(t => t.id === tripId);
+  document.getElementById('level2-title').textContent = trip ? trip.name : '';
+  renderCityList(tripId);
+  const el = document.getElementById('trips-level-2');
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
+}
+
+function closeLevel2() {
+  const el = document.getElementById('trips-level-2');
+  el.style.transform = 'translateX(100%)';
+  document.body.style.overflow = '';
+  setTimeout(() => el.style.display = 'none', 280);
+}
+
+function renderCityListFromData(tripId, days, legs) {
+  const el = document.getElementById('trips-city-list');
+  if (!el) return;
+  const trip = _allTrips.find(t => t.id === tripId);
+  const stayDays = days.filter(d => d.type === 'stay' || d.type === 'arrive');
+  const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
+
+  let html = '';
+
+  // Editable trip name header
+  if (trip) {
+    html += `<div style="padding:1.25rem 1rem 1rem;display:flex;align-items:center;gap:8px;">
+      <input id="trip-name-input" value="${trip.name}"
+        style="font-family:var(--font-display);font-size:24px;font-weight:600;letter-spacing:-0.02em;color:var(--black);background:none;border:none;border-bottom:2px solid transparent;outline:none;flex:1;transition:border-color 0.15s;padding-bottom:2px;"
+        onfocus="this.style.borderColor='var(--accent)';document.getElementById('trip-name-save').style.opacity='1'"
+        onblur="setTimeout(()=>document.getElementById('trip-name-save').style.opacity='0',200)"
+        onkeydown="if(event.key==='Enter'){saveTripName(${tripId},this.value);this.blur()}" />
+      <button id="trip-name-save" onclick="saveTripName(${tripId},document.getElementById('trip-name-input').value)"
+        style="opacity:0;transition:opacity 0.15s;background:var(--accent);color:white;border:none;border-radius:20px;padding:6px 14px;font-size:13px;font-family:var(--font-body);cursor:pointer;white-space:nowrap;">Save</button>
+    </div>`;
+  }
+
+  if (!cities.length) {
+    html += `<div style="padding:0 1rem;">
+      <div class="manage-card" style="padding:2rem 1.25rem;text-align:center;">
+        <div style="font-size:14px;color:var(--gray-mid);margin-bottom:4px;">No cities yet</div>
+        <div style="font-size:12px;color:var(--gray-light);">Go to Plan to import your itinerary</div>
+      </div>
+    </div>`;
+    el.innerHTML = html;
+    return;
+  }
+
+  html += `<div class="manage-card" style="margin:0 1rem 1rem;">`;
+  cities.forEach(city => {
+    const k = cacheKey(tripId, city);
+    const links = _cache.links[k] || [];
+    const note = _cache.notes[k] || '';
+    const parts = [links.length > 0 ? `${links.length} link${links.length !== 1 ? 's' : ''}` : '', note ? 'note' : ''].filter(Boolean);
+    const sub = parts.length ? parts.join(' · ') : '';
+
+    html += `<div class="manage-row" onclick="openLevel3(${tripId},'${city}')">
+      <div style="flex:1;min-width:0;">
+        <div class="manage-row-title">${city}</div>
+        ${sub ? `<div class="manage-row-sub">${sub}</div>` : ''}
+      </div>
+      <span class="manage-chevron">›</span>
+  });
+  html += "</div>";
+
+  // Delete trip
+  const tripForDelete = _allTrips.find(t => t.id === tripId);
+  html += `<div style="padding:1rem 1rem 2rem;">
+    <div id="delete-trip-confirm" style="display:none;background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);">
+      <div style="font-size:13px;color:var(--gray-mid);margin-bottom:6px;">Type the trip name to confirm deletion:</div>
+      <div style="font-size:15px;font-weight:500;color:var(--black);margin-bottom:10px;">${tripForDelete ? tripForDelete.name : ''}</div>
+      <input id="delete-trip-input" type="text" placeholder="Type trip name..."
+        style="width:100%;font-family:var(--font-body);font-size:14px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;margin-bottom:10px;transition:border-color 0.15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'"
+        oninput="validateDeleteInput(${tripId})" />
+      <div style="display:flex;gap:8px;">
+        <button id="delete-trip-btn" onclick="confirmDeleteTrip(${tripId})" disabled
+          style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Delete</button>
+        <button onclick="document.getElementById('delete-trip-confirm').style.display='none'"
+          style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+    <button onclick="document.getElementById('delete-trip-confirm').style.display='block'"
+      style="font-family:var(--font-body);font-size:13px;color:var(--gray-light);background:none;border:none;cursor:pointer;padding:4px 0;"
+      onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='var(--gray-light)'">Delete this trip</button>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+
+function validateDeleteInput(tripId) {
+  const trip = _allTrips.find(t => t.id === tripId);
+  const input = document.getElementById('delete-trip-input');
+  const btn = document.getElementById('delete-trip-btn');
+  if (!trip || !input || !btn) return;
+  const match = input.value.trim() === trip.name.trim();
+  btn.disabled = !match;
+  btn.style.opacity = match ? '1' : '0.4';
+  btn.style.cursor = match ? 'pointer' : 'default';
+}
+
+async function confirmDeleteTrip(tripId) {
+  const trip = _allTrips.find(t => t.id === tripId);
+  const input = document.getElementById('delete-trip-input');
+  if (!trip || !input || input.value.trim() !== trip.name.trim()) return;
+  const result = await api('DELETE', `/api/trips/${tripId}`);
+  if (result && result.success) {
+    _allTrips = _allTrips.filter(t => t.id !== tripId);
+    delete _tripsData[tripId];
+    closeLevel2();
+    renderManageList();
+    renderSummary();
+    renderCalendar();
+    renderHome(getTodayKey() || toKey(new Date()));
+  }
+}
+
+function renderCityList(tripId) {
+  const td = getTripData(tripId); renderCityListFromData(tripId, td.days, td.legs);
+}
+
+async function saveTripName(tripId, name) {
+  name = name.trim();
+  if (!name) {
+    // Restore old name
+    const trip = _allTrips.find(t => t.id === tripId);
+    const input = document.getElementById('trip-name-input');
+    if (input && trip) input.value = trip.name;
+    return;
+  }
+  const trip = _allTrips.find(t => t.id === tripId);
+  if (trip && trip.name === name) return; // no change
+  await api('PATCH', `/api/trips/${tripId}`, { name });
+  if (trip) { trip.name = name; document.getElementById('level2-title').textContent = name; }
+  renderManageList();
+}
+
+// ─────────────────────────────────────────
+// LEVEL 3 — City detail
+// ─────────────────────────────────────────
+function openLevel3(tripId, city) {
+  _currentTripId = tripId;
+  _currentCity = city;
+  document.getElementById('level3-title').textContent = city;
+  renderCityDetail(tripId, city);
+  const el = document.getElementById('trips-level-3');
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
+}
+
+async function closeLevel3() {
+  const el = document.getElementById('trips-level-3');
+  el.style.transform = 'translateX(100%)';
+  setTimeout(async () => {
+    el.style.display = 'none';
+    document.body.style.overflow = '';
+    // Refresh cache for this city
+    if (_currentTripId && _currentCity) {
+      delete _cache.links[cacheKey(_currentTripId, _currentCity)];
+      delete _cache.notes[cacheKey(_currentTripId, _currentCity)];
+      await Promise.all([
+        loadCityLinks(_currentTripId, _currentCity),
+        loadCityNote(_currentTripId, _currentCity)
+      ]);
+    }
+    if (_currentTripId) renderCityList(_currentTripId);
+    renderSummary();
+  }, 280);
+}
+
+function openCityFromSummary(tripId, city) {
+  _currentTripId = tripId;
+  _currentCity = city;
+  document.getElementById('level3-title').textContent = city;
+  renderCityDetail(tripId, city);
+  const el = document.getElementById('trips-level-3');
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
+}
+
+function renderCityDetail(tripId, city) {
+  const key = ck(city);
+  const el = document.getElementById('trips-city-detail');
+  el.innerHTML = `<div style="padding:2rem 1rem;font-size:14px;color:var(--gray-mid);">Loading...</div>`;
+
+  Promise.all([loadCityLinks(tripId, city), loadCityNote(tripId, city)])
+    .then(([links, note]) => { _renderCityDetailHTML(tripId, city, key, links, note); });
+}
+
+function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
+  let html = '';
+
+  // Notes card
+  html += `<div class="manage-card" style="margin:1rem;padding:1.25rem;">
+    <div class="section-label" style="margin-bottom:8px;">Notes</div>
+    <textarea class="city-notes-area" id="city-note-${key}" placeholder="Anything about ${city}..."
+      oninput="saveCityNote('${tripId}','${city}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+    >${savedNote || ''}</textarea>
+  </div>`;
+
+  // Links card
+  html += `<div class="manage-card" style="margin:0 1rem;overflow:hidden;">`;
+  html += `<div style="padding:0.875rem 1.25rem 0.625rem;border-bottom:1px solid var(--gray-xlight);">
+    <div class="section-label">Links</div>
+  </div>`;
+
+  if (!links.length) {
+    html += `<div style="padding:1rem 1.25rem;font-size:14px;color:var(--gray-light);font-style:italic;">Nothing saved yet.</div>`;
+  } else {
+    html += `<div class="swipe-items-container">`;
+    links.forEach(item => {
+      const safeId = `${key}-${item._id}`;
+      const delAction = `deleteGuideItem('${tripId}','${city}','${item._id}')`;
+      html += `<div class="swipe-item" id="swipe-${safeId}">
+        <div class="swipe-delete-bg" onclick="${delAction}">Delete</div>
+        <div class="swipe-item-content" id="swipe-content-${safeId}" style="padding:0.625rem 1.25rem;min-height:44px;display:flex;align-items:center;gap:10px;background:var(--card);">
+          <span style="color:var(--accent);font-size:14px;flex-shrink:0;line-height:1;">↗</span>
+          <div style="flex:1;min-width:0;">
+            <a href="${item.url}" target="_blank" style="font-size:15px;color:var(--accent);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</a>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-mid);margin-top:1px;">${getDomain(item.url)}</div>
+          </div>
+          <button onclick="${delAction}" class="desktop-delete-btn">×</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+
+  // Add link
+  html += `<div style="padding:0 1rem 3rem;">
+    <div id="city-input-area" style="display:none;margin:0.75rem 0 0;">
+      <input class="guide-input" id="city-input" placeholder="https:// or domain.com..."
+        style="margin-bottom:8px;"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();submitCityItem('${tripId}','${city}')}" />
+      <div class="guide-form-actions">
+        <button class="guide-form-btn primary" onclick="submitCityItem('${tripId}','${city}')">Save</button>
+        <button class="guide-form-btn secondary" onclick="closeCityInput()">Cancel</button>
+      </div>
+    </div>
+    <div id="city-add-btns">
+      <button onclick="showCityInput()" style="font-family:var(--font-body);font-size:14px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0.875rem 0;display:flex;align-items:center;gap:6px;">
+        <span style="font-size:18px;line-height:1;">+</span> Add link
+      </button>
+    </div>
+  </div>`;
+
+  document.getElementById('trips-city-detail').innerHTML = html;
+
+  const ta = document.getElementById(`city-note-${key}`);
+  if (ta && ta.value) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+
+  links.forEach(item => initSwipeDelete(`${key}-${item._id}`));
+}
+
+// ─────────────────────────────────────────
+// CITY NOTES & LINKS
+// ─────────────────────────────────────────
+let _noteTimer = null;
+function saveCityNote(tripId, city, value) {
+  const k = cacheKey(tripId, city);
+  _cache.notes[k] = value;
+  clearTimeout(_noteTimer);
+  _noteTimer = setTimeout(async () => {
+    await api('POST', `/api/notes/${tripId}/${encodeURIComponent(city)}`, { content: value });
+    renderSummary();
+  }, 800);
+}
+
+function saveGuideItem(tripId, city, item) {
+  return api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
+    .then(data => {
+      if (data && data.link) {
+        const k = cacheKey(tripId, city);
+        if (!_cache.links[k]) _cache.links[k] = [];
+        _cache.links[k].push({ ...data.link, _id: String(data.link.id), type: 'link' });
+      }
+    });
+}
+
+function deleteGuideItem(tripId, city, itemId) {
+  const k = cacheKey(tripId, city);
+  if (_cache.links[k]) {
+    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
+  }
+  api('DELETE', `/api/links/${itemId}`);
+  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');
+}
+
+function showCityInput() {
+  document.getElementById('city-input-area').style.display = 'block';
+  document.getElementById('city-add-btns').style.display = 'none';
+  setTimeout(() => document.getElementById('city-input')?.focus(), 50);
+}
+
+function closeCityInput() {
+  const area = document.getElementById('city-input-area');
+  const btns = document.getElementById('city-add-btns');
+  if (area) { area.style.display = 'none'; const inp = document.getElementById('city-input'); if(inp) inp.value = ''; }
+  if (btns) btns.style.display = 'block';
+}
+
+async function submitCityItem(tripId, city) {
+  const input = document.getElementById('city-input');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  const url = normalizeUrl(val);
+  // Validate — must look like a URL (has a dot, no spaces)
+  if (!url.startsWith('http') || url.includes(' ')) {
+    input.style.borderColor = '#e74c3c';
+    input.placeholder = 'Enter a valid URL e.g. google.com';
+    setTimeout(() => { input.style.borderColor = ''; input.placeholder = 'https:// or domain.com...'; }, 2000);
+    return;
+  }
+  closeCityInput();
+  const item = { type: 'link', title: getDomain(url), url };
+  await saveGuideItem(tripId, city, item);
+  delete _cache.links[cacheKey(tripId, city)];
+  await loadCityLinks(tripId, city);
+  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[cacheKey(tripId, city)] || [], _cache.notes[cacheKey(tripId, city)] || '');
+}
+
+// ─────────────────────────────────────────
+// SWIPE TO DELETE
+// ─────────────────────────────────────────
+function initSwipeDelete(safeId) {
+  const item = document.getElementById(`swipe-${safeId}`);
+  const content = document.getElementById(`swipe-content-${safeId}`);
+  if (!item || !content) return;
+
+  let startX = 0, currentX = 0, isDragging = false;
+
+  item.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    isDragging = false;
+  }, { passive: true });
+
+  item.addEventListener('touchmove', e => {
+    currentX = e.touches[0].clientX;
+    const dx = currentX - startX;
+    if (Math.abs(dx) > 5) isDragging = true;
+    if (isDragging && dx < 0) {
+      content.style.transform = `translateX(${Math.max(dx, -80)}px)`;
+    }
+  }, { passive: true });
+
+  item.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    const dx = currentX - startX;
+    if (dx < -40) {
+      content.style.transform = 'translateX(-80px)';
+    } else {
+      content.style.transform = 'translateX(0)';
+    }
+  });
+}
+
+// ─────────────────────────────────────────
+// LANGUAGE / DISCOVER
+// ─────────────────────────────────────────
+function detectLanguage() {
+  const today = toKey(new Date());
+  const current = getAllDays().find(d => d.date === today);
+  if (current) {
+    const data = CITY_DATA[current.location];
+    if (data && data.lang) return data.lang;
+  }
+  // Default to France (first city)
+  return 'France';
+}
+
+function renderLingo(override) {
+  const lang = override || detectLanguage();
+  const langData = LANGUAGES[lang];
+  const switcher = document.getElementById('local-lang-switcher');
+  const content = document.getElementById('local-content');
+
+  if (switcher) {
+    const available = Object.keys(LANGUAGES).filter(k => LANGUAGES[k]);
+    switcher.innerHTML = available.map(k =>
+      `<button class="lang-pill${k === lang ? ' active' : ''}" onclick="renderLingo('${k}')">${LANGUAGES[k]?.name || k}</button>`
+    ).join('');
+  }
+
+  if (!content) return;
+  if (!langData) {
+    content.innerHTML = `<div style="padding:1rem 0;font-size:14px;color:var(--gray-mid);">No phrases available for this language yet.</div>`;
+    return;
+  }
+
+  const cats = [...new Set(langData.phrases.map(p => p.cat))];
+  let html = '';
+  cats.forEach(cat => {
+    html += `<div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin:1.5rem 0 0.25rem;padding-top:0.5rem;border-top:1px solid var(--gray-xlight);">${cat}</div>`;
+    langData.phrases.filter(p => p.cat === cat).forEach((p, i) => {
+      const id = `phrase-${cat}-${i}`;
+      html += `<div class="local-phrase" onclick="togglePhonetic('${id}')">
+        <div class="local-phrase-top">
+          <span class="local-phrase-local">${p.local}</span>
+          <span class="local-phrase-toggle">+</span>
+        </div>
+        <div class="local-phrase-english">${p.english}</div>
+        <div class="local-phrase-phonetic" id="${id}">${p.phonetic}</div>
+      </div>`;
+    });
+  });
+  content.innerHTML = html;
+}
+
+function togglePhonetic(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isShown = el.style.display === 'block';
+  el.style.display = isShown ? 'none' : 'block';
+  const toggle = el.closest('.local-phrase')?.querySelector('.local-phrase-toggle');
+  if (toggle) toggle.textContent = isShown ? '+' : '−';
+}
+
+// ─────────────────────────────────────────
+// PLAN VIEW
+// ─────────────────────────────────────────
+async function loadUserTrips() {
+  const data = await api('GET', '/api/trips');
+  _allTrips = (data && data.trips) ? data.trips : [];
+}
+
+function clearPlanSelection() {
+  _selectedPlanTripId = null;
+  document.querySelectorAll('.plan-trip-row').forEach(r => {
+    r.querySelector('.plan-trip-check').style.display = 'none';
+    r.querySelector('.plan-trip-name').style.color = '';
+  });
+}
+
+function selectPlanTrip(id) {
+  _selectedPlanTripId = id;
+  document.getElementById('plan-new-name').value = '';
+  document.querySelectorAll('.plan-trip-row').forEach(r => {
+    const selected = r.dataset.tripId == id;
+    r.querySelector('.plan-trip-check').style.display = selected ? 'block' : 'none';
+    r.querySelector('.plan-trip-name').style.color = selected ? 'var(--accent)' : '';
+  });
+}
+
+function renderPlanView() {
+  const list = document.getElementById('plan-trip-list');
+  if (!list) return;
+
+  if (!_allTrips.length) {
+    list.innerHTML = `<div style="font-size:13px;color:var(--gray-mid);padding:4px 0 8px;">No trips yet — create one below.</div>`;
+    return;
+  }
+
+  list.innerHTML = _allTrips.map(trip =>
+    `<div class="plan-trip-row" data-trip-id="${trip.id}" onclick="selectPlanTrip(${trip.id})">
+      <span class="plan-trip-name">${trip.name}</span>
+      <span class="plan-trip-check">✓</span>
+    </div>`
+  ).join('');
+}
+
+function setPlanMode(mode) {
+  _planMode = mode;
+  const updateBtn = document.getElementById('mode-update');
+  const replaceBtn = document.getElementById('mode-replace');
+  const desc = document.getElementById('mode-description');
+  if (!updateBtn) return;
+  if (mode === 'update') {
+    updateBtn.style.background = 'var(--accent)'; updateBtn.style.color = 'white'; updateBtn.style.borderColor = 'var(--accent)';
+    replaceBtn.style.background = 'none'; replaceBtn.style.color = 'var(--gray-mid)'; replaceBtn.style.borderColor = 'var(--gray-xlight)';
+    desc.textContent = 'Add or update specific days without touching the rest of your trip.';
+  } else {
+    replaceBtn.style.background = 'var(--accent)'; replaceBtn.style.color = 'white'; replaceBtn.style.borderColor = 'var(--accent)';
+    updateBtn.style.background = 'none'; updateBtn.style.color = 'var(--gray-mid)'; updateBtn.style.borderColor = 'var(--gray-xlight)';
+    desc.textContent = 'Wipe all existing days and reimport from scratch. Use for full re-imports only.';
+  }
+}
+
+async function parseTripWithClaude() {
+  const text = document.getElementById('plan-text').value.trim();
+  const newName = document.getElementById('plan-new-name').value.trim();
+  const btn = document.getElementById('parse-btn');
+  const status = document.getElementById('parse-status');
+
+  if (!text) {
+    status.textContent = 'Please paste some itinerary text first.';
+    status.style.color = '#e74c3c';
+    return;
+  }
+  if (!_selectedPlanTripId && !newName) {
+    status.textContent = 'Select an existing trip or name a new one.';
+    status.style.color = '#e74c3c';
+    return;
+  }
+
+  // Warn on replace mode if trip has data
+  if (_planMode === 'replace' && _selectedPlanTripId) {
+    const confirmEl = document.getElementById('replace-confirm');
+    if (confirmEl) confirmEl.style.display = 'block';
+    return;
+  }
+
+  await _doImport();
+}
+
+async function _doImport() {
+  const text = document.getElementById('plan-text').value.trim();
+  const newName = document.getElementById('plan-new-name').value.trim();
+  const btn = document.getElementById('parse-btn');
+  const status = document.getElementById('parse-status');
+  const textarea = document.getElementById('plan-text');
+  const confirmEl = document.getElementById('replace-confirm');
+  if (confirmEl) confirmEl.style.display = 'none';
+
+  // Lock UI
+  textarea.disabled = true;
+  btn.textContent = 'Parsing... please wait 10–15 seconds';
+  btn.disabled = true;
+  btn.classList.add('btn-parsing');
+  status.textContent = '';
+  status.style.color = '';
+
+  try {
+    let tripId = _selectedPlanTripId;
+
+    if (!tripId && newName) {
+      const data = await api('POST', '/api/trips', { name: newName });
+      if (!data || !data.trip) throw new Error('Failed to create trip');
+      tripId = data.trip.id;
+      _allTrips.push(data.trip);
+    }
+
+    const result = await api('POST', '/api/trips/import', { tripId, text, mode: _planMode });
+
+    if (result && result.success) {
+      btn.textContent = `✓ ${result.days} days ${_planMode === 'update' ? 'updated' : 'imported'}`;
+      btn.classList.remove('btn-parsing');
+      document.getElementById('plan-text').value = '';
+      document.getElementById('plan-new-name').value = '';
+      _selectedPlanTripId = null;
+
+      await loadAllTripsData();
+      await preloadCityData();
+      renderHome(getTodayKey() || toKey(new Date()));
+      renderSummary();
+      renderCalendar();
+
+      setTimeout(() => {
+        btn.textContent = 'Parse with Claude →';
+        btn.disabled = false;
+        textarea.disabled = false;
+        renderPlanView();
+        showView('trips', document.getElementById('nav-trips'));
+        switchTripsView('summary');
+      }, 1500);
+    } else {
+      throw new Error(result?.error || 'Import failed');
+    }
+  } catch (err) {
+    btn.textContent = 'Parse with Claude →';
+    btn.classList.remove('btn-parsing');
+    btn.disabled = false;
+    textarea.disabled = false;
+    status.textContent = `Error: ${err.message}`;
+    status.style.color = '#e74c3c';
+  }
+}
+
+// ─────────────────────────────────────────
+// DESTINATION CLOCK INTERVAL
+// ─────────────────────────────────────────
+setInterval(updateDestClock, 1000);
+
+// ─────────────────────────────────────────
+// KEYBOARD NAVIGATION (desktop)
+// ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft') navigateDay(-1);
+  if (e.key === 'ArrowRight') navigateDay(1);
+});
+
+// ─────────────────────────────────────────
+// TOUCH SWIPE NAV (home view day swiping)
+// ─────────────────────────────────────────
+let _touchStartX = 0, _touchStartY = 0;
+document.addEventListener('touchstart', e => {
+  _touchStartX = e.touches[0].clientX;
+  _touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  if (document.getElementById('view-home').classList.contains('active')) {
+    const dx = e.changedTouches[0].clientX - _touchStartX;
+    const dy = e.changedTouches[0].clientY - _touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+      navigateDay(dx < 0 ? 1 : -1);
+    }
+  }
+}, { passive: true });
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+async function init() {
+  await Promise.all([loadLanguages(), loadUserTrips()]);
+  await loadAllTripsData();
+  const key = getTodayKey() || toKey(new Date());
+  renderHome(key);
+  renderSummary();
+  renderCalendar();
+  renderManageList();
+  renderLingo();
+  updateDestClock();
+  preloadCityData();
+}
+
+init();
+</script>
+</body>
+</html>
