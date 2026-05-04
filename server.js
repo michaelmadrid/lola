@@ -3,6 +3,7 @@ const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Anthropic = require('@anthropic-ai/sdk');
 
 const app = express();
 const port = 3000;
@@ -18,6 +19,9 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
 });
+
+// Anthropic
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // Auth middleware
 function authenticate(req, res, next) {
@@ -118,7 +122,7 @@ app.post('/api/trips', authenticate, async (req, res) => {
   }
 });
 
-// Get single trip with days
+// Get single trip with days and legs
 app.get('/api/trips/:id', authenticate, async (req, res) => {
   try {
     const trip = await pool.query(
@@ -137,7 +141,8 @@ app.get('/api/trips/:id', authenticate, async (req, res) => {
     const legs = await pool.query(
       `SELECT tl.*, td.date FROM travel_legs tl
        JOIN trip_days td ON tl.day_id = td.id
-       WHERE td.trip_id = $1`,
+       WHERE td.trip_id = $1
+       ORDER BY td.date ASC, tl.sort_order ASC`,
       [req.params.id]
     );
 
@@ -158,6 +163,101 @@ app.delete('/api/trips/:id', authenticate, async (req, res) => {
     await pool.query('DELETE FROM trips WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Import trip via Claude
+app.post('/api/trips/import', authenticate, async (req, res) => {
+  const { tripId, text } = req.body;
+  if (!tripId || !text) return res.status(400).json({ error: 'tripId and text required' });
+
+  try {
+    const member = await pool.query(
+      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2',
+      [tripId, req.user.id]
+    );
+    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
+
+    const message = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 4096,
+      messages: [{
+        role: 'user',
+        content: `Extract this travel itinerary into structured JSON. Return ONLY valid JSON, no explanation, no markdown.
+
+Format:
+{
+  "days": [
+    {
+      "date": "YYYY-MM-DD",
+      "type": "travel|stay|arrive",
+      "location": "City name or transit description e.g. Paris - Marseille",
+      "stay": "Address or hotel name if staying",
+      "alert": "Any important note for this day",
+      "travel": [
+        {
+          "from": "departure city or airport code",
+          "to": "arrival city or airport code",
+          "dep": "departure time e.g. 4:30pm",
+          "arr": "arrival time e.g. 10:00pm",
+          "arrNote": "next day note if applicable e.g. May 13",
+          "carrier": "airline or train operator",
+          "ref": "flight/train number",
+          "refCode": "booking reference code",
+          "note": "any extra notes"
+        }
+      ]
+    }
+  ]
+}
+
+Rules:
+- type is "travel" for transit days, "stay" for regular days, "arrive" for first day in a new city
+- Include travel array only on transit days
+- location for transit days should describe the journey e.g. "Bali - Taipei - Paris"
+- Extract ALL days including stay days with no travel
+- For stay days just include date, type, location, stay if known
+- Infer missing dates from context
+- dates must be full YYYY-MM-DD format
+
+Itinerary:
+${text}`
+      }]
+    });
+
+    const raw = message.content[0].text.trim();
+    const json = JSON.parse(raw.replace(/```json\n?|\n?```/g, ''));
+
+    // Clear existing days for this trip
+    await pool.query('DELETE FROM trip_days WHERE trip_id = $1', [tripId]);
+
+    // Insert days and legs
+    for (const day of json.days) {
+      const dayResult = await pool.query(
+        `INSERT INTO trip_days (trip_id, date, type, location, stay, alert)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+        [tripId, day.date, day.type || 'stay', day.location, day.stay || null, day.alert || null]
+      );
+      const dayId = dayResult.rows[0].id;
+
+      if (day.travel && day.travel.length > 0) {
+        for (let i = 0; i < day.travel.length; i++) {
+          const leg = day.travel[i];
+          await pool.query(
+            `INSERT INTO travel_legs (day_id, from_city, to_city, dep_time, arr_time, arr_note, carrier, ref, ref_code, note, sort_order)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+            [dayId, leg.from, leg.to, leg.dep, leg.arr, leg.arrNote || null,
+             leg.carrier, leg.ref, leg.refCode || null, leg.note || null, i]
+          );
+        }
+      }
+    }
+
+    res.json({ success: true, days: json.days.length });
+
+  } catch (err) {
+    console.error('Import error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -192,7 +292,7 @@ app.post('/api/journal/:tripId/:date', authenticate, async (req, res) => {
   }
 });
 
-// City notes — GET and POST
+// City notes
 app.get('/api/notes/:tripId/:city', authenticate, async (req, res) => {
   const city = decodeURIComponent(req.params.city);
   try {
@@ -224,7 +324,7 @@ app.post('/api/notes/:tripId/:city', authenticate, async (req, res) => {
   }
 });
 
-// City links — GET, POST, DELETE
+// City links
 app.get('/api/links/:tripId/:city', authenticate, async (req, res) => {
   const city = decodeURIComponent(req.params.city);
   try {
