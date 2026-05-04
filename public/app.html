@@ -1705,6 +1705,11 @@ const CAL_DAYS = {
 const TRIP_ID = 1;
 const API_TOKEN = () => localStorage.getItem('lola_token');
 
+// Auth check — redirect to login if no token
+if (!localStorage.getItem('lola_token')) {
+  window.location.href = '/';
+}
+
 async function api(method, path, body) {
   try {
     const res = await fetch(path, {
