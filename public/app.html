@@ -3183,6 +3183,8 @@ async function preloadTripData() {
   renderSummary();
   renderManageList();
 }
+
+function renderManageList() {
   const el = document.getElementById('manage-trips-list');
   if (!el) return;
   const trips = Object.values(TRIPS);
@@ -3297,8 +3299,7 @@ renderManageList();
 renderLingo();
 updateDestClock();
 setInterval(updateDestClock, 1000);
-preloadTripData(); // load all city data from API
-setInterval(updateDestClock, 1000);
+preloadTripData();
 </script>
 
 </body>
