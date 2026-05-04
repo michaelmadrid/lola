@@ -1284,9 +1284,11 @@ function renderSummary() {
 
     const nights = group.dates.length;
     const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
-    // Show end date as the departure travel day so Paris shows May 13-18 not May 13-17
+    // Start date = incoming travel day if there is one (e.g. May 18 TGV arrives Marseille)
+    const displayStartDate = prevTravelDay ? prevTravelDay.date : group.dates[0];
+    // End date = outgoing travel day if there is one (e.g. May 18 TGV departs Paris)
     const displayEndDate = nextTravelDay ? nextTravelDay.date : group.dates[group.dates.length - 1];
-    const datesLabel = `${fmt(group.dates[0])} – ${fmt(displayEndDate)}`;
+    const datesLabel = `${fmt(displayStartDate)} – ${fmt(displayEndDate)}`;
 
     const k = cacheKey(TRIP_ID, group.city);
     const links = _cache.links[k] || [];
