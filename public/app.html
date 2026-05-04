@@ -2222,9 +2222,9 @@ function snakeDraw() {
       const isHead = _snake[0] && _snake[0].x === x && _snake[0].y === y;
       const isBody = !isHead && _snake.some((s,i) => i > 0 && s.x === x && s.y === y);
       const isApple = _apple.x === x && _apple.y === y;
-      if (isHead) cell.style.background = 'var(--black)';
-      else if (isBody) cell.style.background = 'var(--accent)';
-      else if (isApple) cell.style.background = '#e74c3c';
+      if (isHead) cell.style.background = 'var(--gray-mid)';
+      else if (isBody) cell.style.background = 'var(--black)';
+      else if (isApple) cell.style.background = 'var(--accent)';
       else cell.style.background = 'var(--card)';
     }
   }
