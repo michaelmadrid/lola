@@ -2299,7 +2299,7 @@ function deleteGuideItem(tripId, city, itemId) {
     _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
   }
   api('DELETE', `/api/links/${itemId}`);
-  renderGuide();
+  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');
 }
 
 function isFlagged() { return false; } // flagging removed
