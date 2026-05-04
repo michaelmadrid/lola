@@ -2287,6 +2287,9 @@ async function submitCityItem(tripId, city) {
     : { type: 'note', text: val };
   closeCityInput();
   await saveGuideItem(tripId, city, item);
+  // Clear cache and reload fresh so list is accurate
+  delete _cache.links[cacheKey(tripId, city)];
+  await loadCityLinks(tripId, city);
   renderCityDetail(tripId, city);
 }
 
@@ -3115,13 +3118,18 @@ function openLevel3(tripId, city) {
 function closeLevel3() {
   const el = document.getElementById('trips-level-3');
   el.style.transform = 'translateX(100%)';
-  // only unlock if level-2 is also closed
-  if (document.getElementById('trips-level-2').style.transform === 'translateX(100%)' ||
-      document.getElementById('trips-level-2').style.display === 'none') {
-    document.body.style.overflow = '';
-  }
-  setTimeout(() => {
+  document.body.style.overflow = '';
+  setTimeout(async () => {
     el.style.display = 'none';
+    // Clear cache for current city so summary gets fresh data
+    if (currentTripId && currentCity) {
+      delete _cache.links[cacheKey(currentTripId, currentCity)];
+      delete _cache.notes[cacheKey(currentTripId, currentCity)];
+      await Promise.all([
+        loadCityLinks(currentTripId, currentCity),
+        loadCityNote(currentTripId, currentCity)
+      ]);
+    }
     if (currentTripId) renderCityList(currentTripId);
     renderSummary();
   }, 280);
