@@ -2601,12 +2601,46 @@ function selectPlanTrip(id) {
   }
 }
 
-function parseTripWithClaude() {
+async function parseTripWithClaude() {
   const text = document.getElementById('new-trip-text').value.trim();
   const newName = document.getElementById('new-trip-name').value.trim();
   if (!text) { alert('Paste some itinerary info first.'); return; }
   if (!selectedPlanTripId && !newName) { alert('Choose an existing trip or name a new one.'); return; }
-  alert('Claude parsing coming soon — backend needed. Use "Start with a blank trip" for now.');
+
+  const btn = document.querySelector('[onclick="parseTripWithClaude()"]');
+  const origText = btn.textContent;
+  btn.textContent = 'Parsing...';
+  btn.disabled = true;
+
+  try {
+    let tripId = selectedPlanTripId;
+
+    // Create new trip if needed
+    if (!tripId && newName) {
+      const data = await api('POST', '/api/trips', { name: newName });
+      if (!data || !data.trip) throw new Error('Failed to create trip');
+      tripId = data.trip.id;
+    }
+
+    const result = await api('POST', '/api/trips/import', { tripId, text });
+
+    if (result && result.success) {
+      btn.textContent = `✓ Imported ${result.days} days`;
+      document.getElementById('new-trip-text').value = '';
+      document.getElementById('new-trip-name').value = '';
+      selectedPlanTripId = null;
+      setTimeout(() => {
+        btn.textContent = origText;
+        btn.disabled = false;
+      }, 2000);
+    } else {
+      throw new Error(result?.error || 'Import failed');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
 }
 
 function createEmptyTrip() {
