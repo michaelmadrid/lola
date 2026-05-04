@@ -474,7 +474,7 @@
   <button class="nav-tab active" id="nav-home" onclick="showView('home',this)">Home</button>
   <button class="nav-tab" id="nav-trips" onclick="showView('trips',this)">Trips</button>
   <button class="nav-tab" id="nav-discover" onclick="showView('discover',this)">Discover</button>
-  <button class="nav-tab" id="nav-plan" onclick="showView('plan',this)">Plan</button>
+  <button class="nav-tab" id="nav-idle" onclick="showView('idle',this)">Idle</button>
 </nav>
 
 <!-- HOME VIEW -->
@@ -488,6 +488,7 @@
     <button id="tab-summary" class="subnav-tab active" onclick="switchTripsView('summary')">Summary</button>
     <button id="tab-cal" class="subnav-tab" onclick="switchTripsView('cal')">Calendar</button>
     <button id="tab-manage" class="subnav-tab" onclick="switchTripsView('manage')">Manage</button>
+    <button id="tab-plan" class="subnav-tab" onclick="switchTripsView('plan')">Plan</button>
   </div>
 
   <div id="trips-summary" style="display:block;">
@@ -513,6 +514,55 @@
   <div id="trips-manage" style="display:none;">
     <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
       <div id="manage-trips-list"></div>
+    </div>
+  </div>
+
+  <div id="trips-plan" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1.25rem 1rem 3rem;">
+      <!-- Paste area -->
+      <div class="manage-card" style="padding:1.25rem;margin-bottom:1rem;">
+        <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Paste your itinerary</div>
+        <textarea id="plan-text" placeholder="Paste flights, hotels, confirmations — anything. Claude will extract the structure automatically." style="width:100%;min-height:180px;font-family:var(--font-body);font-size:14px;line-height:1.65;border:none;outline:none;background:none;color:var(--black);resize:vertical;"></textarea>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-xlight);">
+          <div style="font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray-light);margin-bottom:8px;">Examples</div>
+          <div style="font-size:12px;color:var(--gray-mid);line-height:2;font-family:var(--font-mono);">
+            Paris May 13–18, Airbnb 4 Square de Verdun<br>
+            EVA Air DPS→TPE May 12 4:30pm–10pm, TPE→CDG 11:30pm–8:25am (May 13)<br>
+            Marseille May 18–23
+          </div>
+        </div>
+      </div>
+      <!-- Trip selector -->
+      <div class="manage-card" style="margin-bottom:1.25rem;padding:1.25rem;">
+        <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:12px;">Add to trip</div>
+        <div id="plan-trip-list"></div>
+        <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
+          <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+          <span style="font-size:11px;color:var(--gray-light);">or create new</span>
+          <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+        </div>
+        <input id="plan-new-name" type="text" placeholder="New trip name..."
+          style="width:100%;font-family:var(--font-body);font-size:15px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;transition:border-color 0.15s;"
+          onfocus="clearPlanSelection();this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--gray-xlight)'" />
+      </div>
+      <!-- Mode selector -->
+      <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
+        <button id="mode-update" onclick="setPlanMode('update')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">Update trip</button>
+        <button id="mode-replace" onclick="setPlanMode('replace')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">Replace all</button>
+      </div>
+      <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
+      <!-- Replace confirmation -->
+      <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+        <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
+          <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+      <!-- Parse button -->
+      <button id="parse-btn" onclick="parseTripWithClaude()" style="width:100%;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px;background:var(--black);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:opacity 0.15s;">Parse with Claude →</button>
+      <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
     </div>
   </div>
 </div>
@@ -565,77 +615,24 @@
   </div>
 </div>
 
-<!-- PLAN VIEW -->
-<div id="view-plan" class="view">
-  <div style="max-width:540px;margin:0 auto;padding:1.25rem 1rem 3rem;">
-
-    <div style="padding:1rem 0 1.25rem;">
-      <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">Plan</div>
+<!-- IDLE VIEW -->
+<div id="view-idle" class="view">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding-bottom:80px;">
+    <canvas id="snake-canvas" width="280" height="280" style="border:1.5px solid var(--gray-xlight);border-radius:var(--radius);background:var(--card);display:block;"></canvas>
+    <div style="margin-top:1.25rem;display:flex;gap:8px;">
+      <button onclick="snakeStart()" style="font-family:var(--font-body);font-size:13px;padding:8px 20px;background:var(--black);color:white;border:none;border-radius:20px;cursor:pointer;">Play</button>
+      <button onclick="snakePause()" style="font-family:var(--font-body);font-size:13px;padding:8px 20px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Pause</button>
     </div>
-
-    <!-- Paste area -->
-    <div class="manage-card" style="padding:1.25rem;margin-bottom:1rem;">
-      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Paste your itinerary</div>
-      <textarea id="plan-text" placeholder="Paste flights, hotels, confirmations — anything. Claude will extract the structure automatically." style="width:100%;min-height:180px;font-family:var(--font-body);font-size:14px;line-height:1.65;border:none;outline:none;background:none;color:var(--black);resize:vertical;"></textarea>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-xlight);">
-        <div style="font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray-light);margin-bottom:8px;">Examples</div>
-        <div style="font-size:12px;color:var(--gray-mid);line-height:2;font-family:var(--font-mono);">
-          Paris May 13–18, Airbnb 4 Square de Verdun<br>
-          EVA Air DPS→TPE May 12 4:30pm–10pm, TPE→CDG 11:30pm–8:25am (May 13)<br>
-          Marseille May 18–23
-        </div>
-      </div>
+    <div id="snake-score" style="margin-top:0.75rem;font-family:var(--font-mono);font-size:12px;color:var(--gray-mid);">Score: 0</div>
+    <!-- Touch controls -->
+    <div style="margin-top:1rem;display:grid;grid-template-columns:44px 44px 44px;grid-template-rows:44px 44px;gap:4px;">
+      <div></div>
+      <button ontouchstart="snakeDir(0,-1)" onclick="snakeDir(0,-1)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">↑</button>
+      <div></div>
+      <button ontouchstart="snakeDir(-1,0)" onclick="snakeDir(-1,0)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">←</button>
+      <button ontouchstart="snakeDir(0,1)" onclick="snakeDir(0,1)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">↓</button>
+      <button ontouchstart="snakeDir(1,0)" onclick="snakeDir(1,0)" style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:8px;font-size:16px;cursor:pointer;">→</button>
     </div>
-
-    <!-- Trip selector -->
-    <div class="manage-card" style="margin-bottom:1.25rem;padding:1.25rem;">
-      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:12px;">Add to trip</div>
-      <div id="plan-trip-list"></div>
-
-      <!-- Divider -->
-      <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
-        <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
-        <span style="font-size:11px;color:var(--gray-light);">or create new</span>
-        <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
-      </div>
-
-      <!-- New trip name -->
-      <input id="plan-new-name" type="text" placeholder="New trip name..."
-        style="width:100%;font-family:var(--font-body);font-size:15px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;transition:border-color 0.15s;"
-        onfocus="clearPlanSelection();this.style.borderColor='var(--accent)'"
-        onblur="this.style.borderColor='var(--gray-xlight)'" />
-    </div>
-
-    <!-- Mode selector -->
-    <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
-      <button id="mode-update" onclick="setPlanMode('update')"
-        style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">
-        Update trip
-      </button>
-      <button id="mode-replace" onclick="setPlanMode('replace')"
-        style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">
-        Replace all
-      </button>
-    </div>
-    <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
-
-    <!-- Replace confirmation -->
-    <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
-      <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
-        <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
-      </div>
-    </div>
-
-    <!-- Parse button -->
-    <button id="parse-btn" onclick="parseTripWithClaude()"
-      style="width:100%;font-family:var(--font-display);font-size:15px;font-weight:600;padding:16px;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;"
-      onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-      Parse with Claude →
-    </button>
-    <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
-
   </div>
 </div>
 
@@ -967,14 +964,15 @@ function showView(name, btn) {
       setTimeout(() => el.style.display = 'none', 280);
     }
   });
-  if (name === 'plan') renderPlanView();
+  if (name === 'idle') snakeInit();
 }
 
 function switchTripsView(name) {
-  ['summary','cal','manage'].forEach(v => {
-    document.getElementById(`trips-${v}`).style.display = v === name ? 'block' : 'none';
-    document.getElementById(`tab-${v}`).classList.toggle('active', v === name);
+  ['summary','cal','manage','plan'].forEach(v => {
+    document.getElementById('trips-' + v).style.display = v === name ? 'block' : 'none';
+    document.getElementById('tab-' + v).classList.toggle('active', v === name);
   });
+  if (name === 'plan') renderPlanView();
 }
 
 function switchExploreView(name) {
@@ -2089,8 +2087,7 @@ async function _doImport() {
         textarea.disabled = false;
         renderPlanView();
         showView('trips', document.getElementById('nav-trips'));
-        switchTripsView('summary');
-      }, 1500);
+        switchTripsView('summary');      }, 1500);
     } else {
       throw new Error(result?.error || 'Import failed');
     }
@@ -2136,6 +2133,122 @@ document.addEventListener('touchend', e => {
     }
   }
 }, { passive: true });
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+// ─────────────────────────────────────────
+// SNAKE GAME
+// ─────────────────────────────────────────
+const SNAKE_GRID = 20;
+let _snake = [], _snakeDir = {x:1,y:0}, _snakeNext = {x:1,y:0};
+let _apple = {x:10,y:10}, _snakeScore = 0, _snakeLoop = null, _snakeRunning = false;
+
+function snakeInit() {
+  const canvas = document.getElementById('snake-canvas');
+  if (!canvas) return;
+  const cols = Math.floor(canvas.width / SNAKE_GRID);
+  const rows = Math.floor(canvas.height / SNAKE_GRID);
+  _snake = [{x:Math.floor(cols/2), y:Math.floor(rows/2)}];
+  _snakeDir = {x:1,y:0}; _snakeNext = {x:1,y:0};
+  _snakeScore = 0;
+  _snakeRunning = false;
+  snakePlaceApple();
+  snakeDraw();
+  document.getElementById('snake-score').textContent = 'Score: 0';
+}
+
+function snakePlaceApple() {
+  const canvas = document.getElementById('snake-canvas');
+  const cols = Math.floor(canvas.width / SNAKE_GRID);
+  const rows = Math.floor(canvas.height / SNAKE_GRID);
+  let pos;
+  do { pos = {x: Math.floor(Math.random()*cols), y: Math.floor(Math.random()*rows)}; }
+  while (_snake.some(s => s.x === pos.x && s.y === pos.y));
+  _apple = pos;
+}
+
+function snakeDraw() {
+  const canvas = document.getElementById('snake-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const style = getComputedStyle(document.documentElement);
+  const bg = style.getPropertyValue('--card').trim() || '#fff';
+  const accent = style.getPropertyValue('--accent').trim() || '#2a4ed4';
+  const black = style.getPropertyValue('--black').trim() || '#0d0d0d';
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Apple
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(_apple.x*SNAKE_GRID+2, _apple.y*SNAKE_GRID+2, SNAKE_GRID-4, SNAKE_GRID-4);
+
+  // Snake
+  _snake.forEach((seg, i) => {
+    ctx.fillStyle = i === 0 ? black : accent;
+    ctx.fillRect(seg.x*SNAKE_GRID+1, seg.y*SNAKE_GRID+1, SNAKE_GRID-2, SNAKE_GRID-2);
+  });
+}
+
+function snakeStart() {
+  if (_snakeRunning) return;
+  if (_snake.length === 0) snakeInit();
+  _snakeRunning = true;
+  _snakeLoop = setInterval(snakeTick, 130);
+}
+
+function snakePause() {
+  _snakeRunning = false;
+  clearInterval(_snakeLoop);
+}
+
+function snakeTick() {
+  const canvas = document.getElementById('snake-canvas');
+  const cols = Math.floor(canvas.width / SNAKE_GRID);
+  const rows = Math.floor(canvas.height / SNAKE_GRID);
+  _snakeDir = {x: _snakeNext.x, y: _snakeNext.y};
+  const head = {x: (_snake[0].x + _snakeDir.x + cols) % cols, y: (_snake[0].y + _snakeDir.y + rows) % rows};
+
+  // Self collision
+  if (_snake.some(s => s.x === head.x && s.y === head.y)) {
+    snakePause();
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 10);
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Score: ' + _snakeScore, canvas.width/2, canvas.height/2 + 15);
+    return;
+  }
+
+  _snake.unshift(head);
+  if (head.x === _apple.x && head.y === _apple.y) {
+    _snakeScore++;
+    document.getElementById('snake-score').textContent = 'Score: ' + _snakeScore;
+    snakePlaceApple();
+  } else {
+    _snake.pop();
+  }
+  snakeDraw();
+}
+
+function snakeDir(dx, dy) {
+  // Prevent reversing
+  if (dx !== 0 && _snakeDir.x !== 0) return;
+  if (dy !== 0 && _snakeDir.y !== 0) return;
+  _snakeNext = {x: dx, y: dy};
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('view-idle')?.classList.contains('active')) return;
+  const map = {'ArrowUp':[0,-1],'ArrowDown':[0,1],'ArrowLeft':[-1,0],'ArrowRight':[1,0]};
+  if (map[e.key]) { e.preventDefault(); snakeDir(...map[e.key]); }
+  if (e.key === ' ') { _snakeRunning ? snakePause() : snakeStart(); }
+});
 
 // ─────────────────────────────────────────
 // INIT
