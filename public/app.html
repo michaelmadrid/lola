@@ -5,494 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Log">
-<title>Europe 26</title>
-
-<script>
-// ─────────────────────────────────────────
-// LANGUAGES — phrase data per country
-// categories: Basics, Around, Food, Emergency
-// ─────────────────────────────────────────
-const LANGUAGES = {
-
-  France: {
-    name: "French",
-    nativeName: "Français",
-    greeting: "Bonjour",
-    phrases: [
-      // BASICS
-      { cat: "Basics", local: "Bonjour", english: "Hello / Good morning", phonetic: "bon-ZHOOR" },
-      { cat: "Basics", local: "Bonsoir", english: "Good evening", phonetic: "bon-SWAHR" },
-      { cat: "Basics", local: "S'il vous plaît", english: "Please", phonetic: "seel voo PLAY" },
-      { cat: "Basics", local: "Merci", english: "Thank you", phonetic: "mair-SEE" },
-      { cat: "Basics", local: "Excusez-moi", english: "Excuse me / Sorry", phonetic: "ex-koo-zay MWAH" },
-      { cat: "Basics", local: "Oui / Non", english: "Yes / No", phonetic: "wee / nohn" },
-      { cat: "Basics", local: "Je ne comprends pas", english: "I don't understand", phonetic: "zhuh nuh kom-prohn PAH" },
-      { cat: "Basics", local: "Parlez-vous anglais?", english: "Do you speak English?", phonetic: "par-lay voo ong-LAY" },
-
-      // GETTING AROUND
-      { cat: "Around", local: "Où est...?", english: "Where is...?", phonetic: "oo AY" },
-      { cat: "Around", local: "Combien ça coûte?", english: "How much is it?", phonetic: "kom-BYAHN sa KOOT" },
-      { cat: "Around", local: "À gauche / À droite / Tout droit", english: "Left / Right / Straight", phonetic: "ah GOHSH / ah DRWAHT / too DRWAH" },
-      { cat: "Around", local: "Un ticket, s'il vous plaît", english: "One ticket please", phonetic: "uhn tee-KAY seel voo PLAY" },
-
-      // FOOD + DRINK
-      { cat: "Food", local: "Je voudrais...", english: "I'd like...", phonetic: "zhuh voo-DRAY" },
-      { cat: "Food", local: "L'addition, s'il vous plaît", english: "The bill please", phonetic: "lah-dee-SYOHN seel voo PLAY" },
-      { cat: "Food", local: "Encore un, s'il vous plaît", english: "One more please", phonetic: "on-KOR uhn seel voo PLAY" },
-      { cat: "Food", local: "Sans viande", english: "Without meat", phonetic: "sahn VYAHND" },
-      { cat: "Food", local: "C'est délicieux", english: "It's delicious", phonetic: "say day-lee-SYUH" },
-      { cat: "Food", local: "Un café / Un verre de vin / De l'eau", english: "A coffee / A glass of wine / Water", phonetic: "uhn ka-FAY / uhn vair duh VAN / duh LOH" },
-
-      // EMERGENCY
-      { cat: "Emergency", local: "Au secours!", english: "Help!", phonetic: "oh suh-KOOR" },
-      { cat: "Emergency", local: "J'ai besoin d'un médecin", english: "I need a doctor", phonetic: "zhay buh-ZWAHN duhn mayd-SAN" },
-    ]
-  },
-
-  Portugal: {
-    name: "Portuguese",
-    nativeName: "Português",
-    greeting: "Olá",
-    phrases: [
-      // BASICS
-      { cat: "Basics", local: "Olá / Bom dia", english: "Hello / Good morning", phonetic: "oh-LAH / bom JEE-ah" },
-      { cat: "Basics", local: "Boa tarde / Boa noite", english: "Good afternoon / Good night", phonetic: "BOH-ah TAR-deh / BOH-ah NOY-teh" },
-      { cat: "Basics", local: "Por favor", english: "Please", phonetic: "por fah-VOR" },
-      { cat: "Basics", local: "Obrigado / Obrigada", english: "Thank you (m/f)", phonetic: "oh-bree-GAH-doo / oh-bree-GAH-dah" },
-      { cat: "Basics", local: "Desculpe", english: "Sorry / Excuse me", phonetic: "desh-KOOL-peh" },
-      { cat: "Basics", local: "Sim / Não", english: "Yes / No", phonetic: "seem / nown" },
-      { cat: "Basics", local: "Não entendo", english: "I don't understand", phonetic: "nown en-TEN-doo" },
-      { cat: "Basics", local: "Fala inglês?", english: "Do you speak English?", phonetic: "FAH-lah een-GLAYSH" },
-
-      // GETTING AROUND
-      { cat: "Around", local: "Onde fica...?", english: "Where is...?", phonetic: "ON-deh FEE-kah" },
-      { cat: "Around", local: "Quanto custa?", english: "How much is it?", phonetic: "KWAHN-too KOOS-tah" },
-      { cat: "Around", local: "Esquerda / Direita / Em frente", english: "Left / Right / Straight", phonetic: "esh-KAIR-dah / dee-RAY-tah / em FREN-teh" },
-      { cat: "Around", local: "Um bilhete, por favor", english: "One ticket please", phonetic: "oom beel-YEH-teh por fah-VOR" },
-
-      // FOOD + DRINK
-      { cat: "Food", local: "Queria...", english: "I'd like...", phonetic: "keh-REE-ah" },
-      { cat: "Food", local: "A conta, por favor", english: "The bill please", phonetic: "ah KON-tah por fah-VOR" },
-      { cat: "Food", local: "Mais um, por favor", english: "One more please", phonetic: "mysh oom por fah-VOR" },
-      { cat: "Food", local: "Sem carne", english: "Without meat", phonetic: "sem KAR-neh" },
-      { cat: "Food", local: "Está delicioso", english: "It's delicious", phonetic: "esh-TAH deh-lee-SYOH-zoo" },
-      { cat: "Food", local: "Um café / Um copo de vinho / Água", english: "A coffee / A glass of wine / Water", phonetic: "oom kah-FAY / oom KOH-poo deh VEEN-yoo / AH-gwah" },
-
-      // EMERGENCY
-      { cat: "Emergency", local: "Socorro!", english: "Help!", phonetic: "soh-KOH-hoo" },
-      { cat: "Emergency", local: "Preciso de um médico", english: "I need a doctor", phonetic: "preh-SEE-zoo deh oom MEH-dee-koo" },
-    ]
-  },
-
-  Italy: {
-    name: "Italian",
-    nativeName: "Italiano",
-    greeting: "Ciao",
-    phrases: [
-      // BASICS
-      { cat: "Basics", local: "Ciao / Buongiorno", english: "Hi / Good morning", phonetic: "CHOW / bwon-JOR-noh" },
-      { cat: "Basics", local: "Buonasera", english: "Good evening", phonetic: "bwoh-nah-SAY-rah" },
-      { cat: "Basics", local: "Per favore", english: "Please", phonetic: "pair fah-VOH-reh" },
-      { cat: "Basics", local: "Grazie", english: "Thank you", phonetic: "GRAT-syeh" },
-      { cat: "Basics", local: "Scusi / Mi dispiace", english: "Excuse me / Sorry", phonetic: "SKOO-zee / mee dee-SPYAH-cheh" },
-      { cat: "Basics", local: "Sì / No", english: "Yes / No", phonetic: "see / noh" },
-      { cat: "Basics", local: "Non capisco", english: "I don't understand", phonetic: "non kah-PEES-koh" },
-      { cat: "Basics", local: "Parla inglese?", english: "Do you speak English?", phonetic: "PAR-lah een-GLAY-zeh" },
-
-      // GETTING AROUND
-      { cat: "Around", local: "Dov'è...?", english: "Where is...?", phonetic: "doh-VAY" },
-      { cat: "Around", local: "Quanto costa?", english: "How much is it?", phonetic: "KWAHN-toh KOS-tah" },
-      { cat: "Around", local: "Sinistra / Destra / Dritto", english: "Left / Right / Straight", phonetic: "see-NEES-trah / DES-trah / DREET-toh" },
-      { cat: "Around", local: "Un biglietto, per favore", english: "One ticket please", phonetic: "oon beel-YET-toh pair fah-VOH-reh" },
-
-      // FOOD + DRINK
-      { cat: "Food", local: "Vorrei...", english: "I'd like...", phonetic: "vor-RAY" },
-      { cat: "Food", local: "Il conto, per favore", english: "The bill please", phonetic: "eel KON-toh pair fah-VOH-reh" },
-      { cat: "Food", local: "Ancora uno, per favore", english: "One more please", phonetic: "ahn-KOH-rah OO-noh pair fah-VOH-reh" },
-      { cat: "Food", local: "Senza carne", english: "Without meat", phonetic: "SEN-tsah KAR-neh" },
-      { cat: "Food", local: "È buonissimo", english: "It's delicious", phonetic: "ay bwoh-NEES-see-moh" },
-      { cat: "Food", local: "Un caffè / Un bicchiere di vino / Acqua", english: "A coffee / A glass of wine / Water", phonetic: "oon kaf-FAY / oon bik-KYAIR-eh dee VEE-noh / AK-kwah" },
-
-      // EMERGENCY
-      { cat: "Emergency", local: "Aiuto!", english: "Help!", phonetic: "ah-YOO-toh" },
-      { cat: "Emergency", local: "Ho bisogno di un medico", english: "I need a doctor", phonetic: "oh bee-ZON-yoh dee oon MEH-dee-koh" },
-    ]
-  },
-
-  Germany: {
-    name: "German",
-    nativeName: "Deutsch",
-    greeting: "Hallo",
-    phrases: [
-      // BASICS
-      { cat: "Basics", local: "Hallo / Guten Morgen", english: "Hello / Good morning", phonetic: "HAH-loh / GOO-ten MOR-gen" },
-      { cat: "Basics", local: "Guten Abend", english: "Good evening", phonetic: "GOO-ten AH-bent" },
-      { cat: "Basics", local: "Bitte", english: "Please", phonetic: "BIT-eh" },
-      { cat: "Basics", local: "Danke", english: "Thank you", phonetic: "DAHN-keh" },
-      { cat: "Basics", local: "Entschuldigung", english: "Excuse me / Sorry", phonetic: "ent-SHOOL-dee-goong" },
-      { cat: "Basics", local: "Ja / Nein", english: "Yes / No", phonetic: "yah / nine" },
-      { cat: "Basics", local: "Ich verstehe nicht", english: "I don't understand", phonetic: "ikh fair-SHTAY-eh nikht" },
-      { cat: "Basics", local: "Sprechen Sie Englisch?", english: "Do you speak English?", phonetic: "SHPREH-khen zee ENG-lish" },
-
-      // GETTING AROUND
-      { cat: "Around", local: "Wo ist...?", english: "Where is...?", phonetic: "voh IST" },
-      { cat: "Around", local: "Was kostet das?", english: "How much is it?", phonetic: "vas KOS-tet das" },
-      { cat: "Around", local: "Links / Rechts / Geradeaus", english: "Left / Right / Straight", phonetic: "links / rekhts / geh-RAH-deh-ows" },
-      { cat: "Around", local: "Eine Fahrkarte, bitte", english: "One ticket please", phonetic: "EYE-neh FAR-kar-teh BIT-eh" },
-
-      // FOOD + DRINK
-      { cat: "Food", local: "Ich hätte gerne...", english: "I'd like...", phonetic: "ikh HET-eh GAIR-neh" },
-      { cat: "Food", local: "Die Rechnung, bitte", english: "The bill please", phonetic: "dee REKH-noong BIT-eh" },
-      { cat: "Food", local: "Noch eines, bitte", english: "One more please", phonetic: "nokh EYE-nes BIT-eh" },
-      { cat: "Food", local: "Ohne Fleisch", english: "Without meat", phonetic: "OH-neh flysh" },
-      { cat: "Food", local: "Das ist köstlich", english: "It's delicious", phonetic: "das ist KURST-likh" },
-      { cat: "Food", local: "Einen Kaffee / Ein Glas Wein / Wasser", english: "A coffee / A glass of wine / Water", phonetic: "EYE-nen ka-FAY / eyn glahs vyne / VAS-er" },
-
-      // EMERGENCY
-      { cat: "Emergency", local: "Hilfe!", english: "Help!", phonetic: "HIL-feh" },
-      { cat: "Emergency", local: "Ich brauche einen Arzt", english: "I need a doctor", phonetic: "ikh BROW-kheh EYE-nen artst" },
-    ]
-  }
-
-};
-
-// ─────────────────────────────────────────
-// LOCATION TO LANGUAGE MAPPING
-// ─────────────────────────────────────────
-const CITY_DATA = {
-  'Paris':             { country: 'France',   lang: 'France',   tz: 'Europe/Paris' },
-  'Marseille':         { country: 'France',   lang: 'France',   tz: 'Europe/Paris' },
-  'Lisbon':            { country: 'Portugal', lang: 'Portugal', tz: 'Europe/Lisbon' },
-  'Portugal Coast':    { country: 'Portugal', lang: 'Portugal', tz: 'Europe/Lisbon' },
-  'Porto':             { country: 'Portugal', lang: 'Portugal', tz: 'Europe/Lisbon' },
-  'Umbria':            { country: 'Italy',    lang: 'Italy',    tz: 'Europe/Rome' },
-  'Tuscany Coast':     { country: 'Italy',    lang: 'Italy',    tz: 'Europe/Rome' },
-  'Rome':              { country: 'Italy',    lang: 'Italy',    tz: 'Europe/Rome' },
-  'Berlin':            { country: 'Germany',  lang: 'Germany',  tz: 'Europe/Berlin' },
-  'Bali':              { country: 'Indonesia',lang: 'Indonesia',tz: 'Asia/Makassar' },
-  'Tokyo':             { country: 'Japan',    lang: 'Japan',    tz: 'Asia/Tokyo' },
-  'Bangkok':           { country: 'Thailand', lang: 'Thailand', tz: 'Asia/Bangkok' },
-  'Barcelona':         { country: 'Spain',    lang: 'Spain',    tz: 'Europe/Madrid' },
-  'Madrid':            { country: 'Spain',    lang: 'Spain',    tz: 'Europe/Madrid' },
-  'Amsterdam':         { country: 'Netherlands', lang: 'Netherlands', tz: 'Europe/Amsterdam' },
-  'Copenhagen':        { country: 'Denmark',  lang: 'Denmark',  tz: 'Europe/Copenhagen' },
-  'New York':          { country: 'USA',      lang: 'USA',      tz: 'America/New_York' },
-  'Los Angeles':       { country: 'USA',      lang: 'USA',      tz: 'America/Los_Angeles' },
-  'Mexico City':       { country: 'Mexico',   lang: 'Mexico',   tz: 'America/Mexico_City' },
-};
-
-// LOCATION_LANG kept for backwards compat — derives from CITY_DATA
-const LOCATION_LANG = {};
-Object.entries(CITY_DATA).forEach(([city, data]) => {
-  LOCATION_LANG[city] = data.lang;
-});
-// also map travel routes
-LOCATION_LANG['Paris - Marseille'] = 'France';
-LOCATION_LANG['Marseille - Lisbon'] = 'Portugal';
-LOCATION_LANG['Lisbon - Portugal Coast'] = 'Portugal';
-LOCATION_LANG['Coast - Porto'] = 'Portugal';
-LOCATION_LANG['Porto - Rome - Umbria'] = 'Italy';
-LOCATION_LANG['Umbria - Tuscany Coast'] = 'Italy';
-LOCATION_LANG['Tuscany - Rome'] = 'Italy';
-LOCATION_LANG['Rome - Berlin'] = 'Germany';
-LOCATION_LANG['Berlin - Doha - Bali'] = 'Germany';
-LOCATION_LANG['Bali - Taipei - Paris'] = 'France';
-
-// Each trip has: id, name, active, days, summary
-// active: true = shown in today view
-// days: keyed by "YYYY-MM-DD"
-// ─────────────────────────────────────────
-const TRIPS = {
-
-  "europe26": {
-    id: "europe26",
-    name: "Europe 26",
-    active: true,
-    color: null,
-    days: {
-
-      "2026-05-12": {
-        type: "travel",
-        location: "Bali - Taipei - Paris",
-        travel: [
-          { from: "DPS", to: "TPE", dep: "4:30pm", arr: "10:00pm", ref: "BR256", carrier: "EVA Air", refCode: "D84PWO" },
-          { from: "TPE", to: "CDG", dep: "11:30pm", arr: "8:25am", ref: "BR87", carrier: "EVA Air", arrNote: "May 13" }
-        ],
-        car: null, stay: null, alert: null, notes: ""
-      },
-
-      "2026-05-13": {
-        type: "arrive",
-        location: "Paris",
-        travel: [
-          { from: "TPE", to: "CDG", dep: "11:30pm", arr: "8:25am", ref: "BR87", note: "Land CDG 8:25am" }
-        ],
-        car: null, stay: "4 Square de Verdun, Paris 75010", alert: null, notes: ""
-      },
-
-      "2026-05-14": { type: "stay", location: "Paris", travel: null, car: null, stay: "4 Square de Verdun, Paris 75010", alert: null, notes: "" },
-      "2026-05-15": { type: "stay", location: "Paris", travel: null, car: null, stay: "4 Square de Verdun, Paris 75010", alert: null, notes: "" },
-      "2026-05-16": { type: "stay", location: "Paris", travel: null, car: null, stay: "4 Square de Verdun, Paris 75010", alert: null, notes: "" },
-      "2026-05-17": { type: "stay", location: "Paris", travel: null, car: null, stay: "Hotel TBC", alert: null, notes: "" },
-
-      "2026-05-18": {
-        type: "travel",
-        location: "Paris - Marseille",
-        travel: [
-          { from: "Paris", to: "Marseille", dep: "9:38am", arr: "12:57pm", ref: "TGV INOUI 6107", refCode: "5AGJT2", carrier: "SNCF", note: "Gare de Lyon - St-Charles\nCarriage 12, Seats 271 / 272 (upstairs)" }
-        ],
-        car: null, stay: "14 Rue Navarin, Marseille 13006", alert: null, notes: ""
-      },
-
-      "2026-05-19": { type: "stay", location: "Marseille", travel: null, car: null, stay: "14 Rue Navarin, Marseille 13006", alert: null, notes: "" },
-      "2026-05-20": { type: "stay", location: "Marseille", travel: null, car: null, stay: "14 Rue Navarin, Marseille 13006", alert: null, notes: "" },
-      "2026-05-21": { type: "stay", location: "Marseille", travel: null, car: null, stay: "14 Rue Navarin, Marseille 13006", alert: null, notes: "" },
-      "2026-05-22": { type: "stay", location: "Marseille", travel: null, car: null, stay: "14 Rue Navarin, Marseille 13006", alert: null, notes: "" },
-
-      "2026-05-23": {
-        type: "travel",
-        location: "Marseille - Lisbon",
-        travel: [
-          { from: "MRS", to: "LIS", dep: "3:25pm", arr: "4:50pm", ref: "FR486", refCode: "EV2BTP", carrier: "Ryanair" }
-        ],
-        car: null, stay: "Hotel TBC - Lisbon", alert: null, notes: ""
-      },
-
-      "2026-05-24": {
-        type: "travel",
-        location: "Lisbon - Portugal Coast",
-        travel: null,
-        car: "Sixt - Lisbon Centre / Picoas\n8:00am pickup\nDrive to coast ~1.5hrs",
-        stay: "Coast TBC - Comporta / Melides", alert: null, notes: ""
-      },
-
-      "2026-05-25": { type: "stay", location: "Portugal Coast", travel: null, car: null, stay: "Coast TBC - Comporta / Melides", alert: null, notes: "" },
-      "2026-05-26": { type: "stay", location: "Portugal Coast", travel: null, car: null, stay: "Coast TBC - Comporta / Melides", alert: null, notes: "" },
-      "2026-05-27": { type: "stay", location: "Portugal Coast", travel: null, car: null, stay: "Coast TBC - Comporta / Melides", alert: null, notes: "" },
-      "2026-05-28": { type: "stay", location: "Portugal Coast", travel: null, car: null, stay: "Coast TBC - Comporta / Melides", alert: null, notes: "" },
-
-      "2026-05-29": {
-        type: "travel",
-        location: "Coast - Porto",
-        travel: [
-          { from: "Comporta", to: "Porto", dep: null, arr: null, ref: null, note: "Drive ~3hrs\nReturn car Sixt by 2:00pm" }
-        ],
-        car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: null, notes: ""
-      },
-
-      "2026-05-30": { type: "stay", location: "Porto", travel: null, car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: null, notes: "" },
-      "2026-05-31": { type: "stay", location: "Porto", travel: null, car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: null, notes: "" },
-      "2026-06-01": { type: "stay", location: "Porto", travel: null, car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: null, notes: "" },
-      "2026-06-02": { type: "stay", location: "Porto", travel: null, car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: null, notes: "" },
-      "2026-06-03": { type: "stay", location: "Porto", travel: null, car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: null, notes: "" },
-      "2026-06-04": { type: "stay", location: "Porto", travel: null, car: null, stay: "Rua da Boa Hora 27, Porto 4050-100", alert: "Early flight tomorrow - airport by 5:30am", notes: "" },
-
-      "2026-06-05": {
-        type: "travel",
-        location: "Porto - Rome - Umbria",
-        travel: [
-          { from: "OPO", to: "FCO", dep: "7:10am", arr: "11:50am", ref: "FR6008", refCode: "W3IM7D", carrier: "Ryanair", note: "Pick up rental car FCO\nDrive to Umbria ~2hrs" }
-        ],
-        car: null, stay: "Agriturismo TBC - Spoleto / Norcia area", alert: "Airport by 5:30am", notes: ""
-      },
-
-      "2026-06-06": { type: "stay", location: "Umbria", travel: null, car: null, stay: "Agriturismo TBC - Spoleto / Norcia area", alert: null, notes: "" },
-      "2026-06-07": { type: "stay", location: "Umbria", travel: null, car: null, stay: "Agriturismo TBC - Spoleto / Norcia area", alert: null, notes: "" },
-
-      "2026-06-08": {
-        type: "travel",
-        location: "Umbria - Tuscany Coast",
-        travel: [
-          { from: "Umbria", to: "Maremma", dep: null, arr: null, ref: null, note: "Drive ~2.5hrs" }
-        ],
-        car: null, stay: "Hotel TBC - Argentario / Capalbio area", alert: null, notes: ""
-      },
-
-      "2026-06-09": { type: "stay", location: "Tuscany Coast", travel: null, car: null, stay: "Hotel TBC - Argentario / Capalbio area", alert: null, notes: "" },
-      "2026-06-10": { type: "stay", location: "Tuscany Coast", travel: null, car: null, stay: "Hotel TBC - Argentario / Capalbio area", alert: null, notes: "" },
-      "2026-06-11": { type: "stay", location: "Tuscany Coast", travel: null, car: null, stay: "Hotel TBC - Argentario / Capalbio area", alert: null, notes: "" },
-
-      "2026-06-12": {
-        type: "travel",
-        location: "Tuscany - Rome",
-        travel: [
-          { from: "Maremma", to: "Rome FCO", dep: null, arr: null, ref: null, note: "Drive ~2hrs\nDrop rental car at FCO\nTaxi to Testaccio ~45min / 50 euro flat" }
-        ],
-        car: null, stay: "Via Aldo Manuzio 99, Rome 00153 - Testaccio", alert: null, notes: ""
-      },
-
-      "2026-06-13": { type: "stay", location: "Rome", travel: null, car: null, stay: "Via Aldo Manuzio 99, Rome 00153 - Testaccio", alert: null, notes: "" },
-      "2026-06-14": { type: "stay", location: "Rome", travel: null, car: null, stay: "Via Aldo Manuzio 99, Rome 00153 - Testaccio", alert: "Early flight tomorrow - taxi FCO by 6:45am", notes: "" },
-
-      "2026-06-15": {
-        type: "travel",
-        location: "Rome - Berlin",
-        travel: [
-          { from: "FCO", to: "BER", dep: "8:45am", arr: "10:55am", ref: "FR41", refCode: "Y955KE", carrier: "Ryanair" }
-        ],
-        car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: "Taxi FCO by 6:45am", notes: ""
-      },
-
-      "2026-06-16": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-17": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-18": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-19": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-20": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-21": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-22": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: null, notes: "" },
-      "2026-06-23": { type: "stay", location: "Berlin", travel: null, car: null, stay: "Airbnb TBC - Kreuzberg, Bergmannkiez", alert: "Flight tomorrow 4:30pm - airport by 2:30pm", notes: "" },
-
-      "2026-06-24": {
-        type: "travel",
-        location: "Berlin - Doha - Bali",
-        travel: [
-          { from: "BER", to: "DOH", dep: "4:30pm", arr: "11:10pm", ref: "QR82", refCode: "7K8S2I", carrier: "Qatar" },
-          { from: "DOH", to: "DPS", dep: "2:45am", arr: "5:35pm", ref: "QR962", carrier: "Qatar", arrNote: "Jun 25" }
-        ],
-        car: null, stay: null, alert: null, notes: ""
-      }
-
-    },
-
-    summary: [
-      {
-        city: "Paris", nights: "5 nights", dates: "May 13-18",
-        sections: [
-          { label: "Bali to Paris", travel: [
-            { from: "DPS", to: "TPE", dep: "4:30pm", arr: "10:00pm", ref: "BR256", carrier: "EVA Air", refCode: "D84PWO" },
-            { from: "TPE", to: "CDG", dep: "11:30pm", arr: "8:25am", ref: "BR87", carrier: "EVA Air", arrNote: "May 13" }
-          ]},
-          { label: "Stay — May 13-17", content: "4 Square de Verdun, Paris 75010" },
-          { label: "Stay — May 17-18", content: "Hotel TBC" }
-        ]
-      },
-      {
-        city: "Marseille", nights: "5 nights", dates: "May 18-23",
-        sections: [
-          { label: "Paris to Marseille", travel: [
-            { from: "Paris", to: "Marseille", dep: "9:38am", arr: "12:57pm", ref: "TGV INOUI 6107", refCode: "5AGJT2", carrier: "SNCF", note: "Gare de Lyon - St-Charles\nCarriage 12, Seats 271 / 272 (upstairs)" }
-          ]},
-          { label: "Stay", content: "14 Rue Navarin, Marseille 13006" }
-        ]
-      },
-      {
-        city: "Lisbon", nights: "1 night", dates: "May 23-24",
-        sections: [
-          { label: "Marseille to Lisbon", travel: [
-            { from: "MRS", to: "LIS", dep: "3:25pm", arr: "4:50pm", ref: "FR486", refCode: "EV2BTP", carrier: "Ryanair" }
-          ]},
-          { label: "Stay", content: "Hotel TBC" }
-        ]
-      },
-      {
-        city: "Portugal Coast", nights: "5 nights", dates: "May 24-29",
-        sections: [
-          { label: "Car", content: "Sixt - Lisbon Centre / Picoas\nMay 24, 8:00am to May 29, 2:00pm\nConfirmation TBC" },
-          { label: "Stay", content: "Coast hotels TBC - Comporta / Melides area" }
-        ]
-      },
-      {
-        city: "Porto", nights: "7 nights", dates: "May 29 - Jun 5",
-        sections: [
-          { label: "Stay", content: "Rua da Boa Hora 27, Porto 4050-100" },
-          { label: "Porto to Rome", travel: [
-            { from: "OPO", to: "FCO", dep: "7:10am", arr: "11:50am", ref: "FR6008", refCode: "W3IM7D", carrier: "Ryanair", note: "Jun 5 — airport by 5:30am" }
-          ]}
-        ]
-      },
-      {
-        city: "Umbria", nights: "3 nights", dates: "Jun 5-8",
-        sections: [
-          { label: "Arrive", content: "Land FCO 11:50am - pick up rental car\nDrive FCO to Umbria ~2hrs\nItaly car TBC" },
-          { label: "Stay", content: "Agriturismo TBC - Spoleto / Norcia area" }
-        ]
-      },
-      {
-        city: "Tuscany Coast", nights: "4 nights", dates: "Jun 8-12",
-        sections: [
-          { label: "Stay", content: "Hotel TBC - Argentario / Capalbio area" }
-        ]
-      },
-      {
-        city: "Rome", nights: "3 nights", dates: "Jun 12-15",
-        sections: [
-          { label: "Arrive", content: "Drive Tuscany to FCO, drop car\nTaxi FCO to Testaccio ~45min / 50 euro flat" },
-          { label: "Stay", content: "Via Aldo Manuzio 99, Rome 00153\nTestaccio - across from the market" },
-          { label: "Rome to Berlin", travel: [
-            { from: "FCO", to: "BER", dep: "8:45am", arr: "10:55am", ref: "FR41", refCode: "Y955KE", carrier: "Ryanair", note: "Jun 15 — taxi FCO by 6:45am" }
-          ]}
-        ]
-      },
-      {
-        city: "Berlin", nights: "9 nights", dates: "Jun 15-24",
-        sections: [
-          { label: "Stay", content: "Airbnb TBC - Kreuzberg, Bergmannkiez" },
-          { label: "Berlin to Bali", travel: [
-            { from: "BER", to: "DOH", dep: "4:30pm", arr: "11:10pm", ref: "QR82", refCode: "7K8S2I", carrier: "Qatar" },
-            { from: "DOH", to: "DPS", dep: "2:45am", arr: "5:35pm", ref: "QR962", carrier: "Qatar", arrNote: "Jun 25" }
-          ]}
-        ]
-      }
-    ],
-
-    // GUIDE — per city, max 5 items
-    // type: "link" | "note"
-    // link: { title, url }
-    // note: { text }
-    guide: {}
-  }
-
-  // future trips go here:
-  // "japan27": { id: "japan27", name: "Japan 27", active: false, days: {}, summary: [], guide: {} }
-
-};
-
-// ─────────────────────────────────────────
-// ACTIVE TRIP — flatten active trips into
-// a single day lookup used by Today view
-// ─────────────────────────────────────────
-const TRIP = {};
-Object.values(TRIPS).forEach(trip => {
-  if (trip.active) Object.assign(TRIP, trip.days);
-});
-
-const SUMMARY = TRIPS.europe26.summary;
-
-
-// ─────────────────────────────────────────
-// CALENDAR DATA
-// ─────────────────────────────────────────
-const CAL_DAYS = {
-  may: [
-    ...Array(11).fill({type:'inactive'}),
-    {type:'transit',tag:'FLY'},
-    {type:'trip',tag:'PAR'},{type:'trip',tag:'PAR'},{type:'trip',tag:'PAR'},{type:'trip',tag:'PAR'},{type:'trip',tag:'PAR'},
-    {type:'transit',tag:'TGV'},
-    {type:'trip',tag:'MRS'},{type:'trip',tag:'MRS'},{type:'trip',tag:'MRS'},{type:'trip',tag:'MRS'},
-    {type:'transit',tag:'FLY'},
-    {type:'transit',tag:'CAR'},
-    {type:'trip',tag:'PRT'},{type:'trip',tag:'PRT'},{type:'trip',tag:'PRT'},{type:'trip',tag:'PRT'},
-    {type:'transit',tag:'OPO'},
-    {type:'trip',tag:'OPO'},{type:'trip',tag:'OPO'}
-  ],
-  jun: [
-    {type:'trip',tag:'OPO'},{type:'trip',tag:'OPO'},{type:'trip',tag:'OPO'},{type:'trip',tag:'OPO'},
-    {type:'transit',tag:'FLY'},
-    {type:'trip',tag:'UMB'},{type:'trip',tag:'UMB'},
-    {type:'transit',tag:'DRIVE'},
-    {type:'trip',tag:'TUS'},{type:'trip',tag:'TUS'},{type:'trip',tag:'TUS'},
-    {type:'transit',tag:'ROME'},
-    {type:'trip',tag:'ROM'},{type:'trip',tag:'ROM'},
-    {type:'transit',tag:'FLY'},
-    {type:'trip',tag:'BER'},{type:'trip',tag:'BER'},{type:'trip',tag:'BER'},{type:'trip',tag:'BER'},{type:'trip',tag:'BER'},{type:'trip',tag:'BER'},
-    {type:'trip',tag:'BER'},{type:'trip',tag:'BER'},
-    {type:'transit',tag:'FLY'},
-    ...Array(6).fill({type:'inactive'})
-  ]
-};
-</script>
-
+<meta name="apple-mobile-web-app-title" content="Lola">
+<title>Lola</title>
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap');
@@ -507,7 +21,6 @@ const CAL_DAYS = {
     --gray-mid: #6b6b6b;
     --gray-light: #c8c8c6;
     --gray-xlight: #e8e8e6;
-    --white: #ffffff;
     --accent: #2a4ed4;
     --accent-light: #eef1ff;
     --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04);
@@ -519,7 +32,6 @@ const CAL_DAYS = {
     --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
   }
 
-  /* ── DARK MODE ── */
   [data-theme="dark"] {
     --bg: #111111;
     --card: #1c1c1e;
@@ -528,9 +40,55 @@ const CAL_DAYS = {
     --gray-mid: #8e8e93;
     --gray-light: #3a3a3c;
     --gray-xlight: #2c2c2e;
-    --white: #1c1c1e;
     --shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
   }
+
+  body {
+    background: var(--bg);
+    color: var(--black);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    padding-top: calc(44px + env(safe-area-inset-top));
+    padding-bottom: calc(90px + max(env(safe-area-inset-bottom), 20px));
+  }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(44px + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 1.25rem;
+    padding-right: 0.5rem;
+    z-index: 100;
+    border-bottom: 1px solid var(--gray-xlight);
+  }
+
+  .top-bar-title {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--black);
+  }
+
+  .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ── BOTTOM NAV ── */
   .nav {
     position: fixed;
     bottom: 0;
@@ -548,21 +106,6 @@ const CAL_DAYS = {
     gap: 4px;
   }
 
-  body {
-    background: var(--bg);
-    color: var(--black);
-    font-family: var(--font-body);
-    font-size: 16px;
-    line-height: 1.6;
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-    padding-top: calc(44px + env(safe-area-inset-top));
-    padding-bottom: calc(90px + max(env(safe-area-inset-bottom), 20px));
-  }
-
-  .nav-title { display: none; }
-
   .nav-tab {
     flex: 1;
     display: flex;
@@ -571,7 +114,6 @@ const CAL_DAYS = {
     justify-content: center;
     font-family: var(--font-body);
     font-size: 13px;
-    letter-spacing: 0.01em;
     cursor: pointer;
     border: none;
     background: none;
@@ -581,24 +123,17 @@ const CAL_DAYS = {
     min-height: 48px;
     border-radius: 10px;
   }
-
   .nav-tab:hover { color: var(--gray-dark); background: var(--gray-xlight); }
   .nav-tab.active { color: var(--accent); font-weight: 600; background: none; }
 
+  /* ── VIEWS ── */
   .view { display: none; }
   .view.active { display: block; }
 
-  /* ── TODAY / HOME ── */
-  .today-wrap {
-    max-width: 540px;
-    margin: 0 auto;
-    padding: 0 0 2rem;
-  }
+  /* ── HOME ── */
+  .today-wrap { max-width: 540px; margin: 0 auto; padding: 0 0 2rem; }
 
-  .home-greeting {
-    padding: 1rem 1rem 0.75rem;
-  }
-
+  .home-greeting { padding: 1rem 1rem 0.75rem; }
   .home-greeting-text {
     font-family: var(--font-display);
     font-size: 28px;
@@ -614,7 +149,6 @@ const CAL_DAYS = {
     box-shadow: var(--shadow);
     padding: 1.25rem;
     overflow: hidden;
-    min-height: 200px;
   }
 
   .today-header {
@@ -636,7 +170,6 @@ const CAL_DAYS = {
   }
 
   .today-location {
-    font-family: var(--font-body);
     font-size: 13px;
     color: var(--gray-mid);
     letter-spacing: 0.06em;
@@ -645,7 +178,6 @@ const CAL_DAYS = {
   }
 
   .today-badge {
-    font-family: var(--font-body);
     font-size: 10px;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -656,16 +188,10 @@ const CAL_DAYS = {
     flex-shrink: 0;
     font-weight: 600;
   }
-
-  .today-badge.travel { background: var(--accent); color: white; }
-  .today-badge.arrive { background: var(--accent); color: white; }
+  .today-badge.travel, .today-badge.arrive { background: var(--accent); color: white; }
   .today-badge.stay { color: var(--gray-mid); background: var(--gray-xlight); }
 
-  .today-section { margin-bottom: 1.25rem; }
-  .today-section:last-child { margin-bottom: 0; }
-
   .today-label {
-    font-family: var(--font-body);
     font-size: 12px;
     letter-spacing: 0.09em;
     text-transform: uppercase;
@@ -674,11 +200,21 @@ const CAL_DAYS = {
   }
 
   .today-content {
-    font-family: var(--font-body);
     font-size: 16px;
     line-height: 1.65;
     color: var(--black);
     white-space: pre-line;
+  }
+
+  .alert-bar {
+    background: var(--accent-light);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--accent);
+    margin-top: 10px;
+    line-height: 1.5;
   }
 
   .day-nav-btn {
@@ -695,18 +231,8 @@ const CAL_DAYS = {
     border-radius: var(--radius-sm);
   }
   .day-nav-btn:hover:not(:disabled) { color: var(--gray-dark); background: var(--gray-xlight); }
-  .day-nav-btn:disabled { cursor: default; }
-    background: var(--accent-light);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: var(--accent);
-    margin-top: 10px;
-    line-height: 1.5;
-  }
+  .day-nav-btn:disabled { cursor: default; opacity: 0.3; }
 
-  /* pre-trip card */
   .pretrip-card {
     margin: 0 1rem 1rem;
     background: var(--card);
@@ -715,169 +241,30 @@ const CAL_DAYS = {
     padding: 2.5rem 1.5rem;
   }
 
-  /* reminders card */
-  .reminders-card {
-    margin: 0 1rem 1rem;
-    background: var(--accent-light);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-  }
-
-  .reminders-label {
-    font-size: 10px;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 0.75rem;
-    font-weight: 600;
-  }
-
   /* ── TRIPS / DOC ── */
-  .doc {
-    padding: 0.5rem 0 3rem;
-    max-width: 540px;
-    margin: 0 auto;
-  }
+  .doc { padding: 0.5rem 0 3rem; max-width: 540px; margin: 0 auto; }
 
-  .doc-header {
-    padding: 1.5rem 1rem 0.875rem;
-    max-width: 540px;
-    margin: 0 auto;
-  }
+  .doc-header { padding: 1.5rem 1rem 0.875rem; max-width: 540px; margin: 0 auto; }
+  .doc-eyebrow { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 3px; }
+  .doc-title { font-family: var(--font-display); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; color: var(--black); }
 
-  .doc-eyebrow {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-    margin-bottom: 3px;
-  }
+  .trip-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin: 0 1rem 1rem; overflow: hidden; }
+  .trip-card-header { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--gray-xlight); }
+  .trip-card-name { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--accent); margin-bottom: 2px; }
+  .trip-card-meta { font-size: 12px; color: var(--gray-mid); }
 
-  .doc-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--black);
-  }
+  .nights-badge { font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-mid); background: var(--gray-xlight); padding: 2px 8px; border-radius: 20px; }
 
-  /* trip card in feed */
-  .trip-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin: 0 1rem 1rem;
-    overflow: hidden;
-  }
-
-  .trip-card-header {
-    padding: 1.25rem 1.25rem 1rem;
-    border-bottom: 1px solid var(--gray-xlight);
-  }
-
-  .trip-card-name {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--accent);
-    margin-bottom: 2px;
-  }
-
-  .trip-card-meta {
-    font-size: 12px;
-    color: var(--gray-mid);
-  }
-
-  .leg {
-    padding: 1rem 1.25rem;
-  }
-
-  .leg:last-child { }
-
-  .leg-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 0.75rem;
-  }
-
-  .leg-city {
-    font-family: var(--font-display);
-    font-size: 19px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    color: var(--black);
-  }
-
-  .nights-badge {
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-    background: var(--gray-xlight);
-    padding: 2px 8px;
-    border-radius: 20px;
-  }
-
-  .leg-dates {
-    font-size: 12px;
-    color: var(--gray-mid);
-  }
-
-  .section { margin-bottom: 0.875rem; }
-  .section:last-child { margin-bottom: 0; }
-
-  .section-label {
-    font-size: 10px;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-    margin-bottom: 3px;
-  }
-
-  .section-content {
-    font-size: 14px;
-    line-height: 1.65;
-    color: var(--black);
-    white-space: pre-line;
-  }
+  .section-label { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 3px; }
+  .section-content { font-size: 14px; line-height: 1.65; color: var(--black); white-space: pre-line; }
 
   /* ── TRAVEL LEGS ── */
-  .travel-route {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    margin-bottom: 3px;
-    color: var(--black);
-  }
+  .travel-route { font-family: var(--font-display); font-size: 16px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 3px; color: var(--black); }
+  .travel-times { font-family: var(--font-mono); font-size: 12px; color: var(--gray-dark); margin-bottom: 2px; }
+  .travel-ref { font-family: var(--font-mono); font-size: 10px; color: var(--gray-mid); }
+  .travel-note { font-size: 13px; color: var(--gray-mid); margin-top: 5px; white-space: pre-line; line-height: 1.55; }
 
-  .travel-times {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--gray-dark);
-    margin-bottom: 2px;
-  }
-
-  .travel-ref {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--gray-mid);
-  }
-
-  .travel-note {
-    font-size: 13px;
-    color: var(--gray-mid);
-    margin-top: 5px;
-    white-space: pre-line;
-    line-height: 1.55;
-  }
-
-  /* ── TRIPS SUBNAV ── */
+  /* ── SUBNAV ── */
   .trips-subnav {
     display: flex;
     padding: 0 1rem;
@@ -885,15 +272,12 @@ const CAL_DAYS = {
     position: sticky;
     top: 0;
     z-index: 50;
-    gap: 0;
     border-bottom: 1px solid var(--gray-xlight);
     padding-top: 4px;
   }
-
   .subnav-tab {
     font-family: var(--font-body);
     font-size: 13px;
-    font-weight: 400;
     padding: 14px 0;
     margin-right: 24px;
     background: none;
@@ -904,59 +288,16 @@ const CAL_DAYS = {
     transition: all 0.15s;
     min-height: 52px;
   }
-
   .subnav-tab.active { color: var(--black); border-bottom: 2px solid var(--black); font-weight: 500; }
 
   /* ── CALENDAR ── */
-  .cal {
-    padding: 1.25rem 1rem 3rem;
-    max-width: 540px;
-    margin: 0 auto;
-  }
-
-  .cal-header {
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.875rem;
-    border-bottom: 1px solid var(--gray-xlight);
-  }
-
+  .cal { padding: 1.25rem 1rem 3rem; max-width: 540px; margin: 0 auto; }
+  .cal-header { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 1.25rem; padding-bottom: 0.875rem; border-bottom: 1px solid var(--gray-xlight); }
   .cal-month { margin-bottom: 1.75rem; }
-
-  .cal-month-name {
-    font-size: 11px;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-    margin-bottom: 0.625rem;
-  }
-
+  .cal-month-name { font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-mid); margin-bottom: 0.625rem; }
   .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-
-  .cal-dow {
-    font-family: var(--font-mono);
-    font-size: 9px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--gray-light);
-    text-align: center;
-    padding: 4px 0;
-  }
-
-  .cal-day {
-    aspect-ratio: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    border-radius: 8px;
-  }
-
+  .cal-dow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-light); text-align: center; padding: 4px 0; }
+  .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 11px; border-radius: 8px; }
   .cal-day.empty { background: none; }
   .cal-day.inactive { color: var(--gray-light); }
   .cal-day.trip { background: white; color: var(--black); box-shadow: var(--shadow-sm); }
@@ -965,346 +306,57 @@ const CAL_DAYS = {
   .cal-day .day-num { font-size: 11px; line-height: 1; }
   .cal-day .day-tag { font-size: 7px; color: var(--gray-mid); margin-top: 1px; line-height: 1; }
   .cal-day.transit .day-tag { color: rgba(255,255,255,0.7); }
-
-  .cal-legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 1.25rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--gray-xlight);
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 10px;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-  }
-
+  .cal-legend { display: flex; gap: 20px; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--gray-xlight); }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-mid); }
   .legend-dot { width: 10px; height: 10px; border-radius: 4px; }
   .legend-dot.transit { background: var(--accent); }
   .legend-dot.stay { background: white; border: 1px solid var(--gray-light); box-shadow: var(--shadow-sm); }
 
-  /* ── MANAGE / CITY LIST ── */
-  .manage-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin: 0 1rem 1rem;
-    overflow: hidden;
-  }
-
-  .manage-row {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--gray-xlight);
-    cursor: pointer;
-    min-height: 60px;
-    transition: background 0.1s;
-  }
-
+  /* ── MANAGE / CARDS ── */
+  .manage-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin: 0 1rem 1rem; overflow: hidden; }
+  .manage-row { display: flex; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-xlight); cursor: pointer; min-height: 60px; transition: background 0.1s; }
   .manage-row:last-child { border-bottom: none; }
   .manage-row:active { background: var(--bg); }
+  .manage-row-title { font-family: var(--font-display); font-size: 16px; font-weight: 500; color: var(--black); letter-spacing: -0.01em; }
+  .manage-row-sub { font-size: 12px; color: var(--gray-mid); margin-top: 2px; }
+  .manage-chevron { color: var(--gray-light); font-size: 18px; flex-shrink: 0; }
 
-  .manage-row-title {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--black);
-    letter-spacing: -0.01em;
-  }
-
-  .manage-row-sub {
-    font-size: 12px;
-    color: var(--gray-mid);
-    margin-top: 2px;
-  }
-
-  .manage-chevron {
-    color: var(--gray-light);
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  /* ── EXPLORE / LOCAL ── */
-  .explore-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin: 0 1rem 1rem;
-    padding: 1.25rem;
-    overflow: hidden;
-  }
-
-  .local-cat-label {
-    font-size: 10px;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--gray-mid);
-    margin: 1.5rem 0 0.25rem;
-  }
-
-  .local-phrase {
-    padding: 0.875rem 0;
-    border-bottom: 1px solid var(--gray-xlight);
-    cursor: pointer;
-  }
-
-  .local-phrase:last-child { border-bottom: none; }
-  .local-phrase:hover .local-phrase-local { color: var(--accent); }
-
-  .local-phrase-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-  }
-
-  .local-phrase-local {
-    font-family: var(--font-display);
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    color: var(--black);
-    line-height: 1.3;
-    transition: color 0.15s;
-  }
-
-  .local-phrase-toggle {
-    font-size: 18px;
-    color: var(--gray-light);
-    flex-shrink: 0;
-    margin-left: 10px;
-    font-weight: 300;
-    line-height: 1;
-  }
-
-  .local-phrase-english {
-    font-size: 12px;
-    color: var(--gray-mid);
-    margin-top: 3px;
-  }
-
-  .local-phrase-phonetic {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--accent);
-    margin-top: 8px;
-    letter-spacing: 0.02em;
-    display: none;
-  }
-
-  .lang-pill {
+  /* ── CITY NOTES TEXTAREA ── */
+  .city-notes-area {
+    width: 100%;
+    min-height: 120px;
     font-family: var(--font-body);
-    font-size: 12px;
-    padding: 6px 14px;
-    cursor: pointer;
-    border: 1px solid var(--gray-light);
-    border-radius: 20px;
-    background: none;
-    color: var(--gray-mid);
-    transition: all 0.15s;
-  }
-
-  .lang-pill:hover { border-color: var(--accent); color: var(--accent); }
-  .lang-pill.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-  /* ── GUIDE ITEMS ── */
-  .guide-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    padding: 0.625rem 0;
-    min-height: 52px;
-  }
-
-  .guide-item:last-child { padding-bottom: 0; }
-
-  .guide-item-text {
-    font-size: 15px;
-    line-height: 1.5;
-    color: var(--black);
-    flex: 1;
-  }
-
-  .guide-item-link {
-    font-size: 15px;
-    color: var(--accent);
-    text-decoration: none;
-    line-height: 1.5;
-    flex: 1;
-  }
-
-  .guide-item-link:hover { text-decoration: underline; }
-
-  .guide-item-domain {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--gray-mid);
-    display: block;
-    margin-top: 2px;
-  }
-
-  .guide-add-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 1rem 0;
-    font-size: 15px;
-    color: var(--gray-mid);
-    background: none;
+    font-size: 16px;
+    line-height: 1.7;
     border: none;
-    cursor: pointer;
-    width: 100%;
-    min-height: 52px;
-    transition: color 0.15s;
-    font-family: var(--font-body);
-  }
-
-  .guide-add-btn:hover { color: var(--accent); }
-
-  .guide-add-form {
-    padding: 0.875rem 0;
-    border-top: 1px solid var(--gray-xlight);
-    display: none;
-  }
-
-  .guide-add-form.open { display: block; }
-
-  .guide-input {
-    width: 100%;
-    font-family: var(--font-body);
-    font-size: 15px;
-    padding: 10px 14px;
-    border: 1.5px solid var(--gray-xlight);
-    border-radius: var(--radius-sm);
-    background: var(--bg);
-    color: var(--black);
     outline: none;
-    transition: border-color 0.15s;
+    background: none;
+    color: var(--black);
+    resize: none;
+    padding: 0;
   }
+  .city-notes-area::placeholder { color: var(--gray-light); }
 
-  .guide-input:focus { border-color: var(--accent); }
-  .guide-input::placeholder { color: var(--gray-light); }
+  /* ── SWIPE TO DELETE ── */
+  .swipe-item { position: relative; overflow: hidden; touch-action: pan-y; background: var(--card); }
+  .swipe-items-container .swipe-item + .swipe-item { border-top: 1px solid var(--gray-xlight); }
 
-  .guide-form-actions {
+  .swipe-delete-bg {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 80px;
+    background: #e74c3c;
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .guide-form-btn {
-    font-family: var(--font-body);
+    align-items: center;
+    justify-content: center;
+    color: white;
     font-size: 13px;
     font-weight: 500;
-    padding: 10px 18px;
-    border-radius: 20px;
+    letter-spacing: 0.03em;
     cursor: pointer;
-    transition: all 0.15s;
-    min-height: 44px;
   }
 
-  .guide-form-btn.primary { background: var(--accent); color: white; border: none; }
-  .guide-form-btn.primary:hover { opacity: 0.9; }
-  .guide-form-btn.secondary { background: none; color: var(--gray-mid); border: 1.5px solid var(--gray-xlight); }
-  .guide-form-btn.secondary:hover { border-color: var(--black); color: var(--black); }
-
-  .guide-section-divider {
-    margin: 2rem 0 0.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--gray-xlight);
-  }
-
-  .guide-empty {
-    font-size: 13px;
-    color: var(--gray-light);
-    padding: 0.5rem 0 1rem;
-    font-style: italic;
-  }
-
-  .guide-city-header {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--black);
-    margin-bottom: 4px;
-  }
-
-  /* ── SETTINGS ── */
-  .settings-card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin: 0 1rem 1rem;
-    overflow: hidden;
-  }
-
-  .settings-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--gray-xlight);
-    min-height: 56px;
-  }
-
-  .settings-row:last-child { border-bottom: none; }
-
-  .settings-row-label {
-    font-size: 15px;
-    color: var(--black);
-  }
-
-  .settings-btn {
-    font-size: 12px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    padding: 7px 14px;
-    border: 1.5px solid var(--gray-xlight);
-    border-radius: 20px;
-    background: none;
-    color: var(--black);
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: var(--font-body);
-  }
-
-  .settings-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .trip-action-btn {
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    color: var(--gray-mid);
-    transition: color 0.15s;
-    font-family: var(--font-body);
-  }
-
-  .trip-action-btn:hover { color: var(--accent); }
-  .trip-action-btn.danger:hover { color: #c0392b; }
-
-  /* ── SECTION HEADER ── */
-  .section-header {
-    padding: 1.5rem 1.25rem 0.5rem;
-    max-width: 540px;
-    margin: 0 auto;
-  }
-
-  .section-title {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--black);
-  }
+  .swipe-item-content { transition: transform 0.2s ease; }
 
   /* ── DESKTOP DELETE ── */
   .desktop-delete-btn {
@@ -1321,112 +373,250 @@ const CAL_DAYS = {
     transition: opacity 0.15s, color 0.15s;
     flex-shrink: 0;
   }
-
   .swipe-item:hover .desktop-delete-btn { opacity: 1; }
   .desktop-delete-btn:hover { color: #e74c3c !important; }
+  @media (hover: none) { .desktop-delete-btn { display: none; } }
 
-  /* Hide on touch devices */
-  @media (hover: none) {
-    .desktop-delete-btn { display: none; }
-  }
-
-  /* ── SWIPE TO DELETE ── */
-  .swipe-item {
-    position: relative;
-    overflow: hidden;
-    touch-action: pan-y;
-    background: var(--card);
-  }
-
-  .swipe-items-container .swipe-item + .swipe-item {
-    border-top: 1px solid var(--gray-xlight);
-  }
-
-  .swipe-item-content {
-    display: flex;
-    align-items: center;
-    background: var(--card);
-    transition: transform 0.2s ease;
-    position: relative;
-    z-index: 1;
-  }
-
-  .swipe-delete-bg {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 80px;
-    background: #e74c3c;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-weight: 500;
-    cursor: pointer;
-    z-index: 0;
-  }
-
-  /* ── CITY NOTES ── */
-  .city-notes-area {
+  /* ── FORM ELEMENTS ── */
+  .guide-input {
     width: 100%;
-    min-height: 100px;
     font-family: var(--font-body);
     font-size: 15px;
-    line-height: 1.7;
-    border: none;
-    outline: none;
-    background: none;
+    padding: 10px 14px;
+    border: 1.5px solid var(--gray-xlight);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
     color: var(--black);
-    resize: none;
-    padding: 0;
+    outline: none;
+    transition: border-color 0.15s;
   }
+  .guide-input:focus { border-color: var(--accent); }
+  .guide-input::placeholder { color: var(--gray-light); }
 
-  .city-notes-area::placeholder { color: var(--gray-light); }
+  .guide-form-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+  .guide-form-btn {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.15s;
+    min-height: 44px;
+  }
+  .guide-form-btn.primary { background: var(--accent); color: white; border: none; }
+  .guide-form-btn.primary:hover { opacity: 0.9; }
+  .guide-form-btn.secondary { background: none; color: var(--gray-mid); border: 1.5px solid var(--gray-xlight); }
+  .guide-form-btn.secondary:hover { border-color: var(--black); color: var(--black); }
+
+  /* ── EXPLORE / LANGUAGE ── */
+  .explore-card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin: 0 1rem 1rem; padding: 1.25rem; overflow: hidden; }
+  .local-phrase { padding: 0.875rem 0; border-bottom: 1px solid var(--gray-xlight); cursor: pointer; }
+  .local-phrase:last-child { border-bottom: none; }
+  .local-phrase:hover .local-phrase-local { color: var(--accent); }
+  .local-phrase-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .local-phrase-local { font-family: var(--font-display); font-size: 16px; font-weight: 500; letter-spacing: -0.01em; color: var(--black); line-height: 1.3; transition: color 0.15s; }
+  .local-phrase-toggle { font-size: 18px; color: var(--gray-light); flex-shrink: 0; margin-left: 10px; font-weight: 300; line-height: 1; }
+  .local-phrase-english { font-size: 12px; color: var(--gray-mid); margin-top: 3px; }
+  .local-phrase-phonetic { font-family: var(--font-mono); font-size: 12px; color: var(--accent); margin-top: 8px; letter-spacing: 0.02em; display: none; }
+  .lang-pill { font-family: var(--font-body); font-size: 12px; padding: 6px 14px; cursor: pointer; border: 1px solid var(--gray-light); border-radius: 20px; background: none; color: var(--gray-mid); transition: all 0.15s; }
+  .lang-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .lang-pill.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* ── SETTINGS ── */
+  .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--gray-xlight); min-height: 56px; }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-row-label { font-size: 15px; color: var(--black); }
+
+  /* ── PLAN VIEW ── */
+  .plan-trip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    cursor: pointer;
+    border-bottom: 1px solid var(--gray-xlight);
+  }
+  .plan-trip-row:last-child { border-bottom: none; }
+  .plan-trip-row:hover .plan-trip-name { color: var(--accent); }
+  .plan-trip-name { font-size: 15px; color: var(--black); transition: color 0.15s; }
+  .plan-trip-check { color: var(--accent); font-size: 16px; display: none; }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(42, 78, 212, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(42, 78, 212, 0); }
+  }
+  .btn-parsing { animation: pulse-glow 1.5s ease-in-out infinite; }
 
   /* ── PRINT ── */
   @media print {
-    @page { size: A6 portrait; margin: 12mm 10mm 12mm 10mm; }
-    html, body { margin: 0; padding: 0; background: white !important; color: black !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .nav { display: none !important; }
-    #view-today, #view-trips, #view-discover, #view-new, #view-settings { display: none !important; }
-    #top-bar, .nav { display: none !important; }
-    #print-days { display: block !important; background: white !important; color: black !important; }
+    @page { size: A6 portrait; margin: 12mm 10mm; }
+    html, body { margin: 0; padding: 0; background: white !important; }
+    .nav, .top-bar, #view-today, #view-trips, #view-discover, #view-new { display: none !important; }
+    #print-days { display: block !important; background: white !important; }
   }
 </style>
 </head>
 <body>
 
-<!-- BOTTOM NAV -->
-<nav class="nav">
-  <button class="nav-tab active" onclick="showView('today', this)">Home</button>
-  <button class="nav-tab" onclick="showView('trips', this)">Trips</button>
-  <button class="nav-tab" onclick="showView('discover', this)">Discover</button>
-  <button class="nav-tab" onclick="showView('new', this)">Plan</button>
-</nav>
-
-<!-- FLOATING TOP RIGHT — destination clock + gear -->
-<div id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:95;height:env(safe-area-inset-top);background:var(--bg);"></div>
-<div style="position:fixed;top:env(safe-area-inset-top);right:0;z-index:95;display:flex;align-items:center;gap:0;padding:8px 4px 0 0;">
-  <div id="dest-clock" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);display:none;padding:4px 6px;"></div>
-  <button onclick="toggleSettings()" id="gear-btn" style="background:none;border:none;cursor:pointer;font-size:19px;color:var(--gray-mid);padding:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.15s;" onmouseover="this.style.background='var(--gray-xlight)'" onmouseout="this.style.background='none'">⊙</button>
+<!-- TOP BAR -->
+<div class="top-bar">
+  <span class="top-bar-title" id="top-bar-title">Lola</span>
+  <div class="top-bar-right">
+    <div id="dest-clock" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);display:none;padding:4px 6px;"></div>
+    <button onclick="toggleSettings()" id="gear-btn" style="background:none;border:none;cursor:pointer;font-size:19px;color:var(--gray-mid);padding:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.15s;" onmouseover="this.style.background='var(--gray-xlight)'" onmouseout="this.style.background='none'">⊙</button>
+  </div>
 </div>
 
-<!-- SETTINGS PANEL — slides up full screen -->
-<div id="settings-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:500;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);">
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-tab active" id="nav-home" onclick="showView('home',this)">Home</button>
+  <button class="nav-tab" id="nav-trips" onclick="showView('trips',this)">Trips</button>
+  <button class="nav-tab" id="nav-discover" onclick="showView('discover',this)">Discover</button>
+  <button class="nav-tab" id="nav-plan" onclick="showView('plan',this)">Plan</button>
+</nav>
 
-  <!-- Header -->
+<!-- HOME VIEW -->
+<div id="view-home" class="view active">
+  <div id="home-content"></div>
+</div>
+
+<!-- TRIPS VIEW -->
+<div id="view-trips" class="view">
+  <div class="trips-subnav">
+    <button id="tab-summary" class="subnav-tab active" onclick="switchTripsView('summary')">Summary</button>
+    <button id="tab-cal" class="subnav-tab" onclick="switchTripsView('cal')">Calendar</button>
+    <button id="tab-manage" class="subnav-tab" onclick="switchTripsView('manage')">Manage</button>
+  </div>
+
+  <div id="trips-summary" style="display:block;">
+    <div style="padding:0 0 0.5rem;max-width:540px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:0.75rem 1rem 0;">
+      <input id="summary-search" type="search" placeholder="Search cities..." oninput="filterSummary(this.value)"
+        style="flex:1;font-family:var(--font-body);font-size:14px;padding:8px 12px;border:1.5px solid var(--gray-xlight);border-radius:20px;background:var(--card);color:var(--black);outline:none;transition:border-color 0.15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'" />
+    </div>
+    <div class="doc"><div id="summary-content"></div></div>
+  </div>
+
+  <div id="trips-cal" style="display:none;">
+    <div class="cal">
+      <div class="cal-header" id="cal-header">2026</div>
+      <div id="cal-content"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot transit"></div>Transit</div>
+        <div class="legend-item"><div class="legend-dot stay"></div>Stay</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="trips-manage" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div id="manage-trips-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Level 2: Trip detail -->
+<div id="trips-level-2" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
+  <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
+    <button onclick="closeLevel2()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">← Trips</button>
+    <span id="level2-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--accent);"></span>
+  </div>
+  <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
+    <div id="trips-city-list" style="max-width:540px;margin:0 auto;"></div>
+  </div>
+</div>
+
+<!-- Level 3: City detail -->
+<div id="trips-level-3" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
+  <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
+    <button onclick="closeLevel3()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">←</button>
+    <span id="level3-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;"></span>
+  </div>
+  <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
+    <div id="trips-city-detail" style="max-width:540px;margin:0 auto;"></div>
+  </div>
+</div>
+
+<!-- DISCOVER VIEW -->
+<div id="view-discover" class="view">
+  <div class="trips-subnav">
+    <button id="tab-recs" onclick="switchExploreView('recs')" class="subnav-tab active">Recs</button>
+    <button id="tab-speak" onclick="switchExploreView('speak')" class="subnav-tab">Speak</button>
+  </div>
+  <div id="explore-recs">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div class="manage-card">
+        <a href="https://outliersguide.com" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Outliers Guide</div><div class="manage-row-sub">Curated hotels and places</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://amigo.app" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Amigo</div><div class="manage-row-sub">Friend recommendations</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://trippin.world" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Trippin</div><div class="manage-row-sub">Travel editorial</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://monocle.com/travel" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Monocle Travel</div><div class="manage-row-sub">City guides and culture</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://www.cntraveler.com" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Condé Nast Traveler</div><div class="manage-row-sub">Travel inspiration</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://www.theguardian.com/travel" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Guardian Travel</div><div class="manage-row-sub">Independent travel writing</div></div><span class="manage-chevron">↗</span></a>
+      </div>
+    </div>
+  </div>
+  <div id="explore-speak" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div style="padding:0 1rem 0.75rem;display:flex;gap:6px;flex-wrap:wrap;" id="local-lang-switcher"></div>
+      <div class="manage-card" style="padding:0 1.25rem;"><div id="local-content"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLAN VIEW -->
+<div id="view-plan" class="view">
+  <div style="max-width:540px;margin:0 auto;padding:1.25rem 1rem 3rem;">
+
+    <div style="padding:1rem 0 1.25rem;">
+      <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">Plan</div>
+    </div>
+
+    <!-- Paste area -->
+    <div class="manage-card" style="padding:1.25rem;margin-bottom:1rem;">
+      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Paste your itinerary</div>
+      <textarea id="plan-text" placeholder="Paste flights, hotels, confirmations — anything. Claude will extract the structure automatically." style="width:100%;min-height:180px;font-family:var(--font-body);font-size:14px;line-height:1.65;border:none;outline:none;background:none;color:var(--black);resize:vertical;"></textarea>
+    </div>
+
+    <!-- Trip selector -->
+    <div class="manage-card" style="margin-bottom:1.25rem;padding:1.25rem;">
+      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:12px;">Add to trip</div>
+      <div id="plan-trip-list"></div>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
+        <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+        <span style="font-size:11px;color:var(--gray-light);">or create new</span>
+        <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+      </div>
+
+      <!-- New trip name -->
+      <input id="plan-new-name" type="text" placeholder="New trip name..."
+        style="width:100%;font-family:var(--font-body);font-size:15px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;transition:border-color 0.15s;"
+        onfocus="clearPlanSelection();this.style.borderColor='var(--accent)'"
+        onblur="this.style.borderColor='var(--gray-xlight)'" />
+    </div>
+
+    <!-- Parse button -->
+    <button id="parse-btn" onclick="parseTripWithClaude()"
+      style="width:100%;font-family:var(--font-display);font-size:15px;font-weight:600;padding:16px;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;"
+      onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+      Parse with Claude →
+    </button>
+    <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
+
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:500;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;padding-top:calc(1rem + env(safe-area-inset-top));position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:1px solid var(--gray-xlight);">
     <span style="font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:-0.01em;color:var(--black);">Settings</span>
     <button onclick="toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--gray-mid);padding:4px 8px;min-width:44px;min-height:44px;">×</button>
   </div>
-
   <div style="max-width:540px;margin:0 auto;padding:1.25rem 0 3rem;">
 
-    <!-- Account -->
     <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Account</div>
     <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row">
@@ -1437,23 +627,20 @@ const CAL_DAYS = {
       </div>
       <div class="settings-row" style="border-bottom:none;">
         <span class="settings-row-label" style="color:#e74c3c;">Sign Out</span>
-        <button onclick="logout()" style="font-size:11px;padding:6px 14px;border:1.5px solid #e74c3c;border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;transition:all 0.15s;">Sign Out</button>
+        <button onclick="logout()" style="font-size:11px;padding:6px 14px;border:1.5px solid #e74c3c;border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;">Sign Out</button>
       </div>
     </div>
 
-    <!-- Appearance -->
     <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Appearance</div>
     <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row" style="border-bottom:none;">
         <span class="settings-row-label">Dark Mode</span>
-        <!-- Toggle switch -->
         <div onclick="toggleDarkMode()" id="dark-toggle" style="width:48px;height:28px;border-radius:14px;background:var(--gray-xlight);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;">
           <div id="dark-toggle-knob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s;"></div>
         </div>
       </div>
     </div>
 
-    <!-- Trips -->
     <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Trips</div>
     <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row">
@@ -1466,1207 +653,91 @@ const CAL_DAYS = {
       </div>
     </div>
 
-    <!-- About -->
     <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">About</div>
     <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row" style="border-bottom:none;">
         <span class="settings-row-label">app.summer-holiday.com</span>
-        <span style="font-size:12px;color:var(--gray-mid);">v0.1</span>
+        <span style="font-size:12px;color:var(--gray-mid);">v0.2</span>
       </div>
     </div>
 
   </div>
 </div>
 
-<!-- Settings overlay -->
-<div id="settings-overlay" onclick="toggleSettings()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:499;"></div>
-
-<!-- HOME / TODAY -->
-<div id="view-today" class="view active"></div>
-
-<!-- TRIPS — Apple Notes 3-level pattern -->
-<div id="view-trips" class="view">
-
-  <!-- Level 1: Trip list with Feed / Cal / Manage subnav -->
-  <div id="trips-level-1">
-    <div class="trips-subnav">
-      <button id="tab-feed" onclick="switchTripsView('feed')" class="subnav-tab active">Summary</button>
-      <button id="tab-cal" onclick="switchTripsView('cal')" class="subnav-tab">Calendar</button>
-      <button id="tab-manage" onclick="switchTripsView('manage')" class="subnav-tab">Manage</button>
-    </div>
-
-    <div id="trips-feed">
-      <div style="padding:1rem 1rem 0.5rem;">
-        <div style="position:relative;">
-          <input id="summary-search" type="text" placeholder="Search cities, notes, links..."
-            oninput="filterSummary(this.value)"
-            style="width:100%;font-family:var(--font-body);font-size:15px;padding:11px 16px 11px 40px;background:var(--gray-xlight);border:none;border-radius:12px;outline:none;color:var(--black);-webkit-appearance:none;" />
-          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--gray-mid);pointer-events:none;">⌕</span>
-        </div>
-      </div>
-      <div class="doc"><div id="summary-content"></div></div>
-    </div>
-
-    <div id="trips-cal" style="display:none;">
-      <div class="cal">
-        <div class="cal-header" id="cal-header">2026</div>
-        <div id="cal-content"></div>
-        <div class="cal-legend">
-          <div class="legend-item"><div class="legend-dot transit"></div>Transit</div>
-          <div class="legend-item"><div class="legend-dot stay"></div>Stay</div>
-        </div>
-      </div>
-    </div>
-
-    <div id="trips-manage" style="display:none;">
-      <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
-        <div id="manage-trips-list"></div>
-        <div style="padding:0 1rem;">
-          <button onclick="showView('new', document.querySelector('.nav-tab:nth-child(4)'))" style="width:100%;margin-top:0.75rem;font-size:13px;font-weight:500;padding:14px 0;background:none;color:var(--accent);border:1.5px dashed var(--accent);border-radius:var(--radius);cursor:pointer;font-family:var(--font-body);opacity:0.7;transition:opacity 0.15s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">+ New Trip</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Level 2: Cities in a trip -->
-  <!-- Level 2: Trip detail -->
-  <div id="trips-level-2" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
-    <!-- Fixed header -->
-    <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
-      <button onclick="closeLevel2()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">← Trips</button>
-      <span id="level2-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--accent);"></span>
-    </div>
-    <!-- Scrollable body -->
-    <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
-      <div id="trips-city-list" style="max-width:540px;margin:0 auto;"></div>
-    </div>
-  </div>
-
-  <!-- Level 3: City detail -->
-  <div id="trips-level-3" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
-    <!-- Fixed header -->
-    <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
-      <button onclick="closeLevel3()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">←</button>
-      <span id="level3-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;"></span>
-    </div>
-    <!-- Scrollable body -->
-    <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
-      <div id="trips-city-detail" style="max-width:540px;margin:0 auto;padding:0;"></div>
-    </div>
-  </div>
-
-</div>
-
-<!-- EXPLORE — Recs + Speak -->
-<div id="view-discover" class="view">
-
-  <!-- Subnav -->
-  <div class="trips-subnav">
-    <button id="tab-recs" onclick="switchExploreView('recs')" class="subnav-tab active">Recs</button>
-    <button id="tab-speak" onclick="switchExploreView('speak')" class="subnav-tab">Speak</button>
-  </div>
-
-  <!-- Recs -->
-  <div id="explore-recs">
-    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
-      <div class="manage-card">
-        <a href="https://outliersguide.com" target="_blank" class="manage-row" style="text-decoration:none;">
-          <div style="flex:1;">
-            <div class="manage-row-title">Outliers Guide</div>
-            <div class="manage-row-sub">Curated hotels and places — outliersguide.com</div>
-          </div>
-          <span class="manage-chevron">↗</span>
-        </a>
-        <a href="https://amigo.app" target="_blank" class="manage-row" style="text-decoration:none;">
-          <div style="flex:1;">
-            <div class="manage-row-title">Amigo</div>
-            <div class="manage-row-sub">Friend recommendations — amigo.app</div>
-          </div>
-          <span class="manage-chevron">↗</span>
-        </a>
-        <a href="https://trippin.world" target="_blank" class="manage-row" style="text-decoration:none;">
-          <div style="flex:1;">
-            <div class="manage-row-title">Trippin</div>
-            <div class="manage-row-sub">Travel editorial — trippin.world</div>
-          </div>
-          <span class="manage-chevron">↗</span>
-        </a>
-        <a href="https://monocle.com/travel" target="_blank" class="manage-row" style="text-decoration:none;">
-          <div style="flex:1;">
-            <div class="manage-row-title">Monocle Travel</div>
-            <div class="manage-row-sub">City guides and culture — monocle.com</div>
-          </div>
-          <span class="manage-chevron">↗</span>
-        </a>
-        <a href="https://www.cntraveler.com" target="_blank" class="manage-row" style="text-decoration:none;">
-          <div style="flex:1;">
-            <div class="manage-row-title">Condé Nast Traveler</div>
-            <div class="manage-row-sub">Travel inspiration — cntraveler.com</div>
-          </div>
-          <span class="manage-chevron">↗</span>
-        </a>
-        <a href="https://www.theguardian.com/travel" target="_blank" class="manage-row" style="text-decoration:none;">
-          <div style="flex:1;">
-            <div class="manage-row-title">Guardian Travel</div>
-            <div class="manage-row-sub">Independent travel writing — theguardian.com</div>
-          </div>
-          <span class="manage-chevron">↗</span>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Speak -->
-  <div id="explore-speak" style="display:none;">
-    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
-      <div style="padding:0 1rem 0.75rem;display:flex;gap:6px;flex-wrap:wrap;" id="local-lang-switcher"></div>
-      <div class="manage-card" style="padding:0 1.25rem;">
-        <div id="local-content"></div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- SETTINGS -->
-<!-- PLAN VIEW — unified: paste first, then choose/name trip -->
-<div id="view-new" class="view">
-<div style="max-width:540px;margin:0 auto;padding:1.25rem 1rem 3rem;">
-
-  <div class="home-greeting" style="padding:1rem 0 1.25rem;">
-    <div class="home-greeting-text">Plan a trip</div>
-  </div>
-
-  <!-- Paste area — hero interaction -->
-  <div class="manage-card" style="padding:1.25rem;margin-bottom:1rem;">
-    <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Paste anything</div>
-    <textarea id="new-trip-text" placeholder="Flight from Paris to Rome May 12, 8am Ryanair&#10;Hotel Navarin, Marseille May 18-23&#10;Confirmation #D84PWO&#10;..." style="width:100%;min-height:180px;font-family:var(--font-body);font-size:14px;line-height:1.65;border:none;outline:none;background:none;color:var(--black);resize:vertical;"></textarea>
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-xlight);display:flex;align-items:center;gap:10px;">
-      <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--gray-mid);cursor:pointer;transition:color 0.15s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--gray-mid)'">
-        <span>📎</span> Upload file
-        <input type="file" accept="image/*,.pdf" style="display:none;" onchange="handleTripFile(this)" />
-      </label>
-      <span id="new-trip-file-name" style="font-size:12px;color:var(--gray-mid);"></span>
-    </div>
-  </div>
-
-  <!-- Trip selection — new or existing -->
-  <div class="manage-card" style="margin-bottom:1.25rem;">
-    <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
-      <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Add to trip</div>
-
-      <!-- Existing trips -->
-      <div id="plan-trip-picker" style="margin-bottom:10px;"></div>
-
-      <!-- New trip name -->
-      <div id="plan-new-name-row" style="display:flex;align-items:center;gap:10px;padding-top:8px;border-top:1px solid var(--gray-xlight);">
-        <span style="font-size:13px;color:var(--gray-mid);white-space:nowrap;">+ New trip</span>
-        <input id="new-trip-name" type="text" placeholder="Name it..." style="flex:1;font-family:var(--font-body);font-size:14px;border:none;border-bottom:1.5px solid var(--gray-xlight);outline:none;background:none;color:var(--black);padding:4px 0;transition:border-color 0.15s;" onfocus="selectPlanTrip(null);this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Parse button -->
-  <button onclick="parseTripWithClaude()" style="width:100%;font-family:var(--font-display);font-size:15px;font-weight:600;padding:16px;background:var(--accent);color:white;border:none;border-radius:var(--radius);cursor:pointer;letter-spacing:-0.01em;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Parse with Claude →</button>
-  <div style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude will extract cities, dates, flights and hotels automatically</div>
-
-  <div style="display:flex;align-items:center;gap:12px;margin:1.5rem 0;">
-    <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
-    <span style="font-size:12px;color:var(--gray-light);">or</span>
-    <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
-  </div>
-
-  <button onclick="createEmptyTrip()" style="width:100%;font-family:var(--font-body);font-size:14px;padding:14px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-light);border-radius:var(--radius);cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--black)';this.style.color='var(--black)'" onmouseout="this.style.borderColor='var(--gray-light)';this.style.color='var(--gray-mid)'">Start with a blank trip</button>
-
-</div>
-</div>
-
-<!-- SETTINGS VIEW (legacy, now just a panel) -->
-<div id="view-settings" class="view" style="display:none;"></div>
-
-<!-- PRINT-ONLY DAYS (hidden on screen) -->
+<!-- PRINT ONLY -->
 <div id="print-days" style="display:none;"></div>
 
 <script>
 // ─────────────────────────────────────────
-// API — database connection
+// CONSTANTS & AUTH
 // ─────────────────────────────────────────
 const TRIP_ID = 1;
 const API_TOKEN = () => localStorage.getItem('lola_token');
 
-// Auth check — redirect to login if no token
-if (!localStorage.getItem('lola_token')) {
-  window.location.href = '/';
-}
+if (!localStorage.getItem('lola_token')) window.location.href = '/';
 
+// ─────────────────────────────────────────
+// API HELPER
+// ─────────────────────────────────────────
 async function api(method, path, body) {
   try {
     const res = await fetch(path, {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_TOKEN()}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_TOKEN()}` },
       body: body ? JSON.stringify(body) : undefined
     });
     return res.json();
   } catch(e) {
-    console.warn('API error:', e);
+    console.warn('API error:', path, e);
     return null;
   }
 }
 
 // ─────────────────────────────────────────
-// HELPERS
+// STATE
 // ─────────────────────────────────────────
-function toKey(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function formatDate(key) {
-  const [y, m, d] = key.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-}
-
-const DAYS_ORDER = Object.keys(TRIP).sort();
-const TRIP_START = DAYS_ORDER[0];
-const TRIP_END = DAYS_ORDER[DAYS_ORDER.length - 1];
+let _tripData = { days: [], legs: [] }; // loaded from API on init
+let _cache = { links: {}, notes: {}, journal: {} };
+let _currentTripId = null;
+let _currentCity = null;
+let _viewedKey = null;
+let _selectedPlanTripId = null;
+let _settingsOpen = false;
+let _allTrips = []; // list of user's trips from DB
 
 // ─────────────────────────────────────────
-// TRAVEL RENDERER
+// CITY DATA (static — timezone + language mapping)
 // ─────────────────────────────────────────
-function parseTime(str) {
-  if (!str) return null;
-  const clean = str.replace(/[ap]m/i, '').trim();
-  let [h, m] = clean.split(':').map(Number);
-  if (isNaN(m)) m = 0;
-  if (/pm/i.test(str) && h !== 12) h += 12;
-  if (/am/i.test(str) && h === 12) h = 0;
-  return h * 60 + m;
-}
-
-function calcDuration(dep, arr) {
-  const d = parseTime(dep);
-  const a = parseTime(arr);
-  if (d === null || a === null) return null;
-  let diff = a - d;
-  if (diff < 0) diff += 24 * 60; // overnight
-  const h = Math.floor(diff / 60);
-  const m = diff % 60;
-  return m > 0 ? `${h}h${String(m).padStart(2,'0')}m` : `${h}h`;
-}
-
-function renderTravelLegs(legs) {
-  if (!legs || !Array.isArray(legs)) return '';
-  return legs.map((leg, i) => {
-    const isLast = i === legs.length - 1;
-    const duration = leg.dep && leg.arr ? calcDuration(leg.dep, leg.arr) : null;
-    const arrDisplay = leg.arrNote ? `${leg.arr} (${leg.arrNote})` : (leg.arr || '');
-    let html = `<div style="margin-bottom:${isLast ? '0' : '1rem'};padding-bottom:${isLast ? '0' : '1rem'};${isLast ? '' : 'border-bottom:1px solid var(--gray-xlight);'}">`;
-
-    if (leg.from && leg.to) {
-      html += `<div class="travel-route">${leg.from} &rarr; ${leg.to}</div>`;
-    }
-
-    if (leg.dep || leg.arr) {
-      html += `<div class="travel-times">${leg.dep || ''}${leg.dep && leg.arr ? ' &ndash; ' : ''}${arrDisplay}${duration ? `<span style="color:var(--gray-mid);margin-left:10px;">${duration}</span>` : ''}</div>`;
-    }
-
-    const refs = [leg.carrier, leg.ref, leg.refCode ? `#${leg.refCode}` : null].filter(Boolean);
-    if (refs.length) {
-      html += `<div class="travel-ref">${refs.join('  ')}</div>`;
-    }
-
-    if (leg.note) {
-      html += `<div class="travel-note">${leg.note}</div>`;
-    }
-
-    html += `</div>`;
-    return html;
-  }).join('');
-}
-function getMoonPhase(key) {
-  const [y, m, d] = key.split('-').map(Number);
-  const date = new Date(y, m - 1, d);
-  const ref = new Date(2026, 3, 16); // Apr 16 2026 — new moon, gives correct May 1 full moon
-  const diff = (date - ref) / (1000 * 60 * 60 * 24);
-  const cycle = 29.53058867;
-  const phase = ((diff % cycle) + cycle) % cycle;
-  const pct = phase / cycle;
-
-  if (pct < 0.025 || pct >= 0.975) return { name: 'New Moon', pct: 0 };
-  if (pct < 0.25)                   return { name: 'Waxing Crescent', pct };
-  if (pct < 0.275)                  return { name: 'First Quarter', pct };
-  if (pct < 0.475)                  return { name: 'Waxing Gibbous', pct };
-  if (pct < 0.525)                  return { name: 'Full Moon', pct: 0.5 };
-  if (pct < 0.725)                  return { name: 'Waning Gibbous', pct };
-  if (pct < 0.775)                  return { name: 'Last Quarter', pct };
-  return                                   { name: 'Waning Crescent', pct };
-}
-
-function moonSVG(key, size = 18) {
-  const moon = getMoonPhase(key);
-  const pct = moon.pct;
-  const r = size / 2;
-  const lit = moon.name === 'Full Moon';
-  const dark = moon.name === 'New Moon';
-  const waning = pct > 0.5;
-
-  // Calculate the illuminated arc
-  // We draw a circle, then overlay a lens shape for the shadow
-  const phase = ((pct % 0.5) / 0.5); // 0-1 within half cycle
-  const cx = size / 2;
-  const cy = size / 2;
-
-  // x position of the terminator ellipse's edge
-  const ex = r * Math.abs(Math.cos(pct * Math.PI * 2));
-  const sweep = waning ? 0 : 1;
-  const shadowSweep = waning ? 1 : 0;
-
-  let inner = '';
-  if (dark) {
-    inner = `<circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="none" stroke="currentColor" stroke-width="1"/>`;
-  } else if (lit) {
-    inner = `<circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="currentColor"/>`;
-  } else {
-    // Full circle outline
-    inner = `<circle cx="${cx}" cy="${cy}" r="${r - 1}" fill="none" stroke="currentColor" stroke-width="0.8"/>`;
-    // Lit portion as filled path
-    const topY = cy - (r - 1);
-    const botY = cy + (r - 1);
-    inner += `<path d="
-      M ${cx} ${topY}
-      A ${r - 1} ${r - 1} 0 0 ${sweep} ${cx} ${botY}
-      A ${ex} ${r - 1} 0 0 ${shadowSweep} ${cx} ${topY}
-      Z" fill="currentColor"/>`;
-  }
-
-  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;opacity:0.7;" title="${moon.name}">${inner}</svg>`;
-}
-
-// ─────────────────────────────────────────
-// TODAY VIEW
-// ─────────────────────────────────────────
-let currentKey = null;
-
-function getTodayKey() {
-  const today = toKey(new Date());
-  if (TRIP[today]) return today;
-  return null;
-}
-
-function renderToday(key) {
-  currentKey = key;
-
-  // Outside trip — show real date with simple message
-  if (!key) {
-    const today = new Date();
-    const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-    const tripDate = new Date(2026, 4, 12);
-    const daysUntil = Math.ceil((tripDate - today) / (1000 * 60 * 60 * 24));
-    const msg = daysUntil > 0 ? `${daysUntil} days until departure` : 'Trip has ended';
-    const todayKey = toKey(new Date());
-
-    document.getElementById('view-today').innerHTML = `
-      <div class="today-wrap">
-        <div class="home-greeting">
-          <div class="home-greeting-text">Hello, Michael</div>
-        </div>
-        <div class="today-card">
-          <div style="font-family:var(--font-display);font-size:22px;font-weight:500;letter-spacing:-0.02em;">${dateStr}</div>
-          <div style="font-size:13px;color:var(--gray-mid);">${msg}</div>
-        </div>
-      </div>`;
-    return;
-  }
-
-  const day = TRIP[key];
-  const idx = DAYS_ORDER.indexOf(key);
-  const isActualToday = toKey(new Date()) === key;
-  const todayIsBeforeTrip = toKey(new Date()) < TRIP_START;
-  const greeting = GREETINGS[day.location] || 'Hello, Michael';
-
-  // figure out if location changed from yesterday
-  const getDestination = (loc) => loc ? loc.split(' - ').pop().trim() : null;
-  const prevDayKey = DAYS_ORDER[idx - 1] || null;
-  const prevLocation = prevDayKey ? getDestination(TRIP[prevDayKey].location) : null;
-  const todayDestination = getDestination(day.location);
-  const locationChanged = !prevLocation || prevLocation !== todayDestination;
-  const isTransitDay = day.type === 'travel' || day.type === 'arrive';
-
-  let html = `<div class="today-wrap">`;
-
-  // greeting header
-  html += `<div class="home-greeting">
-    <div class="home-greeting-text">${greeting}</div>
-  </div>`;
-
-  // main day card — with desktop prev/next arrows
-  const prevKey = idx > 0 ? DAYS_ORDER[idx - 1] : null;
-  const nextKey = idx < DAYS_ORDER.length - 1 ? DAYS_ORDER[idx + 1] : null;
-  const prevAction = !prevKey ? (toKey(new Date()) < TRIP_START ? `renderToday(null)` : null) : `renderToday('${prevKey}')`;
-
-  html += `<div class="today-card">`;
-  html += `<div class="today-header">
-    <div style="flex:1;">
-      <div class="today-date">${formatDate(key)}</div>
-      <div class="today-location">${day.location}</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:2px;flex-shrink:0;">
-      ${isTransitDay ? `<span class="today-badge ${day.type}" style="margin-right:6px;">${day.type}</span>` : ''}
-      <button onclick="${prevAction ? prevAction : 'void(0)'}" ${!prevAction ? 'disabled' : ''} style="background:none;border:none;cursor:${prevAction ? 'pointer' : 'default'};font-size:22px;color:var(--gray-light);padding:4px 8px;min-width:36px;min-height:36px;line-height:1;opacity:${prevAction ? '1' : '0.25'};transition:color 0.15s;" onmouseover="if(!this.disabled)this.style.color='var(--gray-mid)'" onmouseout="this.style.color='var(--gray-light)'">‹</button>
-      <button onclick="${nextKey ? `renderToday('${nextKey}')` : 'void(0)'}" ${!nextKey ? 'disabled' : ''} style="background:none;border:none;cursor:${nextKey ? 'pointer' : 'default'};font-size:22px;color:var(--gray-light);padding:4px 8px;min-width:36px;min-height:36px;line-height:1;opacity:${nextKey ? '1' : '0.25'};transition:color 0.15s;" onmouseover="if(!this.disabled)this.style.color='var(--gray-mid)'" onmouseout="this.style.color='var(--gray-light)'">›</button>
-    </div>
-  </div>`;
-
-  // travel
-  if (day.travel) {
-    const travelHtml = Array.isArray(day.travel)
-      ? renderTravelLegs(day.travel)
-      : `<div style="font-size:13px;white-space:pre-line;">${day.travel}</div>`;
-    html += `<div class="today-section">
-      <div class="today-label">Travel</div>
-      ${travelHtml}
-    </div>`;
-  }
-
-  // car
-  if (day.car) {
-    html += `<div class="today-section">
-      <div class="today-label">Car</div>
-      <div class="today-content">${day.car}</div>
-    </div>`;
-  }
-
-  // stay — only show on transit days or first night in a new place
-  if (day.stay && (isTransitDay || locationChanged)) {
-    const s = day.stay.toLowerCase();
-    const stayLabel = day.stayType
-      ? day.stayType
-      : s.includes('hotel') ? 'Hotel'
-      : s.includes('agriturismo') ? 'Agriturismo'
-      : s.includes('airbnb') || s.includes('rue') || s.includes('rua') || s.includes('via') || s.includes('square') ? 'Airbnb'
-      : 'Stay';
-    html += `<div class="today-section">
-      <div class="today-label">${stayLabel}</div>
-      <div class="today-content">${day.stay}</div>
-    </div>`;
-  }
-
-  // alert
-  if (day.alert) {
-    html += `<div class="today-alert">${day.alert}</div>`;
-  }
-
-  // daily journal — load from cache or API
-  const journalCacheKey = `${TRIP_ID}-${key}`;
-  const journalNote = _cache.journal[journalCacheKey] || '';
-  html += `<div style="margin-top:1.5rem;">
-    <div class="today-label">Journal</div>
-    <textarea
-      id="journal-textarea-${key}"
-      placeholder="What happened today..."
-      style="width:100%;min-height:90px;font-family:var(--font-body);font-size:16px;line-height:1.7;border:none;outline:none;background:none;color:var(--black);resize:none;padding:6px 0;"
-      oninput="saveJournalEntry('${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
-    >${journalNote}</textarea>
-  </div>`;
-
-  html += `</div></div>`;
-  document.getElementById('view-today').innerHTML = html;
-
-  // Load from API if not in cache
-  if (!_cache.journal[journalCacheKey]) {
-    api('GET', `/api/journal/${TRIP_ID}/${key}`).then(data => {
-      if (data && data.entry && data.entry.content) {
-        _cache.journal[journalCacheKey] = data.entry.content;
-        const ta = document.getElementById(`journal-textarea-${key}`);
-        if (ta && !ta.value) {
-          ta.value = data.entry.content;
-          ta.style.height = 'auto';
-          ta.style.height = ta.scrollHeight + 'px';
-        }
-      }
-    });
-  }
-
-  html += `</div></div>`;
-  document.getElementById('view-today').innerHTML = html;
-
-  // resize journal textarea on load
-  const jta = document.querySelector('#view-today textarea');
-  if (jta && jta.value) { jta.style.height = 'auto'; jta.style.height = jta.scrollHeight + 'px'; }
-
-  updateDestClock();
-}
-
-// ─────────────────────────────────────────
-// SUMMARY VIEW
-// ─────────────────────────────────────────
-// ─────────────────────────────────────────
-// SUMMARY SEARCH
-// ─────────────────────────────────────────
-function filterSummary(query) {
-  const q = query.toLowerCase().trim();
-  const cards = document.querySelectorAll('#summary-content .manage-card');
-  cards.forEach(card => {
-    if (!q) { card.style.display = ''; return; }
-    const text = card.textContent.toLowerCase();
-    card.style.display = text.includes(q) ? '' : 'none';
-  });
-  // also hide/show trip headers
-  const headers = document.querySelectorAll('#summary-content .trip-summary-header');
-  headers.forEach(h => h.style.display = q ? 'none' : '');
-}
-
-function renderSummary() {
-  const el = document.getElementById('summary-content');
-  const tripList = Object.values(TRIPS).filter(t => t.active);
-
-  if (tripList.length === 0) {
-    el.innerHTML = `<div style="padding:2rem 1rem;font-size:14px;color:var(--gray-mid);">No active trips. Add one in Manage.</div>`;
-    return;
-  }
-
-  let html = '<div style="padding:1rem 0 2rem;">';
-
-  tripList.forEach(trip => {
-    const days = Object.keys(trip.days).sort();
-    const start = days[0];
-    const end = days[days.length - 1];
-    const fmt = k => {
-      const [y,m,d] = k.split('-');
-      return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${+d}`;
-    };
-
-    // Trip header
-    html += `<div class="trip-summary-header" style="padding:0.5rem 1rem 0.875rem;">
-      <div class="trip-card-name">${trip.name}</div>
-      <div class="trip-card-meta">${fmt(start)} – ${fmt(end)} &middot; ${days.length} days &middot; ${getTripCountries(trip)} countries</div>
-    </div>`;
-
-    // Each city is its own card
-    trip.summary.forEach(leg => {
-      const freeNote = _cache.notes[cacheKey(TRIP_ID, leg.city)] || '';
-      const visible = _cache.links[cacheKey(TRIP_ID, leg.city)] || [];
-
-      html += `<div class="manage-card" style="margin:0 1rem 0.75rem;overflow:hidden;">`;
-
-      // City header
-      html += `<div onclick="openCityFromSummary('${TRIP_ID}','${leg.city}')" style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);cursor:pointer;">
-        <span style="font-family:var(--font-display);font-size:18px;font-weight:600;letter-spacing:-0.02em;color:var(--black);">${leg.city}</span>
-        <span style="display:flex;align-items:center;gap:8px;">
-          <span class="nights-badge">${leg.nights}</span>
-          <span style="color:var(--gray-light);font-size:14px;">›</span>
-        </span>
-      </div>`;
-
-      // Travel sections
-      html += `<div style="padding:1rem 1.25rem;">`;
-      leg.sections.forEach(s => {
-        html += `<div style="margin-bottom:0.75rem;"><div class="section-label">${s.label}</div>`;
-        if (s.travel) html += renderTravelLegs(s.travel);
-        else html += `<div class="section-content">${s.content}</div>`;
-        html += `</div>`;
-      });
-
-      // Freeform note
-      if (freeNote) {
-        html += `<div style="margin-top:0.25rem;padding-top:0.75rem;border-top:1px solid var(--gray-xlight);">
-          <div style="font-size:13px;color:var(--gray-mid);white-space:pre-line;line-height:1.6;">${freeNote}</div>
-        </div>`;
-      }
-
-      // Guide items
-      if (visible.length > 0) {
-        html += `<div style="margin-top:0.5rem;${!freeNote ? 'padding-top:0.5rem;border-top:1px solid var(--gray-xlight);' : ''}">`;
-        visible.forEach(item => {
-          const dot = `<span style="color:var(--gray-light);font-size:8px;flex-shrink:0;">●</span>`;
-          if (item.type === 'link') {
-            html += `<div style="display:flex;align-items:baseline;gap:7px;padding:3px 0;">${dot}<a href="${item.url}" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:none;">${item.title}</a></div>`;
-          } else {
-            html += `<div style="display:flex;align-items:baseline;gap:7px;padding:3px 0;">${dot}<span style="font-size:13px;color:var(--gray-dark);">${item.text}</span></div>`;
-          }
-        });
-        html += `</div>`;
-      }
-
-      html += `</div></div>`;
-    });
-  });
-
-  html += '</div>';
-  el.innerHTML = html;
-}
-
-
-// ─────────────────────────────────────────
-// CALENDAR VIEW
-// ─────────────────────────────────────────
-function renderCalendar() {
-  const todayKey = toKey(new Date());
-  const DOWS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-
-  function buildMonth(name, days, offset, startNum) {
-    let html = `<div class="cal-month"><div class="cal-month-name">${name}</div><div class="cal-grid">`;
-    DOWS.forEach(d => html += `<div class="cal-dow">${d}</div>`);
-    for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
-    days.forEach((d, i) => {
-      const num = startNum + i;
-      const month = name === 'May' ? '05' : '06';
-      const key = `2026-${month}-${String(num).padStart(2,'0')}`;
-      const isToday = key === todayKey;
-      if (d.type === 'inactive') {
-        html += `<div class="cal-day inactive"><span class="day-num">${num}</span></div>`;
-      } else {
-        html += `<div class="cal-day ${d.type}${isToday ? ' today-dot' : ''}">
-          <span class="day-num">${num}</span>
-          ${d.tag ? `<span class="day-tag">${d.tag}</span>` : ''}
-        </div>`;
-      }
-    });
-    html += `</div></div>`;
-    return html;
-  }
-
-  // May: starts on Friday = offset 4, days 1-31
-  const mayInactive = CAL_DAYS.may.filter(d => d.type === 'inactive').length;
-  const mayActive = CAL_DAYS.may.filter(d => d.type !== 'inactive');
-  let mayHtml = `<div class="cal-month"><div class="cal-month-name">May</div><div class="cal-grid">`;
-  DOWS.forEach(d => mayHtml += `<div class="cal-dow">${d}</div>`);
-  for (let i = 0; i < 4; i++) mayHtml += `<div class="cal-day empty"></div>`; // May 1 = Friday
-  for (let i = 1; i <= 31; i++) {
-    const key = `2026-05-${String(i).padStart(2,'0')}`;
-    const isToday = key === todayKey;
-    const d = TRIP[key];
-    if (i <= 11) {
-      mayHtml += `<div class="cal-day inactive"><span class="day-num">${i}</span></div>`;
-    } else {
-      const calDay = CAL_DAYS.may[i - 1];
-      mayHtml += `<div class="cal-day ${calDay.type}${isToday ? ' today-dot' : ''}">
-        <span class="day-num">${i}</span>
-        ${calDay.tag ? `<span class="day-tag">${calDay.tag}</span>` : ''}
-      </div>`;
-    }
-  }
-  mayHtml += `</div></div>`;
-
-  // June: starts on Monday = offset 0
-  let junHtml = `<div class="cal-month"><div class="cal-month-name">June</div><div class="cal-grid">`;
-  DOWS.forEach(d => junHtml += `<div class="cal-dow">${d}</div>`);
-  for (let i = 1; i <= 30; i++) {
-    const key = `2026-06-${String(i).padStart(2,'0')}`;
-    const isToday = key === todayKey;
-    const calDay = CAL_DAYS.jun[i - 1];
-    if (calDay.type === 'inactive') {
-      junHtml += `<div class="cal-day empty"></div>`;
-    } else {
-      junHtml += `<div class="cal-day ${calDay.type}${isToday ? ' today-dot' : ''}">
-        <span class="day-num">${i}</span>
-        ${calDay.tag ? `<span class="day-tag">${calDay.tag}</span>` : ''}
-      </div>`;
-    }
-  }
-  junHtml += `</div></div>`;
-
-  document.getElementById('cal-content').innerHTML = mayHtml + junHtml;
-}
-
-// ─────────────────────────────────────────
-// PRINT DAYS
-// ─────────────────────────────────────────
-function renderPrintDays() {
-  let html = '';
-  DAYS_ORDER.forEach(key => {
-    const day = TRIP[key];
-    html += `<div class="print-card" style="page-break-after:always;break-after:page;padding:0;margin:0;">
-      <div style="border-bottom:1.5px solid #0a0a0a;padding-bottom:3mm;margin-bottom:4mm;display:flex;justify-content:space-between;align-items:flex-start;">
-        <div>
-          <div style="font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:13px;font-weight:700;">${formatDate(key)}</div>
-          <div style="font-family:ui-monospace,monospace;font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;">${day.location}</div>
-        </div>
-        <span style="font-family:ui-monospace,monospace;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;padding:3px 7px;border-radius:2px;${day.type === 'stay' ? 'border:0.5px solid #bbb;color:#666;' : 'background:#0a0a0a;color:white;'}">${day.type}</span>
-      </div>`;
-
-    if (day.travel) {
-      const travelText = Array.isArray(day.travel)
-        ? day.travel.map(l => [l.from && l.to ? `${l.from} to ${l.to}` : null, l.dep && l.arr ? `${l.dep} - ${l.arr}` : null, l.ref ? l.ref : null, l.refCode ? `#${l.refCode}` : null, l.note].filter(Boolean).join('\n')).join('\n\n')
-        : day.travel;
-      html += `<div style="margin-bottom:3mm;"><div style="font-family:ui-monospace,monospace;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:#666;margin-bottom:2px;">Travel</div><div style="font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:11px;white-space:pre-line;">${travelText}</div></div>`;
-    }
-    if (day.car) html += `<div style="margin-bottom:3mm;"><div style="font-family:ui-monospace,monospace;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:#666;margin-bottom:2px;">Car</div><div style="font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:11px;white-space:pre-line;">${day.car}</div></div>`;
-    if (day.stay) html += `<div style="margin-bottom:3mm;"><div style="font-family:ui-monospace,monospace;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:#666;margin-bottom:2px;">Stay</div><div style="font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:11px;">${day.stay}</div></div>`;
-    if (day.alert) html += `<div style="border-left:2px solid #0a0a0a;padding-left:7px;margin-bottom:3mm;font-size:10px;color:#222;">${day.alert}</div>`;
-
-    html += `<div style="margin-top:2mm;"><div style="font-family:ui-monospace,monospace;font-size:8px;letter-spacing:0.16em;text-transform:uppercase;color:#666;margin-bottom:2px;">Notes</div><div style="min-height:26mm;border-bottom:0.3px solid #ccc;background:white;"></div></div>`;
-    html += `</div>`;
-  });
-  document.getElementById('print-days').innerHTML = html;
-}
-
-// ─────────────────────────────────────────
-// GUIDE
-// ─────────────────────────────────────────
-
-function ck(city) { return city.toLowerCase().replace(/\s+/g, '_'); }
-
-function getTripCountries(trip) {
-  const countries = new Set();
-  trip.summary.forEach(leg => {
-    const lang = LOCATION_LANG[leg.city];
-    if (lang) countries.add(lang);
-  });
-  return countries.size;
-}
-
-// ─────────────────────────────────────────
-// IN-MEMORY CACHE — replaces localStorage for guide data
-// ─────────────────────────────────────────
-const _cache = {
-  links: {},    // key: `${tripId}-${city}` → array of link objects
-  notes: {},    // key: `${tripId}-${city}` → string content
-  journal: {},  // key: `${tripId}-${date}` → string content
+const CITY_DATA = {
+  'Paris':          { country: 'France',    lang: 'France',    tz: 'Europe/Paris' },
+  'Marseille':      { country: 'France',    lang: 'France',    tz: 'Europe/Paris' },
+  'Lisbon':         { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Lisbon Coast':   { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Portugal Coast': { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Porto':          { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Umbria':         { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Tuscany Coast':  { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Rome':           { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Berlin':         { country: 'Germany',   lang: 'Germany',   tz: 'Europe/Berlin' },
+  'Bali':           { country: 'Indonesia', lang: null,        tz: 'Asia/Makassar' },
 };
 
-function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
-
-async function loadCityLinks(tripId, city) {
-  const k = cacheKey(tripId, city);
-  const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
-  _cache.links[k] = (data && data.links) ? data.links.map(l => ({ ...l, _id: String(l.id), type: 'link' })) : [];
-  return _cache.links[k];
-}
-
-async function loadCityNote(tripId, city) {
-  const k = cacheKey(tripId, city);
-  const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
-  _cache.notes[k] = (data && data.note) ? data.note.content : '';
-  return _cache.notes[k];
-}
-
-function getGuideItems(tripId, city) {
-  const k = cacheKey(tripId, city);
-  const links = _cache.links[k] || [];
-  // Map DB link objects to the format the UI expects
-  return links.map(l => ({
-    _id: String(l.id),
-    type: 'link',
-    title: l.title,
-    url: l.url
-  }));
-}
-
-function saveGuideItem(tripId, city, item) {
-  const k = cacheKey(tripId, city);
-  if (!_cache.links[k]) _cache.links[k] = [];
-  // Save to API and update cache with real ID from response
-  return api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
-    .then(data => {
-      if (data && data.link) {
-        _cache.links[k].push({
-          id: data.link.id,
-          _id: String(data.link.id),
-          title: data.link.title,
-          url: data.link.url,
-          type: 'link'
-        });
-      }
-    });
-}
-
-async function submitCityItem(tripId, city) {
-  const val = document.getElementById('city-input').value.trim();
-  if (!val) return;
-  const url = normalizeUrl(val);
-  const isUrl = url.startsWith('http');
-  const item = isUrl
-    ? { type: 'link', title: getDomain(url), url }
-    : { type: 'note', text: val };
-  closeCityInput();
-  await saveGuideItem(tripId, city, item);
-  // Clear cache and reload fresh so list is accurate
-  delete _cache.links[cacheKey(tripId, city)];
-  await loadCityLinks(tripId, city);
-  renderCityDetail(tripId, city);
-}
-
-function deleteGuideItem(tripId, city, itemId) {
-  const k = cacheKey(tripId, city);
-  if (_cache.links[k]) {
-    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
-  }
-  api('DELETE', `/api/links/${itemId}`);
-  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');
-}
-
-function isFlagged() { return false; } // flagging removed
-function toggleFlag() {}
-function getFlaggedItems() { return []; }
-
-function showDeleteConfirm(safeId) {
-  document.querySelectorAll('[id^="del-confirm-"]').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('[id^="del-x-"]').forEach(el => el.style.display = 'inline-block');
-  const confirmBtn = document.getElementById(`del-confirm-${safeId}`);
-  const xBtn = document.getElementById(`del-x-${safeId}`);
-  if (confirmBtn) confirmBtn.style.display = 'inline-block';
-  if (xBtn) xBtn.style.display = 'none';
-  setTimeout(() => {
-    if (confirmBtn) confirmBtn.style.display = 'none';
-    if (xBtn) xBtn.style.display = 'inline-block';
-  }, 3000);
-}
-
-function getDomain(url) {
-  try { return new URL(url).hostname.replace('www.', ''); }
-  catch { return url; }
-}
-
-function renderGuide() {} // removed - guide tab gone
-
 // ─────────────────────────────────────────
+// LANGUAGE DATA (loaded from JSON)
 // ─────────────────────────────────────────
-// EXPLORE SUBNAV
-// ─────────────────────────────────────────
-function switchExploreView(view) {
-  const recs = document.getElementById('explore-recs');
-  const speak = document.getElementById('explore-speak');
-  const tabRecs = document.getElementById('tab-recs');
-  const tabSpeak = document.getElementById('tab-speak');
-  if (view === 'recs') {
-    recs.style.display = 'block';
-    speak.style.display = 'none';
-    tabRecs.classList.add('active');
-    tabSpeak.classList.remove('active');
-  } else {
-    recs.style.display = 'none';
-    speak.style.display = 'block';
-    tabRecs.classList.remove('active');
-    tabSpeak.classList.add('active');
-    renderLingo();
-  }
-}
+let LANGUAGES = {};
 
-function switchTripsView(view) {
-  const feed = document.getElementById('trips-feed');
-  const cal = document.getElementById('trips-cal');
-  const manage = document.getElementById('trips-manage');
-  [feed, cal, manage].forEach(el => el.style.display = 'none');
-  ['tab-feed','tab-cal','tab-manage'].forEach(id => {
-    const el = document.getElementById(id);
-    el.classList.remove('active');
-  });
-  if (view === 'feed') { feed.style.display = 'block'; document.getElementById('tab-feed').classList.add('active'); }
-  else if (view === 'cal') { cal.style.display = 'block'; document.getElementById('tab-cal').classList.add('active'); }
-  else { manage.style.display = 'block'; document.getElementById('tab-manage').classList.add('active'); renderManageList(); }
-}
-
-// ─────────────────────────────────────────
-// LINGO
-// ─────────────────────────────────────────
-let currentLang = null;
-
-function detectLanguage() {
-  const todayKey = toKey(new Date());
-  const day = TRIP[todayKey];
-  if (day && LOCATION_LANG[day.location]) return LOCATION_LANG[day.location];
-  // fallback to first active trip's current location
-  const keys = Object.keys(TRIP).sort();
-  if (keys.length > 0) {
-    const firstDay = TRIP[keys[0]];
-    return LOCATION_LANG[firstDay.location] || 'France';
-  }
-  return 'France';
-}
-
-function renderLingo(countryOverride) {
-  const country = countryOverride || detectLanguage();
-  currentLang = country;
-  const lang = LANGUAGES[country];
-  if (!lang) return;
-
-
-  // Language switcher pills
-  const switcher = document.getElementById('local-lang-switcher');
-  switcher.innerHTML = Object.keys(LANGUAGES).map(c => `
-    <button onclick="renderLingo('${c}')" class="lang-pill ${c === country ? 'active' : ''}">${LANGUAGES[c].name}</button>
-  `).join('');
-
-  // Group phrases by category
-  const cats = [...new Set(lang.phrases.map(p => p.cat))];
-  let html = '';
-
-  cats.forEach(cat => {
-    const phrases = lang.phrases.filter(p => p.cat === cat);
-    html += `<div class="local-cat-label">${cat}</div>`;
-
-    phrases.forEach((p, i) => {
-      const id = `phrase-${cat}-${i}`;
-      html += `<div class="local-phrase" onclick="togglePhonetic('${id}')">
-        <div class="local-phrase-top">
-          <div class="local-phrase-local">${p.local}</div>
-          <div class="local-phrase-toggle" id="${id}-icon">+</div>
-        </div>
-        <div class="local-phrase-english">${p.english}</div>
-        <div class="local-phrase-phonetic" id="${id}">${p.phonetic}</div>
-      </div>`;
-    });
-  });
-
-  document.getElementById('local-content').innerHTML = html;
-}
-
-function togglePhonetic(id) {
-  const el = document.getElementById(id);
-  const icon = document.getElementById(id + '-icon');
-  if (!el) return;
-  const isOpen = el.style.display === 'block';
-  el.style.display = isOpen ? 'none' : 'block';
-  if (icon) icon.textContent = isOpen ? '+' : '−';
-}
-const GREETINGS = {
-  'Paris':            'Bonjour, Michael',
-  'Paris - Marseille':'Bonjour, Michael',
-  'Marseille':        'Bonjour, Michael',
-  'Marseille - Lisbon':'Olá, Michael',
-  'Lisbon':           'Olá, Michael',
-  'Lisbon - Portugal Coast': 'Olá, Michael',
-  'Portugal Coast':   'Olá, Michael',
-  'Coast - Porto':    'Olá, Michael',
-  'Porto':            'Olá, Michael',
-  'Porto - Rome - Umbria': 'Ciao, Michael',
-  'Umbria':           'Ciao, Michael',
-  'Umbria - Tuscany Coast': 'Ciao, Michael',
-  'Tuscany Coast':    'Ciao, Michael',
-  'Tuscany - Rome':   'Ciao, Michael',
-  'Rome':             'Ciao, Michael',
-  'Rome - Berlin':    'Hallo, Michael',
-  'Berlin':           'Hallo, Michael',
-  'Berlin - Doha - Bali': 'Halo, Michael',
-  'Bali - Taipei - Paris': 'Halo, Michael',
-};
-
-function setHeaderGreeting(location) {
-  // greeting now lives in the home card, nothing to update in header
-}
-
-function updateGreeting(location) {
-  // no-op, greeting is rendered inline in renderToday
-}
-
-function renderSettings() {
-  const el = document.getElementById('settings-trips');
-  if (!el) return;
-  let html = '';
-
-  Object.values(TRIPS).forEach(trip => {
-    const days = Object.keys(trip.days).sort();
-    const start = days[0];
-    const end = days[days.length - 1];
-    const fmt = k => {
-      const [y,m,d] = k.split('-');
-      return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${+d}, ${y}`;
-    };
-
-    html += `<div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:0.5rem;">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;width:100%;">
-        <div>
-          <div style="font-size:13px;font-weight:500;color:var(--black);">${trip.name}</div>
-          <div style="font-size:11px;color:var(--gray-mid);margin-top:2px;">${fmt(start)} – ${fmt(end)} &middot; ${days.length} days &middot; ${getTripCountries(trip)} countries</div>
-        </div>
-        <span style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:3px 8px;${trip.active ? 'background:var(--black);color:var(--white);' : 'border:1px solid var(--gray-light);color:var(--gray-mid);'}">${trip.active ? 'Active' : 'Off'}</span>
-      </div>
-      <div style="display:flex;gap:16px;">
-        <button class="trip-action-btn" onclick="renameTrip('${trip.id}')">Rename</button>
-        <button class="trip-action-btn" onclick="toggleTrip('${trip.id}')">${trip.active ? 'Deactivate' : 'Activate'}</button>
-        <button class="trip-action-btn" onclick="archiveTrip('${trip.id}')">Archive</button>
-        <button class="trip-action-btn danger" onclick="deleteTrip('${trip.id}')">Delete</button>
-      </div>
-    </div>`;
-  });
-
-  if (Object.keys(TRIPS).length === 0) {
-    html = `<div style="font-size:12px;color:var(--gray-mid);padding:0.75rem 0;">No trips yet.</div>`;
-  }
-
-  el.innerHTML = html;
-}
-
-function renameTrip(id) {
-  const trip = TRIPS[id];
-  if (!trip) return;
-  const newName = prompt('Rename trip:', trip.name);
-  if (newName && newName.trim()) {
-    TRIPS[id].name = newName.trim();
-    renderSettings();
-    renderSummary();
-  }
-}
-
-function toggleTrip(id) {
-  if (!TRIPS[id]) return;
-  TRIPS[id].active = !TRIPS[id].active;
-  // rebuild active TRIP lookup
-  Object.keys(TRIP).forEach(k => delete TRIP[k]);
-  Object.values(TRIPS).forEach(t => { if (t.active) Object.assign(TRIP, t.days); });
-  renderSettings();
-  renderSummary();
-  renderToday(getTodayKey());
-}
-
-function archiveTrip(id) {
-  if (!TRIPS[id]) return;
-  if (!confirm(`Archive "${TRIPS[id].name}"? It will be hidden but not deleted.`)) return;
-  TRIPS[id].active = false;
-  TRIPS[id].archived = true;
-  renderSettings();
-  renderSummary();
-}
-
-function deleteTrip(id) {
-  if (!TRIPS[id]) return;
-  if (!confirm(`Delete "${TRIPS[id].name}"? This cannot be undone.`)) return;
-  delete TRIPS[id];
-  Object.keys(TRIP).forEach(k => delete TRIP[k]);
-  Object.values(TRIPS).forEach(t => { if (t.active) Object.assign(TRIP, t.days); });
-  renderSettings();
-  renderSummary();
-  renderToday(getTodayKey());
-}
-
-function addTrip() {
-  const name = prompt('Trip name:');
-  if (!name || !name.trim()) return;
-  const id = name.trim().toLowerCase().replace(/\s+/g, '') + Date.now();
-  TRIPS[id] = {
-    id,
-    name: name.trim(),
-    active: false,
-    archived: false,
-    days: {},
-    summary: []
-  };
-  renderSettings();
-  renderSummary();
-}
-
-// ─────────────────────────────────────────
-// NAV
-// ─────────────────────────────────────────
-function showView(name, btn) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  const el = document.getElementById('view-' + name);
-  if (el) el.classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (name === 'trips') renderManageList();
-  if (name === 'new') renderPlanTripPicker();
-  if (settingsOpen) toggleSettings();
-}
-
-// ─────────────────────────────────────────
-// PLAN SUBNAV
-// ─────────────────────────────────────────
-function switchPlanView() {} // no longer needed — unified view
-
-function renderPlanTripPicker() {
-  const el = document.getElementById('plan-trip-picker');
-  if (!el) return;
-  const trips = Object.values(TRIPS);
-  if (!trips.length) { el.innerHTML = ''; return; }
-  let html = '';
-  trips.forEach(trip => {
-    const dbId = TRIP_ID; // use real DB id
-    html += `<div onclick="selectPlanTrip(${dbId})" id="plan-pick-${dbId}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;cursor:pointer;border-bottom:1px solid var(--gray-xlight);">
-      <span style="font-size:14px;color:var(--black);">${trip.name}</span>
-      <span id="plan-pick-check-${dbId}" style="color:var(--accent);font-size:16px;display:none;">✓</span>
-    </div>`;
-  });
-  el.innerHTML = html;
-}
-
-let selectedPlanTripId = null;
-
-function selectPlanTrip(id) {
-  selectedPlanTripId = id;
-  // clear all checks
-  document.querySelectorAll('[id^="plan-pick-check-"]').forEach(el => el.style.display = 'none');
-  if (id) {
-    const check = document.getElementById(`plan-pick-check-${id}`);
-    if (check) check.style.display = 'block';
-    // clear new trip name if selecting existing
-    const nameInput = document.getElementById('new-trip-name');
-    if (nameInput) nameInput.value = '';
-  }
-}
-
-async function parseTripWithClaude() {
-  const text = document.getElementById('new-trip-text').value.trim();
-  const newName = document.getElementById('new-trip-name').value.trim();
-  if (!text) { alert('Paste some itinerary info first.'); return; }
-  if (!selectedPlanTripId && !newName) { alert('Choose an existing trip or name a new one.'); return; }
-
-  const btn = document.querySelector('[onclick="parseTripWithClaude()"]');
-  const origText = btn.textContent;
-  btn.textContent = 'Parsing...';
-  btn.disabled = true;
-
+async function loadLanguages() {
   try {
-    let tripId = selectedPlanTripId;
-
-    // Create new trip if needed
-    if (!tripId && newName) {
-      const data = await api('POST', '/api/trips', { name: newName });
-      if (!data || !data.trip) throw new Error('Failed to create trip');
-      tripId = data.trip.id;
-    }
-
-    const result = await api('POST', '/api/trips/import', { tripId, text });
-
-    if (result && result.success) {
-      btn.textContent = `✓ Imported ${result.days} days`;
-      document.getElementById('new-trip-text').value = '';
-      document.getElementById('new-trip-name').value = '';
-      selectedPlanTripId = null;
-      setTimeout(() => {
-        btn.textContent = origText;
-        btn.disabled = false;
-      }, 2000);
-    } else {
-      throw new Error(result?.error || 'Import failed');
-    }
-  } catch (err) {
-    alert('Error: ' + err.message);
-    btn.textContent = origText;
-    btn.disabled = false;
-  }
-}
-
-function createEmptyTrip() {
-  const name = document.getElementById('new-trip-name').value.trim();
-  if (!name) { alert('Enter a trip name first.'); return; }
-  const id = name.toLowerCase().replace(/\s+/g, '') + Date.now();
-  TRIPS[id] = { id, name, active: false, archived: false, days: {}, summary: [], guide: {} };
-  document.getElementById('new-trip-name').value = '';
-  document.getElementById('new-trip-text').value = '';
-  renderSummary();
-  renderManageList();
-  showView('trips', document.querySelector('.nav-tab:nth-child(2)'));
-  setTimeout(() => switchTripsView('manage'), 100);
-}
-function handleTripFile(input) {
-  const file = input.files[0];
-  if (file) {
-    const nameEl = document.getElementById('new-trip-file-name');
-    if (nameEl) nameEl.textContent = file.name;
+    const res = await fetch('/languages.json');
+    LANGUAGES = await res.json();
+  } catch(e) {
+    console.warn('Could not load languages.json');
   }
 }
 
 // ─────────────────────────────────────────
-// ─────────────────────────────────────────
-// DARK MODE
+// THEME
 // ─────────────────────────────────────────
 function applyTheme(dark) {
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
@@ -2683,11 +754,8 @@ function toggleDarkMode() {
 }
 
 const _savedTheme = localStorage.getItem('lola_theme');
-if (_savedTheme) {
-  applyTheme(_savedTheme === 'dark');
-} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  applyTheme(true);
-}
+if (_savedTheme) applyTheme(_savedTheme === 'dark');
+else if (window.matchMedia('(prefers-color-scheme: dark)').matches) applyTheme(true);
 
 // ─────────────────────────────────────────
 // AUTH
@@ -2706,63 +774,155 @@ function populateSettingsUser() {
   if (emailEl) emailEl.textContent = user.email || '';
 }
 
-let settingsOpen = false;
+// ─────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────
+function toKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  return new Date(y,m-1,d).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+
+function parseTime(str) {
+  if (!str) return null;
+  const m = str.match(/(\d+):(\d+)(am|pm)/i);
+  if (!m) return null;
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toLowerCase() === 'pm' && h < 12) h += 12;
+  if (m[3].toLowerCase() === 'am' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+function calcDuration(dep, arr) {
+  const d = parseTime(dep), a = parseTime(arr);
+  if (d === null || a === null) return null;
+  const diff = (a - d + 1440) % 1440;
+  const h = Math.floor(diff / 60), m = diff % 60;
+  return m > 0 ? `${h}h${String(m).padStart(2,'0')}m` : `${h}h`;
+}
+
+function getDomain(url) {
+  try { return new URL(url).hostname.replace('www.',''); }
+  catch { return url; }
+}
+
+function normalizeUrl(val) {
+  val = val.trim();
+  if (!val) return '';
+  if (/^https?:\/\//i.test(val)) return val;
+  if (val.includes('.') && !val.includes(' ')) return 'https://' + val;
+  return val;
+}
+
+function ck(city) { return city.toLowerCase().replace(/\s+/g,'_'); }
+function cacheKey(tripId, city) { return `${tripId}-${ck(city)}`; }
 
 // ─────────────────────────────────────────
-// DESTINATION CLOCK
+// TRIP DATA — load from API
 // ─────────────────────────────────────────
-function getDestinationTZ() {
-  const todayKey = toKey(new Date());
-  const day = TRIP[todayKey];
-  if (!day) {
-    const firstKey = DAYS_ORDER[0];
-    if (!firstKey) return null;
-    const dest = TRIP[firstKey]?.location?.split(' - ').pop().trim();
-    return dest ? CITY_DATA[dest]?.tz : null;
-  }
-  const dest = day.location.split(' - ').pop().trim();
-  return CITY_DATA[dest]?.tz || null;
+async function loadTripData() {
+  const data = await api('GET', `/api/trips/${TRIP_ID}`);
+  if (!data || !data.days) return;
+  _tripData.days = data.days;
+  _tripData.legs = data.legs || [];
 }
 
-function getDestCity() {
-  const todayKey = toKey(new Date());
-  const day = TRIP[todayKey];
-  const loc = day ? day.location : (TRIP[DAYS_ORDER[0]]?.location || '');
-  return loc.split(' - ').pop().trim();
+function getDayData(key) {
+  return _tripData.days.find(d => d.date === key) || null;
 }
 
-let _lastClockMinute = '';
-
-function updateDestClock() {
-  const el = document.getElementById('dest-clock');
-  if (!el) return;
-  const tz = getDestinationTZ();
-  if (!tz) { el.style.display = 'none'; return; }
-  try {
-    const time = new Date().toLocaleTimeString('en-US', {
-      timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true
-    });
-    if (time === _lastClockMinute) return; // no change
-    _lastClockMinute = time;
-    const city = getDestCity();
-    el.textContent = `${city} ${time}`;
-    el.style.display = 'block';
-  } catch(e) {
-    el.style.display = 'none';
-  }
+function getLegsForDay(dayId) {
+  return _tripData.legs.filter(l => l.day_id === dayId).sort((a,b) => a.sort_order - b.sort_order);
 }
 
+function getTodayKey() {
+  const today = toKey(new Date());
+  return _tripData.days.find(d => d.date === today) ? today : null;
+}
+
+function getFirstTripDay() {
+  if (!_tripData.days.length) return null;
+  return _tripData.days[0].date;
+}
+
+function getLastTripDay() {
+  if (!_tripData.days.length) return null;
+  return _tripData.days[_tripData.days.length - 1].date;
+}
+
+// ─────────────────────────────────────────
+// CITY CACHE — API-backed
+// ─────────────────────────────────────────
+async function loadCityLinks(tripId, city) {
+  const k = cacheKey(tripId, city);
+  const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
+  _cache.links[k] = (data && data.links) ? data.links.map(l => ({...l, _id: String(l.id), type:'link'})) : [];
+  return _cache.links[k];
+}
+
+async function loadCityNote(tripId, city) {
+  const k = cacheKey(tripId, city);
+  const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
+  _cache.notes[k] = (data && data.note) ? data.note.content : '';
+  return _cache.notes[k];
+}
+
+async function preloadCityData() {
+  const cities = [...new Set(_tripData.days.map(d => d.location).filter(Boolean))];
+  const stayDays = _tripData.days.filter(d => d.type === 'stay' || d.type === 'arrive');
+  const uniqueCities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
+  await Promise.all(uniqueCities.flatMap(city => [
+    loadCityLinks(TRIP_ID, city),
+    loadCityNote(TRIP_ID, city)
+  ]));
+  renderSummary();
+  renderManageList();
+}
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function showView(name, btn) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(`view-${name}`).classList.add('active');
+  if (btn) btn.classList.add('active');
+  document.body.style.overflow = '';
+
+  const titles = { home: 'Lola', trips: 'Trips', discover: 'Discover', plan: 'Plan' };
+  document.getElementById('top-bar-title').textContent = titles[name] || 'Lola';
+
+  if (name === 'plan') renderPlanView();
+}
+
+function switchTripsView(name) {
+  ['summary','cal','manage'].forEach(v => {
+    document.getElementById(`trips-${v}`).style.display = v === name ? 'block' : 'none';
+    document.getElementById(`tab-${v}`).classList.toggle('active', v === name);
+  });
+}
+
+function switchExploreView(name) {
+  document.getElementById('explore-recs').style.display = name === 'recs' ? 'block' : 'none';
+  document.getElementById('explore-speak').style.display = name === 'speak' ? 'block' : 'none';
+  document.getElementById('tab-recs').classList.toggle('active', name === 'recs');
+  document.getElementById('tab-speak').classList.toggle('active', name === 'speak');
+}
+
+// ─────────────────────────────────────────
+// SETTINGS
 // ─────────────────────────────────────────
 function toggleSettings() {
-  settingsOpen = !settingsOpen;
+  _settingsOpen = !_settingsOpen;
   const panel = document.getElementById('settings-panel');
-  const overlay = document.getElementById('settings-overlay');
-  if (settingsOpen) {
+  if (_settingsOpen) {
     populateSettingsUser();
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    applyTheme(isDark); // sync toggle state
+    applyTheme(document.documentElement.getAttribute('data-theme') === 'dark');
     panel.style.display = 'block';
-    overlay.style.display = 'none';
     requestAnimationFrame(() => panel.style.transform = 'translateY(0)');
   } else {
     panel.style.transform = 'translateY(100%)';
@@ -2770,50 +930,564 @@ function toggleSettings() {
   }
 }
 
+// ─────────────────────────────────────────
+// DESTINATION CLOCK
+// ─────────────────────────────────────────
+function getDestCity() {
+  const today = toKey(new Date());
+  const current = _tripData.days.find(d => d.date === today);
+  if (current) return current.location;
+  const tripStart = getFirstTripDay();
+  const tripEnd = getLastTripDay();
+  if (tripStart && today < tripStart) {
+    // find first city
+    const first = _tripData.days.find(d => d.type === 'arrive' || d.type === 'stay');
+    return first ? first.location : null;
+  }
+  return null;
+}
+
+function getDestTZ(city) {
+  if (!city) return null;
+  const data = CITY_DATA[city];
+  if (data) return data.tz;
+  // Try matching partial
+  for (const [k, v] of Object.entries(CITY_DATA)) {
+    if (city.includes(k) || k.includes(city)) return v.tz;
+  }
+  return null;
+}
+
+function updateDestClock() {
+  const el = document.getElementById('dest-clock');
+  if (!el) return;
+  const city = getDestCity();
+  const tz = getDestTZ(city);
+  if (!tz || !city) { el.style.display = 'none'; return; }
+  const local = toKey(new Date());
+  const destDate = new Date().toLocaleDateString('en-CA', { timeZone: tz });
+  const time = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
+  const isDiff = destDate !== local;
+  el.style.display = 'block';
+  el.textContent = isDiff ? `${city.split(' ')[0]} ${time}` : time;
+}
+
+// ─────────────────────────────────────────
+// MOON PHASE
+// ─────────────────────────────────────────
+function getMoonPhase(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  const date = new Date(y,m-1,d);
+  const ref = new Date(2026,3,16);
+  const diff = (date - ref)/(1000*60*60*24);
+  const cycle = 29.53058867;
+  const phase = ((diff % cycle) + cycle) % cycle;
+  const pct = phase / cycle;
+  if (pct < 0.025 || pct >= 0.975) return { name: 'New Moon', pct: 0 };
+  if (pct < 0.25) return { name: 'Waxing Crescent', pct };
+  if (pct < 0.275) return { name: 'First Quarter', pct: 0.25 };
+  if (pct < 0.475) return { name: 'Waxing Gibbous', pct };
+  if (pct < 0.525) return { name: 'Full Moon', pct: 0.5 };
+  if (pct < 0.725) return { name: 'Waning Gibbous', pct };
+  if (pct < 0.775) return { name: 'Last Quarter', pct: 0.75 };
+  return { name: 'Waning Crescent', pct };
+}
+
+function moonSVG(key, size = 18) {
+  const moon = getMoonPhase(key);
+  const pct = moon.pct;
+  const r = size / 2;
+  let inner = '';
+  if (pct === 0) {
+    inner = `<circle cx="${r}" cy="${r}" r="${r-1}" fill="#1a1a2e"/>`;
+  } else if (pct === 0.5) {
+    inner = `<circle cx="${r}" cy="${r}" r="${r-1}" fill="#f5e642"/>`;
+  } else {
+    const lit = pct < 0.5 ? pct / 0.5 : (1 - pct) / 0.5;
+    const dx = (1 - lit * 2) * (r - 1);
+    const fill = pct < 0.5 ? '#f5e642' : '#1a1a2e';
+    const bg = pct < 0.5 ? '#1a1a2e' : '#f5e642';
+    inner = `<circle cx="${r}" cy="${r}" r="${r-1}" fill="${bg}"/>
+      <ellipse cx="${r}" cy="${r}" rx="${Math.abs(dx)}" ry="${r-1}" fill="${fill}"/>`;
+  }
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle;opacity:0.7;" title="${moon.name}">${inner}</svg>`;
+}
+
+// ─────────────────────────────────────────
+// TRAVEL LEGS RENDERER
+// ─────────────────────────────────────────
+function renderTravelLegs(legs) {
+  if (!legs || !legs.length) return '';
+  return legs.map((leg, i) => {
+    const isLast = i === legs.length - 1;
+    const duration = leg.dep_time && leg.arr_time ? calcDuration(leg.dep_time, leg.arr_time) : null;
+    const arrDisplay = leg.arr_note ? `${leg.arr_time} (${leg.arr_note})` : (leg.arr_time || '');
+    const refs = [leg.carrier, leg.ref, leg.ref_code ? `#${leg.ref_code}` : null].filter(Boolean);
+    return `<div style="margin-bottom:${isLast?'0':'1rem'};padding-bottom:${isLast?'0':'1rem'};${isLast?'':'border-bottom:1px solid var(--gray-xlight);'}">
+      ${leg.from_city && leg.to_city ? `<div class="travel-route">${leg.from_city} → ${leg.to_city}</div>` : ''}
+      ${(leg.dep_time || leg.arr_time) ? `<div class="travel-times">${leg.dep_time||''}${leg.dep_time&&leg.arr_time?' – ':''}${arrDisplay}${duration?`<span style="color:var(--gray-mid);margin-left:10px;">${duration}</span>`:''}</div>` : ''}
+      ${refs.length ? `<div class="travel-ref">${refs.join('  ')}</div>` : ''}
+      ${leg.note ? `<div class="travel-note">${leg.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// HOME / TODAY VIEW
+// ─────────────────────────────────────────
+function renderHome(key) {
+  _viewedKey = key;
+  const el = document.getElementById('home-content');
+  const today = toKey(new Date());
+  const allKeys = _tripData.days.map(d => d.date).sort();
+  const tripStart = allKeys[0];
+  const tripEnd = allKeys[allKeys.length - 1];
+
+  let html = `<div class="today-wrap">`;
+
+  // Pre/post trip state
+  if (!key) {
+    if (!tripStart) {
+      html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">No trip loaded</div><div style="font-size:14px;color:var(--gray-mid);line-height:1.6;">Go to Plan to import your itinerary.</div></div>`;
+    } else if (today < tripStart) {
+      const daysLeft = Math.ceil((new Date(tripStart) - new Date()) / (1000*60*60*24));
+      html += `<div class="pretrip-card">
+        <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:8px;">Coming up</div>
+        <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:4px;">${daysLeft} days</div>
+        <div style="font-size:14px;color:var(--gray-mid);">Trip starts ${new Date(tripStart).toLocaleDateString('en-US',{month:'long',day:'numeric'})}</div>
+      </div>`;
+      // show journal for today anyway
+      key = today;
+    } else {
+      html += `<div class="pretrip-card"><div style="font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">Trip complete</div><div style="font-size:14px;color:var(--gray-mid);">Europe 26 is done. What a ride.</div></div>`;
+    }
+    html += `</div>`;
+    el.innerHTML = html;
+    return;
+  }
+
+  const day = getDayData(key);
+  if (!day) {
+    el.innerHTML = html + `</div>`;
+    return;
+  }
+
+  const legs = getLegsForDay(day.id);
+  const keyIndex = allKeys.indexOf(key);
+  const prevKey = keyIndex > 0 ? allKeys[keyIndex - 1] : null;
+  const nextKey = keyIndex < allKeys.length - 1 ? allKeys[keyIndex + 1] : null;
+  const isToday = key === today;
+
+  // Day card
+  html += `<div class="today-card">
+    <div class="today-header">
+      <div>
+        <div class="today-date">${formatDate(key)} ${moonSVG(key)}</div>
+        <div class="today-location">${day.location || ''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div class="today-badge ${day.type}">${day.type}</div>
+        <div style="display:flex;gap:0;">
+          <button class="day-nav-btn" onclick="navigateDay(-1)" ${!prevKey?'disabled':''}>‹</button>
+          <button class="day-nav-btn" onclick="navigateDay(1)" ${!nextKey?'disabled':''}>›</button>
+        </div>
+      </div>
+    </div>`;
+
+  // Travel
+  if (legs.length) {
+    html += `<div style="margin-bottom:1.25rem;">
+      <div class="today-label">Travel</div>
+      ${renderTravelLegs(legs)}
+    </div>`;
+  }
+
+  // Stay
+  if (day.stay) {
+    html += `<div style="margin-bottom:1.25rem;">
+      <div class="today-label">Stay</div>
+      <div class="today-content">${day.stay}</div>
+    </div>`;
+  }
+
+  // Alert
+  if (day.alert) {
+    html += `<div class="alert-bar">⚡ ${day.alert}</div>`;
+  }
+
+  // Journal
+  const journalKey = `${TRIP_ID}-${key}`;
+  const journalContent = _cache.journal[journalKey] || '';
+  html += `<div style="margin-top:1.5rem;">
+    <div class="today-label">Journal</div>
+    <textarea id="journal-ta-${key}" placeholder="What happened today..."
+      style="width:100%;min-height:90px;font-family:var(--font-body);font-size:16px;line-height:1.7;border:none;outline:none;background:none;color:var(--black);resize:none;padding:6px 0;"
+      oninput="saveJournalEntry('${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+    >${journalContent}</textarea>
+  </div>`;
+
+  html += `</div>`; // close today-card
+  html += `</div>`; // close today-wrap
+
+  el.innerHTML = html;
+
+  // Load journal from API if not cached
+  if (!_cache.journal[journalKey]) {
+    api('GET', `/api/journal/${TRIP_ID}/${key}`).then(data => {
+      if (data && data.entry && data.entry.content) {
+        _cache.journal[journalKey] = data.entry.content;
+        const ta = document.getElementById(`journal-ta-${key}`);
+        if (ta && !ta.value) {
+          ta.value = data.entry.content;
+          ta.style.height = 'auto';
+          ta.style.height = ta.scrollHeight + 'px';
+        }
+      }
+    });
+  }
+
+  // Auto-resize textarea
+  const ta = document.getElementById(`journal-ta-${key}`);
+  if (ta && ta.value) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
+}
+
+function navigateDay(dir) {
+  const allKeys = _tripData.days.map(d => d.date).sort();
+  const idx = allKeys.indexOf(_viewedKey);
+  if (idx === -1) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= allKeys.length) return;
+  _viewedKey = allKeys[newIdx];
+  renderHome(_viewedKey);
+}
+
+let _journalTimer = null;
+function saveJournalEntry(date, content) {
+  const k = `${TRIP_ID}-${date}`;
+  _cache.journal[k] = content;
+  clearTimeout(_journalTimer);
+  _journalTimer = setTimeout(() => {
+    api('POST', `/api/journal/${TRIP_ID}/${date}`, { content });
+  }, 800);
+}
+
+// ─────────────────────────────────────────
+// TRIPS SUMMARY
+// ─────────────────────────────────────────
+function filterSummary(query) {
+  const cards = document.querySelectorAll('#summary-content .trip-card');
+  const headers = document.querySelectorAll('#summary-content .summary-trip-header');
+  const q = query.toLowerCase();
+  cards.forEach(card => {
+    card.style.display = (!q || card.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+
+function renderSummary() {
+  const el = document.getElementById('summary-content');
+  if (!el || !_tripData.days.length) return;
+
+  // Build city groups from stay/arrive days
+  const stayDays = _tripData.days.filter(d => d.type === 'stay' || d.type === 'arrive');
+  const cityGroups = [];
+  let current = null;
+
+  _tripData.days.forEach(day => {
+    if (day.type === 'stay' || day.type === 'arrive') {
+      if (!current || current.city !== day.location) {
+        if (current) cityGroups.push(current);
+        current = { city: day.location, dates: [], days: [] };
+      }
+      current.dates.push(day.date);
+      current.days.push(day);
+    } else if (day.type === 'travel') {
+      if (current) { cityGroups.push(current); current = null; }
+    }
+  });
+  if (current) cityGroups.push(current);
+
+  // Get travel legs for each city
+  const travelDays = _tripData.days.filter(d => d.type === 'travel');
+
+  let html = '';
+
+  cityGroups.forEach(group => {
+    const nights = group.dates.length;
+    const firstDate = new Date(group.dates[0]);
+    const lastDate = new Date(group.dates[group.dates.length - 1]);
+    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
+    const datesLabel = `${fmt(firstDate)} – ${fmt(lastDate)}`;
+
+    const k = cacheKey(TRIP_ID, group.city);
+    const links = _cache.links[k] || [];
+    const note = _cache.notes[k] || '';
+
+    // Find travel legs arriving into this city
+    const arrivingLegs = travelDays.filter(td => {
+      const nextDay = _tripData.days.find(d => {
+        const tIdx = _tripData.days.indexOf(td);
+        return _tripData.days.indexOf(d) > tIdx && (d.type === 'arrive' || d.type === 'stay') && d.location === group.city;
+      });
+      return !!nextDay;
+    });
+
+    // Find the travel day just before this city
+    const cityStartIdx = _tripData.days.findIndex(d => d.date === group.dates[0]);
+    const prevTravelDay = cityStartIdx > 0 ? _tripData.days.slice(0, cityStartIdx).reverse().find(d => d.type === 'travel') : null;
+    const incomingLegs = prevTravelDay ? getLegsForDay(prevTravelDay.id) : [];
+
+    // Find departure travel day
+    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
+    const nextTravelDay = _tripData.days.slice(cityEndIdx + 1).find(d => d.type === 'travel');
+    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id) : [];
+
+    html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
+      <div class="trip-card-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div onclick="openCityFromSummary(${TRIP_ID},'${group.city}')" style="cursor:pointer;" class="trip-card-name">${group.city}</div>
+            <div class="trip-card-meta">${datesLabel} · ${nightsLabel}</div>
+          </div>
+          <div onclick="openCityFromSummary(${TRIP_ID},'${group.city}')" style="cursor:pointer;color:var(--gray-light);font-size:18px;padding-top:4px;">›</div>
+        </div>
+      </div>`;
+
+    // Incoming travel
+    if (incomingLegs.length) {
+      html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
+        <div class="section-label" style="margin-bottom:8px;">Getting there</div>
+        ${renderTravelLegs(incomingLegs)}
+      </div>`;
+    }
+
+    // Stay info from first stay day
+    const stayInfo = group.days.find(d => d.stay);
+    if (stayInfo && stayInfo.stay) {
+      html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
+        <div class="section-label" style="margin-bottom:4px;">Stay</div>
+        <div class="section-content">${stayInfo.stay}</div>
+      </div>`;
+    }
+
+    // Notes preview
+    if (note) {
+      html += `<div style="padding:0.875rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
+        <div style="font-size:13px;color:var(--gray-mid);white-space:pre-line;line-height:1.6;">${note}</div>
+      </div>`;
+    }
+
+    // Links preview
+    if (links.length) {
+      html += `<div style="padding:0.75rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">`;
+      links.forEach(link => {
+        html += `<div style="display:flex;align-items:center;gap:7px;padding:3px 0;">
+          <span style="color:var(--accent);font-size:12px;">↗</span>
+          <a href="${link.url}" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:none;">${link.title}</a>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    html += `</div>`; // close trip-card
+  });
+
+  el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────
+// CALENDAR
+// ─────────────────────────────────────────
+function renderCalendar() {
+  const today = toKey(new Date());
+  const dayMap = {};
+  _tripData.days.forEach(d => { dayMap[d.date] = d; });
+
+  function buildMonth(name, year, month) {
+    const firstDay = new Date(year, month, 1).getDay();
+    const offset = (firstDay === 0) ? 6 : firstDay - 1;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const DOWS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+    let html = `<div class="cal-month"><div class="cal-month-name">${name}</div><div class="cal-grid">`;
+    DOWS.forEach(d => { html += `<div class="cal-dow">${d}</div>`; });
+    for (let i = 0; i < offset; i++) html += `<div class="cal-day empty"></div>`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const day = dayMap[key];
+      let cls = 'cal-day';
+      let tag = '';
+      if (!day) cls += ' inactive';
+      else if (day.type === 'travel') { cls += ' transit'; tag = day.location ? day.location.split(' - ')[0].substring(0,3).toUpperCase() : 'TRV'; }
+      else { cls += ' trip'; tag = day.location ? day.location.substring(0,3).toUpperCase() : ''; }
+      if (key === today) cls += ' today-dot';
+      html += `<div class="${cls}"><span class="day-num">${d}</span>${tag?`<span class="day-tag">${tag}</span>`:''}`;
+      html += `</div>`;
+    }
+    html += `</div></div>`;
+    return html;
+  }
+
+  const cal = document.getElementById('cal-content');
+  if (cal) cal.innerHTML = buildMonth('May', 2026, 4) + buildMonth('June', 2026, 5);
+}
+
+// ─────────────────────────────────────────
+// MANAGE LIST
+// ─────────────────────────────────────────
+function renderManageList() {
+  const el = document.getElementById('manage-trips-list');
+  if (!el) return;
+
+  // Use the loaded trips list
+  if (!_allTrips.length) {
+    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:14px;color:var(--gray-mid);">No trips yet. Go to Plan to create one.</div>`;
+    return;
+  }
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let html = `<div class="manage-card">`;
+
+  _allTrips.forEach(trip => {
+    const tripDays = trip.id === TRIP_ID ? _tripData.days : [];
+    const dates = tripDays.map(d => d.date).sort();
+    const start = dates[0];
+    const end = dates[dates.length - 1];
+    const fmt = k => { if (!k) return '?'; const [y,m,d] = k.split('-'); return `${MONTHS[+m-1]} ${+d}`; };
+    const today = toKey(new Date());
+    let status, statusStyle;
+    if (!start) { status = 'No data'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
+    else if (today < start) { status = 'Upcoming'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
+    else if (today > end) { status = 'Past'; statusStyle = 'background:var(--gray-xlight);color:var(--gray-mid);'; }
+    else { status = 'Current'; statusStyle = 'background:var(--accent);color:white;'; }
+
+    html += `<div class="manage-row" onclick="openLevel2(${trip.id})">
+      <div style="flex:1;min-width:0;">
+        <div class="manage-row-title">${trip.name}</div>
+        <div class="manage-row-sub">${start ? `${fmt(start)} – ${fmt(end)} · ${dates.length} days` : 'Import itinerary to get started'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;">
+        <span style="font-size:10px;letter-spacing:0.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;${statusStyle}">${status}</span>
+        <span class="manage-chevron">›</span>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────
+// LEVEL 2 — Trip city list
+// ─────────────────────────────────────────
+function openLevel2(tripId) {
+  _currentTripId = tripId;
+  const trip = _allTrips.find(t => t.id === tripId);
+  document.getElementById('level2-title').textContent = trip ? trip.name : '';
+  renderCityList(tripId);
+  const el = document.getElementById('trips-level-2');
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
+}
+
+function closeLevel2() {
+  const el = document.getElementById('trips-level-2');
+  el.style.transform = 'translateX(100%)';
+  document.body.style.overflow = '';
+  setTimeout(() => el.style.display = 'none', 280);
+}
+
 function renderCityList(tripId) {
-  const trip = TRIPS[tripId];
-  const cities = trip.summary.map(leg => leg.city);
-  let html = `<div style="padding:1rem;"><div class="manage-card">`;
+  const el = document.getElementById('trips-city-list');
+  if (!el) return;
+
+  const stayDays = _tripData.days.filter(d => d.type === 'stay' || d.type === 'arrive');
+  const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
+
+  if (!cities.length) {
+    el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:14px;color:var(--gray-mid);">No cities found. Import your itinerary first.</div>`;
+    return;
+  }
+
+  let html = `<div class="manage-card">`;
   cities.forEach(city => {
-    const items = getGuideItems(tripId, city);
-    const key = ck(city);
-    const deleted = JSON.parse(localStorage.getItem(`guide-deleted-${tripId}-${key}`) || "[]");
-    const count = items.filter(i => !deleted.includes(i._id)).length;
-    html += `<div class="manage-row" onclick="openLevel3('${tripId}','${city}')">
-      <div style="flex:1;">
+    const k = cacheKey(tripId, city);
+    const links = _cache.links[k] || [];
+    const note = _cache.notes[k] || '';
+    const sub = [links.length > 0 ? `${links.length} link${links.length !== 1 ? 's' : ''}` : '', note ? 'notes' : ''].filter(Boolean).join(' · ') || 'Nothing saved yet';
+
+    html += `<div class="manage-row" onclick="openLevel3(${tripId},'${city}')">
+      <div style="flex:1;min-width:0;">
         <div class="manage-row-title">${city}</div>
-        <div class="manage-row-sub">${count > 0 ? `${count} saved note${count !== 1 ? "s" : ""}` : "Nothing saved yet"}</div>
+        <div class="manage-row-sub">${sub}</div>
       </div>
       <span class="manage-chevron">›</span>
     </div>`;
   });
-  html += `</div></div>`;
-  document.getElementById("trips-city-list").innerHTML = html;
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+// ─────────────────────────────────────────
+// LEVEL 3 — City detail
+// ─────────────────────────────────────────
+function openLevel3(tripId, city) {
+  _currentTripId = tripId;
+  _currentCity = city;
+  document.getElementById('level3-title').textContent = city;
+  renderCityDetail(tripId, city);
+  const el = document.getElementById('trips-level-3');
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
+}
+
+async function closeLevel3() {
+  const el = document.getElementById('trips-level-3');
+  el.style.transform = 'translateX(100%)';
+  setTimeout(async () => {
+    el.style.display = 'none';
+    document.body.style.overflow = '';
+    // Refresh cache for this city
+    if (_currentTripId && _currentCity) {
+      delete _cache.links[cacheKey(_currentTripId, _currentCity)];
+      delete _cache.notes[cacheKey(_currentTripId, _currentCity)];
+      await Promise.all([
+        loadCityLinks(_currentTripId, _currentCity),
+        loadCityNote(_currentTripId, _currentCity)
+      ]);
+    }
+    if (_currentTripId) renderCityList(_currentTripId);
+    renderSummary();
+  }, 280);
+}
+
+function openCityFromSummary(tripId, city) {
+  _currentTripId = tripId;
+  _currentCity = city;
+  document.getElementById('level3-title').textContent = city;
+  renderCityDetail(tripId, city);
+  const el = document.getElementById('trips-level-3');
+  el.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
 }
 
 function renderCityDetail(tripId, city) {
   const key = ck(city);
   const el = document.getElementById('trips-city-detail');
-
-  // Show loading state
   el.innerHTML = `<div style="padding:2rem 1rem;font-size:14px;color:var(--gray-mid);">Loading...</div>`;
 
-  // Load both links and note from API in parallel
-  Promise.all([
-    loadCityLinks(tripId, city),
-    loadCityNote(tripId, city)
-  ]).then(([links, noteContent]) => {
-    _renderCityDetailHTML(tripId, city, key, links, noteContent);
-  });
+  Promise.all([loadCityLinks(tripId, city), loadCityNote(tripId, city)])
+    .then(([links, note]) => { _renderCityDetailHTML(tripId, city, key, links, note); });
 }
 
 function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
   let html = '';
 
-  // Freeform notes card
+  // Notes card
   html += `<div class="manage-card" style="margin:1rem;padding:1.25rem;">
     <div class="section-label" style="margin-bottom:8px;">Notes</div>
-    <textarea class="city-notes-area" id="city-freeform-${key}" placeholder="Anything about ${city}..."
+    <textarea class="city-notes-area" id="city-note-${key}" placeholder="Anything about ${city}..."
       oninput="saveCityNote('${tripId}','${city}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"
     >${savedNote || ''}</textarea>
   </div>`;
@@ -2821,38 +1495,37 @@ function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
   // Links card
   html += `<div class="manage-card" style="margin:0 1rem;overflow:hidden;">`;
   html += `<div style="padding:0.875rem 1.25rem 0.625rem;border-bottom:1px solid var(--gray-xlight);">
-    <div class="section-label">Links & Saves</div>
+    <div class="section-label">Links</div>
   </div>`;
 
-  if (links.length === 0) {
+  if (!links.length) {
     html += `<div style="padding:1rem 1.25rem;font-size:14px;color:var(--gray-light);font-style:italic;">Nothing saved yet.</div>`;
   } else {
     html += `<div class="swipe-items-container">`;
     links.forEach(item => {
       const safeId = `${key}-${item._id}`;
-      const deleteAction = `deleteGuideItem('${tripId}','${city}','${item._id}')`;
-      if (item.type === 'link') {
-        html += `<div class="swipe-item" id="swipe-${safeId}">
-          <div class="swipe-delete-bg" onclick="${deleteAction}">Delete</div>
-          <div class="swipe-item-content" id="swipe-content-${safeId}" style="padding:0.625rem 1.25rem;min-height:44px;display:flex;align-items:center;gap:10px;background:var(--card);">
-            <span style="color:var(--accent);font-size:14px;flex-shrink:0;line-height:1;">↗</span>
-            <div style="flex:1;min-width:0;">
-              <a href="${item.url}" target="_blank" style="font-size:15px;color:var(--accent);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</a>
-              <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-mid);margin-top:1px;">${getDomain(item.url)}</div>
-            </div>
-            <button onclick="${deleteAction}" class="desktop-delete-btn">×</button>
+      const delAction = `deleteGuideItem('${tripId}','${city}','${item._id}')`;
+      html += `<div class="swipe-item" id="swipe-${safeId}">
+        <div class="swipe-delete-bg" onclick="${delAction}">Delete</div>
+        <div class="swipe-item-content" id="swipe-content-${safeId}" style="padding:0.625rem 1.25rem;min-height:44px;display:flex;align-items:center;gap:10px;background:var(--card);">
+          <span style="color:var(--accent);font-size:14px;flex-shrink:0;line-height:1;">↗</span>
+          <div style="flex:1;min-width:0;">
+            <a href="${item.url}" target="_blank" style="font-size:15px;color:var(--accent);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.title}</a>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-mid);margin-top:1px;">${getDomain(item.url)}</div>
           </div>
-        </div>`;
-      }
+          <button onclick="${delAction}" class="desktop-delete-btn">×</button>
+        </div>
+      </div>`;
     });
     html += `</div>`;
   }
   html += `</div>`;
 
-  // Add link button
+  // Add link
   html += `<div style="padding:0 1rem 3rem;">
     <div id="city-input-area" style="display:none;margin:0.75rem 0 0;">
-      <input class="guide-input" id="city-input" placeholder="https:// or domain.com..." style="margin-bottom:8px;"
+      <input class="guide-input" id="city-input" placeholder="https:// or domain.com..."
+        style="margin-bottom:8px;"
         onkeydown="if(event.key==='Enter'){event.preventDefault();submitCityItem('${tripId}','${city}')}" />
       <div class="guide-form-actions">
         <button class="guide-form-btn primary" onclick="submitCityItem('${tripId}','${city}')">Save</button>
@@ -2860,7 +1533,7 @@ function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
       </div>
     </div>
     <div id="city-add-btns">
-      <button onclick="showCityInput('link')" style="font-family:var(--font-body);font-size:14px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0.875rem 0;display:flex;align-items:center;gap:6px;">
+      <button onclick="showCityInput()" style="font-family:var(--font-body);font-size:14px;color:var(--accent);background:none;border:none;cursor:pointer;padding:0.875rem 0;display:flex;align-items:center;gap:6px;">
         <span style="font-size:18px;line-height:1;">+</span> Add link
       </button>
     </div>
@@ -2868,27 +1541,15 @@ function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
 
   document.getElementById('trips-city-detail').innerHTML = html;
 
-  // Auto-resize textarea
-  const ta = document.getElementById(`city-freeform-${key}`);
+  const ta = document.getElementById(`city-note-${key}`);
   if (ta && ta.value) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
 
-  // Wire up swipe-to-delete
-  links.forEach(item => {
-    initSwipeDelete(`${key}-${item._id}`);
-  });
+  links.forEach(item => initSwipeDelete(`${key}-${item._id}`));
 }
 
-  let html = '';
-
-let _journalTimer = null;
-function saveJournalEntry(date, content) {
-  _cache.journal[`${TRIP_ID}-${date}`] = content;
-  clearTimeout(_journalTimer);
-  _journalTimer = setTimeout(() => {
-    api('POST', `/api/journal/${TRIP_ID}/${date}`, { content });
-  }, 800);
-}
-
+// ─────────────────────────────────────────
+// CITY NOTES & LINKS
+// ─────────────────────────────────────────
 let _noteTimer = null;
 function saveCityNote(tripId, city, value) {
   const k = cacheKey(tripId, city);
@@ -2900,349 +1561,315 @@ function saveCityNote(tripId, city, value) {
   }, 800);
 }
 
-function initSwipeDelete(safeId) {
-  const content = document.getElementById(`swipe-content-${safeId}`);
-  if (!content) return;
-  let startX = 0, currentX = 0, swiping = false;
-
-  content.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
-    swiping = true;
-  }, { passive: true });
-
-  content.addEventListener('touchmove', e => {
-    if (!swiping) return;
-    currentX = e.touches[0].clientX - startX;
-    if (currentX < 0) {
-      content.style.transform = `translateX(${Math.max(currentX, -80)}px)`;
-      content.style.transition = 'none';
-    }
-  }, { passive: true });
-
-  content.addEventListener('touchend', () => {
-    swiping = false;
-    content.style.transition = 'transform 0.2s ease';
-    if (currentX < -50) {
-      content.style.transform = 'translateX(-80px)';
-    } else {
-      content.style.transform = 'translateX(0)';
-    }
-    currentX = 0;
-  });
-
-  // Click anywhere else to close
-  content.addEventListener('click', () => {
-    if (content.style.transform !== 'translateX(0px)' && content.style.transform !== '') return;
-  });
+function saveGuideItem(tripId, city, item) {
+  return api('POST', `/api/links/${tripId}/${encodeURIComponent(city)}`, { title: item.title, url: item.url })
+    .then(data => {
+      if (data && data.link) {
+        const k = cacheKey(tripId, city);
+        if (!_cache.links[k]) _cache.links[k] = [];
+        _cache.links[k].push({ ...data.link, _id: String(data.link.id), type: 'link' });
+      }
+    });
 }
 
-let currentTripId = null;
-let currentCity = null;
-let currentCityInputType = 'note';
-
-function openCityFromSummary(tripId, city) {
-  currentTripId = tripId;
-  currentCity = city;
-  document.getElementById('level3-title').textContent = city;
-  renderCityDetail(tripId, city);
-  const el = document.getElementById('trips-level-3');
-  el.style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
-}
-
-function openLevel2(tripId) {
-  currentTripId = tripId;
-  const trip = TRIPS[tripId];
-  document.getElementById('level2-title').textContent = trip.name;
-  renderTripDetail(tripId);
-  const el = document.getElementById('trips-level-2');
-  el.style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
-}
-
-function closeLevel2() {
-  const el = document.getElementById('trips-level-2');
-  el.style.transform = 'translateX(100%)';
-  document.body.style.overflow = '';
-  setTimeout(() => el.style.display = 'none', 280);
-}
-
-function renderTripDetail(tripId) {
-  const trip = TRIPS[tripId];
-  const days = Object.keys(trip.days).sort();
-  const start = days[0];
-  const end = days[days.length - 1];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const fmt = k => { const [y,m,d] = k.split('-'); return `${MONTHS[+m-1]} ${+d}`; };
-
-  let html = `<div style="max-width:540px;margin:0 auto;padding:1rem 0 3rem;">`;
-
-  // Edit name
-  html += `<div class="manage-card" style="margin:0.75rem 1rem;">
-    <div style="padding:1rem 1.25rem;">
-      <div class="section-label" style="margin-bottom:6px;">Trip Name</div>
-      <input id="trip-name-input" value="${trip.name}" style="width:100%;font-family:var(--font-display);font-size:16px;font-weight:600;border:none;outline:none;background:none;color:var(--accent);"
-        onblur="renameTripById('${tripId}', this.value)"
-        onkeydown="if(event.key==='Enter'){this.blur()}" />
-      <div style="font-size:12px;color:var(--gray-mid);margin-top:4px;">${fmt(start)} – ${fmt(end)} &middot; ${days.length} days &middot; ${getTripCountries(trip)} countries</div>
-    </div>
-  </div>`;
-
-  // Cities
-  html += `<div style="padding:0 1rem 0.5rem;"><div class="section-label">Cities</div></div>`;
-  html += `<div class="manage-card" style="margin:0 1rem 0.75rem;">`;
-  trip.summary.forEach(leg => {
-    const links = _cache.links[cacheKey(tripId, leg.city)] || [];
-    const note = _cache.notes[cacheKey(tripId, leg.city)] || '';
-    const sub = [links.length > 0 ? `${links.length} saved` : '', note ? 'notes' : ''].filter(Boolean).join(' · ') || 'Nothing saved yet';
-    html += `<div class="manage-row" onclick="openLevel3('${tripId}','${leg.city}')">
-      <div style="flex:1;">
-        <div class="manage-row-title">${leg.city}</div>
-        <div class="manage-row-sub">${leg.nights} &middot; ${sub}</div>
-      </div>
-      <span class="manage-chevron">›</span>
-    </div>`;
-  });
-  html += `</div>`;
-
-  // Danger zone
-  html += `<div style="padding:0.5rem 1.25rem 2rem;">
-    <button onclick="confirmDeleteTrip('${tripId}')" style="font-size:13px;color:#e74c3c;background:none;border:none;cursor:pointer;font-family:var(--font-body);padding:0;">Delete this trip</button>
-  </div>`;
-
-  html += `</div>`;
-  document.getElementById('trips-city-list').innerHTML = html;
-}
-
-function renameTripById(tripId, name) {
-  if (!name.trim()) return;
-  TRIPS[tripId].name = name.trim();
-  document.getElementById('level2-title').textContent = name.trim();
-  renderManageList();
-  renderSummary();
-}
-
-function setTripPrivacy(tripId, isPrivate) {
-  TRIPS[tripId].private = isPrivate;
-  renderTripDetail(tripId);
-}
-
-function confirmDeleteTrip(tripId) {
-  if (confirm(`Delete "${TRIPS[tripId].name}"? This cannot be undone.`)) {
-    delete TRIPS[tripId];
-    closeLevel2();
-    renderManageList();
-    renderSummary();
+function deleteGuideItem(tripId, city, itemId) {
+  const k = cacheKey(tripId, city);
+  if (_cache.links[k]) {
+    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
   }
+  api('DELETE', `/api/links/${itemId}`);
+  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');
 }
 
-function closeLevel2() {
-  const el = document.getElementById('trips-level-2');
-  el.style.transform = 'translateX(100%)';
-  setTimeout(() => el.style.display = 'none', 280);
-}
-
-function openLevel3(tripId, city) {
-  currentCity = city;
-  document.getElementById('level3-title').textContent = city;
-  renderCityDetail(tripId, city);
-  const el = document.getElementById('trips-level-3');
-  el.style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  requestAnimationFrame(() => el.style.transform = 'translateX(0)');
-}
-
-function closeLevel3() {
-  const el = document.getElementById('trips-level-3');
-  el.style.transform = 'translateX(100%)';
-  document.body.style.overflow = '';
-  setTimeout(async () => {
-    el.style.display = 'none';
-    // Clear cache for current city so summary gets fresh data
-    if (currentTripId && currentCity) {
-      delete _cache.links[cacheKey(currentTripId, currentCity)];
-      delete _cache.notes[cacheKey(currentTripId, currentCity)];
-      await Promise.all([
-        loadCityLinks(currentTripId, currentCity),
-        loadCityNote(currentTripId, currentCity)
-      ]);
-    }
-    if (currentTripId) renderCityList(currentTripId);
-    renderSummary();
-  }, 280);
-}
-
-function openCityInput() {} // no longer used
-
-function showCityInput(type) {
-  currentCityInputType = type;
-  const input = document.getElementById('city-input');
-  const area = document.getElementById('city-input-area');
-  const btns = document.getElementById('city-add-btns');
-  if (input) input.placeholder = type === 'link' ? 'https://...' : 'e.g. Cash only, arrive early';
-  if (area) area.style.display = 'block';
-  if (btns) btns.style.display = 'none';
-  if (input) setTimeout(() => input.focus(), 50);
+function showCityInput() {
+  document.getElementById('city-input-area').style.display = 'block';
+  document.getElementById('city-add-btns').style.display = 'none';
+  setTimeout(() => document.getElementById('city-input')?.focus(), 50);
 }
 
 function closeCityInput() {
   const area = document.getElementById('city-input-area');
   const btns = document.getElementById('city-add-btns');
+  if (area) { area.style.display = 'none'; const inp = document.getElementById('city-input'); if(inp) inp.value = ''; }
+  if (btns) btns.style.display = 'block';
+}
+
+async function submitCityItem(tripId, city) {
   const input = document.getElementById('city-input');
-  if (area) area.style.display = 'none';
-  if (btns) btns.style.display = 'flex';
-  if (input) input.value = '';
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  const url = normalizeUrl(val);
+  const item = { type: 'link', title: getDomain(url.startsWith('http') ? url : val), url: url.startsWith('http') ? url : val };
+  closeCityInput();
+  await saveGuideItem(tripId, city, item);
+  delete _cache.links[cacheKey(tripId, city)];
+  await loadCityLinks(tripId, city);
+  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[cacheKey(tripId, city)] || [], _cache.notes[cacheKey(tripId, city)] || '');
 }
 
-function normalizeUrl(val) {
-  val = val.trim();
-  if (!val) return '';
-  if (/^https?:\/\//i.test(val)) return val;
-  if (val.includes('.') && !val.includes(' ')) return 'https://' + val;
-  return val; // not a URL — treat as plain text
+// ─────────────────────────────────────────
+// SWIPE TO DELETE
+// ─────────────────────────────────────────
+function initSwipeDelete(safeId) {
+  const item = document.getElementById(`swipe-${safeId}`);
+  const content = document.getElementById(`swipe-content-${safeId}`);
+  if (!item || !content) return;
+
+  let startX = 0, currentX = 0, isDragging = false;
+
+  item.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    isDragging = false;
+  }, { passive: true });
+
+  item.addEventListener('touchmove', e => {
+    currentX = e.touches[0].clientX;
+    const dx = currentX - startX;
+    if (Math.abs(dx) > 5) isDragging = true;
+    if (isDragging && dx < 0) {
+      content.style.transform = `translateX(${Math.max(dx, -80)}px)`;
+    }
+  }, { passive: true });
+
+  item.addEventListener('touchend', () => {
+    if (!isDragging) return;
+    const dx = currentX - startX;
+    if (dx < -40) {
+      content.style.transform = 'translateX(-80px)';
+    } else {
+      content.style.transform = 'translateX(0)';
+    }
+  });
 }
 
-function getTripStatus(trip) {
+// ─────────────────────────────────────────
+// LANGUAGE / DISCOVER
+// ─────────────────────────────────────────
+function detectLanguage() {
   const today = toKey(new Date());
-  const days = Object.keys(trip.days).sort();
-  const start = days[0];
-  const end = days[days.length - 1];
-  if (today < start) return { label: 'Upcoming', style: 'background:var(--gray-xlight);color:var(--gray-mid);' };
-  if (today > end) return { label: 'Past', style: 'background:var(--gray-xlight);color:var(--gray-mid);' };
-  return { label: 'Current', style: 'background:var(--accent);color:white;' };
+  const current = _tripData.days.find(d => d.date === today);
+  if (current) {
+    const data = CITY_DATA[current.location];
+    if (data && data.lang) return data.lang;
+  }
+  // Default to France (first city)
+  return 'France';
 }
 
-// Preload all city data for active trip
-async function preloadTripData() {
-  const trip = Object.values(TRIPS).find(t => t.active);
-  if (!trip) return;
-  await Promise.all(trip.summary.flatMap(leg => [
-    loadCityLinks(TRIP_ID, leg.city),
-    loadCityNote(TRIP_ID, leg.city)
-  ]));
-  renderSummary();
-  renderManageList();
-}
+function renderLingo(override) {
+  const lang = override || detectLanguage();
+  const langData = LANGUAGES[lang];
+  const switcher = document.getElementById('local-lang-switcher');
+  const content = document.getElementById('local-content');
 
-function renderManageList() {
-  const el = document.getElementById('manage-trips-list');
-  if (!el) return;
-  const trips = Object.values(TRIPS);
-  if (!trips.length) {
-    el.innerHTML = `<div style="font-size:14px;color:var(--gray-mid);padding:1rem 0;">No trips yet.</div>`;
+  if (switcher) {
+    const available = Object.keys(LANGUAGES).filter(k => LANGUAGES[k]);
+    switcher.innerHTML = available.map(k =>
+      `<button class="lang-pill${k === lang ? ' active' : ''}" onclick="renderLingo('${k}')">${LANGUAGES[k]?.name || k}</button>`
+    ).join('');
+  }
+
+  if (!content) return;
+  if (!langData) {
+    content.innerHTML = `<div style="padding:1rem 0;font-size:14px;color:var(--gray-mid);">No phrases available for this language yet.</div>`;
     return;
   }
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let html = `<div class="manage-card">`;
-  trips.forEach(trip => {
-    const days = Object.keys(trip.days).sort();
-    const start = days[0];
-    const end = days[days.length - 1];
-    const fmt = k => { const [y,m,d] = k.split('-'); return `${MONTHS[+m-1]} ${+d}`; };
-    const status = getTripStatus(trip);
-    const countries = getTripCountries(trip);
-    html += `<div class="manage-row" onclick="openLevel2('${trip.id}')">
-      <div style="flex:1;min-width:0;">
-        <div style="font-family:var(--font-display);font-size:17px;font-weight:600;letter-spacing:-0.01em;color:var(--accent);">${trip.name}</div>
-        <div class="manage-row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${fmt(start)} – ${fmt(end)} &middot; ${days.length}d &middot; ${countries} ${countries === 1 ? 'country' : 'countries'}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:8px;">
-        <span style="font-size:10px;letter-spacing:0.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap;${status.style}">${status.label}</span>
-        <span class="manage-chevron">›</span>
-      </div>
-    </div>`;
+
+  const cats = [...new Set(langData.phrases.map(p => p.cat))];
+  let html = '';
+  cats.forEach(cat => {
+    html += `<div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin:1.5rem 0 0.25rem;padding-top:0.5rem;border-top:1px solid var(--gray-xlight);">${cat}</div>`;
+    langData.phrases.filter(p => p.cat === cat).forEach((p, i) => {
+      const id = `phrase-${cat}-${i}`;
+      html += `<div class="local-phrase" onclick="togglePhonetic('${id}')">
+        <div class="local-phrase-top">
+          <span class="local-phrase-local">${p.local}</span>
+          <span class="local-phrase-toggle">+</span>
+        </div>
+        <div class="local-phrase-english">${p.english}</div>
+        <div class="local-phrase-phonetic" id="${id}">${p.phonetic}</div>
+      </div>`;
+    });
   });
-  html += `</div>`;
-  el.innerHTML = html;
+  content.innerHTML = html;
 }
 
-function clearPlaceholder(el) {
-  const ph = el.querySelector('.placeholder');
-  if (ph) { el.innerHTML = ''; el.style.fontStyle = 'normal'; el.style.color = 'var(--black)'; }
+function togglePhonetic(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isShown = el.style.display === 'block';
+  el.style.display = isShown ? 'none' : 'block';
+  const toggle = el.closest('.local-phrase')?.querySelector('.local-phrase-toggle');
+  if (toggle) toggle.textContent = isShown ? '+' : '−';
 }
 
-function saveNote(key, el) {
-  const text = el.innerText.trim();
-  if (text && text !== 'Tap to add notes...') {
-    localStorage.setItem('note-' + key, text);
-    el.style.color = 'var(--black)';
-    el.style.fontStyle = 'normal';
-  } else {
-    localStorage.removeItem('note-' + key);
+// ─────────────────────────────────────────
+// PLAN VIEW
+// ─────────────────────────────────────────
+async function loadUserTrips() {
+  const data = await api('GET', '/api/trips');
+  _allTrips = (data && data.trips) ? data.trips : [];
+}
+
+function clearPlanSelection() {
+  _selectedPlanTripId = null;
+  document.querySelectorAll('.plan-trip-row').forEach(r => {
+    r.querySelector('.plan-trip-check').style.display = 'none';
+    r.querySelector('.plan-trip-name').style.color = '';
+  });
+}
+
+function selectPlanTrip(id) {
+  _selectedPlanTripId = id;
+  document.getElementById('plan-new-name').value = '';
+  document.querySelectorAll('.plan-trip-row').forEach(r => {
+    const selected = r.dataset.tripId == id;
+    r.querySelector('.plan-trip-check').style.display = selected ? 'block' : 'none';
+    r.querySelector('.plan-trip-name').style.color = selected ? 'var(--accent)' : '';
+  });
+}
+
+function renderPlanView() {
+  const list = document.getElementById('plan-trip-list');
+  if (!list) return;
+
+  if (!_allTrips.length) {
+    list.innerHTML = `<div style="font-size:13px;color:var(--gray-mid);padding:4px 0 8px;">No trips yet — create one below.</div>`;
+    return;
+  }
+
+  list.innerHTML = _allTrips.map(trip =>
+    `<div class="plan-trip-row" data-trip-id="${trip.id}" onclick="selectPlanTrip(${trip.id})">
+      <span class="plan-trip-name">${trip.name}</span>
+      <span class="plan-trip-check">✓</span>
+    </div>`
+  ).join('');
+}
+
+async function parseTripWithClaude() {
+  const text = document.getElementById('plan-text').value.trim();
+  const newName = document.getElementById('plan-new-name').value.trim();
+  const btn = document.getElementById('parse-btn');
+  const status = document.getElementById('parse-status');
+
+  if (!text) {
+    status.textContent = 'Please paste some itinerary text first.';
+    status.style.color = '#e74c3c';
+    return;
+  }
+  if (!_selectedPlanTripId && !newName) {
+    status.textContent = 'Select an existing trip or name a new one.';
+    status.style.color = '#e74c3c';
+    return;
+  }
+
+  // Lock UI
+  const textarea = document.getElementById('plan-text');
+  textarea.disabled = true;
+  btn.textContent = 'Parsing... please wait 10–15 seconds';
+  btn.disabled = true;
+  btn.classList.add('btn-parsing');
+  status.textContent = '';
+  status.style.color = '';
+
+  try {
+    let tripId = _selectedPlanTripId;
+
+    if (!tripId && newName) {
+      const data = await api('POST', '/api/trips', { name: newName });
+      if (!data || !data.trip) throw new Error('Failed to create trip');
+      tripId = data.trip.id;
+      _allTrips.push(data.trip);
+    }
+
+    const result = await api('POST', '/api/trips/import', { tripId, text });
+
+    if (result && result.success) {
+      btn.textContent = `✓ Imported ${result.days} days`;
+      btn.classList.remove('btn-parsing');
+      status.textContent = `Successfully added to trip. Go to Trips to see your itinerary.`;
+      status.style.color = 'var(--gray-mid)';
+      document.getElementById('plan-text').value = '';
+      document.getElementById('plan-new-name').value = '';
+      _selectedPlanTripId = null;
+
+      // Reload trip data if it's the active trip
+      if (tripId === TRIP_ID) {
+        await loadTripData();
+        renderHome(getTodayKey() || toKey(new Date()));
+        renderSummary();
+        renderCalendar();
+      }
+
+      setTimeout(() => {
+        btn.textContent = 'Parse with Claude →';
+        btn.disabled = false;
+        textarea.disabled = false;
+        renderPlanView();
+      }, 3000);
+    } else {
+      throw new Error(result?.error || 'Import failed');
+    }
+  } catch (err) {
+    btn.textContent = 'Parse with Claude →';
+    btn.classList.remove('btn-parsing');
+    btn.disabled = false;
+    textarea.disabled = false;
+    status.textContent = `Error: ${err.message}`;
+    status.style.color = '#e74c3c';
   }
 }
 
 // ─────────────────────────────────────────
-// DAY NAV BUTTON HANDLER
+// DESTINATION CLOCK INTERVAL
 // ─────────────────────────────────────────
-document.addEventListener('click', e => {
-  const btn = e.target.closest('.day-nav-btn');
-  if (!btn || btn.disabled) return;
-  const dir = btn.dataset.nav;
-  const key = btn.dataset.key;
-  if (dir === 'next') renderToday(key || null);
-  else renderToday(key || null);
-});
+setInterval(updateDestClock, 1000);
 
 // ─────────────────────────────────────────
-// DESKTOP NAVIGATION — keyboard
+// KEYBOARD NAVIGATION (desktop)
+// ─────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if (document.getElementById('view-today').classList.contains('active')) {
-    if (e.key === 'ArrowRight') {
-      if (currentKey === null) { renderToday(DAYS_ORDER[0]); return; }
-      const idx = DAYS_ORDER.indexOf(currentKey);
-      if (idx < DAYS_ORDER.length - 1) renderToday(DAYS_ORDER[idx + 1]);
-    }
-    if (e.key === 'ArrowLeft') {
-      if (currentKey === null) return;
-      const idx = DAYS_ORDER.indexOf(currentKey);
-      if (idx > 0) renderToday(DAYS_ORDER[idx - 1]);
-      else renderToday(null);
-    }
-  }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft') navigateDay(-1);
+  if (e.key === 'ArrowRight') navigateDay(1);
 });
-// ─────────────────────────────────────────
-let touchStartX = 0;
-let touchStartY = 0;
 
-document.getElementById('view-today').addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-  touchStartY = e.touches[0].clientY;
+// ─────────────────────────────────────────
+// TOUCH SWIPE NAV (home view day swiping)
+// ─────────────────────────────────────────
+let _touchStartX = 0, _touchStartY = 0;
+document.addEventListener('touchstart', e => {
+  _touchStartX = e.touches[0].clientX;
+  _touchStartY = e.touches[0].clientY;
 }, { passive: true });
 
-document.getElementById('view-today').addEventListener('touchend', e => {
-  const diffX = touchStartX - e.changedTouches[0].clientX;
-  const diffY = touchStartY - e.changedTouches[0].clientY;
-  // only trigger if horizontal swipe dominates
-  if (Math.abs(diffX) < 50 || Math.abs(diffY) > Math.abs(diffX)) return;
-
-  if (currentKey === null) {
-    // pre-trip screen — swipe left goes to first day
-    if (diffX > 0) renderToday(DAYS_ORDER[0]);
-    return;
+document.addEventListener('touchend', e => {
+  if (document.getElementById('view-home').classList.contains('active')) {
+    const dx = e.changedTouches[0].clientX - _touchStartX;
+    const dy = e.changedTouches[0].clientY - _touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+      navigateDay(dx < 0 ? 1 : -1);
+    }
   }
-
-  const idx = DAYS_ORDER.indexOf(currentKey);
-  if (diffX > 0 && idx < DAYS_ORDER.length - 1) renderToday(DAYS_ORDER[idx + 1]);
-  if (diffX < 0 && idx > 0) renderToday(DAYS_ORDER[idx - 1]);
-  if (diffX < 0 && idx === 0) renderToday(null); // swipe right on first day goes to pre-trip
 }, { passive: true });
 
 // ─────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────
-renderToday(getTodayKey());
-renderSummary();
-renderCalendar();
-renderPrintDays();
-renderManageList();
-renderLingo();
-updateDestClock();
-setInterval(updateDestClock, 1000);
-preloadTripData();
-</script>
+async function init() {
+  await Promise.all([loadLanguages(), loadTripData(), loadUserTrips()]);
+  const key = getTodayKey() || toKey(new Date());
+  renderHome(key);
+  renderSummary();
+  renderCalendar();
+  renderManageList();
+  renderLingo();
+  updateDestClock();
+  preloadCityData();
+}
 
+init();
+</script>
 </body>
 </html>
