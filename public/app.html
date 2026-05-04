@@ -1381,6 +1381,14 @@ function renderSummary() {
       html += `</div>`;
     }
 
+    // Outgoing travel legs
+    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id, group.tripId) : [];
+    if (outgoingLegs.length) {
+      html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">
+        ${renderTravelLegs(outgoingLegs)}
+      </div>`;
+    }
+
     html += `</div>`; // close trip-card
     });
 
