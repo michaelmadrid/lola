@@ -2132,7 +2132,7 @@ document.addEventListener('touchend', e => {
 // ─────────────────────────────────────────
 // SNAKE GAME — CSS grid
 // ─────────────────────────────────────────
-let _snakeCols = 20, _snakeRows = 20;
+let _snakeCols = 14, _snakeRows = 14;
 let _snake = [], _snakeDir = {x:1,y:0}, _snakeNext = {x:1,y:0};
 let _apple = {x:8,y:8}, _snakeScore = 0, _snakeLoop = null, _snakeRunning = false;
 let _snakeCells = [];
@@ -2152,7 +2152,7 @@ function snakeInit() {
   container.style.height = gridSize + 'px';
   container.style.gridTemplateColumns = 'repeat(' + _snakeCols + ', ' + cellSize + 'px)';
   container.style.gridTemplateRows = 'repeat(' + _snakeRows + ', ' + cellSize + 'px)';
-  container.style.gap = '1px';
+  container.style.gap = '0px';
   container.style.background = 'var(--gray-xlight)';
 
   container.innerHTML = '';
@@ -2162,6 +2162,7 @@ function snakeInit() {
     for (let x = 0; x < _snakeCols; x++) {
       const cell = document.createElement('div');
       cell.style.background = 'var(--card)';
+      cell.style.border = '0.5px solid var(--gray-xlight)';
       cell.style.borderRadius = '2px';
       container.appendChild(cell);
       _snakeCells[y][x] = cell;
