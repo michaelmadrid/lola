@@ -307,6 +307,7 @@
   .cal-day .day-tag { font-size: 7px; color: var(--gray-mid); margin-top: 1px; line-height: 1; }
   .cal-day.transit .day-tag { color: rgba(255,255,255,0.7); }
   .cal-legend { display: flex; gap: 20px; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--gray-xlight); }
+  .snake-btn-active { background: var(--accent) !important; color: white !important; border-color: var(--accent) !important; }
   .legend-item { display: flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--gray-mid); }
   .legend-dot { width: 10px; height: 10px; border-radius: 4px; }
   .legend-dot.transit { background: var(--accent); }
@@ -632,25 +633,17 @@
       <div></div>
       <button ontouchstart="event.preventDefault();snakeDir(0,-1)" onclick="snakeDir(0,-1)"
         style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
-        onmousedown="this.style.background='var(--accent)';this.style.color='white';this.style.borderColor='var(--accent)'"
-        onmouseup="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'"
-        ontouchend="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'">↑</button>
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">↑</button>
       <div></div>
       <button ontouchstart="event.preventDefault();snakeDir(-1,0)" onclick="snakeDir(-1,0)"
         style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
-        onmousedown="this.style.background='var(--accent)';this.style.color='white';this.style.borderColor='var(--accent)'"
-        onmouseup="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'"
-        ontouchend="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'">←</button>
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">←</button>
       <button ontouchstart="event.preventDefault();snakeDir(0,1)" onclick="snakeDir(0,1)"
         style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
-        onmousedown="this.style.background='var(--accent)';this.style.color='white';this.style.borderColor='var(--accent)'"
-        onmouseup="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'"
-        ontouchend="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'">↓</button>
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">↓</button>
       <button ontouchstart="event.preventDefault();snakeDir(1,0)" onclick="snakeDir(1,0)"
         style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
-        onmousedown="this.style.background='var(--accent)';this.style.color='white';this.style.borderColor='var(--accent)'"
-        onmouseup="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'"
-        ontouchend="this.style.background='';this.style.color='';this.style.borderColor='var(--gray-xlight)'">→</button>
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">→</button>
     </div>
   </div>
 </div>
