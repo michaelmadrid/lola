@@ -1154,9 +1154,10 @@ function renderHome(key) {
 
   // Stay
   if (day.stay) {
+    const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(day.stay)}`;
     html += `<div style="margin-bottom:1.25rem;">
       <div class="today-label">Stay</div>
-      <div class="today-content">${day.stay}</div>
+      <div class="today-content"><a href="${mapsUrl}" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px solid var(--gray-xlight);">${day.stay}</a></div>
     </div>`;
   }
 
@@ -1328,7 +1329,8 @@ function renderSummary() {
       stayGroups.forEach((sg, i) => {
         const showDates = stayGroups.length > 1;
         const dateRange = showDates ? `<span style="font-size:11px;color:var(--gray-mid);margin-left:6px;">${fmt(sg.dates[0])}${sg.dates.length > 1 ? ` – ${fmt(sg.dates[sg.dates.length-1])}` : ''}</span>` : '';
-        html += `<div class="section-content"${i > 0 ? ' style="margin-top:6px;"' : ''}>${sg.stay}${dateRange}</div>`;
+        const mapsUrl = `https://maps.google.com/?q=${encodeURIComponent(sg.stay)}`;
+        html += `<div class="section-content"${i > 0 ? ' style="margin-top:6px;"' : ''}><a href="${mapsUrl}" target="_blank" style="color:inherit;text-decoration:none;border-bottom:1px solid var(--gray-xlight);">${sg.stay}</a>${dateRange}</div>`;
       });
       html += `</div>`;
     }
