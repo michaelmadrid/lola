@@ -131,7 +131,7 @@
   .view.active { display: block; }
 
   /* ── HOME ── */
-  .today-wrap { max-width: 540px; margin: 0 auto; padding: 0 0 2rem; }
+  .today-wrap { max-width: 540px; margin: 0 auto; padding: 1rem 0 2rem; }
 
   .home-greeting { padding: 1rem 1rem 0.75rem; }
   .home-greeting-text {
@@ -491,7 +491,7 @@
   </div>
 
   <div id="trips-summary" style="display:block;">
-    <div style="padding:0 0 0.5rem;max-width:540px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:0.75rem 1rem 0;">
+    <div style="padding:0 0 0.5rem;max-width:540px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:1rem 1rem 0.5rem;">
       <input id="summary-search" type="search" placeholder="Search..." oninput="filterSummary(this.value)"
         style="flex:1;font-family:var(--font-body);font-size:14px;padding:8px 12px;border:1.5px solid var(--gray-xlight);border-radius:20px;background:var(--card);color:var(--black);outline:none;transition:border-color 0.15s;"
         onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'" />
@@ -966,7 +966,7 @@ function updateDestClock() {
   const time = new Date().toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
   const isDiff = destDate !== local;
   el.style.display = 'block';
-  el.textContent = isDiff ? `${city.split(' ')[0]} ${time}` : time;
+  el.textContent = isDiff ? `${city.split(' ')[0]} ${time}` : `${city.split(' ')[0]} ${time}`;
 }
 
 // ─────────────────────────────────────────
@@ -1180,7 +1180,11 @@ function renderHome(key) {
 function navigateDay(dir) {
   const allKeys = _tripData.days.map(d => d.date).sort();
   const idx = allKeys.indexOf(_viewedKey);
-  if (idx === -1) return;
+  if (idx === -1) {
+    // Not in trip — jump to first or last day
+    if (dir > 0 && allKeys.length) { _viewedKey = allKeys[0]; renderHome(_viewedKey); }
+    return;
+  }
   const newIdx = idx + dir;
   if (newIdx < 0 || newIdx >= allKeys.length) return;
   _viewedKey = allKeys[newIdx];
@@ -1411,11 +1415,21 @@ function renderManageList() {
 // ─────────────────────────────────────────
 // LEVEL 2 — Trip city list
 // ─────────────────────────────────────────
-function openLevel2(tripId) {
+async function openLevel2(tripId) {
   _currentTripId = tripId;
   const trip = _allTrips.find(t => t.id === tripId);
   document.getElementById('level2-title').textContent = trip ? trip.name : '';
-  renderCityList(tripId);
+
+  // Load trip data if it's not the active trip
+  if (tripId !== TRIP_ID) {
+    const data = await api('GET', `/api/trips/${tripId}`);
+    const tempDays = data && data.days ? data.days.map(d => ({ ...d, date: d.date.substring(0,10) })) : [];
+    const tempLegs = data && data.legs ? data.legs : [];
+    renderCityListFromData(tripId, tempDays, tempLegs);
+  } else {
+    renderCityList(tripId);
+  }
+
   const el = document.getElementById('trips-level-2');
   el.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -1429,25 +1443,21 @@ function closeLevel2() {
   setTimeout(() => el.style.display = 'none', 280);
 }
 
-function renderCityList(tripId) {
+function renderCityListFromData(tripId, days, legs) {
   const el = document.getElementById('trips-city-list');
   if (!el) return;
-
-  const stayDays = _tripData.days.filter(d => d.type === 'stay' || d.type === 'arrive');
+  const stayDays = days.filter(d => d.type === 'stay' || d.type === 'arrive');
   const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
-
   if (!cities.length) {
     el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:14px;color:var(--gray-mid);">No cities found. Import your itinerary first.</div>`;
     return;
   }
-
   let html = `<div class="manage-card">`;
   cities.forEach(city => {
     const k = cacheKey(tripId, city);
     const links = _cache.links[k] || [];
     const note = _cache.notes[k] || '';
     const sub = [links.length > 0 ? `${links.length} link${links.length !== 1 ? 's' : ''}` : '', note ? 'notes' : ''].filter(Boolean).join(' · ') || 'Nothing saved yet';
-
     html += `<div class="manage-row" onclick="openLevel3(${tripId},'${city}')">
       <div style="flex:1;min-width:0;">
         <div class="manage-row-title">${city}</div>
@@ -1458,6 +1468,10 @@ function renderCityList(tripId) {
   });
   html += `</div>`;
   el.innerHTML = html;
+}
+
+function renderCityList(tripId) {
+  renderCityListFromData(tripId, _tripData.days, _tripData.legs);
 }
 
 // ─────────────────────────────────────────
