@@ -1250,32 +1250,25 @@ function renderSummary() {
   cityGroups.forEach(group => {
     const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
 
-    // Find next travel day to determine real checkout
-    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
-    const nextTravelDay = _tripData.days.slice(cityEndIdx + 1).find(d => d.type === 'travel');
-    const checkoutDate = nextTravelDay ? nextTravelDay.date : null;
-
-    // Nights = arrival to departure date
-    const firstDate = group.dates[0];
-    const displayEndDate = checkoutDate || group.dates[group.dates.length - 1];
-    const nights = checkoutDate
-      ? Math.round((new Date(checkoutDate) - new Date(firstDate)) / (1000*60*60*24))
-      : group.dates.length;
+    const nights = group.dates.length;
     const nightsLabel = `${nights} night${nights !== 1 ? 's' : ''}`;
-    const datesLabel = `${fmt(firstDate)} – ${fmt(displayEndDate)}`;
+    const datesLabel = `${fmt(group.dates[0])} – ${fmt(group.dates[group.dates.length-1])}`;
 
     const k = cacheKey(TRIP_ID, group.city);
     const links = _cache.links[k] || [];
     const note = _cache.notes[k] || '';
 
-    // Travel day just before this city
+    // Find travel day immediately before first day of this city
     const cityStartIdx = _tripData.days.findIndex(d => d.date === group.dates[0]);
-    const prevTravelDay = cityStartIdx > 0 ? _tripData.days.slice(0, cityStartIdx).reverse().find(d => d.type === 'travel') : null;
+    const dayBefore = cityStartIdx > 0 ? _tripData.days[cityStartIdx - 1] : null;
+    const prevTravelDay = (dayBefore && dayBefore.type === 'travel') ? dayBefore : null;
     const incomingLegs = prevTravelDay ? getLegsForDay(prevTravelDay.id) : [];
-    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id) : [];
 
-    // Incoming label shows the travel date clearly
-    const incomingLabel = prevTravelDay ? `Getting there · ${fmt(prevTravelDay.date)}` : 'Getting there';
+    // Find travel day immediately after last day of this city
+    const cityEndIdx = _tripData.days.findIndex(d => d.date === group.dates[group.dates.length - 1]);
+    const dayAfter = cityEndIdx < _tripData.days.length - 1 ? _tripData.days[cityEndIdx + 1] : null;
+    const nextTravelDay = (dayAfter && dayAfter.type === 'travel') ? dayAfter : null;
+    const outgoingLegs = nextTravelDay ? getLegsForDay(nextTravelDay.id) : [];
 
     html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
       <div class="trip-card-header">
@@ -1290,7 +1283,7 @@ function renderSummary() {
 
     if (incomingLegs.length) {
       html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
-        <div class="section-label" style="margin-bottom:8px;">${incomingLabel}</div>
+        <div class="section-label" style="margin-bottom:8px;">Getting there</div>
         ${renderTravelLegs(incomingLegs)}
       </div>`;
     }
@@ -1873,10 +1866,8 @@ async function parseTripWithClaude() {
     const result = await api('POST', '/api/trips/import', { tripId, text });
 
     if (result && result.success) {
-      btn.textContent = `✓ Imported ${result.days} days`;
+      btn.textContent = `✓ ${result.days} days imported`;
       btn.classList.remove('btn-parsing');
-      status.textContent = `Successfully added to trip. Go to Trips to see your itinerary.`;
-      status.style.color = 'var(--gray-mid)';
       document.getElementById('plan-text').value = '';
       document.getElementById('plan-new-name').value = '';
       _selectedPlanTripId = null;
@@ -1884,17 +1875,22 @@ async function parseTripWithClaude() {
       // Reload trip data if it's the active trip
       if (tripId === TRIP_ID) {
         await loadTripData();
+        await preloadCityData();
         renderHome(getTodayKey() || toKey(new Date()));
         renderSummary();
         renderCalendar();
       }
 
+      // Navigate to Trips summary after a beat
       setTimeout(() => {
         btn.textContent = 'Parse with Claude →';
         btn.disabled = false;
         textarea.disabled = false;
         renderPlanView();
-      }, 3000);
+        // Switch to trips summary so user can see result
+        showView('trips', document.getElementById('nav-trips'));
+        switchTripsView('summary');
+      }, 1500);
     } else {
       throw new Error(result?.error || 'Import failed');
     }
