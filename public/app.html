@@ -1598,7 +1598,7 @@ function renderCityListFromData(tripId, days, legs) {
       + '<button id="delete-trip-btn" onclick="confirmDeleteTrip(' + tripId + ')" disabled style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Delete</button>'
       + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'none\'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>'
       + '</div></div>'
-      + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'block\'" style="font-family:var(--font-body);font-size:13px;color:var(--gray-light);background:none;border:none;cursor:pointer;padding:4px 0;">Delete this trip</button>'
+      + '<div style="display:flex;gap:1.5rem;">' + '<button onclick="exportTrip(' + tripId + ')" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);background:none;border:none;cursor:pointer;padding:4px 0;">Export trip</button>' + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'block\'" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);background:none;border:none;cursor:pointer;padding:4px 0;">Delete this trip</button>' + '</div>'
       + '</div>';
     el.innerHTML = html;
     return;
@@ -1634,7 +1634,7 @@ function renderCityListFromData(tripId, days, legs) {
     + '<button id="delete-trip-btn" onclick="confirmDeleteTrip(' + tripId + ')" disabled style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;opacity:0.4;transition:opacity 0.15s;">Delete</button>'
     + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'none\'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>'
     + '</div></div>'
-    + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'block\'" style="font-family:var(--font-body);font-size:13px;color:var(--gray-light);background:none;border:none;cursor:pointer;padding:4px 0;">Delete this trip</button>'
+    + '<div style="display:flex;gap:1.5rem;">' + '<button onclick="exportTrip(' + tripId + ')" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);background:none;border:none;cursor:pointer;padding:4px 0;">Export trip</button>' + '<button onclick="document.getElementById(\'delete-trip-confirm\').style.display=\'block\'" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);background:none;border:none;cursor:pointer;padding:4px 0;">Delete this trip</button>' + '</div>'
     + '</div>';
 
   el.innerHTML = html;
@@ -1642,6 +1642,43 @@ function renderCityListFromData(tripId, days, legs) {
 
 function renderCityList(tripId) {
   const td = getTripData(tripId); renderCityListFromData(tripId, td.days, td.legs);
+}
+
+function exportTrip(tripId) {
+  const trip = _allTrips.find(t => t.id === tripId);
+  const td = getTripData(tripId);
+  if (!td || !td.days.length) { alert('No data to export.'); return; }
+
+  const lines = [];
+  const tripName = trip ? trip.name : 'Trip';
+  lines.push(tripName.toUpperCase());
+  lines.push('');
+
+  td.days.forEach(day => {
+    const legs = getLegsForDay(day.id, tripId);
+    if (day.type === 'travel') {
+      lines.push('● ' + day.date + ' — ' + day.location);
+      legs.forEach(l => {
+        const times = [l.dep_time, l.arr_time].filter(Boolean).join(' → ');
+        const ref = l.ref_code ? ' #' + l.ref_code : '';
+        lines.push('  ' + (l.from_city || '') + ' → ' + (l.to_city || '') + '  ' + times + (l.arr_note ? ' (' + l.arr_note + ')' : '') + ref);
+        if (l.carrier || l.ref) lines.push('  ' + [l.carrier, l.ref].filter(Boolean).join(' '));
+        if (l.note) lines.push('  ' + l.note);
+      });
+    } else if (day.type === 'arrive' || day.type === 'stay') {
+      if (day.type === 'arrive') lines.push('');
+      const stay = day.stay ? ' — ' + day.stay : '';
+      lines.push((day.type === 'arrive' ? '● ' : '  ') + day.date + ' ' + (day.location || '') + stay);
+    }
+    if (day.alert) lines.push('  ⚑ ' + day.alert);
+  });
+
+  const text = lines.join('\n');
+  const blob = new Blob([text], {type: 'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = tripName.replace(/\s+/g, '_') + '.txt';
+  a.click();
 }
 
 function validateDeleteInput(tripId) {
