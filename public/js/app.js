@@ -12,10 +12,46 @@ const TRIP_ID = 1;
 // ─────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────
+export async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  if (!email || !password) { err.textContent = 'Email and password required'; err.style.display = 'block'; return; }
+  const data = await api('POST', '/api/auth/login', { email, password });
+  if (data && data.token) {
+    localStorage.setItem('lola_token', data.token);
+    localStorage.setItem('lola_user', JSON.stringify(data.user));
+    document.getElementById('login-overlay').style.display = 'none';
+    init();
+  } else {
+    err.textContent = data?.error || 'Login failed';
+    err.style.display = 'block';
+  }
+}
+
+export async function handleRegister() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  if (!email || !password) { err.textContent = 'Email and password required'; err.style.display = 'block'; return; }
+  const data = await api('POST', '/api/auth/register', { email, password, name: email.split('@')[0] });
+  if (data && data.token) {
+    localStorage.setItem('lola_token', data.token);
+    localStorage.setItem('lola_user', JSON.stringify(data.user));
+    document.getElementById('login-overlay').style.display = 'none';
+    init();
+  } else {
+    err.textContent = data?.error || 'Registration failed';
+    err.style.display = 'block';
+  }
+}
+
 export async function init() {
-  // Auth guard — redirect to login if no token
+  // Auth guard
   if (!localStorage.getItem('lola_token')) {
-    window.location.href = '/';
+    // Show login overlay instead of redirecting
+    const overlay = document.getElementById('login-overlay');
+    if (overlay) { overlay.style.display = 'flex'; return; }
     return;
   }
   await Promise.all([loadLanguages(), loadUserTrips()]);
@@ -113,7 +149,8 @@ export function populateSettingsUser() {
 export function logout() {
   localStorage.removeItem('lola_token');
   localStorage.removeItem('lola_user');
-  window.location.href = '/';
+  document.getElementById('login-overlay').style.display = 'flex';
+  toggleSettings();
 }
 
 export function renderLingo(override) {

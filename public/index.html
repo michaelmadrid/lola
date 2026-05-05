@@ -10,6 +10,36 @@
 </head>
 <body>
 
+<!-- LOGIN OVERLAY -->
+<div id="login-overlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+  <div style="width:100%;max-width:360px;">
+    <div style="font-family:var(--font-display);font-size:32px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:8px;">Lola</div>
+    <div style="font-size:14px;color:var(--gray-mid);margin-bottom:2rem;">Summer Holiday</div>
+
+    <div id="login-error" style="display:none;font-size:13px;color:#e74c3c;margin-bottom:1rem;"></div>
+
+    <input id="login-email" type="email" placeholder="Email"
+      style="width:100%;font-family:var(--font-body);font-size:15px;padding:12px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;margin-bottom:10px;transition:border-color 0.15s;"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'"
+      onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()" />
+
+    <input id="login-password" type="password" placeholder="Password"
+      style="width:100%;font-family:var(--font-body);font-size:15px;padding:12px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;margin-bottom:1.25rem;transition:border-color 0.15s;"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'"
+      onkeydown="if(event.key==='Enter')handleLogin()" />
+
+    <button onclick="handleLogin()"
+      style="width:100%;font-family:var(--font-body);font-size:15px;font-weight:500;padding:13px;background:var(--black);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;margin-bottom:10px;">
+      Sign in
+    </button>
+
+    <button onclick="handleRegister()"
+      style="width:100%;font-family:var(--font-body);font-size:15px;padding:13px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);cursor:pointer;">
+      Create account
+    </button>
+  </div>
+</div>
+
 <!-- TOP BAR -->
 <div class="top-bar">
   <span></span>
