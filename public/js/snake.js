@@ -145,7 +145,7 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); _snakeRunning ? snakePause() : snakeStart(); }
 });
 
-let _snakeTouchX = 0, _snakeTouchY = 0;
+
 document.addEventListener('touchstart', e => {
   if (!isIdleActive()) return;
   _snakeTouchX = e.touches[0].clientX;
