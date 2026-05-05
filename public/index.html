@@ -99,8 +99,8 @@
       <!-- Mode selector -->
       <div style="padding:0 1rem;">
         <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
-          <button id="mode-update" onclick="setPlanMode('update')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">Update trip</button>
-          <button id="mode-replace" onclick="setPlanMode('replace')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">Replace all</button>
+          <button id="mode-update" onclick="renderPlanMode('update')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">Update trip</button>
+          <button id="mode-replace" onclick="renderPlanMode('replace')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">Replace all</button>
         </div>
         <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
         <!-- Replace confirmation -->
@@ -245,7 +245,7 @@
     <div class="manage-card" style="margin:0 1rem 1.5rem;">
       <div class="settings-row" style="border-bottom:none;">
         <span class="settings-row-label">app.summer-holiday.com</span>
-        <span style="font-size:12px;color:var(--gray-mid);">v0.2</span>
+        <span style="font-size:12px;color:var(--gray-mid);">v0.3</span>
       </div>
     </div>
 

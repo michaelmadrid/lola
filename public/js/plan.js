@@ -1,5 +1,5 @@
 // PLAN.JS — Summer Holiday / Lola v0.3
-import { getTripsData, setTripData, getAllTrips, filterAllTrips, pushTrip, getSelectedPlanTripId, setSelectedPlanTripId, getPlanMode, setPlanMode, getCache, loadAllTripsData, preloadCityData, getTripData, getLegsForDay } from './state.js';
+import { getTripsData, setTripData, getAllTrips, filterAllTrips, pushTrip, getSelectedPlanTripId, setSelectedPlanTripId, getPlanMode, getCache, loadAllTripsData, preloadCityData, getTripData, getLegsForDay } from './state.js';
 import { api } from './api.js';
 import { toKey, formatDate } from './util.js';
 import { renderHome, renderSummary, renderCalendar, renderManageList } from './trips.js';
@@ -129,7 +129,7 @@ export function clearPlanSelection() {
   });
 }
 
-export function setPlanMode(mode) {
+export function renderPlanMode(mode) {
   _planMode = mode;
   const updateBtn = document.getElementById('mode-update');
   const replaceBtn = document.getElementById('mode-replace');
