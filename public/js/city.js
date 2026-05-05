@@ -1,7 +1,7 @@
 // CITY.JS — Summer Holiday / Lola v0.3
+import { getTripData, getAllTrips, getCache, setCacheLinks, setCacheNote, setCacheJournal, getCurrentTripId, setCurrentTripId, getCurrentCity, setCurrentCity, loadCityLinks, loadCityNote } from './state.js';
 import { ck, cacheKey, normalizeUrl, getDomain } from './util.js';
 import { api } from './api.js';
-import { _tripsData, _allTrips, _cache, _currentTripId, _currentCity, getTripData } from './state.js';
 import { renderManageList } from './trips.js';
 
 
@@ -171,7 +171,7 @@ export function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
 // LEVEL 2 — Trip city list
 // ─────────────────────────────────────────
 export async function openLevel2(tripId) {
-  _currentTripId = tripId;
+  setCurrentTripId(tripId);
   const trip = _allTrips.find(t => t.id === tripId);
   document.getElementById('level2-title').textContent = trip ? trip.name : '';
   renderCityList(tripId);
@@ -185,8 +185,8 @@ export async function openLevel2(tripId) {
 // LEVEL 3 — City detail
 // ─────────────────────────────────────────
 export function openLevel3(tripId, city) {
-  _currentTripId = tripId;
-  _currentCity = city;
+  setCurrentTripId(tripId);
+  setCurrentCity(city);
   document.getElementById('level3-title').textContent = city;
   renderCityDetail(tripId, city);
   const el = document.getElementById('trips-level-3');
@@ -209,22 +209,22 @@ export async function closeLevel3() {
     el.style.display = 'none';
     document.body.style.overflow = '';
     // Refresh cache for this city
-    if (_currentTripId && _currentCity) {
-      delete _cache.links[cacheKey(_currentTripId, _currentCity)];
-      delete _cache.notes[cacheKey(_currentTripId, _currentCity)];
+    if (getCurrentTripId() && getCurrentCity()) {
+      delete _cache.links[cacheKey(getCurrentTripId(), getCurrentCity())];
+      delete _cache.notes[cacheKey(getCurrentTripId(), getCurrentCity())];
       await Promise.all([
-        loadCityLinks(_currentTripId, _currentCity),
-        loadCityNote(_currentTripId, _currentCity)
+        loadCityLinks(getCurrentTripId(), getCurrentCity()),
+        loadCityNote(getCurrentTripId(), getCurrentCity())
       ]);
     }
-    if (_currentTripId) renderCityList(_currentTripId);
+    if (getCurrentTripId()) renderCityList(getCurrentTripId());
     renderSummary();
   }, 280);
 }
 
 export function openCityFromSummary(tripId, city) {
-  _currentTripId = tripId;
-  _currentCity = city;
+  setCurrentTripId(tripId);
+  setCurrentCity(city);
   document.getElementById('level3-title').textContent = city;
   renderCityDetail(tripId, city);
   const el = document.getElementById('trips-level-3');
@@ -235,7 +235,7 @@ export function openCityFromSummary(tripId, city) {
 
 export function saveCityNote(tripId, city, value) {
   const k = cacheKey(tripId, city);
-  _cache.notes[k] = value;
+  setCacheNote(k, value);
   clearTimeout(_noteTimer);
   _noteTimer = setTimeout(async () => {
     await api('POST', `/api/notes/${tripId}/${encodeURIComponent(city)}`, { content: value });
@@ -248,7 +248,7 @@ export function saveGuideItem(tripId, city, item) {
     .then(data => {
       if (data && data.link) {
         const k = cacheKey(tripId, city);
-        if (!_cache.links[k]) _cache.links[k] = [];
+        if (!_cache.links[k]) setCacheLinks(k, []);
         _cache.links[k].push({ ...data.link, _id: String(data.link.id), type: 'link' });
       }
     });
@@ -257,7 +257,7 @@ export function saveGuideItem(tripId, city, item) {
 export function deleteGuideItem(tripId, city, itemId) {
   const k = cacheKey(tripId, city);
   if (_cache.links[k]) {
-    _cache.links[k] = _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId));
+    setCacheLinks(k, _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId)));
   }
   api('DELETE', `/api/links/${itemId}`);
   _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');

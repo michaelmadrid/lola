@@ -1,6 +1,6 @@
 // APP.JS — Summer Holiday / Lola v0.3
+import { getAllTrips, getSettingsOpen, setSettingsOpen, LANGUAGES, loadLanguages, loadUserTrips, loadAllTripsData, preloadCityData, getToken } from './state.js';
 import { toKey } from './util.js';
-import { _allTrips, LANGUAGES, loadLanguages, loadUserTrips, loadAllTripsData, preloadCityData } from './state.js';
 import { renderHome, renderSummary, renderCalendar, renderManageList, updateDestClock } from './trips.js';
 import { renderPlanView } from './plan.js';
 import { snakeInit } from './snake.js';
@@ -81,9 +81,9 @@ export function toggleDarkMode() {
 // SETTINGS
 // ─────────────────────────────────────────
 export function toggleSettings() {
-  _settingsOpen = !_settingsOpen;
+  setSettingsOpen(!getSettingsOpen());
   const panel = document.getElementById('settings-panel');
-  if (_settingsOpen) {
+  if (getSettingsOpen()) {
     populateSettingsUser();
     applyTheme(document.documentElement.getAttribute('data-theme') === 'dark');
     panel.style.display = 'block';

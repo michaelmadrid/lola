@@ -1,5 +1,7 @@
 // API.JS — Summer Holiday / Lola v0.3
 
+const API_TOKEN = () => localStorage.getItem('lola_token');
+
 // ─────────────────────────────────────────
 // API HELPER
 // ─────────────────────────────────────────

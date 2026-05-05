@@ -1,14 +1,14 @@
 // TRIPS.JS — Summer Holiday / Lola v0.3
+import { getAllDays, getDayData, getDayTripId, getLegsForDay, getTodayKey, getTripData, getAllTrips, getTripsData, getCache, getViewedKey, setViewedKey, setCacheJournal, clearJournalTimer, setJournalTimer, loadCityLinks, loadCityNote } from './state.js';
 import { toKey, formatDate, cacheKey, ck, moonSVG } from './util.js';
 import { api } from './api.js';
-import { _tripsData, _allTrips, _cache, _viewedKey, getAllDays, getDayData, getDayTripId, getLegsForDay, getTodayKey, getTripData } from './state.js';
 
 
 // ─────────────────────────────────────────
 // HOME / TODAY VIEW
 // ─────────────────────────────────────────
 export function renderHome(key) {
-  _viewedKey = key;
+  setViewedKey(key);
   const el = document.getElementById('home-content');
   const today = toKey(new Date());
   const allDays = getAllDays(); // all days across all trips, sorted
@@ -52,7 +52,7 @@ export function renderHome(key) {
 
   if (!day) {
     // Day outside any trip — just journal
-    const journalTripId = tripId || (Object.keys(_tripsData)[0] ? parseInt(Object.keys(_tripsData)[0]) : 1);
+    const journalTripId = tripId || (Object.keys(getTripsData())[0] ? parseInt(Object.keys(getTripsData())[0]) : 1);
     const journalKey = `${journalTripId}-${key}`;
     const journalContent = _cache.journal[journalKey] || '';
     html += `<div class="today-card" style="min-height:unset;">
@@ -123,7 +123,7 @@ export function renderHome(key) {
   if (!_cache.journal[journalKey]) {
     api('GET', `/api/journal/${tripId}/${key}`).then(data => {
       if (data && data.entry && data.entry.content) {
-        _cache.journal[journalKey] = data.entry.content;
+        setCacheJournal(journalKey, data.entry.content);
         const ta = document.getElementById(`journal-ta-${key}`);
         if (ta && !ta.value) { ta.value = data.entry.content; ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }
       }
@@ -138,14 +138,14 @@ export function renderSummary() {
   const el = document.getElementById('summary-content');
   if (!el) return;
 
-  const allTripData = Object.entries(_tripsData);
+  const allTripData = Object.entries(getTripsData());
   if (!allTripData.length) { el.innerHTML = ''; return; }
 
   // Sort trips by their first day
-  const sortedTrips = _allTrips.filter(t => _tripsData[t.id] && _tripsData[t.id].days.length)
+  const sortedTrips = _allTrips.filter(t => getTripsData()[t.id] && getTripsData()[t.id].days.length)
     .sort((a, b) => {
-      const aStart = _tripsData[a.id].days[0]?.date || '';
-      const bStart = _tripsData[b.id].days[0]?.date || '';
+      const aStart = getTripsData()[a.id].days[0]?.date || '';
+      const bStart = getTripsData()[b.id].days[0]?.date || '';
       return aStart.localeCompare(bStart);
     });
 
@@ -154,7 +154,7 @@ export function renderSummary() {
   let html = '';
 
   sortedTrips.forEach(trip => {
-    const td = _tripsData[trip.id];
+    const td = getTripsData()[trip.id];
     const allDates = td.days.map(d => d.date).sort();
 
     // Trip header
@@ -351,12 +351,12 @@ export function renderManageList() {
   let html = `<div class="manage-card">`;
 
   const sortedForManage = [..._allTrips].sort((a, b) => {
-    const aStart = _tripsData[a.id]?.days[0]?.date || 'z';
-    const bStart = _tripsData[b.id]?.days[0]?.date || 'z';
+    const aStart = getTripsData()[a.id]?.days[0]?.date || 'z';
+    const bStart = getTripsData()[b.id]?.days[0]?.date || 'z';
     return aStart.localeCompare(bStart);
   });
   sortedForManage.forEach(trip => {
-    const tripDays = _tripsData[trip.id] ? _tripsData[trip.id].days : [];
+    const tripDays = getTripsData()[trip.id] ? getTripsData()[trip.id].days : [];
     const dates = tripDays.map(d => d.date).sort();
     const start = dates[0];
     const end = dates[dates.length - 1];
@@ -389,15 +389,15 @@ export function renderManageList() {
 
 export function navigateDay(dir) {
   const allKeys = getAllDays().map(d => d.date);
-  const idx = allKeys.indexOf(_viewedKey);
+  const idx = allKeys.indexOf(getViewedKey());
   if (idx === -1) {
-    if (dir > 0 && allKeys.length) { _viewedKey = allKeys[0]; renderHome(_viewedKey); }
+    if (dir > 0 && allKeys.length) { setViewedKey(allKeys[0]); renderHome(getViewedKey()); }
     return;
   }
   const newIdx = idx + dir;
   if (newIdx < 0 || newIdx >= allKeys.length) return;
-  _viewedKey = allKeys[newIdx];
-  renderHome(_viewedKey);
+  setViewedKey(allKeys[newIdx]);
+  renderHome(getViewedKey());
 }
 
 // ─────────────────────────────────────────
@@ -462,8 +462,8 @@ export function renderTravelLegs(legs) {
 
 export function saveJournalEntry(date, tripId, content) {
   const k = `${tripId}-${date}`;
-  _cache.journal[k] = content;
-  clearTimeout(_journalTimer);
+  setCacheJournal(k, content);
+  clearJournalTimer();
   _journalTimer = setTimeout(() => {
     api('POST', `/api/journal/${tripId}/${date}`, { content });
   }, 800);

@@ -1,6 +1,6 @@
 // PLAN.JS — Summer Holiday / Lola v0.3
+import { getTripsData, setTripData, getAllTrips, filterAllTrips, pushTrip, getSelectedPlanTripId, setSelectedPlanTripId, getPlanMode, setPlanMode, getCache, loadAllTripsData, preloadCityData, getTripData, getLegsForDay } from './state.js';
 import { api } from './api.js';
-import { _tripsData, _allTrips, _cache, _selectedPlanTripId, _planMode, getAllDays, getTripData, getLegsForDay, loadAllTripsData, preloadCityData } from './state.js';
 import { toKey, formatDate } from './util.js';
 import { renderHome, renderSummary, renderCalendar, renderManageList } from './trips.js';
 
@@ -16,14 +16,14 @@ export async function parseTripWithClaude() {
     status.style.color = '#e74c3c';
     return;
   }
-  if (!_selectedPlanTripId && !newName) {
+  if (!getSelectedPlanTripId() && !newName) {
     status.textContent = 'Select an existing trip or name a new one.';
     status.style.color = '#e74c3c';
     return;
   }
 
   // Warn on replace mode if trip has data
-  if (_planMode === 'replace' && _selectedPlanTripId) {
+  if (_planMode === 'replace' && getSelectedPlanTripId()) {
     const confirmEl = document.getElementById('replace-confirm');
     if (confirmEl) confirmEl.style.display = 'block';
     return;
@@ -50,23 +50,23 @@ export async function _doImport() {
   status.style.color = '';
 
   try {
-    let tripId = _selectedPlanTripId;
+    let tripId = getSelectedPlanTripId();
 
     if (!tripId && newName) {
       const data = await api('POST', '/api/trips', { name: newName });
       if (!data || !data.trip) throw new Error('Failed to create trip');
       tripId = data.trip.id;
-      _allTrips.push(data.trip);
+      pushTrip(data.trip);
     }
 
-    const result = await api('POST', '/api/trips/import', { tripId, text, mode: _planMode });
+    const result = await api('POST', '/api/trips/import', { tripId, text, mode: getPlanMode() });
 
     if (result && result.success) {
       btn.textContent = `✓ ${result.days} days ${_planMode === 'update' ? 'updated' : 'imported'}`;
       btn.classList.remove('btn-parsing');
       document.getElementById('plan-text').value = '';
       document.getElementById('plan-new-name').value = '';
-      _selectedPlanTripId = null;
+      setSelectedPlanTripId(null);
 
       await loadAllTripsData();
       await preloadCityData();
@@ -112,7 +112,7 @@ export function renderPlanView() {
 }
 
 export function selectPlanTrip(id) {
-  _selectedPlanTripId = id;
+  setSelectedPlanTripId(id);
   document.getElementById('plan-new-name').value = '';
   document.querySelectorAll('.plan-trip-row').forEach(r => {
     const selected = r.dataset.tripId == id;
@@ -122,7 +122,7 @@ export function selectPlanTrip(id) {
 }
 
 export function clearPlanSelection() {
-  _selectedPlanTripId = null;
+  setSelectedPlanTripId(null);
   document.querySelectorAll('.plan-trip-row').forEach(r => {
     r.querySelector('.plan-trip-check').style.display = 'none';
     r.querySelector('.plan-trip-name').style.color = '';
@@ -240,8 +240,8 @@ export async function confirmDeleteTrip(tripId) {
   if (!trip || !input || input.value.trim() !== trip.name.trim()) return;
   const result = await api('DELETE', '/api/trips/' + tripId);
   if (result && result.success) {
-    _allTrips = _allTrips.filter(t => t.id !== tripId);
-    delete _tripsData[tripId];
+    setAllTrips(_allTrips.filter(t => t.id !== tripId));
+    deleteTripData(tripId);
     closeLevel2();
     renderManageList();
     renderSummary();

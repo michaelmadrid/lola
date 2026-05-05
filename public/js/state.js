@@ -1,31 +1,71 @@
 // STATE.JS — Summer Holiday / Lola v0.3
+// All mutable app state lives here. Other modules import getters/setters.
+// Nothing touches window directly.
+
 import { api } from './api.js';
 
-
-// ─── State variables ───────────────────────
-export let _tripsData = {}; // keyed by trip id: { 1: {days,legs}, 2: {days,legs} }
-export let _cache = { links: {}, notes: {}, journal: {} };
-export let _currentTripId = null;
-export let _currentCity = null;
-export let _viewedKey = null;
-let _viewedTripId = null;
-export let _selectedPlanTripId = null;
-export let _planMode = 'update';
-export let _settingsOpen = false;
-export let _allTrips = [];
+// ─── Private state ────────────────────────────────────────────────────────────
+let _tripsData = {};
+let _cache = { links: {}, notes: {}, journal: {} };
+let _allTrips = [];
+let _currentTripId = null;
+let _currentCity = null;
+let _viewedKey = null;
+let _selectedPlanTripId = null;
+let _planMode = 'update';
+let _settingsOpen = false;
 let _journalTimer = null;
-const API_TOKEN = () => localStorage.getItem('lola_token');
+export let LANGUAGES = {};
 
-// Get all days across all trips, sorted by date
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+export const getToken = () => localStorage.getItem('lola_token');
+export const getUser = () => { try { return JSON.parse(localStorage.getItem('lola_user')); } catch { return null; } };
+export const setToken = (t) => localStorage.setItem('lola_token', t);
+export const setUser = (u) => localStorage.setItem('lola_user', JSON.stringify(u));
+export const clearAuth = () => { localStorage.removeItem('lola_token'); localStorage.removeItem('lola_user'); };
+
+// ─── State getters ────────────────────────────────────────────────────────────
+export const getTripsData = () => _tripsData;
+export const getCache = () => _cache;
+export const getAllTrips = () => _allTrips;
+export const getCurrentTripId = () => _currentTripId;
+export const getCurrentCity = () => _currentCity;
+export const getViewedKey = () => _viewedKey;
+export const getSelectedPlanTripId = () => _selectedPlanTripId;
+export const getPlanMode = () => _planMode;
+export const getSettingsOpen = () => _settingsOpen;
+
+// ─── State setters ────────────────────────────────────────────────────────────
+export const setCurrentTripId = (v) => { _currentTripId = v; };
+export const setCurrentCity = (v) => { _currentCity = v; };
+export const setViewedKey = (v) => { _viewedKey = v; };
+export const setSelectedPlanTripId = (v) => { _selectedPlanTripId = v; };
+export const setPlanMode = (v) => { _planMode = v; };
+export const setSettingsOpen = (v) => { _settingsOpen = v; };
+export const setAllTrips = (v) => { _allTrips = v; };
+export const setTripData = (tripId, data) => { _tripsData[tripId] = data; };
+export const deleteTripData = (tripId) => { delete _tripsData[tripId]; };
+export const filterAllTrips = (fn) => { _allTrips = _allTrips.filter(fn); };
+export const pushTrip = (trip) => { _allTrips.push(trip); };
+export const setCacheLinks = (key, val) => { _cache.links[key] = val; };
+export const setCacheNote = (key, val) => { _cache.notes[key] = val; };
+export const setCacheJournal = (key, val) => { _cache.journal[key] = val; };
+export const clearJournalTimer = () => { clearTimeout(_journalTimer); };
+export const setJournalTimer = (fn, ms) => { _journalTimer = setTimeout(fn, ms); };
+
+// ─── Derived getters ──────────────────────────────────────────────────────────
 export function getAllDays() {
-  return Object.entries(_tripsData).flatMap(([tripId, td]) =>
-    td.days.map(d => ({ ...d, tripId: parseInt(tripId) }))
-  ).sort((a, b) => a.date.localeCompare(b.date));
+  return Object.entries(_tripsData)
+    .flatMap(([tripId, td]) => td.days.map(d => ({ ...d, tripId: parseInt(tripId) })))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export function getTripData(tripId) {
+  return _tripsData[tripId] || { days: [], legs: [] };
 }
 
 export function getDayData(key, tripId) {
   if (tripId) return getTripData(tripId).days.find(d => d.date === key) || null;
-  // Search all trips
   for (const td of Object.values(_tripsData)) {
     const day = td.days.find(d => d.date === key);
     if (day) return day;
@@ -41,12 +81,14 @@ export function getDayTripId(key) {
 }
 
 export function getLegsForDay(dayId, tripId) {
-  const legs = tripId ? getTripData(tripId).legs : Object.values(_tripsData).flatMap(td => td.legs);
-  return legs.filter(l => l.day_id === dayId).sort((a,b) => a.sort_order - b.sort_order);
+  const legs = tripId
+    ? getTripData(tripId).legs
+    : Object.values(_tripsData).flatMap(td => td.legs);
+  return legs.filter(l => l.day_id === dayId).sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export function getTodayKey() {
-  const today = toKey(new Date());
+  const today = new Date().toISOString().split('T')[0];
   return getAllDays().find(d => d.date === today) ? today : null;
 }
 
@@ -60,16 +102,9 @@ export function getLastTripDay() {
   return all.length ? all[all.length - 1].date : null;
 }
 
-// Get trip data for a specific trip
-export function getTripData(tripId) {
-  return _tripsData[tripId] || { days: [], legs: [] };
-}
-
-// ─────────────────────────────────────────
-// TRIP DATA — load from API
-// ─────────────────────────────────────────
+// ─── Data loaders ─────────────────────────────────────────────────────────────
 export async function loadTripData(tripId) {
-  const data = await api('GET', `/api/trips/${tripId}`);
+  const data = await api('GET', '/api/trips/' + tripId);
   if (!data || !data.days) return;
   _tripsData[tripId] = {
     days: data.days.map(d => ({ ...d, date: d.date.substring(0, 10) })),
@@ -81,49 +116,39 @@ export async function loadAllTripsData() {
   await Promise.all(_allTrips.map(t => loadTripData(t.id)));
 }
 
-// ─────────────────────────────────────────
-// PLAN VIEW
-// ─────────────────────────────────────────
 export async function loadUserTrips() {
   const data = await api('GET', '/api/trips');
-  _allTrips = (data && data.trips) ? data.trips : [];
+  if (data && data.trips) _allTrips = data.trips;
 }
 
-// ─────────────────────────────────────────
-// CITY CACHE — API-backed
-// ─────────────────────────────────────────
 export async function loadCityLinks(tripId, city) {
-  const k = cacheKey(tripId, city);
-  const data = await api('GET', `/api/links/${tripId}/${encodeURIComponent(city)}`);
-  _cache.links[k] = (data && data.links) ? data.links.map(l => ({...l, _id: String(l.id), type:'link'})) : [];
-  return _cache.links[k];
+  const key = tripId + '-' + city;
+  const data = await api('GET', '/api/links/' + tripId + '/' + encodeURIComponent(city));
+  _cache.links[key] = data && data.links ? data.links : [];
+  return _cache.links[key];
 }
 
 export async function loadCityNote(tripId, city) {
-  const k = cacheKey(tripId, city);
-  const data = await api('GET', `/api/notes/${tripId}/${encodeURIComponent(city)}`);
-  _cache.notes[k] = (data && data.note) ? data.note.content : '';
-  return _cache.notes[k];
+  const key = tripId + '-' + city;
+  const data = await api('GET', '/api/notes/' + tripId + '/' + encodeURIComponent(city));
+  _cache.notes[key] = data && data.note ? data.note : '';
+  return _cache.notes[key];
 }
 
 export async function preloadCityData() {
   const promises = [];
   for (const [tripId, td] of Object.entries(_tripsData)) {
-    const stayDays = td.days.filter(d => d.type === 'stay' || d.type === 'arrive');
-    const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
+    const cities = [...new Set(
+      td.days.filter(d => d.type === 'stay' || d.type === 'arrive')
+             .map(d => d.location).filter(Boolean)
+    )];
     cities.forEach(city => {
       promises.push(loadCityLinks(parseInt(tripId), city));
       promises.push(loadCityNote(parseInt(tripId), city));
     });
   }
   await Promise.all(promises);
-  renderSummary();
-  renderManageList();
 }
-
-
-// ─── Languages ─────────────────────────────
-export let LANGUAGES = {};
 
 export async function loadLanguages() {
   try {
