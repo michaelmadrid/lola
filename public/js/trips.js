@@ -182,6 +182,7 @@ export function renderSummary() {
     if (current) cityGroups.push(current);
 
   cityGroups.forEach((group, groupIdx) => {
+    console.log("cityGroup", groupIdx, group.city, "of", cityGroups.length);
     const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
 
     // Find travel day immediately before and after this city
