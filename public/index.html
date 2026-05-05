@@ -1,244 +1,260 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Lola">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>Lola</title>
-  <style>
-	* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-	:root {
-	  --bg: #f0f0ee;
-	  --card: #ffffff;
-	  --black: #0d0d0d;
-	  --gray-mid: #6b6b6b;
-	  --gray-light: #c8c8c6;
-	  --gray-xlight: #e8e8e6;
-	  --accent: #2a4ed4;
-	  --accent-light: #eef1ff;
-	  --radius: 12px;
-	  --font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	  --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	}
-
-	body {
-	  background: var(--bg);
-	  font-family: var(--font-body);
-	  min-height: 100vh;
-	  display: flex;
-	  align-items: center;
-	  justify-content: center;
-	  padding: 2rem 1rem;
-	}
-
-	.login-wrap {
-	  width: 100%;
-	  max-width: 380px;
-	}
-
-	.login-title {
-	  font-size: 32px;
-	  font-weight: 600;
-	  letter-spacing: -0.02em;
-	  color: var(--black);
-	  margin-bottom: 6px;
-	}
-
-	.login-sub {
-	  font-size: 15px;
-	  color: var(--gray-mid);
-	  margin-bottom: 2rem;
-	}
-
-	.login-card {
-	  background: var(--card);
-	  border-radius: var(--radius);
-	  padding: 1.5rem;
-	  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
-	}
-
-	.field {
-	  margin-bottom: 1rem;
-	}
-
-	.field label {
-	  display: block;
-	  font-size: 11px;
-	  letter-spacing: 0.08em;
-	  text-transform: uppercase;
-	  color: var(--gray-mid);
-	  margin-bottom: 6px;
-	}
-
-	.field input {
-	  width: 100%;
-	  font-family: var(--font-body);
-	  font-size: 16px;
-	  padding: 12px 14px;
-	  border: 1.5px solid var(--gray-xlight);
-	  border-radius: 8px;
-	  background: var(--bg);
-	  color: var(--black);
-	  outline: none;
-	  transition: border-color 0.15s;
-	}
-
-	.field input:focus { border-color: var(--accent); }
-
-	.login-btn {
-	  width: 100%;
-	  font-family: var(--font-body);
-	  font-size: 15px;
-	  font-weight: 600;
-	  padding: 14px;
-	  background: var(--accent);
-	  color: white;
-	  border: none;
-	  border-radius: var(--radius);
-	  cursor: pointer;
-	  margin-top: 0.5rem;
-	  transition: opacity 0.15s;
-	}
-
-	.login-btn:hover { opacity: 0.9; }
-	.login-btn:disabled { opacity: 0.5; cursor: default; }
-
-	.login-error {
-	  font-size: 13px;
-	  color: #e74c3c;
-	  margin-top: 0.75rem;
-	  text-align: center;
-	  display: none;
-	}
-
-	.login-toggle {
-	  text-align: center;
-	  margin-top: 1rem;
-	  font-size: 13px;
-	  color: var(--gray-mid);
-	}
-
-	.login-toggle a {
-	  color: var(--accent);
-	  cursor: pointer;
-	  text-decoration: none;
-	}
-  </style>
+  <link rel="stylesheet" href="/css/app.css" />
 </head>
 <body>
 
-<div class="login-wrap">
-  <div class="login-title">Lola</div>
-  <div class="login-sub" id="login-sub">Sign in to your account</div>
-
-  <div class="login-card">
-	<div class="field" id="name-field" style="display:none;">
-	  <label>Your Name</label>
-	  <input type="text" id="input-name" placeholder="Michael" />
-	</div>
-	<div class="field">
-	  <label>Email</label>
-	  <input type="email" id="input-email" placeholder="you@example.com" />
-	</div>
-	<div class="field">
-	  <label>Password</label>
-	  <input type="password" id="input-password" placeholder="••••••••" 
-		onkeydown="if(event.key==='Enter')submitAuth()" />
-	</div>
-	<button class="login-btn" id="auth-btn" onclick="submitAuth()">Sign In</button>
-	<div class="login-error" id="login-error"></div>
-  </div>
-
-  <div class="login-toggle">
-	<span id="toggle-text">Don't have an account?</span>
-	<a onclick="toggleMode()"> <span id="toggle-link">Create one</span></a>
+<!-- TOP BAR -->
+<div class="top-bar">
+  <span></span>
+  <div class="top-bar-right">
+    <div id="dest-clock" style="font-family:var(--font-body);font-size:13px;color:var(--gray-mid);display:none;padding:4px 6px;"></div>
+    <button onclick="toggleSettings()" id="gear-btn" style="background:none;border:none;cursor:pointer;font-size:19px;color:var(--gray-mid);padding:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all 0.15s;" onmouseover="this.style.background='var(--gray-xlight)'" onmouseout="this.style.background='none'">⊙</button>
   </div>
 </div>
 
-<script>
-  let isRegister = false;
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-tab active" id="nav-home" onclick="showView('home',this)">Home</button>
+  <button class="nav-tab" id="nav-trips" onclick="showView('trips',this)">Trips</button>
+  <button class="nav-tab" id="nav-discover" onclick="showView('discover',this)">Discover</button>
+  <button class="nav-tab" id="nav-idle" onclick="showView('idle',this)">Idle</button>
+</nav>
 
-  // Check if already logged in
-  const token = localStorage.getItem('lola_token');
-  if (token) {
-	// Verify token is still valid
-	fetch('/api/auth/me', {
-	  headers: { 'Authorization': `Bearer ${token}` }
-	}).then(r => r.json()).then(data => {
-	  if (data.user) {
-		window.location.href = '/app.html';
-	  } else {
-		localStorage.removeItem('lola_token');
-		localStorage.removeItem('lola_user');
-	  }
-	}).catch(() => {});
-  }
+<!-- HOME VIEW -->
+<div id="view-home" class="view active">
+  <div id="home-content"></div>
+</div>
 
-  function toggleMode() {
-	isRegister = !isRegister;
-	document.getElementById('name-field').style.display = isRegister ? 'block' : 'none';
-	document.getElementById('login-sub').textContent = isRegister ? 'Create your account' : 'Sign in to your account';
-	document.getElementById('auth-btn').textContent = isRegister ? 'Create Account' : 'Sign In';
-	document.getElementById('toggle-text').textContent = isRegister ? 'Already have an account?' : "Don't have an account?";
-	document.getElementById('toggle-link').textContent = isRegister ? 'Sign in' : 'Create one';
-	document.getElementById('login-error').style.display = 'none';
-  }
+<!-- TRIPS VIEW -->
+<div id="view-trips" class="view">
+  <div class="trips-subnav">
+    <button id="tab-summary" class="subnav-tab active" onclick="switchTripsView('summary')">Summary</button>
+    <button id="tab-cal" class="subnav-tab" onclick="switchTripsView('cal')">Calendar</button>
+    <button id="tab-manage" class="subnav-tab" onclick="switchTripsView('manage')">Manage</button>
+    <button id="tab-plan" class="subnav-tab" onclick="switchTripsView('plan')">Plan</button>
+  </div>
 
-  async function submitAuth() {
-	const email = document.getElementById('input-email').value.trim();
-	const password = document.getElementById('input-password').value;
-	const name = document.getElementById('input-name').value.trim();
-	const btn = document.getElementById('auth-btn');
-	const err = document.getElementById('login-error');
+  <div id="trips-summary" style="display:block;">
+    <div style="padding:0 0 0.5rem;max-width:540px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:1rem 1rem 0.5rem;">
+      <input id="summary-search" type="search" placeholder="Search..." oninput="filterSummary(this.value)"
+        style="flex:1;font-family:var(--font-body);font-size:14px;padding:8px 12px;border:1.5px solid var(--gray-xlight);border-radius:20px;background:var(--card);color:var(--black);outline:none;transition:border-color 0.15s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--gray-xlight)'" />
+    </div>
+    <div class="doc"><div id="summary-content"></div></div>
+  </div>
 
-	if (!email || !password) {
-	  showError('Please enter your email and password');
-	  return;
-	}
+  <div id="trips-cal" style="display:none;">
+    <div class="cal">
+      <div class="cal-header" id="cal-header">2026</div>
+      <div id="cal-content"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot transit"></div>Transit</div>
+        <div class="legend-item"><div class="legend-dot stay"></div>Stay</div>
+      </div>
+    </div>
+  </div>
 
-	btn.disabled = true;
-	btn.textContent = isRegister ? 'Creating...' : 'Signing in...';
-	err.style.display = 'none';
+  <div id="trips-manage" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div id="manage-trips-list"></div>
+    </div>
+  </div>
 
-	try {
-	  const endpoint = isRegister ? '/api/auth/register' : '/api/auth/login';
-	  const body = isRegister ? { email, password, name } : { email, password };
+  <div id="trips-plan" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1.25rem 1rem 3rem;">
+      <!-- Paste area -->
+      <div class="manage-card" style="padding:1.25rem;margin-bottom:1rem;">
+        <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:10px;">Paste your itinerary</div>
+        <textarea id="plan-text" placeholder="Paste flights, hotels, confirmations — anything. Claude will extract the structure automatically." style="width:100%;min-height:180px;font-family:var(--font-body);font-size:14px;line-height:1.65;border:none;outline:none;background:none;color:var(--black);resize:vertical;"></textarea>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-xlight);">
+          <div style="font-size:10px;letter-spacing:0.07em;text-transform:uppercase;color:var(--gray-light);margin-bottom:8px;">Examples</div>
+          <div style="font-size:12px;color:var(--gray-mid);line-height:2;font-family:var(--font-mono);">
+            Paris May 13–18, Airbnb 4 Square de Verdun<br>
+            EVA Air DPS→TPE May 12 4:30pm–10pm, TPE→CDG 11:30pm–8:25am (May 13)<br>
+            Marseille May 18–23
+          </div>
+        </div>
+      </div>
+      <!-- Trip selector -->
+      <div class="manage-card" style="margin-bottom:1.25rem;padding:1.25rem;">
+        <div style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:12px;">Add to trip</div>
+        <div id="plan-trip-list"></div>
+        <div style="display:flex;align-items:center;gap:12px;margin:14px 0;">
+          <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+          <span style="font-size:11px;color:var(--gray-light);">or create new</span>
+          <div style="flex:1;height:1px;background:var(--gray-xlight);"></div>
+        </div>
+        <input id="plan-new-name" type="text" placeholder="New trip name..."
+          style="width:100%;font-family:var(--font-body);font-size:15px;padding:10px 14px;border:1.5px solid var(--gray-xlight);border-radius:var(--radius-sm);background:var(--bg);color:var(--black);outline:none;transition:border-color 0.15s;"
+          onfocus="clearPlanSelection();this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--gray-xlight)'" />
+      </div>
+      <!-- Mode selector -->
+      <div style="padding:0 1rem;">
+        <div style="display:flex;gap:8px;margin-bottom:1.25rem;">
+          <button id="mode-update" onclick="setPlanMode('update')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--accent);background:var(--accent);color:white;cursor:pointer;transition:all 0.15s;">Update trip</button>
+          <button id="mode-replace" onclick="setPlanMode('replace')" style="flex:1;font-family:var(--font-body);font-size:13px;padding:10px;border-radius:var(--radius-sm);border:1.5px solid var(--gray-xlight);background:none;color:var(--gray-mid);cursor:pointer;transition:all 0.15s;">Replace all</button>
+        </div>
+        <div id="mode-description" style="font-size:12px;color:var(--gray-mid);margin-bottom:1rem;line-height:1.5;">Add or update specific days without touching the rest of your trip.</div>
+        <!-- Replace confirmation -->
+        <div id="replace-confirm" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;">
+          <div style="font-size:14px;color:#856404;margin-bottom:10px;">This will delete all existing days and reimport from scratch. Are you sure?</div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="_doImport()" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:#e74c3c;color:white;border:none;border-radius:20px;cursor:pointer;">Yes, replace everything</button>
+            <button onclick="document.getElementById('replace-confirm').style.display='none'" style="font-family:var(--font-body);font-size:13px;padding:8px 16px;background:none;color:var(--gray-mid);border:1.5px solid var(--gray-xlight);border-radius:20px;cursor:pointer;">Cancel</button>
+          </div>
+        </div>
+        <!-- Parse button -->
+        <button id="parse-btn" onclick="parseTripWithClaude()" style="width:100%;font-family:var(--font-body);font-size:15px;font-weight:500;padding:14px;background:var(--black);color:white;border:none;border-radius:var(--radius-sm);cursor:pointer;transition:opacity 0.15s;">Parse with Claude →</button>
+        <div id="parse-status" style="font-size:12px;color:var(--gray-mid);text-align:center;margin-top:10px;">Claude extracts cities, dates, flights and hotels automatically</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-	  const res = await fetch(endpoint, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(body)
-	  });
+<!-- Level 2: Trip detail -->
+<div id="trips-level-2" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
+  <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
+    <button onclick="closeLevel2()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">← Trips</button>
+    <span id="level2-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;color:var(--accent);"></span>
+  </div>
+  <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
+    <div id="trips-city-list" style="max-width:540px;margin:0 auto;padding-top:1rem;"></div>
+  </div>
+</div>
 
-	  const data = await res.json();
+<!-- Level 3: City detail -->
+<div id="trips-level-3" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:300;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);">
+  <div style="position:absolute;top:0;left:0;right:0;height:calc(52px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:var(--bg);border-bottom:1px solid var(--gray-xlight);display:flex;align-items:center;gap:0.75rem;padding-left:1.25rem;padding-right:1.25rem;z-index:10;">
+    <button onclick="closeLevel3()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--accent);font-family:var(--font-body);padding:8px 0;min-width:44px;">←</button>
+    <span id="level3-title" style="font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:-0.01em;"></span>
+  </div>
+  <div style="position:absolute;top:calc(52px + env(safe-area-inset-top));left:0;right:0;bottom:calc(64px + max(env(safe-area-inset-bottom),20px));overflow-y:auto;background:var(--bg);">
+    <div id="trips-city-detail" style="max-width:540px;margin:0 auto;"></div>
+  </div>
+</div>
 
-	  if (data.error) {
-		showError(data.error);
-		btn.disabled = false;
-		btn.textContent = isRegister ? 'Create Account' : 'Sign In';
-		return;
-	  }
+<!-- DISCOVER VIEW -->
+<div id="view-discover" class="view">
+  <div class="trips-subnav">
+    <button id="tab-recs" onclick="switchExploreView('recs')" class="subnav-tab active">Recs</button>
+    <button id="tab-speak" onclick="switchExploreView('speak')" class="subnav-tab">Speak</button>
+  </div>
+  <div id="explore-recs">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div class="manage-card">
+        <a href="https://outliersguide.com" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Outliers Guide</div><div class="manage-row-sub">Curated hotels and places</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://amigo.app" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Amigo</div><div class="manage-row-sub">Friend recommendations</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://trippin.world" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Trippin</div><div class="manage-row-sub">Travel editorial</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://monocle.com/travel" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Monocle Travel</div><div class="manage-row-sub">City guides and culture</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://www.cntraveler.com" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Condé Nast Traveler</div><div class="manage-row-sub">Travel inspiration</div></div><span class="manage-chevron">↗</span></a>
+        <a href="https://www.theguardian.com/travel" target="_blank" class="manage-row" style="text-decoration:none;"><div style="flex:1;"><div class="manage-row-title">Guardian Travel</div><div class="manage-row-sub">Independent travel writing</div></div><span class="manage-chevron">↗</span></a>
+      </div>
+    </div>
+  </div>
+  <div id="explore-speak" style="display:none;">
+    <div style="max-width:540px;margin:0 auto;padding:1rem 0 2rem;">
+      <div style="padding:0 1rem 0.75rem;display:flex;gap:6px;flex-wrap:wrap;" id="local-lang-switcher"></div>
+      <div class="manage-card" style="padding:0 1.25rem;"><div id="local-content"></div></div>
+    </div>
+  </div>
+</div>
 
-	  localStorage.setItem('lola_token', data.token);
-	  localStorage.setItem('lola_user', JSON.stringify(data.user));
-	  window.location.href = '/app.html';
+<!-- IDLE VIEW -->
+<div id="view-idle" class="view">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:0.75rem;padding-bottom:20px;">
+    <div id="snake-grid" style="display:grid;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;width:100%;max-width:320px;padding:0 4px;">
+      <div id="snake-score" style="font-family:var(--font-mono);font-size:12px;color:var(--gray-mid);">Score: 0</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--gray-light);">swipe or arrows</div>
+      <button onclick="_snakeRunning ? snakePause() : snakeStart()" id="snake-btn"
+        style="font-family:var(--font-body);font-size:12px;padding:6px 16px;background:var(--black);color:white;border:none;border-radius:20px;cursor:pointer;">Play</button>
+    </div>
+    <!-- Arrow controls for mobile -->
+    <div style="display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px;gap:6px;">
+      <div></div>
+      <button ontouchstart="event.preventDefault();snakeDir(0,-1)" onclick="snakeDir(0,-1)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">↑</button>
+      <div></div>
+      <button ontouchstart="event.preventDefault();snakeDir(-1,0)" onclick="snakeDir(-1,0)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">←</button>
+      <button ontouchstart="event.preventDefault();snakeDir(0,1)" onclick="snakeDir(0,1)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">↓</button>
+      <button ontouchstart="event.preventDefault();snakeDir(1,0)" onclick="snakeDir(1,0)"
+        style="background:var(--card);border:1.5px solid var(--gray-xlight);border-radius:10px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.1s;-webkit-tap-highlight-color:transparent;"
+        onpointerdown="this.classList.add('snake-btn-active')" onpointerup="this.classList.remove('snake-btn-active')" onpointerleave="this.classList.remove('snake-btn-active')">→</button>
+    </div>
+  </div>
+</div>
 
-	} catch (e) {
-	  showError('Something went wrong. Try again.');
-	  btn.disabled = false;
-	  btn.textContent = isRegister ? 'Create Account' : 'Sign In';
-	}
-  }
+<!-- SETTINGS PANEL -->
+<div id="settings-panel" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:500;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.4,0,0.2,1);">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;padding-top:calc(1rem + env(safe-area-inset-top));position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:1px solid var(--gray-xlight);">
+    <span style="font-family:var(--font-display);font-size:20px;font-weight:600;letter-spacing:-0.01em;color:var(--black);">Settings</span>
+    <button onclick="toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:24px;color:var(--gray-mid);padding:4px 8px;min-width:44px;min-height:44px;">×</button>
+  </div>
+  <div style="max-width:540px;margin:0 auto;padding:1.25rem 0 3rem;">
 
-  function showError(msg) {
-	const err = document.getElementById('login-error');
-	err.textContent = msg;
-	err.style.display = 'block';
-  }
-</script>
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Account</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row">
+        <div>
+          <div class="settings-row-label" id="settings-user-name">—</div>
+          <div style="font-size:12px;color:var(--gray-mid);" id="settings-user-email">—</div>
+        </div>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label" style="color:#e74c3c;">Sign Out</span>
+        <button onclick="logout()" style="font-size:11px;padding:6px 14px;border:1.5px solid #e74c3c;border-radius:20px;background:none;cursor:pointer;font-family:var(--font-body);color:#e74c3c;">Sign Out</button>
+      </div>
+    </div>
 
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Appearance</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">Dark Mode</span>
+        <div onclick="toggleDarkMode()" id="dark-toggle" style="width:48px;height:28px;border-radius:14px;background:var(--gray-xlight);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;">
+          <div id="dark-toggle-knob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">Trips</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row">
+        <span class="settings-row-label">Share a Trip</span>
+        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+      </div>
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">Export</span>
+        <span style="font-size:12px;color:var(--gray-mid);">Coming soon</span>
+      </div>
+    </div>
+
+    <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);padding:0 1rem 0.5rem;">About</div>
+    <div class="manage-card" style="margin:0 1rem 1.5rem;">
+      <div class="settings-row" style="border-bottom:none;">
+        <span class="settings-row-label">app.summer-holiday.com</span>
+        <span style="font-size:12px;color:var(--gray-mid);">v0.2</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PRINT ONLY -->
+<div id="print-days" style="display:none;"></div>
+
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
