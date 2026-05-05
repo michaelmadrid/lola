@@ -29,7 +29,7 @@ export function renderHome(key) {
       const daysLeft = Math.ceil((new Date(tripStart) - new Date(today)) / (1000*60*60*24));
       const [sy,sm,sd] = tripStart.split('-').map(Number);
       // Find which trip starts first
-      const firstTrip = _allTrips.find(t => getTripData(t.id).days.find(d => d.date === tripStart));
+      const firstTrip = getAllTrips().find(t => getTripData(t.id).days.find(d => d.date === tripStart));
       html += `<div class="pretrip-card">
         <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--gray-mid);margin-bottom:8px;">Coming up${firstTrip ? ` · ${firstTrip.name}` : ''}</div>
         <div style="font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-0.02em;color:var(--black);margin-bottom:4px;">${daysLeft} day${daysLeft !== 1 ? 's' : ''}</div>
@@ -54,7 +54,7 @@ export function renderHome(key) {
     // Day outside any trip — just journal
     const journalTripId = tripId || (Object.keys(getTripsData())[0] ? parseInt(Object.keys(getTripsData())[0]) : 1);
     const journalKey = `${journalTripId}-${key}`;
-    const journalContent = _cache.journal[journalKey] || '';
+    const journalContent = getCache().journal[journalKey] || '';
     html += `<div class="today-card" style="min-height:unset;">
       <div style="margin-bottom:0.75rem;"><div class="today-date">${formatDate(key)}</div></div>
       <div class="today-label">Journal</div>
@@ -70,7 +70,7 @@ export function renderHome(key) {
   const prevKey = keyIndex > 0 ? allKeys[keyIndex - 1] : null;
   const nextKey = keyIndex < allKeys.length - 1 ? allKeys[keyIndex + 1] : null;
   const legs = getLegsForDay(day.id, tripId);
-  const tripName = _allTrips.find(t => t.id === tripId)?.name || '';
+  const tripName = getAllTrips().find(t => t.id === tripId)?.name || '';
 
   html += `<div class="today-card">
     <div class="today-header">
@@ -108,7 +108,7 @@ export function renderHome(key) {
 
   // Journal — scoped to this trip
   const journalKey = `${tripId}-${key}`;
-  const journalContent = _cache.journal[journalKey] || '';
+  const journalContent = getCache().journal[journalKey] || '';
   html += `<div style="margin-top:1.5rem;">
     <div class="today-label">Journal</div>
     <textarea id="journal-ta-${key}" placeholder="What happened today..."
@@ -120,7 +120,7 @@ export function renderHome(key) {
   html += `</div></div>`;
   el.innerHTML = html;
 
-  if (!_cache.journal[journalKey]) {
+  if (!getCache().journal[journalKey]) {
     api('GET', `/api/journal/${tripId}/${key}`).then(data => {
       if (data && data.entry && data.entry.content) {
         setCacheJournal(journalKey, data.entry.content);
@@ -142,7 +142,7 @@ export function renderSummary() {
   if (!allTripData.length) { el.innerHTML = ''; return; }
 
   // Sort trips by their first day
-  const sortedTrips = _allTrips.filter(t => getTripsData()[t.id] && getTripsData()[t.id].days.length)
+  const sortedTrips = getAllTrips().filter(t => getTripsData()[t.id] && getTripsData()[t.id].days.length)
     .sort((a, b) => {
       const aStart = getTripsData()[a.id].days[0]?.date || '';
       const bStart = getTripsData()[b.id].days[0]?.date || '';
@@ -203,8 +203,8 @@ export function renderSummary() {
     const datesLabel = `${fmt(displayStartDate)} – ${fmt(displayEndDate)}`;
 
     const k = cacheKey(group.tripId, group.city);
-    const links = _cache.links[k] || [];
-    const note = _cache.notes[k] || '';
+    const links = getCache().links[k] || [];
+    const note = getCache().notes[k] || '';
     html += `<div class="trip-card" id="summary-city-${ck(group.city)}">
       <div class="trip-card-header">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
@@ -342,7 +342,7 @@ export function renderManageList() {
   if (!el) return;
 
   // Use the loaded trips list
-  if (!_allTrips.length) {
+  if (!getAllTrips().length) {
     el.innerHTML = `<div style="padding:1.5rem 1rem;font-size:14px;color:var(--gray-mid);">No trips yet. Go to Plan to create one.</div>`;
     return;
   }
@@ -350,7 +350,7 @@ export function renderManageList() {
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   let html = `<div class="manage-card">`;
 
-  const sortedForManage = [..._allTrips].sort((a, b) => {
+  const sortedForManage = [...getAllTrips()].sort((a, b) => {
     const aStart = getTripsData()[a.id]?.days[0]?.date || 'z';
     const bStart = getTripsData()[b.id]?.days[0]?.date || 'z';
     return aStart.localeCompare(bStart);

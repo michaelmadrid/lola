@@ -21,7 +21,7 @@ export function renderCityList(tripId) {
 export function renderCityListFromData(tripId, days, legs) {
   const el = document.getElementById('trips-city-list');
   if (!el) return;
-  const trip = _allTrips.find(t => t.id === tripId);
+  const trip = getAllTrips().find(t => t.id === tripId);
   const stayDays = days.filter(d => d.type === 'stay' || d.type === 'arrive');
   const cities = [...new Set(stayDays.map(d => d.location).filter(Boolean))];
 
@@ -48,7 +48,7 @@ export function renderCityListFromData(tripId, days, legs) {
       </div>
     </div>`;
     // Still show delete option for empty trips
-    const tripForDelete = _allTrips.find(t => t.id === tripId);
+    const tripForDelete = getAllTrips().find(t => t.id === tripId);
     const tname = tripForDelete ? tripForDelete.name : '';
     html += '<div style="padding:1rem 1rem 2rem;">'
       + '<div id="delete-trip-confirm" style="display:none;background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);">'
@@ -68,8 +68,8 @@ export function renderCityListFromData(tripId, days, legs) {
   html += `<div class="manage-card" style="margin:0 1rem 1rem;">`;
   cities.forEach(city => {
     const k = cacheKey(tripId, city);
-    const links = _cache.links[k] || [];
-    const note = _cache.notes[k] || '';
+    const links = getCache().links[k] || [];
+    const note = getCache().notes[k] || '';
     const parts = [links.length > 0 ? `${links.length} link${links.length !== 1 ? 's' : ''}` : '', note ? 'note' : ''].filter(Boolean);
     const sub = parts.length ? parts.join(' · ') : '';
 
@@ -84,7 +84,7 @@ export function renderCityListFromData(tripId, days, legs) {
   html += `</div>`;
 
   // Delete trip section
-  const tripForDelete = _allTrips.find(t => t.id === tripId);
+  const tripForDelete = getAllTrips().find(t => t.id === tripId);
   const tname = tripForDelete ? tripForDelete.name : '';
   html += '<div style="padding:1rem 1rem 2rem;">'
     + '<div id="delete-trip-confirm" style="display:none;background:var(--card);border-radius:var(--radius);padding:1.25rem;margin-bottom:0.75rem;box-shadow:var(--shadow);">'
@@ -172,7 +172,7 @@ export function _renderCityDetailHTML(tripId, city, key, links, savedNote) {
 // ─────────────────────────────────────────
 export async function openLevel2(tripId) {
   setCurrentTripId(tripId);
-  const trip = _allTrips.find(t => t.id === tripId);
+  const trip = getAllTrips().find(t => t.id === tripId);
   document.getElementById('level2-title').textContent = trip ? trip.name : '';
   renderCityList(tripId);
   const el = document.getElementById('trips-level-2');
@@ -210,8 +210,8 @@ export async function closeLevel3() {
     document.body.style.overflow = '';
     // Refresh cache for this city
     if (getCurrentTripId() && getCurrentCity()) {
-      delete _cache.links[cacheKey(getCurrentTripId(), getCurrentCity())];
-      delete _cache.notes[cacheKey(getCurrentTripId(), getCurrentCity())];
+      delete getCache().links[cacheKey(getCurrentTripId(), getCurrentCity())];
+      delete getCache().notes[cacheKey(getCurrentTripId(), getCurrentCity())];
       await Promise.all([
         loadCityLinks(getCurrentTripId(), getCurrentCity()),
         loadCityNote(getCurrentTripId(), getCurrentCity())
@@ -248,19 +248,19 @@ export function saveGuideItem(tripId, city, item) {
     .then(data => {
       if (data && data.link) {
         const k = cacheKey(tripId, city);
-        if (!_cache.links[k]) setCacheLinks(k, []);
-        _cache.links[k].push({ ...data.link, _id: String(data.link.id), type: 'link' });
+        if (!getCache().links[k]) setCacheLinks(k, []);
+        getCache().links[k].push({ ...data.link, _id: String(data.link.id), type: 'link' });
       }
     });
 }
 
 export function deleteGuideItem(tripId, city, itemId) {
   const k = cacheKey(tripId, city);
-  if (_cache.links[k]) {
-    setCacheLinks(k, _cache.links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId)));
+  if (getCache().links[k]) {
+    setCacheLinks(k, getCache().links[k].filter(l => String(l.id) !== String(itemId) && String(l._id) !== String(itemId)));
   }
   api('DELETE', `/api/links/${itemId}`);
-  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[k] || [], _cache.notes[k] || '');
+  _renderCityDetailHTML(tripId, city, ck(city), getCache().links[k] || [], getCache().notes[k] || '');
 }
 
 export async function submitCityItem(tripId, city) {
@@ -272,9 +272,9 @@ export async function submitCityItem(tripId, city) {
   const item = { type: 'link', title: getDomain(url.startsWith('http') ? url : val), url: url.startsWith('http') ? url : val };
   closeCityInput();
   await saveGuideItem(tripId, city, item);
-  delete _cache.links[cacheKey(tripId, city)];
+  delete getCache().links[cacheKey(tripId, city)];
   await loadCityLinks(tripId, city);
-  _renderCityDetailHTML(tripId, city, ck(city), _cache.links[cacheKey(tripId, city)] || [], _cache.notes[cacheKey(tripId, city)] || '');
+  _renderCityDetailHTML(tripId, city, ck(city), getCache().links[cacheKey(tripId, city)] || [], getCache().notes[cacheKey(tripId, city)] || '');
 }
 
 export function showCityInput() {

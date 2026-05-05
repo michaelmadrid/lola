@@ -98,12 +98,12 @@ export function renderPlanView() {
   const list = document.getElementById('plan-trip-list');
   if (!list) return;
 
-  if (!_allTrips.length) {
+  if (!getAllTrips().length) {
     list.innerHTML = `<div style="font-size:13px;color:var(--gray-mid);padding:4px 0 8px;">No trips yet — create one below.</div>`;
     return;
   }
 
-  list.innerHTML = _allTrips.map(trip =>
+  list.innerHTML = getAllTrips().map(trip =>
     `<div class="plan-trip-row" data-trip-id="${trip.id}" onclick="selectPlanTrip(${trip.id})">
       <span class="plan-trip-name">${trip.name}</span>
       <span class="plan-trip-check">✓</span>
@@ -147,7 +147,7 @@ export function renderPlanMode(mode) {
 }
 
 export function exportTrip(tripId) {
-  const trip = _allTrips.find(t => t.id === tripId);
+  const trip = getAllTrips().find(t => t.id === tripId);
   const td = getTripData(tripId);
   if (!td || !td.days.length) { alert('No data to export.'); return; }
 
@@ -211,12 +211,12 @@ export async function saveTripName(tripId, name) {
   name = name.trim();
   if (!name) {
     // Restore old name
-    const trip = _allTrips.find(t => t.id === tripId);
+    const trip = getAllTrips().find(t => t.id === tripId);
     const input = document.getElementById('trip-name-input');
     if (input && trip) input.value = trip.name;
     return;
   }
-  const trip = _allTrips.find(t => t.id === tripId);
+  const trip = getAllTrips().find(t => t.id === tripId);
   if (trip && trip.name === name) return; // no change
   await api('PATCH', `/api/trips/${tripId}`, { name });
   if (trip) { trip.name = name; document.getElementById('level2-title').textContent = name; }
@@ -224,7 +224,7 @@ export async function saveTripName(tripId, name) {
 }
 
 export function validateDeleteInput(tripId) {
-  const trip = _allTrips.find(t => t.id === tripId);
+  const trip = getAllTrips().find(t => t.id === tripId);
   const input = document.getElementById('delete-trip-input');
   const btn = document.getElementById('delete-trip-btn');
   if (!trip || !input || !btn) return;
@@ -235,12 +235,12 @@ export function validateDeleteInput(tripId) {
 }
 
 export async function confirmDeleteTrip(tripId) {
-  const trip = _allTrips.find(t => t.id === tripId);
+  const trip = getAllTrips().find(t => t.id === tripId);
   const input = document.getElementById('delete-trip-input');
   if (!trip || !input || input.value.trim() !== trip.name.trim()) return;
   const result = await api('DELETE', '/api/trips/' + tripId);
   if (result && result.success) {
-    setAllTrips(_allTrips.filter(t => t.id !== tripId));
+    setAllTrips(getAllTrips().filter(t => t.id !== tripId));
     deleteTripData(tripId);
     closeLevel2();
     renderManageList();

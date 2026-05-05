@@ -13,6 +13,11 @@ const TRIP_ID = 1;
 // INIT
 // ─────────────────────────────────────────
 export async function init() {
+  // Auth guard — redirect to login if no token
+  if (!localStorage.getItem('lola_token')) {
+    window.location.href = '/';
+    return;
+  }
   await Promise.all([loadLanguages(), loadUserTrips()]);
   await loadAllTripsData();
   const key = getTodayKey() || toKey(new Date());
