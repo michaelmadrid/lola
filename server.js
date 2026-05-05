@@ -335,14 +335,25 @@ ${clarified}`
 
         let dayId;
         if (existing.rows[0]) {
-          // Update existing day
-          await pool.query(
-            `UPDATE trip_days SET type=$1, location=$2, stay=$3, alert=$4 WHERE id=$5`,
-            [day.type || 'stay', day.location, day.stay || null, day.alert || null, existing.rows[0].id]
-          );
           dayId = existing.rows[0].id;
-          // Clear old legs for this day
-          await pool.query('DELETE FROM travel_legs WHERE day_id = $1', [dayId]);
+          // Only update stay/alert fields — preserve type and location unless explicitly provided
+          // Only clear legs if new data has travel array (otherwise preserve existing legs)
+          if (day.stay !== undefined || day.alert !== undefined) {
+            await pool.query(
+              `UPDATE trip_days SET stay=$1, alert=$2 WHERE id=$3`,
+              [day.stay || null, day.alert || null, dayId]
+            );
+          }
+          if (day.type || day.location) {
+            await pool.query(
+              `UPDATE trip_days SET type=$1, location=$2 WHERE id=$3`,
+              [day.type || 'stay', day.location, dayId]
+            );
+          }
+          if (day.travel && day.travel.length > 0) {
+            // Only wipe legs if we have new ones to replace them with
+            await pool.query('DELETE FROM travel_legs WHERE day_id = $1', [dayId]);
+          }
         } else {
           // Insert new day
           const result = await pool.query(
