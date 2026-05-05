@@ -513,3 +513,43 @@ export function getDestTZ(city) {
   }
   return null;
 }
+
+// ─── City timezone data ───────────────────────────────────────────────────────
+export const CITY_DATA = {
+  'Paris':          { country: 'France',    lang: 'France',    tz: 'Europe/Paris' },
+  'Marseille':      { country: 'France',    lang: 'France',    tz: 'Europe/Paris' },
+  'Lisbon':         { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Lisbon Coast':   { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Portugal Coast': { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Porto':          { country: 'Portugal',  lang: 'Portugal',  tz: 'Europe/Lisbon' },
+  'Umbria':         { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Tuscany Coast':  { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Rome':           { country: 'Italy',     lang: 'Italy',     tz: 'Europe/Rome' },
+  'Berlin':         { country: 'Germany',   lang: 'Germany',   tz: 'Europe/Berlin' },
+  'Tokyo':          { country: 'Japan',     lang: 'Japan',     tz: 'Asia/Tokyo' },
+  'Los Angeles':    { country: 'USA',       lang: null,        tz: 'America/Los_Angeles' },
+  'Bali':           { country: 'Indonesia', lang: null,        tz: 'Asia/Makassar' },
+};
+
+// ─── Keyboard + touch navigation for home view ───────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (!document.getElementById('view-home')?.classList.contains('active')) return;
+  if (e.key === 'ArrowLeft') navigateDay(-1);
+  if (e.key === 'ArrowRight') navigateDay(1);
+});
+
+let _touchStartX = 0, _touchStartY = 0;
+document.addEventListener('touchstart', e => {
+  _touchStartX = e.touches[0].clientX;
+  _touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', e => {
+  if (!document.getElementById('view-home')?.classList.contains('active')) return;
+  const dx = e.changedTouches[0].clientX - _touchStartX;
+  const dy = e.changedTouches[0].clientY - _touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 60) {
+    navigateDay(dx < 0 ? 1 : -1);
+  }
+}, { passive: true });
