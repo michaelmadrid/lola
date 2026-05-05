@@ -23,7 +23,7 @@ export async function parseTripWithClaude() {
   }
 
   // Warn on replace mode if trip has data
-  if (_planMode === 'replace' && getSelectedPlanTripId()) {
+  if (getPlanMode() === 'replace' && getSelectedPlanTripId()) {
     const confirmEl = document.getElementById('replace-confirm');
     if (confirmEl) confirmEl.style.display = 'block';
     return;
@@ -62,7 +62,7 @@ export async function _doImport() {
     const result = await api('POST', '/api/trips/import', { tripId, text, mode: getPlanMode() });
 
     if (result && result.success) {
-      btn.textContent = `✓ ${result.days} days ${_planMode === 'update' ? 'updated' : 'imported'}`;
+      btn.textContent = `✓ ${result.days} days ${getPlanMode() === 'update' ? 'updated' : 'imported'}`;
       btn.classList.remove('btn-parsing');
       document.getElementById('plan-text').value = '';
       document.getElementById('plan-new-name').value = '';
@@ -130,7 +130,7 @@ export function clearPlanSelection() {
 }
 
 export function renderPlanMode(mode) {
-  _planMode = mode;
+  setPlanMode(mode);
   const updateBtn = document.getElementById('mode-update');
   const replaceBtn = document.getElementById('mode-replace');
   const desc = document.getElementById('mode-description');
