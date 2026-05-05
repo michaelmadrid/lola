@@ -263,21 +263,19 @@ export function renderSummary() {
       html += `</div>`;
     }
 
-    // Outgoing travel legs — only show on last city (no next city group follows)
-    // If there's a next city, the legs already show as incoming on that card
-    const isLastCity = groupIdx === cityGroups.length - 1;
-    const outgoingLegs = [];
-    if (isLastCity) {
+    // Outgoing legs — only on last city (return flight home)
+    if (groupIdx === cityGroups.length - 1) {
+      const outgoingLegs = [];
       let nextIdx = cityEndIdx + 1;
       while (nextIdx < tripDays.length && tripDays[nextIdx].type === 'travel') {
         getLegsForDay(tripDays[nextIdx].id, group.tripId).forEach(l => outgoingLegs.push(l));
         nextIdx++;
       }
-    }
-    if (outgoingLegs.length) {
-      html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">
-        ${renderTravelLegs(outgoingLegs)}
-      </div>`;
+      if (outgoingLegs.length) {
+        html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">
+          ${renderTravelLegs(outgoingLegs)}
+        </div>`;
+      }
     }
 
     html += `</div>`; // close trip-card
