@@ -226,21 +226,32 @@ app.post('/api/trips/import', authenticate, async (req, res) => {
     const nextYear = currentYear + 1;
     const currentMonth = new Date().getMonth() + 1; // 1-12
 
+    // Get existing trip summary for context
+    const existingDays = await pool.query(
+      'SELECT date, type, location FROM trip_days WHERE trip_id = $1 ORDER BY date',
+      [tripId]
+    );
+    const tripContext = existingDays.rows.map(d => `${d.date}: ${d.type} - ${d.location}`).join('\n');
+
     // Step 1: Have Claude clarify/normalize the itinerary first
     const clarifyPrompt = mode === 'update'
       ? `Extract only the specific days/bookings mentioned in this travel update. Do NOT fill in gaps or infer missing days.
 
+Existing trip for context (DO NOT modify these, only use to understand dates/locations):
+${tripContext}
+
 Rules:
-- Only output days that are explicitly mentioned
+- Only output days that are explicitly mentioned in the UPDATE below
 - Output format: one line per day, "YYYY-MM-DD: [type] [location] | [details]"
 - type = TRAVEL, ARRIVE, or STAY
 - For TRAVEL days include the transport details
-- Today is ${today}. If no year given: use ${currentYear} for any month that hasn't passed yet this year, use ${nextYear} only for months that have already passed. Example: today is May 2026, so July = 2026 not 2027
+- Use the existing trip context to infer correct dates (e.g. "Berlin" means the Berlin dates already in the trip)
+- Today is ${today}. If no year given: use ${currentYear} for any month that hasn't passed yet this year, use ${nextYear} only for months that have already passed.
 
-Input:
+Update to process:
 ${text}
 
-Output only the explicitly mentioned days, nothing else.`
+Output ONLY the days explicitly mentioned in the update above, nothing else.`
       : `I have a travel itinerary that needs clarifying before parsing. Please rewrite it as a clean, unambiguous day-by-day list.
 
 Rules:
