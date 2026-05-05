@@ -181,7 +181,7 @@ export function renderSummary() {
     });
     if (current) cityGroups.push(current);
 
-  cityGroups.forEach(group => {
+  cityGroups.forEach((group, groupIdx) => {
     const fmt = k => { const [y,m,d] = k.split('-'); return new Date(+y,+m-1,+d).toLocaleDateString('en-US',{month:'short',day:'numeric'}); };
 
     // Find travel day immediately before and after this city
@@ -263,12 +263,16 @@ export function renderSummary() {
       html += `</div>`;
     }
 
-    // Outgoing travel legs — collect all consecutive travel days after city
+    // Outgoing travel legs — only show on last city (no next city group follows)
+    // If there's a next city, the legs already show as incoming on that card
+    const isLastCity = groupIdx === cityGroups.length - 1;
     const outgoingLegs = [];
-    let nextIdx = cityEndIdx + 1;
-    while (nextIdx < tripDays.length && tripDays[nextIdx].type === 'travel') {
-      getLegsForDay(tripDays[nextIdx].id, group.tripId).forEach(l => outgoingLegs.push(l));
-      nextIdx++;
+    if (isLastCity) {
+      let nextIdx = cityEndIdx + 1;
+      while (nextIdx < tripDays.length && tripDays[nextIdx].type === 'travel') {
+        getLegsForDay(tripDays[nextIdx].id, group.tripId).forEach(l => outgoingLegs.push(l));
+        nextIdx++;
+      }
     }
     if (outgoingLegs.length) {
       html += `<div style="padding:1rem 1.25rem;border-top:1px solid var(--gray-xlight);">

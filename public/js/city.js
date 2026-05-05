@@ -1,4 +1,5 @@
 // CITY.JS — Summer Holiday / Lola v0.3
+let _noteTimer = null;
 import { getTripData, getAllTrips, getCache, setCacheLinks, setCacheNote, setCacheJournal, getCurrentTripId, setCurrentTripId, getCurrentCity, setCurrentCity, loadCityLinks, loadCityNote } from './state.js';
 import { ck, cacheKey, normalizeUrl, getDomain } from './util.js';
 import { api } from './api.js';

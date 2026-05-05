@@ -132,3 +132,31 @@ export function snakeDir(dx, dy) {
   _snakeNext = {x: dx, y: dy};
   if (!_snakeRunning) snakeStart();
 }
+
+// ─── Event listeners ──────────────────────────────────────────────────────────
+function isIdleActive() {
+  return document.getElementById('view-idle')?.classList.contains('active');
+}
+
+document.addEventListener('keydown', e => {
+  if (!isIdleActive()) return;
+  const map = {'ArrowUp':[0,-1],'ArrowDown':[0,1],'ArrowLeft':[-1,0],'ArrowRight':[1,0]};
+  if (map[e.key]) { e.preventDefault(); snakeDir(...map[e.key]); }
+  if (e.key === ' ') { e.preventDefault(); _snakeRunning ? snakePause() : snakeStart(); }
+});
+
+let _snakeTouchX = 0, _snakeTouchY = 0;
+document.addEventListener('touchstart', e => {
+  if (!isIdleActive()) return;
+  _snakeTouchX = e.touches[0].clientX;
+  _snakeTouchY = e.touches[0].clientY;
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+  if (!isIdleActive()) return;
+  const dx = e.changedTouches[0].clientX - _snakeTouchX;
+  const dy = e.changedTouches[0].clientY - _snakeTouchY;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 20) return;
+  if (Math.abs(dx) > Math.abs(dy)) snakeDir(dx > 0 ? 1 : -1, 0);
+  else snakeDir(0, dy > 0 ? 1 : -1);
+}, {passive: true});

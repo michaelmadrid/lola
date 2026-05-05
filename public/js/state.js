@@ -131,7 +131,7 @@ export async function loadCityLinks(tripId, city) {
 export async function loadCityNote(tripId, city) {
   const key = tripId + '-' + city;
   const data = await api('GET', '/api/notes/' + tripId + '/' + encodeURIComponent(city));
-  _cache.notes[key] = data && data.note ? data.note : '';
+  _cache.notes[key] = data && data.note ? (data.note.content || data.note) : '';
   return _cache.notes[key];
 }
 
