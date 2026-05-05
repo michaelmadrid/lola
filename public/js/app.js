@@ -171,8 +171,4 @@ export function togglePhonetic(id) {
   const toggle = el.closest('.local-phrase')?.querySelector('.local-phrase-toggle');
   if (toggle) toggle.textContent = isShown ? '+' : '−';
 }
-
- catch(e) {
-    console.warn('Could not load languages.json');
-  }
 }
