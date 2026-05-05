@@ -217,8 +217,7 @@ export function renderSummary() {
         </div>
       </div>`;
 
-    // Incoming legs — only show on first city (the journey to get there from home)
-    if (groupIdx === 0 && incomingLegs.length) {
+    if (incomingLegs.length) {
       html += `<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--gray-xlight);">
         ${renderTravelLegs(incomingLegs)}
       </div>`;
