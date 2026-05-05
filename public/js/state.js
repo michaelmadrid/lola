@@ -129,4 +129,7 @@ export async function loadLanguages() {
   try {
     const res = await fetch('/languages.json');
     LANGUAGES = await res.json();
+  } catch(e) {
+    console.warn('Could not load languages.json');
   }
+}
