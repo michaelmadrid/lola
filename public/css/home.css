@@ -686,6 +686,31 @@
   border-bottom: 1px dashed var(--rule);
 }
 .itin-fs__trip-notes:empty { display: none; }
+.itin-fs__trip-notes code,
+.itin-fs__seg-notes code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+  background: var(--field);
+  padding: 1px 6px;
+  border-radius: 2px;
+  color: var(--ink);
+  letter-spacing: 0;
+}
+.itin-fs__trip-notes a,
+.itin-fs__seg-notes a {
+  color: var(--blue);
+  border-bottom: 1px solid var(--rule);
+  transition: border-color 140ms ease;
+}
+.itin-fs__trip-notes a:hover,
+.itin-fs__seg-notes a:hover {
+  border-bottom-color: var(--blue);
+}
+.itin-fs__trip-notes strong,
+.itin-fs__seg-notes strong {
+  color: var(--ink);
+  font-weight: 500;
+}
 .itin-fs__segments {
   display: flex;
   flex-direction: column;
