@@ -57,13 +57,16 @@
   align-items: center;
   gap: 10px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-2);
   letter-spacing: 0.02em;
   flex-wrap: wrap;
 }
 .day-sum__meta .item { display: inline-flex; align-items: center; gap: 6px; }
 .day-sum__meta .sep { color: var(--ink-4); }
+@media (max-width: 720px) {
+  .day-sum__meta { font-size: 13px; }
+}
 .moon {
   display: inline-block;
   width: 10px; height: 10px;
@@ -111,9 +114,11 @@
 }
 .trip-strip__open {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ink-3);
   margin-left: 4px;
+  padding: 4px 6px;
+  margin-right: -6px;
   transition: transform 200ms ease, color 140ms ease;
 }
 /* If wrap kicks in, push dates to a new line and left-align */
@@ -174,7 +179,7 @@
   gap: 12px;
   width: 100%;
   text-align: left;
-  padding: 4px 0;
+  padding: 8px 0;
   cursor: pointer;
   color: var(--ink);
   transition: color 140ms ease;
@@ -182,7 +187,7 @@
 .note-btn:hover { color: var(--blue); }
 .note-btn:hover .note-btn__arrow { color: var(--blue); transform: translateX(2px); }
 .note-btn__preview {
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: -0.005em;
   color: inherit;
   font-weight: 400;
@@ -197,9 +202,11 @@
 }
 .note-btn__arrow {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 16px;
   color: var(--ink-3);
   flex-shrink: 0;
+  padding: 4px 6px;
+  margin-right: -6px;
   transition: transform 200ms ease, color 140ms ease;
 }
 
@@ -416,11 +423,12 @@
 .stream__chip-x {
   visibility: hidden;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ink-3);
   background: none;
   border: 0;
-  padding: 0 2px;
+  padding: 4px 6px;
+  margin: -4px -6px -4px 0;
   cursor: pointer;
   transition: color 140ms ease;
 }
@@ -428,7 +436,7 @@
 .stream__chip-x:hover { color: var(--blue); }
 @media (max-width: 720px) {
   /* always show the × on touch */
-  .stream__chip-x { visibility: visible; opacity: 0.6; }
+  .stream__chip-x { visibility: visible; opacity: 0.5; }
 }
 
 /* =========================================================
@@ -449,11 +457,14 @@
 }
 .todos__expand {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 16px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 6px 8px;
+  margin: -6px -8px;
   transition: color 140ms ease, transform 140ms ease;
 }
 .todos__expand:hover {

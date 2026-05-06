@@ -153,9 +153,10 @@
 }
 .row-arrow {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 18px;
   color: var(--ink-3);
   text-align: right;
+  padding: 4px 0;
   transition: color 140ms ease, transform 200ms ease;
 }
 

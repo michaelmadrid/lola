@@ -99,4 +99,19 @@
     clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => toastEl.classList.remove('is-on'), ms);
   };
+
+  // ----- Global Cmd/Ctrl+Enter → save in any open modal -----
+  // Finds the first .modal.is-open in DOM order, then clicks its first
+  // non-disabled .save-btn. Works in textarea/input contexts where Enter
+  // alone shouldn't submit.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (!(e.metaKey || e.ctrlKey)) return;
+    const openModal = document.querySelector('.modal.is-open');
+    if (!openModal) return;
+    const saveBtn = openModal.querySelector('.save-btn:not(:disabled)');
+    if (!saveBtn) return;
+    e.preventDefault();
+    saveBtn.click();
+  });
 })();
