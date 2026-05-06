@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Atlas — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/" class="is-active">Atlas</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/" class="is-active">Atlas</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-index">
+
+  <header class="mast">
+    <h1 class="mast__title">Atlas</h1>
+    <p class="mast__intro">A small reference shelf for traveling. Phrases that work, and more, slowly.</p>
+  </header>
+
+  <div class="atlas-list">
+    <a class="atlas-row" href="/atlas/phrasebook/">
+      <span class="atlas-row__name">Phrasebook</span>
+      <span class="atlas-row__desc">Real-life phrases. 6 languages.</span>
+      <span class="atlas-row__arrow">→</span>
+    </a>
+    <div class="atlas-row is-soon">
+      <span class="atlas-row__name">Rates</span>
+      <span class="atlas-row__desc">Currency conversion at a glance</span>
+      <span class="atlas-row__arrow">soon</span>
+    </div>
+    <div class="atlas-row is-soon">
+      <span class="atlas-row__name">Time</span>
+      <span class="atlas-row__desc">World clocks, saved zones</span>
+      <span class="atlas-row__arrow">soon</span>
+    </div>
+    <div class="atlas-row is-soon">
+      <span class="atlas-row__name">Plugs</span>
+      <span class="atlas-row__desc">Outlet types and voltage by country</span>
+      <span class="atlas-row__arrow">soon</span>
+    </div>
+  </div>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <a class="ver" href="/idle/" title="snake">kit v0.5.1</a>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/settings.html" data-auth="in">Settings</a>
+      <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .atlas-list { display: flex; flex-direction: column; }
+  .atlas-row {
+    display: grid;
+    grid-template-columns: minmax(0, 200px) minmax(0, 1fr) 80px;
+    gap: 24px;
+    align-items: baseline;
+    padding: 22px 0;
+    border-top: 1px solid var(--rule);
+    cursor: pointer;
+    transition: color 140ms ease;
+  }
+  .atlas-row:first-child { border-top: 1px solid var(--rule); }
+  a.atlas-row:hover { color: var(--blue); }
+  a.atlas-row:hover .atlas-row__arrow { transform: translateX(3px); color: var(--blue); }
+  .atlas-row.is-soon { cursor: default; color: var(--ink-3); }
+  .atlas-row.is-soon .atlas-row__name { color: var(--ink-3); }
+  .atlas-row.is-soon:hover { color: var(--ink-3); }
+  .atlas-row__name {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.018em;
+    color: var(--ink);
+  }
+  .atlas-row__desc { font-size: 14px; color: var(--ink-2); }
+  .atlas-row.is-soon .atlas-row__desc { color: var(--ink-4); }
+  .atlas-row__arrow {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-3);
+    text-align: right;
+    letter-spacing: 0.04em;
+    transition: transform 200ms ease, color 140ms ease;
+  }
+  .atlas-row.is-soon .atlas-row__arrow {
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-4);
+  }
+  @media (max-width: 720px) {
+    .atlas-row {
+      grid-template-columns: 1fr 60px;
+      gap: 8px;
+      padding: 18px 0;
+    }
+    .atlas-row__desc { grid-column: 1; font-size: 13px; }
+    .atlas-row__arrow { grid-row: 1; grid-column: 2; }
+  }
+</style>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script>
+  const signOutFoot = document.getElementById('signout-link-foot');
+  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
+</script>
+</body>
+</html>
