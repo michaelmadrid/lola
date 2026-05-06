@@ -401,6 +401,22 @@
   padding: 4px 0 0;
 }
 
+/* Empty state — ghost row prompting first todo */
+.todo.is-ghost,
+.todo-fs__row.is-ghost {
+  cursor: text;
+  opacity: 0.6;
+  transition: opacity 140ms ease;
+}
+.todo.is-ghost:hover,
+.todo-fs__row.is-ghost:hover {
+  opacity: 1;
+}
+.is-ghost-text {
+  color: var(--ink-3) !important;
+  font-style: italic;
+}
+
 /* =========================================================
    TODO FULLSCREEN EDITOR — Apple Notes style
    ========================================================= */

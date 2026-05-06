@@ -161,6 +161,16 @@
 
     <div class="setting-row">
       <div class="setting-row__head">
+        <span class="setting-row__label">Your name</span>
+        <span class="setting-row__hint">Shown in the greeting on the top-right</span>
+      </div>
+      <div class="setting-row__field">
+        <input type="text" id="user-name" placeholder="Michael" maxlength="80">
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-row__head">
         <span class="setting-row__label">Dark mode</span>
         <span class="setting-row__hint">Applies across the whole app</span>
       </div>
@@ -213,6 +223,31 @@
   if (!api.isSignedIn()) {
     location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
   }
+
+  // Your name
+  const nameInput = document.getElementById('user-name');
+  const me = api.user.get();
+  nameInput.value = me && me.name ? me.name : '';
+  let saveNameTimer;
+  nameInput.addEventListener('input', () => {
+    clearTimeout(saveNameTimer);
+    saveNameTimer = setTimeout(async () => {
+      const v = nameInput.value.trim();
+      if (!v) {
+        window.toast && toast('Name cannot be empty');
+        return; // don't save empty
+      }
+      try {
+        const resp = await api.patch('/api/auth/me', { name: v });
+        // refresh stored token + user so the next page load reflects it
+        if (resp.token) localStorage.setItem('lola.token', resp.token);
+        if (resp.user) api.user.set(resp.user);
+        window.toast && toast('Name saved');
+      } catch (err) {
+        window.toast && toast(err.message || 'Save failed');
+      }
+    }, 500);
+  });
 
   // Dark mode toggle
   const darkInput = document.getElementById('dark-toggle');

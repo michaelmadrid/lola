@@ -11,7 +11,7 @@
 
   // ============ DAY SUMMARY ============
   const dayDateEl = document.getElementById('day-sum-date');
-  const dayWeatherEl = document.getElementById('day-sum-weather');
+  const dayDoyEl = document.getElementById('day-sum-doy');
   const dayActiveEl = document.getElementById('day-active');
   const dayIdleEl = document.getElementById('day-idle');
   const dayContextEl = document.getElementById('day-trip-context');
@@ -23,12 +23,17 @@
   function updateDayDate() {
     const today = new Date();
     dayDateEl.textContent = util.formatLongDate(today);
+    // Day of year (1-365 or 1-366)
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const day = Math.floor(diff / 86400000);
+    const total = ((today.getFullYear() % 4 === 0 && today.getFullYear() % 100 !== 0) || today.getFullYear() % 400 === 0) ? 366 : 365;
+    if (dayDoyEl) {
+      dayDoyEl.textContent = `Day ${String(day).padStart(3, '0')} / ${total}`;
+    }
   }
   updateDayDate();
   setInterval(updateDayDate, 60 * 60 * 1000);
-
-  // Placeholder weather. Real weather API later.
-  dayWeatherEl.textContent = '28° clear';
 
   async function loadActiveTrip() {
     try {
@@ -343,10 +348,34 @@
   function renderAll() {
     list.innerHTML = '';
     fsList.innerHTML = '';
-    sortedTodos().forEach(t => {
+    const arr = sortedTodos();
+    if (arr.length === 0) {
+      // empty state — ghost row in both views
+      list.appendChild(makeGhostRow(false));
+      fsList.appendChild(makeGhostRow(true));
+      return;
+    }
+    arr.forEach(t => {
       list.appendChild(makeRow(t));
       fsList.appendChild(makeFsRow(t));
     });
+  }
+
+  function makeGhostRow(isFs) {
+    const row = document.createElement('div');
+    row.className = (isFs ? 'todo-fs__row' : 'todo') + ' is-ghost';
+    row.innerHTML = `
+      <span class="${isFs ? 'todo-fs__dot' : 'todo__dot'}"></span>
+      <span class="${isFs ? 'todo-fs__text' : 'todo__text'} is-ghost-text">type something…</span>
+    `;
+    row.addEventListener('click', async () => {
+      const result = await addNewTodoAfter(null, false);
+      if (result) {
+        const r = isFs ? fsRowFor(result.todoId) : rowFor(result.todoId);
+        if (r) r.querySelector(isFs ? '.todo-fs__text' : '.todo__text').focus();
+      }
+    });
+    return row;
   }
 
   // Debounced patch — one timer per id

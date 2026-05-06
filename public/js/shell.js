@@ -14,13 +14,17 @@
     }
   } catch (e) {}
 
-  // ----- Apply home location to header (if user has set one) -----
+  // ----- Apply header label: greeting if signed in, location if not -----
+  // TODO: switch greeting word based on user's home language.
+  // For now always "Ciao, [name]" when signed in.
   try {
-    const homeLoc = localStorage.getItem('lola.home_location');
-    if (homeLoc) {
-      document.querySelectorAll('.head__right .where').forEach(el => {
-        el.textContent = homeLoc;
-      });
+    const user = window.api && window.api.user.get();
+    const homeLoc = localStorage.getItem('lola.home_location') || 'Bali';
+    const whereEls = document.querySelectorAll('.head__right .where');
+    if (user && user.name) {
+      whereEls.forEach(el => { el.textContent = 'Ciao, ' + user.name; });
+    } else {
+      whereEls.forEach(el => { el.textContent = homeLoc; });
     }
   } catch (e) {}
 
