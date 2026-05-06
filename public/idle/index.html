@@ -2,47 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Idle — lola</title>
   <link rel="stylesheet" href="/css/shell.css">
   <style>
+    /* ===== layout ===== */
     .idle-page {
-      padding-top: 80px;
-      min-height: 60vh;
+      padding-top: 40px;
+      min-height: calc(100vh - 180px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      text-align: center;
-      gap: 20px;
+      gap: 22px;
     }
-    .idle-page h1 {
-      font-size: clamp(40px, 5vw, 64px);
-      font-weight: 500;
-      letter-spacing: -0.035em;
-      margin: 0;
+    @media (max-width: 720px) {
+      .idle-page { padding-top: 24px; gap: 18px; }
     }
-    .idle-page p {
-      max-width: 360px;
-      color: var(--ink-2);
-      font-size: 14px;
-      line-height: 1.5;
-    }
-    #snake-mount {
-      margin-top: 32px;
-      width: 100%;
-      max-width: 400px;
+
+    /* ===== board ===== */
+    .snake-wrap {
+      position: relative;
+      width: min(100vw - 32px, 420px);
       aspect-ratio: 1;
       background: var(--field);
-      border-radius: 2px;
+      touch-action: none;
+      image-rendering: pixelated;
+    }
+    #snake-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+    .snake-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      background: rgba(245, 245, 242, 0.94);
+      pointer-events: none;
+    }
+    .snake-overlay.is-on { display: flex; }
+    .snake-overlay__title {
+      font-family: var(--sans);
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+      margin: 0;
+    }
+    .snake-overlay__cta {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .snake-overlay__cta strong {
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    /* ===== status under board ===== */
+    .snake-status {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .snake-status .num {
+      color: var(--ink);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      margin-left: 6px;
+    }
+
+    /* ===== arrow d-pad ===== */
+    .dpad {
+      display: grid;
+      grid-template-columns: 50px 50px 50px;
+      grid-template-rows: 50px 50px;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .dpad__btn {
+      background: var(--bg);
+      border: 1px solid var(--ink);
+      color: var(--ink);
+      cursor: pointer;
+      font-family: var(--sans);
+      font-size: 18px;
+      font-weight: 500;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--ink-3);
+      transition: background 80ms ease, color 80ms ease, border-color 80ms ease;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    /* depressed / active state — blue bg, white arrow */
+    .dpad__btn:active,
+    .dpad__btn.is-pressed {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #ffffff;
+    }
+    .dpad__btn[data-dir="up"]    { grid-column: 2; grid-row: 1; }
+    .dpad__btn[data-dir="left"]  { grid-column: 1; grid-row: 2; }
+    .dpad__btn[data-dir="down"]  { grid-column: 2; grid-row: 2; }
+    .dpad__btn[data-dir="right"] { grid-column: 3; grid-row: 2; }
+
+    .snake-help {
       font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.04em;
+      font-size: 10px;
+      color: var(--ink-4);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
+    }
+    @media (max-width: 720px) {
+      .snake-help { display: none; }
     }
   </style>
 </head>
@@ -83,9 +172,29 @@
 </div>
 
 <main class="page idle-page">
-  <h1>Idle</h1>
-  <p>Something to keep your hands busy when you're between flights.</p>
-  <div id="snake-mount">snake — coming soon</div>
+
+  <div class="snake-wrap">
+    <canvas id="snake-canvas" width="420" height="420"></canvas>
+    <div class="snake-overlay" id="snake-overlay">
+      <p class="snake-overlay__title" id="snake-overlay-title">Press any arrow to start</p>
+      <span class="snake-overlay__cta" id="snake-overlay-cta">arrows · wasd · or tap below</span>
+    </div>
+  </div>
+
+  <div class="snake-status">
+    <span>score<span class="num" id="snake-score">000</span></span>
+    <span>best<span class="num" id="snake-best">000</span></span>
+  </div>
+
+  <div class="dpad" id="dpad">
+    <button class="dpad__btn" data-dir="up" aria-label="Up">↑</button>
+    <button class="dpad__btn" data-dir="left" aria-label="Left">←</button>
+    <button class="dpad__btn" data-dir="down" aria-label="Down">↓</button>
+    <button class="dpad__btn" data-dir="right" aria-label="Right">→</button>
+  </div>
+
+  <div class="snake-help">space to pause · enter to restart</div>
+
 </main>
 
 <footer class="foot">
