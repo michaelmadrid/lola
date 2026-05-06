@@ -159,12 +159,11 @@
 }
 .day-sum__idle__quote {
   font-family: var(--sans);
-  font-size: 16px;
-  letter-spacing: -0.005em;
+  font-size: 14px;
+  letter-spacing: -0.011em;
   color: var(--ink);
-  line-height: 1.4;
+  line-height: 1.45;
   font-weight: 400;
-  font-style: italic;
   word-wrap: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
@@ -330,25 +329,44 @@
 /* =========================================================
    TODOS (right column) — notes-style, API-persisted
    ========================================================= */
+.todos__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
 .todos__label {
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-3);
-  margin-bottom: 14px;
   font-weight: 500;
 }
+.todos__expand {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 140ms ease, transform 140ms ease;
+}
+.todos__expand:hover {
+  color: var(--blue);
+  transform: translate(2px, -2px);
+}
+
 .todo-list { display: flex; flex-direction: column; gap: 0; }
 .todo {
   display: grid;
-  grid-template-columns: 22px 1fr 22px;
+  grid-template-columns: 22px 1fr;
   gap: 10px;
   padding: 6px 0;
   align-items: baseline;
 }
-.todo:hover .todo__open { opacity: 1; }
 .todo__dot {
-  width: 13px; height: 13px;
+  position: relative;
+  width: 14px; height: 14px;
   border: 1.5px solid var(--ink-3);
   border-radius: 50%;
   background: transparent;
@@ -358,7 +376,19 @@
   flex-shrink: 0;
 }
 .todo:hover .todo__dot { border-color: var(--ink); }
-.todo.is-done .todo__dot { background: var(--ink); border-color: var(--ink); }
+.todo.is-done .todo__dot {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.todo.is-done .todo__dot::after {
+  content: "";
+  position: absolute;
+  left: 3px; top: 6px;
+  width: 4px; height: 7px;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
 .todo__text {
   font-size: 14px;
   color: var(--ink);
@@ -369,34 +399,99 @@
   padding: 0;
   word-break: break-word;
 }
-.todo__text:empty::before {
-  content: attr(data-placeholder);
-  color: var(--ink-4);
-  pointer-events: none;
-}
 .todo.is-done .todo__text {
   color: var(--ink-3);
   text-decoration: line-through;
   text-decoration-thickness: 0.5px;
 }
-.todo__open {
-  opacity: 0;
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink-3);
-  cursor: pointer;
-  margin-top: 2px;
-  transition: opacity 140ms ease, color 140ms ease, transform 140ms ease;
-}
-.todo__open:hover { color: var(--blue); transform: translateX(2px); }
-@media (max-width: 1200px) {
-  /* always show on touch — no hover */
-  .todo__open { opacity: 0.6; }
-}
 .todos__add-zone {
   min-height: 28px;
   cursor: text;
   padding: 6px 0 0;
+}
+
+/* =========================================================
+   TODO FULLSCREEN EDITOR — Apple Notes style
+   ========================================================= */
+.todo-fs .modal__head {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 26px var(--gutter) 28px;
+}
+.todo-fs__title {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0;
+  justify-self: start;
+}
+.todo-fs__date {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  justify-self: center;
+  font-variant-numeric: tabular-nums;
+}
+.todo-fs .modal__close { justify-self: end; }
+
+.todo-fs__inner {
+  max-width: 720px;
+  padding-top: 4px;
+}
+.todo-fs__list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.todo-fs__row {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 14px;
+  padding: 8px 0;
+  align-items: baseline;
+}
+.todo-fs__dot {
+  position: relative;
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 50%;
+  background: transparent;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+  flex-shrink: 0;
+}
+.todo-fs__row:hover .todo-fs__dot { border-color: var(--ink); }
+.todo-fs__row.is-done .todo-fs__dot {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.todo-fs__text {
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.45;
+  letter-spacing: -0.008em;
+  outline: none;
+  cursor: text;
+  min-height: 1.45em;
+  padding: 2px 0;
+  word-break: break-word;
+}
+.todo-fs__row.is-done .todo-fs__text {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.5px;
+}
+.todo-fs__addzone {
+  min-height: 40px;
+  cursor: text;
+  margin-top: 4px;
 }
 
 /* =========================================================
