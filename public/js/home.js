@@ -219,6 +219,18 @@
       itinMeta.textContent = '';
     }
 
+    // Trip-level notes
+    const itinTripNotesEl = document.getElementById('itin-trip-notes');
+    if (itinTripNotesEl) {
+      if (activeTrip.notes && activeTrip.notes.trim()) {
+        itinTripNotesEl.textContent = activeTrip.notes;
+        itinTripNotesEl.style.display = '';
+      } else {
+        itinTripNotesEl.textContent = '';
+        itinTripNotesEl.style.display = 'none';
+      }
+    }
+
     // Render segments as a vertical timeline
     if (!activeSegments.length) {
       itinSegments.innerHTML = '<p class="itin-fs__empty">No stops yet.</p>';

@@ -162,6 +162,19 @@
   flex-wrap: wrap;
 }
 
+.trip-notes {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 720px;
+  margin: 28px 0 0;
+  padding: 18px 0;
+  border-top: 1px dashed var(--rule);
+}
+
 /* ===== Type-to-confirm modal ===== */
 .confirm-prose {
   font-size: 16px;

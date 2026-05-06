@@ -672,6 +672,20 @@
   margin-bottom: 32px;
 }
 .itin-fs__meta:empty { display: none; }
+.itin-fs__trip-notes {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-width: 540px;
+  margin: 0 0 32px;
+  padding: 18px 0;
+  border-top: 1px dashed var(--rule);
+  border-bottom: 1px dashed var(--rule);
+}
+.itin-fs__trip-notes:empty { display: none; }
 .itin-fs__segments {
   display: flex;
   flex-direction: column;
@@ -737,6 +751,8 @@
   letter-spacing: -0.005em;
   margin: 6px 0 0;
   max-width: 540px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 .itin-fs__empty {
   padding: 24px 0;

@@ -32,13 +32,29 @@
   }
 
   function render() {
-    const dateLine = (trip.date_start && trip.date_end)
-      ? `${util.formatNumericDate(trip.date_start)} — ${util.formatNumericDate(trip.date_end)}`
-      : (trip.date_start ? `from ${util.formatNumericDate(trip.date_start)}` : 'No dates set');
+    // Build trip date line: "May 12 – Jun 24 · 2026 · 44 days"
+    function formatTripDates(s, e) {
+      if (!s) return 'No dates set';
+      const startDate = new Date(s);
+      if (!e) return `from ${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${startDate.getFullYear()}`;
+      const endDate = new Date(e);
+      const sameYear = startDate.getFullYear() === endDate.getFullYear();
+      const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const days = Math.round((endDate - startDate) / 86400000) + 1;
+      const yearStr = sameYear ? startDate.getFullYear() : `${startDate.getFullYear()}–${endDate.getFullYear()}`;
+      const dayLabel = days === 1 ? '1 day' : `${days} days`;
+      return `${startStr} – ${endStr} · ${yearStr} · ${dayLabel}`;
+    }
+    const dateLine = formatTripDates(trip.date_start, trip.date_end);
 
     const isOwner = !!trip.is_owner;
     const ownerLabel = (!isOwner && trip.owner_name)
       ? `<span class="trip-mast__by">${util.escapeHtml(trip.owner_name)}'s trip</span>`
+      : '';
+
+    const tripNotesHtml = trip.notes && trip.notes.trim()
+      ? `<div class="trip-notes">${util.escapeHtml(trip.notes)}</div>`
       : '';
 
     let segHtml = '';
@@ -84,6 +100,8 @@
           ${actionBtns}
         </div>
       </header>
+
+      ${tripNotesHtml}
 
       <div class="segment-list">${segHtml}</div>
 
@@ -220,7 +238,10 @@
     }
     segModal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    setTimeout(() => cityInput.focus(), 50);
+    setTimeout(() => {
+      // Auto-focus only when adding fresh — when editing, let user click where they want
+      if (!seg) cityInput.focus();
+    }, 50);
   }
   function closeSegment() {
     segModal.classList.remove('is-open');
