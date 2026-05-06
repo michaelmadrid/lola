@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Graveyard — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/trip.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/trips.html" class="is-active">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/">Atlas</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/">Atlas</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-trips">
+
+  <header class="trips-mast">
+    <h1 class="trips-mast__title">Graveyard</h1>
+    <a class="btn--secondary" href="/trips.html">← all trips</a>
+  </header>
+
+  <p class="graveyard-prose">Deleted trips you can restore.</p>
+
+  <div class="trip-list" id="grave-list">
+    <div class="list-empty">Loading…</div>
+  </div>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <a class="ver" href="/idle/" title="snake">kit v0.5.1</a>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/settings.html" data-auth="in">Settings</a>
+      <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script>
+(async function () {
+  if (!api.isSignedIn()) {
+    location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+    return;
+  }
+  const listEl = document.getElementById('grave-list');
+
+  async function load() {
+    try {
+      const data = await api.get('/api/trips/graveyard');
+      const trips = data.trips || [];
+      if (!trips.length) {
+        listEl.innerHTML = '<div class="list-empty">Nothing here.</div>';
+        return;
+      }
+      listEl.innerHTML = trips.map(t => {
+        const dates = (t.date_start && t.date_end)
+          ? `${util.formatNumericDate(t.date_start)} — ${util.formatNumericDate(t.date_end)}`
+          : (t.date_start ? `from ${util.formatNumericDate(t.date_start)}` : '—');
+        const deleted = t.deleted_at ? util.formatNumericDate(t.deleted_at) : '';
+        return `<div class="trip-row trip-row--deleted" data-id="${t.id}">
+          <span class="trip-name">${util.escapeHtml(t.name)}</span>
+          <span class="trip-dates">${dates}${deleted ? ` · deleted ${deleted}` : ''}</span>
+          <button class="trip-restore" data-id="${t.id}">restore</button>
+        </div>`;
+      }).join('');
+
+      listEl.querySelectorAll('.trip-restore').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          btn.textContent = '…';
+          try {
+            await api.post('/api/trips/' + btn.dataset.id + '/restore', {});
+            await load();
+          } catch (err) {
+            toast(err.message || 'Restore failed');
+            btn.disabled = false;
+            btn.textContent = 'restore';
+          }
+        });
+      });
+    } catch (err) {
+      listEl.innerHTML = '<div class="list-empty">Could not load.</div>';
+    }
+  }
+  load();
+
+  const signOutFoot = document.getElementById('signout-link-foot');
+  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
+})();
+</script>
+</body>
+</html>

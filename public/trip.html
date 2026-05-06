@@ -124,6 +124,34 @@
   </div>
 </div>
 
+<!-- Type-to-confirm delete modal -->
+<div class="modal" id="confirm-delete-modal">
+  <div class="modal__head">
+    <h3 class="modal__title">Delete trip</h3>
+    <button class="modal__close" id="confirm-delete-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner">
+      <p class="confirm-prose">
+        About to delete <strong id="confirm-trip-name">—</strong>.
+      </p>
+      <p class="confirm-prose confirm-prose--soft">
+        It will move to your graveyard. You can restore it from there.
+      </p>
+      <div class="field">
+        <label class="field__label" for="confirm-input">
+          Type the trip name to confirm
+        </label>
+        <input class="field__input" id="confirm-input" autocomplete="off" autocapitalize="off" autocorrect="off">
+      </div>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <span>esc to cancel</span>
+    <button class="save-btn save-btn--danger" id="confirm-delete-btn" disabled>delete</button>
+  </div>
+</div>
+
 <footer class="foot">
   <div class="foot__bar">
     <div class="foot__left">

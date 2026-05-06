@@ -11,15 +11,76 @@ function slugify(s) {
     .substring(0, 80);
 }
 
-// GET /api/trips — list user's trips
+// Helper: get array of user IDs in same household as me (always includes me)
+async function householdMemberIds(userId) {
+  const r = await pool.query(
+    `SELECT id FROM users
+      WHERE id = $1
+         OR (household_id IS NOT NULL
+             AND household_id = (SELECT household_id FROM users WHERE id = $1))`,
+    [userId]
+  );
+  return r.rows.map(row => row.id);
+}
+
+// Helper: am I owner of this trip? (created_by check)
+async function isOwner(tripId, userId) {
+  const r = await pool.query(
+    `SELECT 1 FROM trips WHERE id = $1 AND created_by = $2`,
+    [tripId, userId]
+  );
+  return r.rows.length > 0;
+}
+
+// Helper: can I read/edit this trip? (anyone in my household)
+async function canRead(tripId, userId) {
+  const ids = await householdMemberIds(userId);
+  const r = await pool.query(
+    `SELECT 1 FROM trips
+      WHERE id = $1
+        AND deleted_at IS NULL
+        AND created_by = ANY($2::int[])`,
+    [tripId, ids]
+  );
+  return r.rows.length > 0;
+}
+async function canEdit(tripId, userId) {
+  return canRead(tripId, userId);
+}
+
+// ===========================================================
+// TRIPS
+// ===========================================================
+
+// GET /api/trips — list active trips visible to me (mine + household)
 router.get('/', authenticate, async (req, res) => {
   try {
+    const ids = await householdMemberIds(req.user.id);
     const result = await pool.query(
-      `SELECT t.*
+      `SELECT t.*, u.name AS owner_name, (t.created_by = $1) AS is_owner
        FROM trips t
-       JOIN trip_members tm ON t.id = tm.trip_id
-       WHERE tm.user_id = $1
+       LEFT JOIN users u ON t.created_by = u.id
+       WHERE t.created_by = ANY($2::int[])
+         AND t.deleted_at IS NULL
        ORDER BY COALESCE(t.date_start, t.created_at) DESC`,
+      [req.user.id, ids]
+    );
+    res.json({ trips: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/trips/graveyard — soft-deleted trips owned by me
+router.get('/graveyard', authenticate, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT t.*, u.name AS owner_name, true AS is_owner
+       FROM trips t
+       LEFT JOIN users u ON t.created_by = u.id
+       WHERE t.created_by = $1
+         AND t.deleted_at IS NOT NULL
+       ORDER BY t.deleted_at DESC`,
       [req.user.id]
     );
     res.json({ trips: result.rows });
@@ -28,20 +89,22 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/trips/active — what trip (if any) covers today's date for this user
+// GET /api/trips/active — what trip (if any) covers today's date for my household
 router.get('/active', authenticate, async (req, res) => {
   try {
+    const ids = await householdMemberIds(req.user.id);
     const result = await pool.query(
-      `SELECT t.*
+      `SELECT t.*, u.name AS owner_name, (t.created_by = $1) AS is_owner
        FROM trips t
-       JOIN trip_members tm ON t.id = tm.trip_id
-       WHERE tm.user_id = $1
+       LEFT JOIN users u ON t.created_by = u.id
+       WHERE t.created_by = ANY($2::int[])
+         AND t.deleted_at IS NULL
          AND t.date_start IS NOT NULL
          AND t.date_end IS NOT NULL
          AND CURRENT_DATE BETWEEN t.date_start AND t.date_end
        ORDER BY t.date_start
        LIMIT 1`,
-      [req.user.id]
+      [req.user.id, ids]
     );
     res.json({ trip: result.rows[0] || null });
   } catch (err) {
@@ -49,15 +112,18 @@ router.get('/active', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/trips/:id — single trip with segments and city join
+// GET /api/trips/:id — single trip with segments
 router.get('/:id', authenticate, async (req, res) => {
   try {
+    const ids = await householdMemberIds(req.user.id);
     const trip = await pool.query(
-      `SELECT t.*
+      `SELECT t.*, u.name AS owner_name, (t.created_by = $1) AS is_owner
        FROM trips t
-       JOIN trip_members tm ON t.id = tm.trip_id
-       WHERE t.id = $1 AND tm.user_id = $2`,
-      [req.params.id, req.user.id]
+       LEFT JOIN users u ON t.created_by = u.id
+       WHERE t.id = $2
+         AND t.deleted_at IS NULL
+         AND t.created_by = ANY($3::int[])`,
+      [req.user.id, req.params.id, ids]
     );
     if (!trip.rows[0]) return res.status(404).json({ error: 'Trip not found' });
 
@@ -92,25 +158,26 @@ router.post('/', authenticate, async (req, res) => {
       [name, slug, date_start || null, date_end || null, notes || null, req.user.id]
     );
     const trip = tripResult.rows[0];
-    await pool.query(
-      `INSERT INTO trip_members (trip_id, user_id, role) VALUES ($1, $2, $3)`,
-      [trip.id, req.user.id, 'owner']
-    );
+    // Maintain trip_members for backward compat
+    try {
+      await pool.query(
+        `INSERT INTO trip_members (trip_id, user_id, role) VALUES ($1, $2, $3)
+         ON CONFLICT DO NOTHING`,
+        [trip.id, req.user.id, 'owner']
+      );
+    } catch (e) {}
     res.json({ trip });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PATCH /api/trips/:id — edit
+// PATCH /api/trips/:id — edit (anyone in household)
 router.patch('/:id', authenticate, async (req, res) => {
   try {
-    const member = await pool.query(
-      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2',
-      [req.params.id, req.user.id]
-    );
-    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
-
+    if (!(await canEdit(req.params.id, req.user.id))) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
     const allowed = ['name', 'date_start', 'date_end', 'notes', 'slug'];
     const updates = [];
     const params = [];
@@ -122,9 +189,9 @@ router.patch('/:id', authenticate, async (req, res) => {
     }
     if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
     params.push(req.params.id);
-
     const result = await pool.query(
-      `UPDATE trips SET ${updates.join(', ')}, updated_at = NOW() WHERE id = $${params.length} RETURNING *`,
+      `UPDATE trips SET ${updates.join(', ')}, updated_at = NOW()
+        WHERE id = $${params.length} RETURNING *`,
       params
     );
     res.json({ trip: result.rows[0] });
@@ -133,42 +200,54 @@ router.patch('/:id', authenticate, async (req, res) => {
   }
 });
 
-// DELETE /api/trips/:id
+// DELETE /api/trips/:id — owner-only, soft delete
 router.delete('/:id', authenticate, async (req, res) => {
   try {
-    const member = await pool.query(
-      `SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2 AND role = 'owner'`,
-      [req.params.id, req.user.id]
+    if (!(await isOwner(req.params.id, req.user.id))) {
+      return res.status(403).json({ error: 'Only the owner can delete a trip' });
+    }
+    await pool.query(
+      `UPDATE trips SET deleted_at = NOW() WHERE id = $1`,
+      [req.params.id]
     );
-    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
-
-    // ON DELETE CASCADE handles trip_segments, trip_members, notes (with trip_id), saves' trip_id (set null).
-    await pool.query('DELETE FROM trips WHERE id = $1', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// POST /api/trips/:id/restore — owner-only
+router.post('/:id/restore', authenticate, async (req, res) => {
+  try {
+    if (!(await isOwner(req.params.id, req.user.id))) {
+      return res.status(403).json({ error: 'Only the owner can restore' });
+    }
+    const r = await pool.query(
+      `UPDATE trips SET deleted_at = NULL WHERE id = $1 AND deleted_at IS NOT NULL
+       RETURNING *`,
+      [req.params.id]
+    );
+    if (!r.rows[0]) return res.status(404).json({ error: 'Trip not found in graveyard' });
+    res.json({ trip: r.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===========================================================
-// SEGMENTS (nested under trips)
+// SEGMENTS — household members can manage
 // ===========================================================
 
-// POST /api/trips/:tripId/segments — add segment to trip
 router.post('/:tripId/segments', authenticate, async (req, res) => {
   const { tripId } = req.params;
   const { city_id, region_label, date_start, date_end, sort_order, notes } = req.body;
-
   if (!city_id && !region_label) {
     return res.status(400).json({ error: 'Either city_id or region_label required' });
   }
   try {
-    const member = await pool.query(
-      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2',
-      [tripId, req.user.id]
-    );
-    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
-
+    if (!(await canEdit(tripId, req.user.id))) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
     const result = await pool.query(
       `INSERT INTO trip_segments (trip_id, city_id, region_label, date_start, date_end, sort_order, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -182,16 +261,12 @@ router.post('/:tripId/segments', authenticate, async (req, res) => {
   }
 });
 
-// PATCH /api/trips/:tripId/segments/:segmentId — edit segment
 router.patch('/:tripId/segments/:segmentId', authenticate, async (req, res) => {
   const { tripId, segmentId } = req.params;
   try {
-    const member = await pool.query(
-      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2',
-      [tripId, req.user.id]
-    );
-    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
-
+    if (!(await canEdit(tripId, req.user.id))) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
     const allowed = ['city_id', 'region_label', 'date_start', 'date_end', 'sort_order', 'notes'];
     const updates = [];
     const params = [];
@@ -204,7 +279,6 @@ router.patch('/:tripId/segments/:segmentId', authenticate, async (req, res) => {
     if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
     params.push(segmentId);
     params.push(tripId);
-
     const result = await pool.query(
       `UPDATE trip_segments SET ${updates.join(', ')}, updated_at = NOW()
        WHERE id = $${params.length - 1} AND trip_id = $${params.length}
@@ -218,16 +292,12 @@ router.patch('/:tripId/segments/:segmentId', authenticate, async (req, res) => {
   }
 });
 
-// DELETE /api/trips/:tripId/segments/:segmentId
 router.delete('/:tripId/segments/:segmentId', authenticate, async (req, res) => {
   const { tripId, segmentId } = req.params;
   try {
-    const member = await pool.query(
-      'SELECT * FROM trip_members WHERE trip_id = $1 AND user_id = $2',
-      [tripId, req.user.id]
-    );
-    if (!member.rows[0]) return res.status(403).json({ error: 'Not authorized' });
-
+    if (!(await canEdit(tripId, req.user.id))) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
     await pool.query('DELETE FROM trip_segments WHERE id = $1 AND trip_id = $2', [segmentId, tripId]);
     res.json({ success: true });
   } catch (err) {

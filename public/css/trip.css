@@ -44,6 +44,15 @@
   font-weight: 500;
   letter-spacing: -0.012em;
 }
+.trip-row__by {
+  margin-left: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 400;
+}
 .trip-dates {
   font-family: var(--mono);
   font-size: 12px;
@@ -57,6 +66,56 @@
   text-align: right;
   transition: transform 200ms ease, color 140ms ease;
 }
+
+/* Trips foot — graveyard link */
+.trips-foot {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+.graveyard-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.graveyard-link:hover { color: var(--blue); }
+
+/* Graveyard page */
+.graveyard-prose {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-style: italic;
+  margin: 0 0 24px;
+  letter-spacing: -0.005em;
+}
+.trip-row--deleted {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) auto;
+  gap: 24px;
+  align-items: baseline;
+  padding: 18px 0;
+  border-top: 1px solid var(--rule);
+  cursor: default;
+  color: var(--ink-2);
+}
+.trip-row--deleted:first-child { border-top: 1px solid var(--rule); }
+.trip-row--deleted .trip-name { color: var(--ink-2); }
+.trip-restore {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 4px 0;
+  transition: color 140ms ease;
+}
+.trip-restore:hover { color: var(--blue); }
+.trip-restore:disabled { color: var(--ink-4); cursor: not-allowed; }
 
 .list-empty {
   padding: 36px 0;
@@ -85,11 +144,48 @@
   letter-spacing: 0.02em;
   margin-bottom: 16px;
 }
+.trip-mast__by {
+  margin-left: 12px;
+  padding-left: 12px;
+  border-left: 1px solid var(--rule);
+  color: var(--ink-3);
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 11px;
+}
 .trip-mast__actions {
   display: flex;
   gap: 16px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+/* ===== Type-to-confirm modal ===== */
+.confirm-prose {
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0 0 14px;
+  letter-spacing: -0.005em;
+}
+.confirm-prose strong {
+  font-weight: 500;
+}
+.confirm-prose--soft {
+  color: var(--ink-2);
+  font-size: 14px;
+  margin: 0 0 28px;
+}
+.save-btn--danger {
+  color: #c0392b;
+}
+.save-btn--danger:disabled {
+  color: var(--ink-4);
+  cursor: not-allowed;
+}
+.save-btn--danger:not(:disabled):hover {
+  color: #962d22;
 }
 
 .segment-list {

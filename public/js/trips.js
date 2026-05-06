@@ -34,8 +34,11 @@
       const dates = (t.date_start && t.date_end)
         ? `${util.formatNumericDate(t.date_start)} — ${util.formatNumericDate(t.date_end)}`
         : (t.date_start ? `from ${util.formatNumericDate(t.date_start)}` : '—');
-      return `<a class="trip-row" href="/trip.html?id=${t.id}">
-        <span class="trip-name">${util.escapeHtml(t.name)}</span>
+      const ownerSuffix = (!t.is_owner && t.owner_name)
+        ? `<span class="trip-row__by">${util.escapeHtml(t.owner_name)}</span>`
+        : '';
+      return `<a class="trip-row${t.is_owner ? '' : ' is-shared'}" href="/trip.html?id=${t.id}">
+        <span class="trip-name">${util.escapeHtml(t.name)}${ownerSuffix}</span>
         <span class="trip-dates">${dates}</span>
         <span class="trip-arrow">→</span>
       </a>`;
@@ -81,5 +84,18 @@
   const signOutFoot = document.getElementById('signout-link-foot');
   if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
 
-  load();
+  async function loadGraveyardCount() {
+    try {
+      const data = await api.get('/api/trips/graveyard');
+      const count = (data.trips || []).length;
+      const footEl = document.getElementById('trips-foot');
+      if (count > 0) {
+        footEl.innerHTML = `<a class="graveyard-link" href="/trips-graveyard.html">Graveyard (${count})</a>`;
+      } else {
+        footEl.innerHTML = '';
+      }
+    } catch (err) { /* silent */ }
+  }
+
+  load().then(loadGraveyardCount);
 })();

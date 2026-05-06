@@ -36,9 +36,15 @@
       ? `${util.formatNumericDate(trip.date_start)} — ${util.formatNumericDate(trip.date_end)}`
       : (trip.date_start ? `from ${util.formatNumericDate(trip.date_start)}` : 'No dates set');
 
+    const isOwner = !!trip.is_owner;
+    const ownerLabel = (!isOwner && trip.owner_name)
+      ? `<span class="trip-mast__by">${util.escapeHtml(trip.owner_name)}'s trip</span>`
+      : '';
+
     let segHtml = '';
     if (!segments.length) {
-      segHtml = '<div class="list-empty">No stops yet. Add one below.</div>';
+      const emptyText = isOwner ? 'No stops yet. Add one below.' : 'No stops yet.';
+      segHtml = `<div class="list-empty">${emptyText}</div>`;
     } else {
       segHtml = segments.map(s => {
         const label = s.city_name || s.region_label || '—';
@@ -46,48 +52,62 @@
         const dates = (s.date_start && s.date_end)
           ? `${util.formatNumericDate(s.date_start)} — ${util.formatNumericDate(s.date_end)}`
           : (s.date_start ? util.formatNumericDate(s.date_start) : '—');
+        const deleteBtn = isOwner
+          ? `<button class="seg-delete" data-id="${s.id}" aria-label="Delete">×</button>`
+          : '';
         return `<div class="segment-row" data-id="${s.id}">
           <span class="segment-name">${util.escapeHtml(label)}${isRegion ? '<span class="region-tag">region</span>' : ''}</span>
           <span class="segment-dates">${dates}</span>
           <span class="segment-country">${util.escapeHtml(s.city_country || '')}</span>
-          <span class="segment-actions">
-            <button class="seg-delete" data-id="${s.id}" aria-label="Delete">×</button>
-          </span>
+          <span class="segment-actions">${deleteBtn}</span>
         </div>`;
       }).join('');
     }
 
+    const actionBtns = isOwner
+      ? `<button class="btn--secondary" id="edit-trip-btn">Edit trip</button>`
+      : '';
+    const addSegBtn = isOwner
+      ? `<div class="trip-add-segment"><button class="btn" id="add-seg-btn">+ Add stop</button></div>`
+      : '';
+
     pageEl.innerHTML = `
       <header class="trip-mast">
         <h1 class="trip-mast__title">${util.escapeHtml(trip.name)}</h1>
-        <div class="trip-mast__dates">${dateLine}</div>
+        <div class="trip-mast__dates">${dateLine}${ownerLabel}</div>
         <div class="trip-mast__actions">
           <a href="/trips.html" class="btn--secondary">← all trips</a>
-          <button class="btn--secondary" id="edit-trip-btn">Edit trip</button>
+          ${actionBtns}
         </div>
       </header>
 
       <div class="segment-list">${segHtml}</div>
 
-      <div class="trip-add-segment">
-        <button class="btn" id="add-seg-btn">+ Add stop</button>
-      </div>
+      ${addSegBtn}
     `;
 
     // wire post-render handlers
-    document.getElementById('edit-trip-btn').addEventListener('click', openEditTrip);
-    document.getElementById('add-seg-btn').addEventListener('click', openAddSegment);
-    pageEl.querySelectorAll('.seg-delete').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Delete this stop?')) return;
-        try {
-          await api.delete(`/api/trips/${tripId}/segments/${btn.dataset.id}`);
-          await load();
-        } catch (err) {
-          toast(err.message || 'Delete failed');
-        }
+    if (isOwner) {
+      const editBtn = document.getElementById('edit-trip-btn');
+      if (editBtn) editBtn.addEventListener('click', openEditTrip);
+      const addBtn = document.getElementById('add-seg-btn');
+      if (addBtn) addBtn.addEventListener('click', openAddSegment);
+      pageEl.querySelectorAll('.seg-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          // simple inline delete for segment, no type-confirm. Stops are small.
+          // animate fade-out, then call API
+          const row = btn.closest('.segment-row');
+          if (row) row.style.opacity = '0.4';
+          try {
+            await api.delete(`/api/trips/${tripId}/segments/${btn.dataset.id}`);
+            await load();
+          } catch (err) {
+            if (row) row.style.opacity = '';
+            toast(err.message || 'Delete failed');
+          }
+        });
       });
-    });
+    }
   }
 
   // ============ EDIT TRIP MODAL ============
@@ -121,15 +141,46 @@
       toast(err.message || 'Save failed');
     }
   });
-  document.getElementById('delete-trip-btn').addEventListener('click', async () => {
-    if (!confirm(`Delete trip "${trip.name}"? This cannot be undone.`)) return;
+
+  // ============ TYPE-TO-CONFIRM DELETE ============
+  const confirmModal = document.getElementById('confirm-delete-modal');
+  const confirmInput = document.getElementById('confirm-input');
+  const confirmBtn = document.getElementById('confirm-delete-btn');
+  const confirmCloseBtn = document.getElementById('confirm-delete-close');
+
+  function openDeleteConfirm() {
+    document.getElementById('confirm-trip-name').textContent = trip.name;
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+    closeEditTrip();
+    confirmModal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => confirmInput.focus(), 60);
+  }
+  function closeDeleteConfirm() {
+    confirmModal.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  confirmCloseBtn.addEventListener('click', closeDeleteConfirm);
+  confirmInput.addEventListener('input', () => {
+    confirmBtn.disabled = confirmInput.value.trim() !== (trip ? trip.name : '');
+  });
+  confirmInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
+  });
+  confirmBtn.addEventListener('click', async () => {
+    if (confirmBtn.disabled) return;
+    confirmBtn.disabled = true;
     try {
       await api.delete('/api/trips/' + tripId);
       location.href = '/trips.html';
     } catch (err) {
       toast(err.message || 'Delete failed');
+      confirmBtn.disabled = false;
     }
   });
+
+  document.getElementById('delete-trip-btn').addEventListener('click', openDeleteConfirm);
 
   // ============ ADD SEGMENT MODAL ============
   const segModal = document.getElementById('seg-modal');
@@ -188,8 +239,8 @@
     suggestBox.querySelectorAll('.city-suggestion').forEach(el => {
       el.addEventListener('click', async () => {
         if (el.dataset.action === 'new-city') {
-          // ask for country
-          const country = prompt('Country for ' + cityInput.value.trim() + '?', '') || '';
+          // Note: still using prompt() here — consider replacing in V2
+          const country = window.prompt('Country for ' + cityInput.value.trim() + '?', '') || '';
           try {
             const data = await api.post('/api/cities', { name: cityInput.value.trim(), country });
             cities.push(data.city);
@@ -219,7 +270,6 @@
   cityInput.addEventListener('focus', onCityType);
 
   document.getElementById('seg-save').addEventListener('click', async () => {
-    // If user typed something but didn't pick, treat as region label
     if (!pickedCityId && !pickedRegionLabel) {
       pickedRegionLabel = cityInput.value.trim();
     }
@@ -246,7 +296,8 @@
   // ESC closes whichever modal is open
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (segModal.classList.contains('is-open')) closeSegment();
+    if (confirmModal.classList.contains('is-open')) closeDeleteConfirm();
+    else if (segModal.classList.contains('is-open')) closeSegment();
     else if (editModal.classList.contains('is-open')) closeEditTrip();
   });
 
