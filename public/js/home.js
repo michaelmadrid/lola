@@ -416,20 +416,41 @@
       const tagsLine = (s.tags && s.tags.length)
         ? s.tags.map(t => '#' + util.escapeHtml(t)).join(' · ')
         : '';
-      return `<a class="stream__item" href="#" data-id="${s.id}">
+      const cityChips = (s.attached_cities && s.attached_cities.length)
+        ? `<span class="stream__chips">` +
+          s.attached_cities.map(c =>
+            `<span class="stream__chip" data-city-id="${c.id}" data-save-id="${s.id}">
+              <span class="stream__chip-name">${util.escapeHtml(c.name.toLowerCase())}</span>
+              <button class="stream__chip-x" data-save-id="${s.id}" data-city-id="${c.id}" aria-label="Remove tag">×</button>
+            </span>`
+          ).join('') +
+          `</span>`
+        : '';
+      return `<div class="stream__item" data-id="${s.id}">
         <div class="stream__body">
           <span class="stream__name">${util.escapeHtml(s.text)}</span>
+          ${cityChips}
           ${tagsLine ? `<span class="stream__meta">${tagsLine}</span>` : ''}
         </div>
         <span class="stream__when">${util.timeAgo(s.created_at)}</span>
-      </a>`;
+      </div>`;
     }).join('');
 
-    // Click stream item → no detail view yet, so do nothing for now
-    streamEl.querySelectorAll('.stream__item').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        // future: open save detail / promote to place
+    // Wire chip × buttons → remove the tag
+    streamEl.querySelectorAll('.stream__chip-x').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const saveId = btn.dataset.saveId;
+        const cityId = btn.dataset.cityId;
+        const chipEl = btn.closest('.stream__chip');
+        if (chipEl) chipEl.style.opacity = '0.4';
+        try {
+          await api.delete(`/api/saves/${saveId}/cities/${cityId}`);
+          if (chipEl) chipEl.remove();
+        } catch (err) {
+          if (chipEl) chipEl.style.opacity = '';
+          toast(err.message || 'Could not remove tag');
+        }
       });
     });
   }
