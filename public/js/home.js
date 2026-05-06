@@ -14,11 +14,20 @@
   const dayDoyEl = document.getElementById('day-sum-doy');
   const dayActiveEl = document.getElementById('day-active');
   const dayIdleEl = document.getElementById('day-idle');
-  const dayContextEl = document.getElementById('day-trip-context');
-  const daySegmentsSection = document.getElementById('day-segments-section');
-  const daySegmentsEl = document.getElementById('day-segments');
+
+  // Trip strip (active state)
+  const tripStripEl     = document.getElementById('trip-strip');
+  const tripStripName   = document.getElementById('trip-strip-name');
+  const tripStripArc    = document.getElementById('trip-strip-arc');
+  const tripStripDates  = document.getElementById('trip-strip-dates');
+  const tripNowEl       = document.getElementById('trip-now');
+  const tripNowToday    = document.getElementById('trip-now-today');
+  const tripNowTodayVal = document.getElementById('trip-now-today-value');
+  const tripNowNext     = document.getElementById('trip-now-next');
+  const tripNowNextVal  = document.getElementById('trip-now-next-value');
 
   let activeTrip = null;
+  let activeSegments = [];
 
   function updateDayDate() {
     const today = new Date();
@@ -54,40 +63,82 @@
     dayActiveEl.style.display = '';
     dayIdleEl.style.display = 'none';
 
-    // Show trip context line
-    const tripName = activeTrip.name;
-    dayContextEl.textContent = tripName;
+    // Strip top line: name
+    tripStripName.textContent = activeTrip.name;
 
-    // Load segments
+    // Date range
+    const ds = activeTrip.date_start ? util.formatNumericDate(activeTrip.date_start) : '';
+    const de = activeTrip.date_end   ? util.formatNumericDate(activeTrip.date_end)   : '';
+    tripStripDates.textContent = (ds && de) ? `${ds} → ${de}` : (ds || '');
+
+    // Load segments and compute today/next
     try {
       const data = await api.get('/api/trips/' + activeTrip.id);
-      const today = new Date().toISOString().split('T')[0];
+      activeSegments = (data.segments || []).filter(s => s.date_start);
+      // sort by date_start
+      activeSegments.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
 
-      // Find segments overlapping today
-      const todaySegs = (data.segments || []).filter(s => {
-        if (!s.date_start || !s.date_end) return false;
-        return today >= s.date_start && today <= s.date_end;
-      });
-
-      if (todaySegs.length) {
-        daySegmentsSection.style.display = '';
-        daySegmentsEl.innerHTML = todaySegs.map(s => {
-          const label = s.city_name || s.region_label || '—';
-          return `<div class="segment">
-            <div class="segment__route">${util.escapeHtml(label)}</div>
-            <div class="segment__dates">${s.date_start} <span class="dash">—</span> ${s.date_end}</div>
-          </div>`;
-        }).join('');
+      // Build the arc: first → last city/region
+      const labels = activeSegments
+        .map(s => s.city_name || s.region_label)
+        .filter(Boolean);
+      if (labels.length >= 2) {
+        tripStripArc.textContent = `${labels[0].toLowerCase()} ↦ ${labels[labels.length - 1].toLowerCase()}`;
+      } else if (labels.length === 1) {
+        tripStripArc.textContent = labels[0].toLowerCase();
       } else {
-        daySegmentsSection.style.display = 'none';
+        tripStripArc.textContent = '';
       }
+
+      // Today / Next
+      const today = new Date().toISOString().split('T')[0];
+      const todaySeg = activeSegments.find(s =>
+        s.date_start && s.date_end && today >= s.date_start && today <= s.date_end
+      );
+      const futureSegs = activeSegments.filter(s => s.date_start > today);
+      const nextSeg = futureSegs[0];
+
+      let anyShown = false;
+      if (todaySeg) {
+        anyShown = true;
+        const label = todaySeg.city_name || todaySeg.region_label || '—';
+        const dayInfo = computeDayInfo(todaySeg, today);
+        tripNowToday.style.display = '';
+        tripNowTodayVal.textContent = dayInfo
+          ? `${label} · ${dayInfo}`
+          : label;
+      } else {
+        tripNowToday.style.display = 'none';
+      }
+      if (nextSeg) {
+        anyShown = true;
+        const label = nextSeg.city_name || nextSeg.region_label || '—';
+        const arr = nextSeg.date_start ? util.formatNumericDate(nextSeg.date_start) : '';
+        tripNowNext.style.display = '';
+        tripNowNextVal.textContent = arr ? `${label} · ${arr}` : label;
+      } else {
+        tripNowNext.style.display = 'none';
+      }
+      tripNowEl.style.display = anyShown ? '' : 'none';
     } catch (err) {
       console.error('load segments', err);
-      daySegmentsSection.style.display = 'none';
+      tripNowEl.style.display = 'none';
     }
 
     // Load today's note
     loadTodayNote();
+  }
+
+  // For "day 3 of 5" style hints when in an active segment
+  function computeDayInfo(seg, today) {
+    if (!seg.date_start || !seg.date_end) return null;
+    const start = new Date(seg.date_start);
+    const end   = new Date(seg.date_end);
+    const cur   = new Date(today);
+    const totalDays = Math.round((end - start) / 86400000) + 1;
+    const dayN      = Math.round((cur - start) / 86400000) + 1;
+    if (totalDays < 2) return null;
+    return `day ${dayN} of ${totalDays}`;
   }
 
   // ============ IDLE STATE — prompt + SVG ============
@@ -107,6 +158,84 @@
   }
 
   loadActiveTrip();
+
+  // ============ ITINERARY OVERLAY ============
+  const itinOverlay   = document.getElementById('itin-overlay');
+  const itinClose     = document.getElementById('itin-close');
+  const itinTitle     = document.getElementById('itin-title');
+  const itinDates     = document.getElementById('itin-dates');
+  const itinMeta      = document.getElementById('itin-meta');
+  const itinSegments  = document.getElementById('itin-segments');
+  const itinEditLink  = document.getElementById('itin-edit-link');
+
+  function openItinerary() {
+    if (!activeTrip) return;
+
+    itinTitle.textContent = activeTrip.name;
+    const ds = activeTrip.date_start ? util.formatLongDate(activeTrip.date_start) : '';
+    const de = activeTrip.date_end   ? util.formatLongDate(activeTrip.date_end)   : '';
+    itinDates.textContent = (ds && de) ? `${ds} — ${de}` : (ds || '');
+
+    // Owner attribution if not yours
+    if (activeTrip.owner_name && !activeTrip.is_owner) {
+      itinMeta.textContent = `${activeTrip.owner_name}'s trip`;
+    } else {
+      itinMeta.textContent = '';
+    }
+
+    // Render segments as a vertical timeline
+    if (!activeSegments.length) {
+      itinSegments.innerHTML = '<p class="itin-fs__empty">No stops yet.</p>';
+    } else {
+      itinSegments.innerHTML = activeSegments.map(s => {
+        const label = s.city_name || s.region_label || '—';
+        const country = s.city_country ? ` · ${util.escapeHtml(s.city_country)}` : '';
+        const arr = s.date_start ? util.formatLongDate(s.date_start) : '';
+        const dep = s.date_end   ? util.formatLongDate(s.date_end)   : '';
+        const nights = (s.date_start && s.date_end)
+          ? Math.max(0, Math.round((new Date(s.date_end) - new Date(s.date_start)) / 86400000))
+          : null;
+        const nightsLabel = nights !== null
+          ? `${nights} ${nights === 1 ? 'night' : 'nights'}`
+          : '';
+        const isToday = s.date_start && s.date_end &&
+          (new Date().toISOString().split('T')[0] >= s.date_start &&
+           new Date().toISOString().split('T')[0] <= s.date_end);
+        const notes = s.notes
+          ? `<p class="itin-fs__seg-notes">${util.escapeHtml(s.notes)}</p>`
+          : '';
+        return `<article class="itin-fs__seg${isToday ? ' is-here' : ''}">
+          <div class="itin-fs__seg-date">${arr || '—'}</div>
+          <div class="itin-fs__seg-body">
+            <h3 class="itin-fs__seg-name">${util.escapeHtml(label)}${country}</h3>
+            <div class="itin-fs__seg-meta">
+              ${nightsLabel ? `<span>${nightsLabel}</span>` : ''}
+              ${dep ? `<span>→ ${dep}</span>` : ''}
+              ${isToday ? '<span class="itin-fs__here">you are here</span>' : ''}
+            </div>
+            ${notes}
+          </div>
+        </article>`;
+      }).join('');
+    }
+
+    // Edit link points to trip page
+    itinEditLink.href = '/trip.html?id=' + activeTrip.id;
+
+    itinOverlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeItinerary() {
+    itinOverlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  if (tripStripEl) tripStripEl.addEventListener('click', openItinerary);
+  if (itinClose)   itinClose.addEventListener('click', closeItinerary);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && itinOverlay && itinOverlay.classList.contains('is-open')) {
+      closeItinerary();
+    }
+  });
 
   // ============ NOTE OVERLAY ============
   const noteOpen     = document.getElementById('note-open');

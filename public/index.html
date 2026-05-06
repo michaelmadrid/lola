@@ -67,11 +67,22 @@
 
       <!-- ACTIVE: when on a trip today -->
       <div id="day-active" style="display:none">
-        <div class="day-sum__where-line" id="day-trip-context"></div>
+        <button class="trip-strip" id="trip-strip" aria-label="Open itinerary">
+          <span class="trip-strip__name" id="trip-strip-name">—</span>
+          <span class="trip-strip__arc" id="trip-strip-arc">—</span>
+          <span class="trip-strip__dates" id="trip-strip-dates">—</span>
+          <span class="trip-strip__open">↗</span>
+        </button>
 
-        <div class="day-sum__section" id="day-segments-section" style="display:none">
-          <div class="day-sum__section__label">Travel</div>
-          <div id="day-segments"></div>
+        <div class="trip-now" id="trip-now" style="display:none">
+          <div class="trip-now__row" id="trip-now-today" style="display:none">
+            <span class="trip-now__label">Today</span>
+            <span class="trip-now__value" id="trip-now-today-value">—</span>
+          </div>
+          <div class="trip-now__row" id="trip-now-next" style="display:none">
+            <span class="trip-now__label">Next</span>
+            <span class="trip-now__value" id="trip-now-next-value">—</span>
+          </div>
         </div>
 
         <div class="day-sum__section">
@@ -170,6 +181,27 @@
     <div class="modal__body__inner todo-fs__inner">
       <div class="todo-fs__list" id="todo-fs-list"></div>
       <div class="todo-fs__addzone" id="todo-fs-addzone"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ITINERARY OVERLAY ============ -->
+<div class="modal itin-fs" id="itin-overlay">
+  <div class="modal__head">
+    <div class="itin-fs__head">
+      <h3 class="itin-fs__title" id="itin-title">—</h3>
+      <span class="itin-fs__dates" id="itin-dates">—</span>
+    </div>
+    <button class="modal__close" id="itin-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner itin-fs__inner">
+      <div id="itin-meta" class="itin-fs__meta"></div>
+      <div id="itin-segments" class="itin-fs__segments"></div>
+      <div class="itin-fs__placeholders">
+        <p class="itin-fs__placeholder">Flights, hotels, and notes coming soon. For now, edit segments and trip details on the trip page.</p>
+        <a class="itin-fs__edit-link" id="itin-edit-link" href="#">Open trip page →</a>
+      </div>
     </div>
   </div>
 </div>

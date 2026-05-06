@@ -69,16 +69,88 @@
   width: 10px; height: 10px;
   vertical-align: -1px;
 }
-.day-sum__where-line {
-  font-size: 12px;
-  color: var(--ink-3);
-  letter-spacing: -0.005em;
-  margin-bottom: 4px;
+/* ===== Active trip strip ===== */
+.trip-strip {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  text-align: left;
+  transition: color 140ms ease;
 }
+.trip-strip:hover { color: var(--blue); }
+.trip-strip:hover .trip-strip__open { transform: translate(2px, -2px); color: var(--blue); }
+.trip-strip__name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.trip-strip__arc {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  letter-spacing: 0.04em;
+}
+.trip-strip__dates {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  margin-left: auto;
+  text-align: right;
+}
+.trip-strip__open {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-left: 4px;
+  transition: transform 200ms ease, color 140ms ease;
+}
+
+/* Today/Next sub-rows */
+.trip-now {
+  padding: 12px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+.trip-now__row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  letter-spacing: -0.005em;
+}
+.trip-now__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  width: 48px;
+  flex-shrink: 0;
+}
+.trip-now__value {
+  color: var(--ink);
+}
+
 .day-sum__section {
   padding: 14px 0;
   border-top: 1px solid var(--rule);
 }
+.day-sum__section:first-of-type { border-top: 0; }
 .day-sum__section__label {
   font-size: 10px;
   letter-spacing: 0.1em;
@@ -87,22 +159,6 @@
   margin-bottom: 10px;
   font-weight: 500;
 }
-
-/* travel segments inside day-sum */
-.segment + .segment { margin-top: 10px; }
-.segment__route {
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-}
-.segment__dates {
-  margin-top: 2px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-2);
-}
-.segment__dates .dash { color: var(--ink-3); margin: 0 4px; }
 
 /* note button — opens the overlay editor */
 .note-btn {
@@ -521,4 +577,143 @@
 .note-textarea::placeholder {
   color: var(--ink-3);
   font-style: italic;
+}
+
+/* =========================================================
+   ITINERARY OVERLAY (full-screen modal)
+   ========================================================= */
+.itin-fs__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.itin-fs__title {
+  font-size: clamp(28px, 3.5vw, 42px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1.05;
+  color: var(--ink);
+}
+.itin-fs__dates {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.itin-fs__inner {
+  max-width: 720px;
+}
+.itin-fs__meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+.itin-fs__meta:empty { display: none; }
+.itin-fs__segments {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 48px;
+}
+.itin-fs__seg {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 24px;
+  padding: 24px 0;
+  border-top: 1px solid var(--rule);
+}
+.itin-fs__seg:last-child { border-bottom: 1px solid var(--rule); }
+.itin-fs__seg-date {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding-top: 4px;
+}
+.itin-fs__seg-name {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+.itin-fs__seg-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.itin-fs__here {
+  color: var(--blue);
+  font-weight: 500;
+}
+.itin-fs__seg.is-here .itin-fs__seg-name {
+  position: relative;
+}
+.itin-fs__seg.is-here .itin-fs__seg-name::before {
+  content: "";
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+.itin-fs__seg-notes {
+  font-size: 14px;
+  color: var(--ink-2);
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  margin: 6px 0 0;
+  max-width: 540px;
+}
+.itin-fs__empty {
+  padding: 24px 0;
+  font-size: 14px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+.itin-fs__placeholders {
+  margin-top: 24px;
+  padding: 24px 0;
+  border-top: 1px dashed var(--rule);
+}
+.itin-fs__placeholder {
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin: 0 0 12px;
+  letter-spacing: -0.005em;
+  max-width: 520px;
+}
+.itin-fs__edit-link {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.itin-fs__edit-link:hover { color: var(--blue); }
+
+@media (max-width: 720px) {
+  .itin-fs__seg {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 20px 0;
+  }
+  .itin-fs__seg-date { padding-top: 0; }
+  .itin-fs__seg-name { font-size: 18px; }
 }
