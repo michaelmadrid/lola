@@ -102,6 +102,28 @@
 }
 .filter-select:hover { color: var(--ink); }
 
+/* Mobile type select — hidden on desktop, shown on mobile */
+.filter-group--type-mobile { display: none; }
+
+/* Search bar */
+.search-wrap {
+  margin: 18px 0 0;
+}
+.search-input {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--field);
+  border: 0;
+  outline: 0;
+  padding: 12px 14px;
+  letter-spacing: -0.005em;
+  transition: background 140ms ease;
+}
+.search-input::placeholder { color: var(--ink-3); }
+.search-input:focus { background: var(--field-focus); }
+
 /* the list */
 .list-head, .list-row {
   display: grid;
@@ -169,21 +191,16 @@
 
 @media (max-width: 720px) {
   .filter-bar {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    flex-wrap: wrap;
     padding: 10px 0;
-    gap: 6px;
+    gap: 8px 16px;
   }
-  .filter-bar::-webkit-scrollbar { display: none; }
-  .filter-group {
-    flex-wrap: nowrap;
-    flex-shrink: 0;
-  }
-  .filter-group__label { margin-right: 4px; flex-shrink: 0; }
-  .filter-chip { padding: 4px 8px; flex-shrink: 0; }
-  .filter-divider { margin: 0 4px; flex-shrink: 0; }
+  /* Replace the chip group with the mobile select on small screens */
+  #cat-filters { display: none; }
+  .filter-group--type-mobile { display: inline-flex; }
+  .filter-divider { display: none; }
+
+  .search-input { font-size: 16px; padding: 11px 12px; }
 
   .list-head { display: none; }
   .list-row {
@@ -203,7 +220,7 @@
     padding-top: 2px;
   }
   .row-country { display: none; }
-  .row-arrow { font-size: 14px; padding-top: 2px; }
+  .row-arrow { font-size: 18px; padding-top: 2px; }
 }
 
 .list-summary {

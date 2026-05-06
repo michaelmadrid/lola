@@ -50,11 +50,20 @@
 
   <header class="mast">
     <h1 class="mast__title">Index</h1>
-    <p class="mast__intro">A directory of sorts.</p>
-    <div class="mast__meta">
-      <span id="entry-count">—</span> entries
-    </div>
+    <p class="mast__intro">A directory of sorts</p>
   </header>
+
+  <div class="search-wrap">
+    <input
+      type="text"
+      class="search-input"
+      id="search-input"
+      placeholder="Search by name…"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+    >
+  </div>
 
   <div class="filters">
     <div class="filter-group" id="cat-filters">
@@ -65,6 +74,16 @@
       <button class="filter-chip" data-cat="film-lab">Film&nbsp;lab</button>
       <button class="filter-chip" data-cat="gallery">Gallery</button>
       <button class="filter-chip" data-cat="hotel">Hotel</button>
+    </div>
+    <div class="filter-group filter-group--type-mobile">
+      <select class="filter-select" id="cat-select-mobile">
+        <option value="all">All types</option>
+        <option value="bookshop">Bookshop</option>
+        <option value="coffee">Coffee</option>
+        <option value="film-lab">Film lab</option>
+        <option value="gallery">Gallery</option>
+        <option value="hotel">Hotel</option>
+      </select>
     </div>
     <div class="filter-group">
       <select class="filter-select" id="city-select">
