@@ -361,7 +361,7 @@
   display: grid;
   grid-template-columns: 22px 1fr;
   gap: 10px;
-  padding: 6px 0;
+  padding: 2px 0;
   align-items: baseline;
 }
 .todo__dot {
@@ -377,17 +377,8 @@
 }
 .todo:hover .todo__dot { border-color: var(--ink); }
 .todo.is-done .todo__dot {
-  background: var(--blue);
-  border-color: var(--blue);
-}
-.todo.is-done .todo__dot::after {
-  content: "";
-  position: absolute;
-  left: 3px; top: 6px;
-  width: 4px; height: 7px;
-  border: solid #fff;
-  border-width: 0 1.5px 1.5px 0;
-  transform: rotate(45deg);
+  background: var(--ink);
+  border-color: var(--ink);
 }
 .todo__text {
   font-size: 14px;
@@ -405,9 +396,9 @@
   text-decoration-thickness: 0.5px;
 }
 .todos__add-zone {
-  min-height: 28px;
+  min-height: 24px;
   cursor: text;
-  padding: 6px 0 0;
+  padding: 4px 0 0;
 }
 
 /* =========================================================
@@ -446,13 +437,13 @@
 .todo-fs__list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
 }
 .todo-fs__row {
   display: grid;
   grid-template-columns: 26px 1fr;
   gap: 14px;
-  padding: 8px 0;
+  padding: 3px 0;
   align-items: baseline;
 }
 .todo-fs__dot {
