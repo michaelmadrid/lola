@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>lola</title>
+  <title>kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/home.css">
 </head>
@@ -19,7 +19,7 @@
         <span class="menu-btn__bar menu-btn__bar--bottom"></span>
       </span>
     </button>
-    <a href="/" class="logo">lola</a>
+    <a href="/" class="logo">kit</a>
   </div>
   <nav class="nav">
     <a href="/" class="is-active">Home</a>
@@ -123,10 +123,13 @@
 
   </div>
 
-  <!-- RIGHT — todos (in-memory for V1) -->
+  <!-- RIGHT — todos -->
   <aside class="col-right">
     <div class="todos">
-      <div class="todos__label">Today</div>
+      <div class="todos__head">
+        <span class="todos__label">Today</span>
+        <button class="todos__expand" id="todos-expand" aria-label="Open fullscreen">↗</button>
+      </div>
       <div class="todo-list" id="todo-list"></div>
       <div class="todos__add-zone" id="add-todo-zone" aria-label="Add todo"></div>
     </div>
@@ -156,25 +159,18 @@
   </div>
 </div>
 
-<!-- ============ TODO EDITOR ============ -->
-<div class="modal" id="todo-editor">
+<!-- ============ TODO FULLSCREEN EDITOR (all todos) ============ -->
+<div class="modal todo-fs" id="todo-editor">
   <div class="modal__head">
-    <h3 class="modal__title">Todo</h3>
+    <h3 class="todo-fs__title">TODO</h3>
+    <span class="todo-fs__date" id="todo-fs-date">—</span>
     <button class="modal__close" id="todo-editor-close">close</button>
   </div>
   <div class="modal__body">
-    <div class="modal__body__inner">
-      <textarea
-        class="note-textarea"
-        id="todo-editor-text"
-        placeholder="…"
-        spellcheck="true"
-      ></textarea>
+    <div class="modal__body__inner todo-fs__inner">
+      <div class="todo-fs__list" id="todo-fs-list"></div>
+      <div class="todo-fs__addzone" id="todo-fs-addzone"></div>
     </div>
-  </div>
-  <div class="modal__foot">
-    <button class="save-btn" id="todo-editor-delete" style="color: var(--ink-3)">delete</button>
-    <button class="save-btn" id="todo-editor-save">save ↵</button>
   </div>
 </div>
 
@@ -182,7 +178,7 @@
 <footer class="foot">
   <div class="foot__bar">
     <div class="foot__left">
-      <span class="ver">lola v0.5.0</span>
+      <span class="ver">kit v0.5.1</span>
     </div>
     <div class="foot__right">
       <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
