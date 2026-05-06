@@ -29,6 +29,35 @@ window.util = {
       .replace(/'/g, '&#39;');
   },
 
+  // Tiny markdown: **bold**, `code`, [text](url). Safe — escapes HTML first.
+  // Whitelisted URL schemes only (http, https, mailto). Anything else falls back
+  // to plain text. Newlines preserved by parent CSS (white-space: pre-wrap).
+  safeMarkdown(s) {
+    if (!s) return '';
+    let out = String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    // [text](url) — links. Apply BEFORE bold/code to avoid * collisions inside text.
+    out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text, url) => {
+      // Validate URL scheme — http(s), mailto, or relative path starting with /
+      const safe = /^(https?:\/\/|mailto:|\/)/i.test(url);
+      if (!safe) return m; // leave unchanged so user sees the typo
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    });
+
+    // `code` — inline monospace
+    out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+    // **bold**
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+    return out;
+  },
+
   // "Tuesday, May 12"
   formatLongDate(d) {
     if (!d) return '';

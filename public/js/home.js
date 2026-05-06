@@ -223,10 +223,10 @@
     const itinTripNotesEl = document.getElementById('itin-trip-notes');
     if (itinTripNotesEl) {
       if (activeTrip.notes && activeTrip.notes.trim()) {
-        itinTripNotesEl.textContent = activeTrip.notes;
+        itinTripNotesEl.innerHTML = util.safeMarkdown(activeTrip.notes);
         itinTripNotesEl.style.display = '';
       } else {
-        itinTripNotesEl.textContent = '';
+        itinTripNotesEl.innerHTML = '';
         itinTripNotesEl.style.display = 'none';
       }
     }
@@ -249,7 +249,7 @@
           (new Date().toISOString().split('T')[0] >= s.date_start &&
            new Date().toISOString().split('T')[0] <= s.date_end);
         const notes = s.notes
-          ? `<p class="itin-fs__seg-notes">${util.escapeHtml(s.notes)}</p>`
+          ? `<p class="itin-fs__seg-notes">${util.safeMarkdown(s.notes)}</p>`
           : '';
         return `<article class="itin-fs__seg${isToday ? ' is-here' : ''}">
           <div class="itin-fs__seg-date">${arr || '—'}</div>

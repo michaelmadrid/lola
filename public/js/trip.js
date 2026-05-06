@@ -54,7 +54,7 @@
       : '';
 
     const tripNotesHtml = trip.notes && trip.notes.trim()
-      ? `<div class="trip-notes">${util.escapeHtml(trip.notes)}</div>`
+      ? `<div class="trip-notes">${util.safeMarkdown(trip.notes)}</div>`
       : '';
 
     let segHtml = '';
