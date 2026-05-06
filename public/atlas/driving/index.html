@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Time · Atlas — kit</title>
+  <title>Driving · Atlas — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/atlas.css">
 </head>
@@ -52,13 +52,48 @@
     <h1 class="atlas-mast__title">Atlas</h1>
     <nav class="atlas-subnav">
       <a href="/atlas/phrasebook/" class="atlas-subnav__item">Phrasebook</a>
-      <a href="/atlas/time/"       class="atlas-subnav__item is-active">Time</a>
+      <a href="/atlas/time/"       class="atlas-subnav__item">Time</a>
       <a href="/atlas/power/"      class="atlas-subnav__item">Power</a>
-      <a href="/atlas/driving/"    class="atlas-subnav__item">Driving</a>
+      <a href="/atlas/driving/"    class="atlas-subnav__item is-active">Driving</a>
     </nav>
   </header>
 
-  <div class="time-list" id="time-list"></div>
+  <section class="atlas-tldr">
+    <p>If you&rsquo;re going to a former British colony or Japan, expect to drive on the <strong>left</strong>. Otherwise, <strong>right</strong>.</p>
+  </section>
+
+  <div class="drive-cols">
+
+    <article class="drive-col">
+      <h2 class="drive-col__title">Drive on the left</h2>
+      <ul class="drive-list">
+        <li>United Kingdom</li>
+        <li>Ireland</li>
+        <li>Australia</li>
+        <li>New Zealand</li>
+        <li>Japan</li>
+        <li>Indonesia</li>
+        <li>Thailand</li>
+        <li>Malaysia</li>
+        <li>Singapore</li>
+        <li>Hong Kong</li>
+        <li>India</li>
+        <li>South Africa</li>
+        <li>Kenya</li>
+        <li>Jamaica</li>
+        <li>Cyprus</li>
+        <li>Malta</li>
+      </ul>
+      <p class="drive-col__note">Plus ~60 others, mostly former British colonies.</p>
+    </article>
+
+    <article class="drive-col">
+      <h2 class="drive-col__title">Drive on the right</h2>
+      <p class="drive-col__big">Everywhere else.</p>
+      <p class="drive-col__note">Continental Europe, North America, most of Latin America, China, the Middle East, most of Africa.</p>
+    </article>
+
+  </div>
 
 </main>
 
@@ -80,73 +115,8 @@
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
 <script>
-(function () {
-  // Five default cities. Order: west to east.
-  const cities = [
-    { name: 'Los Angeles', tz: 'America/Los_Angeles' },
-    { name: 'Paris',       tz: 'Europe/Paris' },
-    { name: 'Rome',        tz: 'Europe/Rome' },
-    { name: 'Bali',        tz: 'Asia/Makassar' },
-    { name: 'Melbourne',   tz: 'Australia/Melbourne' },
-  ];
-
-  const listEl = document.getElementById('time-list');
-
-  // Build static row scaffolding
-  listEl.innerHTML = cities.map(c => `
-    <div class="time-row" data-tz="${c.tz}">
-      <span class="time-row__name">${c.name}</span>
-      <span class="time-row__time" data-time>—</span>
-      <span class="time-row__meta" data-meta>—</span>
-    </div>
-  `).join('');
-
-  // Local timezone for offset calculation
-  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  function offsetFromLocal(tz) {
-    // Compute the difference in hours by formatting current time in both zones
-    const now = new Date();
-    const localStr = now.toLocaleString('en-US', { timeZone: localTz });
-    const otherStr = now.toLocaleString('en-US', { timeZone: tz });
-    const diffMs = new Date(otherStr) - new Date(localStr);
-    const hours = Math.round(diffMs / 3600000 * 2) / 2; // half-hour precision
-    return hours;
-  }
-
-  function tick() {
-    cities.forEach(c => {
-      const row = listEl.querySelector(`[data-tz="${c.tz}"]`);
-      if (!row) return;
-
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-US', {
-        timeZone: c.tz,
-        hour: 'numeric', minute: '2-digit', hour12: true,
-      });
-
-      // Day of week — abbreviated
-      const dayLabel = now.toLocaleDateString('en-US', {
-        timeZone: c.tz,
-        weekday: 'short',
-      });
-
-      const off = offsetFromLocal(c.tz);
-      let offLabel = '';
-      if (off === 0) offLabel = 'same as you';
-      else if (off > 0) offLabel = `+${off}h`;
-      else offLabel = `${off}h`;
-
-      row.querySelector('[data-time]').textContent = time;
-      row.querySelector('[data-meta]').textContent = `${dayLabel} · ${offLabel}`;
-    });
-  }
-  tick();
-  setInterval(tick, 30 * 1000);
-
   const signOutFoot = document.getElementById('signout-link-foot');
   if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
-})();
 </script>
 </body>
 </html>

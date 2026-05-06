@@ -1,127 +1,704 @@
 {
   "_meta": {
     "thesis": "Politeness + nouns + confidence. Not grammar perfection.",
-    "languages": ["fr", "es", "it", "pt", "de", "ja"],
+    "languages": [
+      "fr",
+      "es",
+      "it",
+      "pt",
+      "de",
+      "ja"
+    ],
     "philosophy": "Real-life phrases that work. No 'where is the bathroom' filler. Get the noun right, smile, and people will help you the rest of the way."
   },
   "languages": [
-    { "code": "es", "name": "Spanish",    "country": "Spain" },
-    { "code": "fr", "name": "French",     "country": "France" },
-    { "code": "it", "name": "Italian",    "country": "Italy" },
-    { "code": "pt", "name": "Portuguese", "country": "Portugal" },
-    { "code": "de", "name": "German",     "country": "Germany" },
-    { "code": "ja", "name": "Japanese",   "country": "Japan" }
+    {
+      "code": "es",
+      "name": "Spanish",
+      "country": "Spain"
+    },
+    {
+      "code": "fr",
+      "name": "French",
+      "country": "France"
+    },
+    {
+      "code": "it",
+      "name": "Italian",
+      "country": "Italy"
+    },
+    {
+      "code": "pt",
+      "name": "Portuguese",
+      "country": "Portugal"
+    },
+    {
+      "code": "de",
+      "name": "German",
+      "country": "Germany"
+    },
+    {
+      "code": "ja",
+      "name": "Japanese",
+      "country": "Japan"
+    }
   ],
   "tiers": [
     {
       "id": "core",
-      "label": "Core survival verbs",
-      "subtitle": "The structures that unlock everything else",
+      "label": "Core",
       "phrases": [
-        { "en": "I want",            "fr": "Je veux",            "es": "Quiero",          "it": "Voglio",          "pt": "Quero",            "de": "Ich will",       "ja": "～がほしい (~ ga hoshii)" },
-        { "en": "I'd like",          "fr": "Je voudrais",        "es": "Quisiera",        "it": "Vorrei",          "pt": "Queria",           "de": "Ich hätte gern", "ja": "～をお願いします (~ o onegaishimasu)" },
-        { "en": "I need",            "fr": "J'ai besoin de",     "es": "Necesito",        "it": "Ho bisogno di",   "pt": "Preciso de",       "de": "Ich brauche",    "ja": "～が必要です (~ ga hitsuyō desu)" },
-        { "en": "I have",            "fr": "J'ai",               "es": "Tengo",           "it": "Ho",              "pt": "Tenho",            "de": "Ich habe",       "ja": "～があります (~ ga arimasu)" },
-        { "en": "I don't have",      "fr": "Je n'ai pas",        "es": "No tengo",        "it": "Non ho",          "pt": "Não tenho",        "de": "Ich habe kein",  "ja": "～がありません (~ ga arimasen)" },
-        { "en": "I like",            "fr": "J'aime",             "es": "Me gusta",        "it": "Mi piace",        "pt": "Gosto",            "de": "Ich mag",        "ja": "～が好きです (~ ga suki desu)" },
-        { "en": "I don't understand","fr": "Je ne comprends pas","es": "No entiendo",     "it": "Non capisco",     "pt": "Não percebo",      "de": "Ich verstehe nicht","ja": "わかりません (wakarimasen)" },
-        { "en": "Can you help me?",  "fr": "Pouvez-vous m'aider ?","es": "¿Me puede ayudar?","it": "Mi può aiutare?","pt": "Pode ajudar-me?", "de": "Können Sie mir helfen?","ja": "助けてもらえますか (tasukete moraemasu ka)" },
-        { "en": "Can I?",            "fr": "Je peux ?",          "es": "¿Puedo?",         "it": "Posso?",          "pt": "Posso?",           "de": "Darf ich?",      "ja": "いいですか (ii desu ka)" },
-        { "en": "Do you have…?",     "fr": "Avez-vous… ?",       "es": "¿Tiene…?",        "it": "Avete…?",         "pt": "Tem…?",            "de": "Haben Sie…?",    "ja": "～がありますか (~ ga arimasu ka)" },
-        { "en": "Is there…?",        "fr": "Y a-t-il… ?",        "es": "¿Hay…?",          "it": "C'è…?",           "pt": "Há…?",             "de": "Gibt es…?",      "ja": "～がありますか (~ ga arimasu ka)" },
-        { "en": "Where is…?",        "fr": "Où est… ?",          "es": "¿Dónde está…?",   "it": "Dov'è…?",         "pt": "Onde fica…?",      "de": "Wo ist…?",       "ja": "～はどこですか (~ wa doko desu ka)" },
-        { "en": "How much?",         "fr": "Combien ?",          "es": "¿Cuánto?",        "it": "Quanto?",         "pt": "Quanto?",          "de": "Wie viel?",      "ja": "いくらですか (ikura desu ka)" }
+        {
+          "en": "I want",
+          "fr": "Je veux",
+          "es": "Quiero",
+          "it": "Voglio",
+          "pt": "Quero",
+          "de": "Ich will",
+          "ja": "～がほしい (~ ga hoshii)"
+        },
+        {
+          "en": "I'd like",
+          "fr": "Je voudrais",
+          "es": "Quisiera",
+          "it": "Vorrei",
+          "pt": "Queria",
+          "de": "Ich hätte gern",
+          "ja": "～をお願いします (~ o onegaishimasu)"
+        },
+        {
+          "en": "I need",
+          "fr": "J'ai besoin de",
+          "es": "Necesito",
+          "it": "Ho bisogno di",
+          "pt": "Preciso de",
+          "de": "Ich brauche",
+          "ja": "～が必要です (~ ga hitsuyō desu)"
+        },
+        {
+          "en": "I have",
+          "fr": "J'ai",
+          "es": "Tengo",
+          "it": "Ho",
+          "pt": "Tenho",
+          "de": "Ich habe",
+          "ja": "～があります (~ ga arimasu)"
+        },
+        {
+          "en": "I don't have",
+          "fr": "Je n'ai pas",
+          "es": "No tengo",
+          "it": "Non ho",
+          "pt": "Não tenho",
+          "de": "Ich habe kein",
+          "ja": "～がありません (~ ga arimasen)"
+        },
+        {
+          "en": "I like",
+          "fr": "J'aime",
+          "es": "Me gusta",
+          "it": "Mi piace",
+          "pt": "Gosto",
+          "de": "Ich mag",
+          "ja": "～が好きです (~ ga suki desu)"
+        },
+        {
+          "en": "I don't understand",
+          "fr": "Je ne comprends pas",
+          "es": "No entiendo",
+          "it": "Non capisco",
+          "pt": "Não percebo",
+          "de": "Ich verstehe nicht",
+          "ja": "わかりません (wakarimasen)"
+        },
+        {
+          "en": "Can you help me?",
+          "fr": "Pouvez-vous m'aider ?",
+          "es": "¿Me puede ayudar?",
+          "it": "Mi può aiutare?",
+          "pt": "Pode ajudar-me?",
+          "de": "Können Sie mir helfen?",
+          "ja": "助けてもらえますか (tasukete moraemasu ka)"
+        },
+        {
+          "en": "Can I?",
+          "fr": "Je peux ?",
+          "es": "¿Puedo?",
+          "it": "Posso?",
+          "pt": "Posso?",
+          "de": "Darf ich?",
+          "ja": "いいですか (ii desu ka)"
+        },
+        {
+          "en": "Do you have…?",
+          "fr": "Avez-vous… ?",
+          "es": "¿Tiene…?",
+          "it": "Avete…?",
+          "pt": "Tem…?",
+          "de": "Haben Sie…?",
+          "ja": "～がありますか (~ ga arimasu ka)"
+        },
+        {
+          "en": "Is there…?",
+          "fr": "Y a-t-il… ?",
+          "es": "¿Hay…?",
+          "it": "C'è…?",
+          "pt": "Há…?",
+          "de": "Gibt es…?",
+          "ja": "～がありますか (~ ga arimasu ka)"
+        },
+        {
+          "en": "Where is…?",
+          "fr": "Où est… ?",
+          "es": "¿Dónde está…?",
+          "it": "Dov'è…?",
+          "pt": "Onde fica…?",
+          "de": "Wo ist…?",
+          "ja": "～はどこですか (~ wa doko desu ka)"
+        },
+        {
+          "en": "How much?",
+          "fr": "Combien ?",
+          "es": "¿Cuánto?",
+          "it": "Quanto?",
+          "pt": "Quanto?",
+          "de": "Wie viel?",
+          "ja": "いくらですか (ikura desu ka)"
+        }
       ]
     },
     {
       "id": "social",
-      "label": "Social lubrication",
-      "subtitle": "What gets you treated like a person, not a tourist",
+      "label": "Social",
       "phrases": [
-        { "en": "Hello",             "fr": "Bonjour",            "es": "Hola",            "it": "Ciao",            "pt": "Olá",              "de": "Hallo",          "ja": "こんにちは (konnichiwa)" },
-        { "en": "Good morning",      "fr": "Bonjour",            "es": "Buenos días",     "it": "Buongiorno",      "pt": "Bom dia",          "de": "Guten Morgen",   "ja": "おはようございます (ohayō gozaimasu)" },
-        { "en": "Thank you",         "fr": "Merci",              "es": "Gracias",         "it": "Grazie",          "pt": "Obrigado / Obrigada","de": "Danke",        "ja": "ありがとうございます (arigatō gozaimasu)" },
-        { "en": "Please",            "fr": "S'il vous plaît",    "es": "Por favor",       "it": "Per favore",      "pt": "Por favor",        "de": "Bitte",          "ja": "お願いします (onegaishimasu)" },
-        { "en": "Sorry",             "fr": "Désolé / Désolée",   "es": "Lo siento",       "it": "Mi dispiace",     "pt": "Desculpe",         "de": "Entschuldigung", "ja": "すみません (sumimasen)" },
-        { "en": "Excuse me",         "fr": "Excusez-moi",        "es": "Perdón",          "it": "Scusi",           "pt": "Com licença",      "de": "Entschuldigung", "ja": "すみません (sumimasen)" },
-        { "en": "Goodbye",           "fr": "Au revoir",          "es": "Adiós",           "it": "Arrivederci",     "pt": "Adeus",            "de": "Auf Wiedersehen","ja": "さようなら (sayōnara)" },
-        { "en": "Nice to meet you",  "fr": "Enchanté / Enchantée","es": "Encantado / Encantada","it": "Piacere",  "pt": "Muito prazer",     "de": "Freut mich",     "ja": "はじめまして (hajimemashite)" },
-        { "en": "Have a good day",   "fr": "Bonne journée",      "es": "Que tenga un buen día","it": "Buona giornata","pt": "Tenha um bom dia","de": "Schönen Tag",  "ja": "良い一日を (yoi ichinichi o)" },
-        { "en": "Beautiful",         "fr": "Magnifique",         "es": "Hermoso / Hermosa","it": "Bellissimo / Bellissima","pt": "Lindo / Linda","de": "Wunderschön","ja": "きれいです (kirei desu)" },
-        { "en": "Delicious",         "fr": "Délicieux",          "es": "Delicioso",       "it": "Buonissimo",      "pt": "Delicioso",        "de": "Lecker",         "ja": "おいしいです (oishii desu)" }
+        {
+          "en": "Hello",
+          "fr": "Bonjour",
+          "es": "Hola",
+          "it": "Ciao",
+          "pt": "Olá",
+          "de": "Hallo",
+          "ja": "こんにちは (konnichiwa)"
+        },
+        {
+          "en": "Good morning",
+          "fr": "Bonjour",
+          "es": "Buenos días",
+          "it": "Buongiorno",
+          "pt": "Bom dia",
+          "de": "Guten Morgen",
+          "ja": "おはようございます (ohayō gozaimasu)"
+        },
+        {
+          "en": "Thank you",
+          "fr": "Merci",
+          "es": "Gracias",
+          "it": "Grazie",
+          "pt": "Obrigado / Obrigada",
+          "de": "Danke",
+          "ja": "ありがとうございます (arigatō gozaimasu)"
+        },
+        {
+          "en": "Please",
+          "fr": "S'il vous plaît",
+          "es": "Por favor",
+          "it": "Per favore",
+          "pt": "Por favor",
+          "de": "Bitte",
+          "ja": "お願いします (onegaishimasu)"
+        },
+        {
+          "en": "Sorry",
+          "fr": "Désolé / Désolée",
+          "es": "Lo siento",
+          "it": "Mi dispiace",
+          "pt": "Desculpe",
+          "de": "Entschuldigung",
+          "ja": "すみません (sumimasen)"
+        },
+        {
+          "en": "Excuse me",
+          "fr": "Excusez-moi",
+          "es": "Perdón",
+          "it": "Scusi",
+          "pt": "Com licença",
+          "de": "Entschuldigung",
+          "ja": "すみません (sumimasen)"
+        },
+        {
+          "en": "Goodbye",
+          "fr": "Au revoir",
+          "es": "Adiós",
+          "it": "Arrivederci",
+          "pt": "Adeus",
+          "de": "Auf Wiedersehen",
+          "ja": "さようなら (sayōnara)"
+        },
+        {
+          "en": "Nice to meet you",
+          "fr": "Enchanté / Enchantée",
+          "es": "Encantado / Encantada",
+          "it": "Piacere",
+          "pt": "Muito prazer",
+          "de": "Freut mich",
+          "ja": "はじめまして (hajimemashite)"
+        },
+        {
+          "en": "Have a good day",
+          "fr": "Bonne journée",
+          "es": "Que tenga un buen día",
+          "it": "Buona giornata",
+          "pt": "Tenha um bom dia",
+          "de": "Schönen Tag",
+          "ja": "良い一日を (yoi ichinichi o)"
+        },
+        {
+          "en": "Beautiful",
+          "fr": "Magnifique",
+          "es": "Hermoso / Hermosa",
+          "it": "Bellissimo / Bellissima",
+          "pt": "Lindo / Linda",
+          "de": "Wunderschön",
+          "ja": "きれいです (kirei desu)"
+        },
+        {
+          "en": "Delicious",
+          "fr": "Délicieux",
+          "es": "Delicioso",
+          "it": "Buonissimo",
+          "pt": "Delicioso",
+          "de": "Lecker",
+          "ja": "おいしいです (oishii desu)"
+        }
       ]
     },
     {
       "id": "coffee",
       "label": "Coffee",
-      "subtitle": "Survive your first morning",
       "phrases": [
-        { "en": "Black coffee",      "fr": "Un café noir",       "es": "Un café solo",    "it": "Un caffè",        "pt": "Um café",          "de": "Einen schwarzen Kaffee","ja": "ブラックコーヒー (burakku kōhī)" },
-        { "en": "Milk",              "fr": "Du lait",            "es": "Leche",           "it": "Latte",           "pt": "Leite",            "de": "Milch",          "ja": "ミルク (miruku)" },
-        { "en": "Oat milk",          "fr": "Lait d'avoine",      "es": "Leche de avena",  "it": "Latte d'avena",   "pt": "Leite de aveia",   "de": "Hafermilch",     "ja": "オーツミルク (ōtsu miruku)" },
-        { "en": "No sugar",          "fr": "Sans sucre",         "es": "Sin azúcar",      "it": "Senza zucchero",  "pt": "Sem açúcar",       "de": "Ohne Zucker",    "ja": "砂糖なしで (satō nashi de)" },
-        { "en": "Less sugar",        "fr": "Moins de sucre",     "es": "Menos azúcar",    "it": "Poco zucchero",   "pt": "Pouco açúcar",     "de": "Weniger Zucker", "ja": "砂糖少なめで (satō sukuname de)" },
-        { "en": "Iced",              "fr": "Glacé",              "es": "Con hielo",       "it": "Freddo",          "pt": "Gelado",           "de": "Eis-",           "ja": "アイス (aisu)" },
-        { "en": "Hot",               "fr": "Chaud",              "es": "Caliente",        "it": "Caldo",           "pt": "Quente",           "de": "Heiß",           "ja": "ホット (hotto)" },
-        { "en": "Single shot",       "fr": "Un café simple",     "es": "Un café simple",  "it": "Un caffè singolo","pt": "Um café simples",  "de": "Ein Espresso",   "ja": "シングルショット (shinguru shotto)" },
-        { "en": "Double shot",       "fr": "Un café double",     "es": "Un café doble",   "it": "Un caffè doppio", "pt": "Um café duplo",    "de": "Ein doppelter Espresso","ja": "ダブルショット (daburu shotto)" },
-        { "en": "Strong",            "fr": "Fort",               "es": "Fuerte",          "it": "Forte",           "pt": "Forte",            "de": "Stark",          "ja": "濃いめで (koime de)" },
-        { "en": "Water",             "fr": "De l'eau",           "es": "Agua",            "it": "Acqua",           "pt": "Água",             "de": "Wasser",         "ja": "お水 (omizu)" }
+        {
+          "en": "Black coffee",
+          "fr": "Un café noir",
+          "es": "Un café solo",
+          "it": "Un caffè",
+          "pt": "Um café",
+          "de": "Einen schwarzen Kaffee",
+          "ja": "ブラックコーヒー (burakku kōhī)"
+        },
+        {
+          "en": "Milk",
+          "fr": "Du lait",
+          "es": "Leche",
+          "it": "Latte",
+          "pt": "Leite",
+          "de": "Milch",
+          "ja": "ミルク (miruku)"
+        },
+        {
+          "en": "Oat milk",
+          "fr": "Lait d'avoine",
+          "es": "Leche de avena",
+          "it": "Latte d'avena",
+          "pt": "Leite de aveia",
+          "de": "Hafermilch",
+          "ja": "オーツミルク (ōtsu miruku)"
+        },
+        {
+          "en": "No sugar",
+          "fr": "Sans sucre",
+          "es": "Sin azúcar",
+          "it": "Senza zucchero",
+          "pt": "Sem açúcar",
+          "de": "Ohne Zucker",
+          "ja": "砂糖なしで (satō nashi de)"
+        },
+        {
+          "en": "Less sugar",
+          "fr": "Moins de sucre",
+          "es": "Menos azúcar",
+          "it": "Poco zucchero",
+          "pt": "Pouco açúcar",
+          "de": "Weniger Zucker",
+          "ja": "砂糖少なめで (satō sukuname de)"
+        },
+        {
+          "en": "Iced",
+          "fr": "Glacé",
+          "es": "Con hielo",
+          "it": "Freddo",
+          "pt": "Gelado",
+          "de": "Eis-",
+          "ja": "アイス (aisu)"
+        },
+        {
+          "en": "Hot",
+          "fr": "Chaud",
+          "es": "Caliente",
+          "it": "Caldo",
+          "pt": "Quente",
+          "de": "Heiß",
+          "ja": "ホット (hotto)"
+        },
+        {
+          "en": "Single shot",
+          "fr": "Un café simple",
+          "es": "Un café simple",
+          "it": "Un caffè singolo",
+          "pt": "Um café simples",
+          "de": "Ein Espresso",
+          "ja": "シングルショット (shinguru shotto)"
+        },
+        {
+          "en": "Double shot",
+          "fr": "Un café double",
+          "es": "Un café doble",
+          "it": "Un caffè doppio",
+          "pt": "Um café duplo",
+          "de": "Ein doppelter Espresso",
+          "ja": "ダブルショット (daburu shotto)"
+        },
+        {
+          "en": "Strong",
+          "fr": "Fort",
+          "es": "Fuerte",
+          "it": "Forte",
+          "pt": "Forte",
+          "de": "Stark",
+          "ja": "濃いめで (koime de)"
+        },
+        {
+          "en": "Water",
+          "fr": "De l'eau",
+          "es": "Agua",
+          "it": "Acqua",
+          "pt": "Água",
+          "de": "Wasser",
+          "ja": "お水 (omizu)"
+        }
       ]
     },
     {
       "id": "food",
       "label": "Food",
-      "subtitle": "Restaurant survival, allergies, preferences",
       "phrases": [
-        { "en": "Vegetarian",        "fr": "Végétarien / Végétarienne","es": "Vegetariano / Vegetariana","it": "Vegetariano / Vegetariana","pt": "Vegetariano / Vegetariana","de": "Vegetarisch","ja": "ベジタリアン (bejitarian)" },
-        { "en": "No meat",           "fr": "Sans viande",        "es": "Sin carne",       "it": "Senza carne",     "pt": "Sem carne",        "de": "Ohne Fleisch",   "ja": "肉なしで (niku nashi de)" },
-        { "en": "No pork",           "fr": "Sans porc",          "es": "Sin cerdo",       "it": "Senza maiale",    "pt": "Sem porco",        "de": "Ohne Schweinefleisch","ja": "豚肉なしで (butaniku nashi de)" },
-        { "en": "No dairy",          "fr": "Sans produits laitiers","es": "Sin lácteos","it": "Senza latticini","pt": "Sem lacticínios",  "de": "Ohne Milchprodukte","ja": "乳製品なしで (nyūseihin nashi de)" },
-        { "en": "Spicy",             "fr": "Épicé",              "es": "Picante",         "it": "Piccante",        "pt": "Picante",          "de": "Scharf",         "ja": "辛い (karai)" },
-        { "en": "Not spicy",         "fr": "Pas épicé",          "es": "No picante",      "it": "Non piccante",    "pt": "Não picante",      "de": "Nicht scharf",   "ja": "辛くない (karakunai)" },
-        { "en": "Without ___",       "fr": "Sans ___",           "es": "Sin ___",         "it": "Senza ___",       "pt": "Sem ___",          "de": "Ohne ___",       "ja": "___ なしで (___ nashi de)" },
-        { "en": "With ___",          "fr": "Avec ___",           "es": "Con ___",         "it": "Con ___",         "pt": "Com ___",          "de": "Mit ___",        "ja": "___ と一緒に (___ to issho ni)" },
-        { "en": "I'm allergic to ___","fr": "Je suis allergique au / à la / aux ___","es": "Soy alérgico / alérgica a ___","it": "Sono allergico / allergica a ___","pt": "Sou alérgico / alérgica a ___","de": "Ich bin allergisch gegen ___","ja": "___ アレルギーです (___ arerugī desu)" },
-        { "en": "Delicious",         "fr": "Délicieux",          "es": "Delicioso",       "it": "Buonissimo",      "pt": "Delicioso",        "de": "Lecker",         "ja": "おいしいです (oishii desu)" }
+        {
+          "en": "Vegetarian",
+          "fr": "Végétarien / Végétarienne",
+          "es": "Vegetariano / Vegetariana",
+          "it": "Vegetariano / Vegetariana",
+          "pt": "Vegetariano / Vegetariana",
+          "de": "Vegetarisch",
+          "ja": "ベジタリアン (bejitarian)"
+        },
+        {
+          "en": "No meat",
+          "fr": "Sans viande",
+          "es": "Sin carne",
+          "it": "Senza carne",
+          "pt": "Sem carne",
+          "de": "Ohne Fleisch",
+          "ja": "肉なしで (niku nashi de)"
+        },
+        {
+          "en": "No pork",
+          "fr": "Sans porc",
+          "es": "Sin cerdo",
+          "it": "Senza maiale",
+          "pt": "Sem porco",
+          "de": "Ohne Schweinefleisch",
+          "ja": "豚肉なしで (butaniku nashi de)"
+        },
+        {
+          "en": "No dairy",
+          "fr": "Sans produits laitiers",
+          "es": "Sin lácteos",
+          "it": "Senza latticini",
+          "pt": "Sem lacticínios",
+          "de": "Ohne Milchprodukte",
+          "ja": "乳製品なしで (nyūseihin nashi de)"
+        },
+        {
+          "en": "Spicy",
+          "fr": "Épicé",
+          "es": "Picante",
+          "it": "Piccante",
+          "pt": "Picante",
+          "de": "Scharf",
+          "ja": "辛い (karai)"
+        },
+        {
+          "en": "Not spicy",
+          "fr": "Pas épicé",
+          "es": "No picante",
+          "it": "Non piccante",
+          "pt": "Não picante",
+          "de": "Nicht scharf",
+          "ja": "辛くない (karakunai)"
+        },
+        {
+          "en": "Without ___",
+          "fr": "Sans ___",
+          "es": "Sin ___",
+          "it": "Senza ___",
+          "pt": "Sem ___",
+          "de": "Ohne ___",
+          "ja": "___ なしで (___ nashi de)"
+        },
+        {
+          "en": "With ___",
+          "fr": "Avec ___",
+          "es": "Con ___",
+          "it": "Con ___",
+          "pt": "Com ___",
+          "de": "Mit ___",
+          "ja": "___ と一緒に (___ to issho ni)"
+        },
+        {
+          "en": "I'm allergic to ___",
+          "fr": "Je suis allergique au / à la / aux ___",
+          "es": "Soy alérgico / alérgica a ___",
+          "it": "Sono allergico / allergica a ___",
+          "pt": "Sou alérgico / alérgica a ___",
+          "de": "Ich bin allergisch gegen ___",
+          "ja": "___ アレルギーです (___ arerugī desu)"
+        },
+        {
+          "en": "Delicious",
+          "fr": "Délicieux",
+          "es": "Delicioso",
+          "it": "Buonissimo",
+          "pt": "Delicioso",
+          "de": "Lecker",
+          "ja": "おいしいです (oishii desu)"
+        }
       ]
     },
     {
       "id": "logistics",
       "label": "Logistics",
-      "subtitle": "Getting around, paying, finding things",
       "phrases": [
-        { "en": "Train station",     "fr": "La gare",            "es": "La estación de tren","it": "La stazione",  "pt": "A estação",        "de": "Der Bahnhof",    "ja": "駅 (eki)" },
-        { "en": "Airport",           "fr": "L'aéroport",         "es": "El aeropuerto",   "it": "L'aeroporto",     "pt": "O aeroporto",      "de": "Der Flughafen",  "ja": "空港 (kūkō)" },
-        { "en": "Ticket",            "fr": "Un billet",          "es": "Un billete",      "it": "Un biglietto",    "pt": "Um bilhete",       "de": "Eine Fahrkarte", "ja": "切符 (kippu)" },
-        { "en": "Cash",              "fr": "Espèces / Liquide",  "es": "Efectivo",        "it": "Contanti",        "pt": "Dinheiro",         "de": "Bargeld",        "ja": "現金 (genkin)" },
-        { "en": "Card",              "fr": "Carte",              "es": "Tarjeta",         "it": "Carta",           "pt": "Cartão",           "de": "Karte",          "ja": "カード (kādo)" },
-        { "en": "Bathroom",          "fr": "Les toilettes",      "es": "El baño",         "it": "Il bagno",        "pt": "A casa de banho",  "de": "Die Toilette",   "ja": "トイレ (toire)" },
-        { "en": "Wifi",              "fr": "Le wifi",            "es": "El wifi",         "it": "Il wifi",         "pt": "O wifi",           "de": "Das WLAN",       "ja": "Wi-Fi (waifai)" },
-        { "en": "Charger",           "fr": "Un chargeur",        "es": "Un cargador",     "it": "Un caricabatterie","pt": "Um carregador",   "de": "Ein Ladegerät",  "ja": "充電器 (jūdenki)" },
-        { "en": "Today",             "fr": "Aujourd'hui",        "es": "Hoy",             "it": "Oggi",            "pt": "Hoje",             "de": "Heute",          "ja": "今日 (kyō)" },
-        { "en": "Tomorrow",          "fr": "Demain",             "es": "Mañana",          "it": "Domani",          "pt": "Amanhã",           "de": "Morgen",         "ja": "明日 (ashita)" },
-        { "en": "Now",               "fr": "Maintenant",         "es": "Ahora",           "it": "Adesso",          "pt": "Agora",            "de": "Jetzt",          "ja": "今 (ima)" },
-        { "en": "Later",             "fr": "Plus tard",          "es": "Más tarde",       "it": "Più tardi",       "pt": "Mais tarde",       "de": "Später",         "ja": "あとで (ato de)" },
-        { "en": "Left",              "fr": "Gauche",             "es": "Izquierda",       "it": "Sinistra",        "pt": "Esquerda",         "de": "Links",          "ja": "左 (hidari)" },
-        { "en": "Right",             "fr": "Droite",             "es": "Derecha",         "it": "Destra",          "pt": "Direita",          "de": "Rechts",         "ja": "右 (migi)" },
-        { "en": "Straight",          "fr": "Tout droit",         "es": "Recto",           "it": "Dritto",          "pt": "Em frente",        "de": "Geradeaus",      "ja": "まっすぐ (massugu)" }
+        {
+          "en": "Train station",
+          "fr": "La gare",
+          "es": "La estación de tren",
+          "it": "La stazione",
+          "pt": "A estação",
+          "de": "Der Bahnhof",
+          "ja": "駅 (eki)"
+        },
+        {
+          "en": "Airport",
+          "fr": "L'aéroport",
+          "es": "El aeropuerto",
+          "it": "L'aeroporto",
+          "pt": "O aeroporto",
+          "de": "Der Flughafen",
+          "ja": "空港 (kūkō)"
+        },
+        {
+          "en": "Ticket",
+          "fr": "Un billet",
+          "es": "Un billete",
+          "it": "Un biglietto",
+          "pt": "Um bilhete",
+          "de": "Eine Fahrkarte",
+          "ja": "切符 (kippu)"
+        },
+        {
+          "en": "Cash",
+          "fr": "Espèces / Liquide",
+          "es": "Efectivo",
+          "it": "Contanti",
+          "pt": "Dinheiro",
+          "de": "Bargeld",
+          "ja": "現金 (genkin)"
+        },
+        {
+          "en": "Card",
+          "fr": "Carte",
+          "es": "Tarjeta",
+          "it": "Carta",
+          "pt": "Cartão",
+          "de": "Karte",
+          "ja": "カード (kādo)"
+        },
+        {
+          "en": "Bathroom",
+          "fr": "Les toilettes",
+          "es": "El baño",
+          "it": "Il bagno",
+          "pt": "A casa de banho",
+          "de": "Die Toilette",
+          "ja": "トイレ (toire)"
+        },
+        {
+          "en": "Wifi",
+          "fr": "Le wifi",
+          "es": "El wifi",
+          "it": "Il wifi",
+          "pt": "O wifi",
+          "de": "Das WLAN",
+          "ja": "Wi-Fi (waifai)"
+        },
+        {
+          "en": "Charger",
+          "fr": "Un chargeur",
+          "es": "Un cargador",
+          "it": "Un caricabatterie",
+          "pt": "Um carregador",
+          "de": "Ein Ladegerät",
+          "ja": "充電器 (jūdenki)"
+        },
+        {
+          "en": "Today",
+          "fr": "Aujourd'hui",
+          "es": "Hoy",
+          "it": "Oggi",
+          "pt": "Hoje",
+          "de": "Heute",
+          "ja": "今日 (kyō)"
+        },
+        {
+          "en": "Tomorrow",
+          "fr": "Demain",
+          "es": "Mañana",
+          "it": "Domani",
+          "pt": "Amanhã",
+          "de": "Morgen",
+          "ja": "明日 (ashita)"
+        },
+        {
+          "en": "Now",
+          "fr": "Maintenant",
+          "es": "Ahora",
+          "it": "Adesso",
+          "pt": "Agora",
+          "de": "Jetzt",
+          "ja": "今 (ima)"
+        },
+        {
+          "en": "Later",
+          "fr": "Plus tard",
+          "es": "Más tarde",
+          "it": "Più tardi",
+          "pt": "Mais tarde",
+          "de": "Später",
+          "ja": "あとで (ato de)"
+        },
+        {
+          "en": "Left",
+          "fr": "Gauche",
+          "es": "Izquierda",
+          "it": "Sinistra",
+          "pt": "Esquerda",
+          "de": "Links",
+          "ja": "左 (hidari)"
+        },
+        {
+          "en": "Right",
+          "fr": "Droite",
+          "es": "Derecha",
+          "it": "Destra",
+          "pt": "Direita",
+          "de": "Rechts",
+          "ja": "右 (migi)"
+        },
+        {
+          "en": "Straight",
+          "fr": "Tout droit",
+          "es": "Recto",
+          "it": "Dritto",
+          "pt": "Em frente",
+          "de": "Geradeaus",
+          "ja": "まっすぐ (massugu)"
+        }
       ]
     },
     {
       "id": "advanced",
-      "label": "Secret advanced stuff",
-      "subtitle": "What separates a tourist from a traveler",
+      "label": "Advanced",
       "phrases": [
-        { "en": "What do you recommend?","fr": "Qu'est-ce que vous recommandez ?","es": "¿Qué recomienda?","it": "Cosa consiglia?","pt": "O que recomenda?","de": "Was empfehlen Sie?","ja": "おすすめは何ですか (osusume wa nan desu ka)" },
-        { "en": "Your favorite?",    "fr": "Votre préféré ?",    "es": "¿Su favorito?",   "it": "Il suo preferito?","pt": "O seu preferido?","de": "Ihr Lieblings-?","ja": "あなたのお気に入りは (anata no okiniiri wa)" },
-        { "en": "Local specialty?",  "fr": "La spécialité locale ?","es": "¿La especialidad local?","it": "La specialità locale?","pt": "A especialidade local?","de": "Die regionale Spezialität?","ja": "地元の名物は (jimoto no meibutsu wa)" },
-        { "en": "Very good",         "fr": "Très bon",           "es": "Muy bueno",       "it": "Molto buono",     "pt": "Muito bom",        "de": "Sehr gut",       "ja": "とてもいい (totemo ii)" },
-        { "en": "Beautiful",         "fr": "Magnifique",         "es": "Hermoso",         "it": "Bellissimo",      "pt": "Lindo",            "de": "Wunderschön",    "ja": "きれい (kirei)" },
-        { "en": "Amazing",           "fr": "Incroyable",         "es": "Increíble",       "it": "Incredibile",     "pt": "Incrível",         "de": "Unglaublich",    "ja": "すごい (sugoi)" },
-        { "en": "I'm learning [language]","fr": "J'apprends le français","es": "Estoy aprendiendo español","it": "Sto imparando l'italiano","pt": "Estou a aprender português","de": "Ich lerne Deutsch","ja": "日本語を勉強しています (nihongo o benkyō shite imasu)" },
-        { "en": "Slowly please",     "fr": "Lentement, s'il vous plaît","es": "Más despacio, por favor","it": "Più lentamente, per favore","pt": "Mais devagar, por favor","de": "Langsamer, bitte","ja": "ゆっくりお願いします (yukkuri onegaishimasu)" },
-        { "en": "Can you repeat that?","fr": "Pouvez-vous répéter ?","es": "¿Puede repetir?","it": "Può ripetere?","pt": "Pode repetir?","de": "Können Sie das wiederholen?","ja": "もう一度お願いします (mō ichido onegaishimasu)" }
+        {
+          "en": "What do you recommend?",
+          "fr": "Qu'est-ce que vous recommandez ?",
+          "es": "¿Qué recomienda?",
+          "it": "Cosa consiglia?",
+          "pt": "O que recomenda?",
+          "de": "Was empfehlen Sie?",
+          "ja": "おすすめは何ですか (osusume wa nan desu ka)"
+        },
+        {
+          "en": "Your favorite?",
+          "fr": "Votre préféré ?",
+          "es": "¿Su favorito?",
+          "it": "Il suo preferito?",
+          "pt": "O seu preferido?",
+          "de": "Ihr Lieblings-?",
+          "ja": "あなたのお気に入りは (anata no okiniiri wa)"
+        },
+        {
+          "en": "Local specialty?",
+          "fr": "La spécialité locale ?",
+          "es": "¿La especialidad local?",
+          "it": "La specialità locale?",
+          "pt": "A especialidade local?",
+          "de": "Die regionale Spezialität?",
+          "ja": "地元の名物は (jimoto no meibutsu wa)"
+        },
+        {
+          "en": "Very good",
+          "fr": "Très bon",
+          "es": "Muy bueno",
+          "it": "Molto buono",
+          "pt": "Muito bom",
+          "de": "Sehr gut",
+          "ja": "とてもいい (totemo ii)"
+        },
+        {
+          "en": "Beautiful",
+          "fr": "Magnifique",
+          "es": "Hermoso",
+          "it": "Bellissimo",
+          "pt": "Lindo",
+          "de": "Wunderschön",
+          "ja": "きれい (kirei)"
+        },
+        {
+          "en": "Amazing",
+          "fr": "Incroyable",
+          "es": "Increíble",
+          "it": "Incredibile",
+          "pt": "Incrível",
+          "de": "Unglaublich",
+          "ja": "すごい (sugoi)"
+        },
+        {
+          "en": "I'm learning [language]",
+          "fr": "J'apprends le français",
+          "es": "Estoy aprendiendo español",
+          "it": "Sto imparando l'italiano",
+          "pt": "Estou a aprender português",
+          "de": "Ich lerne Deutsch",
+          "ja": "日本語を勉強しています (nihongo o benkyō shite imasu)"
+        },
+        {
+          "en": "Slowly please",
+          "fr": "Lentement, s'il vous plaît",
+          "es": "Más despacio, por favor",
+          "it": "Più lentamente, per favore",
+          "pt": "Mais devagar, por favor",
+          "de": "Langsamer, bitte",
+          "ja": "ゆっくりお願いします (yukkuri onegaishimasu)"
+        },
+        {
+          "en": "Can you repeat that?",
+          "fr": "Pouvez-vous répéter ?",
+          "es": "¿Puede repetir?",
+          "it": "Può ripetere?",
+          "pt": "Pode repetir?",
+          "de": "Können Sie das wiederholen?",
+          "ja": "もう一度お願いします (mō ichido onegaishimasu)"
+        }
       ]
     }
   ]

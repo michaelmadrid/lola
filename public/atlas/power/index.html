@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Time · Atlas — kit</title>
+  <title>Power · Atlas — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/atlas.css">
 </head>
@@ -52,13 +52,67 @@
     <h1 class="atlas-mast__title">Atlas</h1>
     <nav class="atlas-subnav">
       <a href="/atlas/phrasebook/" class="atlas-subnav__item">Phrasebook</a>
-      <a href="/atlas/time/"       class="atlas-subnav__item is-active">Time</a>
-      <a href="/atlas/power/"      class="atlas-subnav__item">Power</a>
+      <a href="/atlas/time/"       class="atlas-subnav__item">Time</a>
+      <a href="/atlas/power/"      class="atlas-subnav__item is-active">Power</a>
       <a href="/atlas/driving/"    class="atlas-subnav__item">Driving</a>
     </nav>
   </header>
 
-  <div class="time-list" id="time-list"></div>
+  <section class="atlas-tldr">
+    <p>Most modern chargers handle any voltage. Check the label: <strong>“100&ndash;240V”</strong> means you only need a plug adapter, never a converter. Old hair dryers and kettles are the exception.</p>
+  </section>
+
+  <div class="region-list">
+
+    <article class="region">
+      <header class="region__head">
+        <h2 class="region__name">Continental Europe</h2>
+        <span class="region__spec">Type C / E / F · 220V · 50Hz</span>
+      </header>
+      <p class="region__where">France, Spain, Germany, Netherlands, Belgium, Portugal, Greece, Czechia, Hungary &mdash; most of mainland Europe.</p>
+    </article>
+
+    <article class="region">
+      <header class="region__head">
+        <h2 class="region__name">UK & former colonies</h2>
+        <span class="region__spec">Type G · 220V · 50Hz</span>
+      </header>
+      <p class="region__where">United Kingdom, Ireland, Hong Kong, Singapore, Malaysia, Malta, Cyprus. The big rectangular three-pin.</p>
+    </article>
+
+    <article class="region">
+      <header class="region__head">
+        <h2 class="region__name">North America & Japan</h2>
+        <span class="region__spec">Type A / B · 110V · 60Hz</span>
+      </header>
+      <p class="region__where">United States, Canada, Mexico, Japan, parts of Latin America.</p>
+    </article>
+
+    <article class="region">
+      <header class="region__head">
+        <h2 class="region__name">Australia, NZ, China</h2>
+        <span class="region__spec">Type I · 220V · 50Hz</span>
+      </header>
+      <p class="region__where">Australia, New Zealand, China, Argentina. Angled flat pins forming an upside-down V.</p>
+    </article>
+
+    <article class="region">
+      <header class="region__head">
+        <h2 class="region__name">Italy</h2>
+        <span class="region__spec">Type L (some F) · 220V · 50Hz</span>
+      </header>
+      <p class="region__where">Italian outlets vary. Type C Europlugs usually fit, but some hotels still have only Type L. Worth grabbing the Italian-specific adapter.</p>
+    </article>
+
+    <article class="region">
+      <header class="region__head">
+        <h2 class="region__name">Switzerland</h2>
+        <span class="region__spec">Type J · 220V · 50Hz</span>
+      </header>
+      <p class="region__where">Swiss-only Type J. Slim Europlugs sometimes fit, sturdier ones don&rsquo;t. Bring the Swiss adapter.</p>
+    </article>
+
+  </div>
 
 </main>
 
@@ -80,73 +134,8 @@
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
 <script>
-(function () {
-  // Five default cities. Order: west to east.
-  const cities = [
-    { name: 'Los Angeles', tz: 'America/Los_Angeles' },
-    { name: 'Paris',       tz: 'Europe/Paris' },
-    { name: 'Rome',        tz: 'Europe/Rome' },
-    { name: 'Bali',        tz: 'Asia/Makassar' },
-    { name: 'Melbourne',   tz: 'Australia/Melbourne' },
-  ];
-
-  const listEl = document.getElementById('time-list');
-
-  // Build static row scaffolding
-  listEl.innerHTML = cities.map(c => `
-    <div class="time-row" data-tz="${c.tz}">
-      <span class="time-row__name">${c.name}</span>
-      <span class="time-row__time" data-time>—</span>
-      <span class="time-row__meta" data-meta>—</span>
-    </div>
-  `).join('');
-
-  // Local timezone for offset calculation
-  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  function offsetFromLocal(tz) {
-    // Compute the difference in hours by formatting current time in both zones
-    const now = new Date();
-    const localStr = now.toLocaleString('en-US', { timeZone: localTz });
-    const otherStr = now.toLocaleString('en-US', { timeZone: tz });
-    const diffMs = new Date(otherStr) - new Date(localStr);
-    const hours = Math.round(diffMs / 3600000 * 2) / 2; // half-hour precision
-    return hours;
-  }
-
-  function tick() {
-    cities.forEach(c => {
-      const row = listEl.querySelector(`[data-tz="${c.tz}"]`);
-      if (!row) return;
-
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-US', {
-        timeZone: c.tz,
-        hour: 'numeric', minute: '2-digit', hour12: true,
-      });
-
-      // Day of week — abbreviated
-      const dayLabel = now.toLocaleDateString('en-US', {
-        timeZone: c.tz,
-        weekday: 'short',
-      });
-
-      const off = offsetFromLocal(c.tz);
-      let offLabel = '';
-      if (off === 0) offLabel = 'same as you';
-      else if (off > 0) offLabel = `+${off}h`;
-      else offLabel = `${off}h`;
-
-      row.querySelector('[data-time]').textContent = time;
-      row.querySelector('[data-meta]').textContent = `${dayLabel} · ${offLabel}`;
-    });
-  }
-  tick();
-  setInterval(tick, 30 * 1000);
-
   const signOutFoot = document.getElementById('signout-link-foot');
   if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
-})();
 </script>
 </body>
 </html>
