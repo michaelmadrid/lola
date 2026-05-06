@@ -91,59 +91,14 @@
     ? window.OBLIQUE_STRATEGIES
     : ['Trust in the you of now'];
 
-  function buildIdleSvg(seed) {
-    let s = seed;
-    const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
-    const W = 200, H = 160;
-    const palette = ['var(--ink)', 'var(--blue)', 'var(--ink-3)'];
-    const style = Math.floor(rnd() * 4);
-    let shapes = '';
-    if (style === 0) {
-      const cx1 = 50 + rnd() * 30, cy1 = 50 + rnd() * 30, r1 = 30 + rnd() * 20;
-      const cx2 = 110 + rnd() * 30, cy2 = 80 + rnd() * 30, r2 = 25 + rnd() * 25;
-      shapes += `<circle cx="${cx1}" cy="${cy1}" r="${r1}" fill="none" stroke="${palette[0]}" stroke-width="1"/>`;
-      shapes += `<circle cx="${cx2}" cy="${cy2}" r="${r2}" fill="${palette[1]}" opacity="0.9"/>`;
-      shapes += `<line x1="20" y1="${130 + rnd()*15}" x2="180" y2="${130 + rnd()*15}" stroke="${palette[0]}" stroke-width="1"/>`;
-    } else if (style === 1) {
-      const cols = 8, rows = 6;
-      const blueX = Math.floor(rnd() * cols), blueY = Math.floor(rnd() * rows);
-      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-        const cx = 30 + x * 20, cy = 30 + y * 20;
-        const isBlue = x === blueX && y === blueY;
-        shapes += `<circle cx="${cx}" cy="${cy}" r="${isBlue ? 5 : 2}" fill="${isBlue ? palette[1] : palette[0]}"/>`;
-      }
-    } else if (style === 2) {
-      const x1 = 30 + rnd() * 10, y1 = 30 + rnd() * 10, w1 = 100 + rnd() * 30, h1 = 80 + rnd() * 20;
-      const x2 = x1 + 20 + rnd() * 20, y2 = y1 + 15 + rnd() * 20, w2 = 40 + rnd() * 20, h2 = 30 + rnd() * 15;
-      shapes += `<rect x="${x1}" y="${y1}" width="${w1}" height="${h1}" fill="none" stroke="${palette[0]}" stroke-width="1"/>`;
-      shapes += `<rect x="${x2}" y="${y2}" width="${w2}" height="${h2}" fill="${palette[1]}"/>`;
-    } else {
-      for (let i = 0; i < 5; i++) {
-        const y = 30 + i * 20 + rnd() * 6;
-        shapes += `<line x1="${20 + rnd() * 30}" y1="${y}" x2="${180 - rnd() * 30}" y2="${y}" stroke="${palette[0]}" stroke-width="1"/>`;
-      }
-      const vx = 60 + rnd() * 80;
-      shapes += `<line x1="${vx}" y1="20" x2="${vx}" y2="140" stroke="${palette[1]}" stroke-width="2"/>`;
-      shapes += `<circle cx="${vx}" cy="${80 + rnd() * 30}" r="5" fill="${palette[1]}"/>`;
-    }
-    return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${shapes}</svg>`;
-  }
-
   function renderIdleDay() {
     dayActiveEl.style.display = 'none';
     dayIdleEl.style.display = 'flex';
-    const today = new Date();
-    const seed = Math.floor(today.getTime() / 86400000);
-    const idx = seed % idlePrompts.length;
+    // Random per page-load. (Switch to date-deterministic later if we want
+    // "one per day" — for now random keeps it fresh on each visit.)
+    const idx = Math.floor(Math.random() * idlePrompts.length);
     document.getElementById('idle-quote').textContent = idlePrompts[idx];
     document.getElementById('idle-num').textContent = String(idx + 1).padStart(3, '0');
-    const svgEl = document.getElementById('idle-svg');
-    if (svgEl) {
-      svgEl.outerHTML = buildIdleSvg(seed).replace(
-        '<svg viewBox="0 0 200 160"',
-        '<svg id="idle-svg" class="day-sum__idle__svg" viewBox="0 0 200 160" aria-hidden="true"'
-      );
-    }
   }
 
   loadActiveTrip();
