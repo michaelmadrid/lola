@@ -121,9 +121,10 @@
   // ============ EDIT TRIP MODAL ============
   const editModal = document.getElementById('edit-trip-modal');
   function openEditTrip() {
+    const toDateOnly = (d) => d ? String(d).split('T')[0] : '';
     document.getElementById('et-name').value = trip.name || '';
-    document.getElementById('et-date-start').value = trip.date_start || '';
-    document.getElementById('et-date-end').value = trip.date_end || '';
+    document.getElementById('et-date-start').value = toDateOnly(trip.date_start);
+    document.getElementById('et-date-end').value = toDateOnly(trip.date_end);
     document.getElementById('et-notes').value = trip.notes || '';
     editModal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
@@ -208,12 +209,13 @@
     suggestBox.classList.remove('is-open');
     suggestBox.innerHTML = '';
     if (seg) {
-      // prefill
+      // prefill — strip time portion if present (Postgres returns ISO timestamps)
+      const toDateOnly = (d) => d ? String(d).split('T')[0] : '';
       cityInput.value = seg.city_name || seg.region_label || '';
       pickedCityId = seg.city_id || null;
       pickedRegionLabel = seg.city_id ? null : (seg.region_label || null);
-      document.getElementById('s-date-start').value = seg.date_start || '';
-      document.getElementById('s-date-end').value = seg.date_end || '';
+      document.getElementById('s-date-start').value = toDateOnly(seg.date_start);
+      document.getElementById('s-date-end').value = toDateOnly(seg.date_end);
       document.getElementById('s-notes').value = seg.notes || '';
     }
     segModal.classList.add('is-open');
