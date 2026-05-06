@@ -72,12 +72,11 @@
   width: 10px; height: 10px;
   vertical-align: -1px;
 }
-/* ===== Active trip strip ===== */
+/* ===== Active trip strip (2-line) ===== */
 .trip-strip {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   padding: 14px 0;
   margin: 0;
@@ -91,43 +90,41 @@
 }
 .trip-strip:hover { color: var(--blue); }
 .trip-strip:hover .trip-strip__open { transform: translate(2px, -2px); color: var(--blue); }
+.trip-strip__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
 .trip-strip__name {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--ink);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: -0.012em;
+  line-height: 1.15;
 }
-.trip-strip__arc {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-2);
-  letter-spacing: 0.04em;
-}
-.trip-strip__dates {
+.trip-strip__sub {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
-  margin-left: auto;
-  text-align: right;
 }
+.trip-strip__arc { color: var(--ink-2); }
+.trip-strip__sep { color: var(--ink-4); }
+.trip-strip__dates { color: var(--ink-3); }
 .trip-strip__open {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--ink-3);
-  margin-left: 4px;
-  padding: 4px 6px;
-  margin-right: -6px;
+  padding: 6px 8px;
+  margin-right: -8px;
+  flex-shrink: 0;
   transition: transform 200ms ease, color 140ms ease;
-}
-/* If wrap kicks in, push dates to a new line and left-align */
-@media (max-width: 1320px) {
-  .trip-strip__dates {
-    margin-left: 0;
-    width: 100%;
-    text-align: left;
-  }
 }
 
 /* Today/Next sub-rows */

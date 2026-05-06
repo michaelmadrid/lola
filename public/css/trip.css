@@ -194,7 +194,7 @@
 }
 .segment-row {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) 80px 30px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) auto;
   gap: 16px;
   align-items: baseline;
   padding: 16px 0;
@@ -205,6 +205,10 @@
   font-size: 16px;
   font-weight: 500;
   letter-spacing: -0.008em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .segment-name .region-tag {
   font-family: var(--mono);
@@ -212,9 +216,19 @@
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-left: 8px;
   vertical-align: 2px;
   font-weight: 400;
+}
+.segment-notes-hint {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 400;
+  padding: 1px 5px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
 }
 .segment-dates {
   font-family: var(--mono);
@@ -222,33 +236,43 @@
   color: var(--ink-2);
   letter-spacing: 0.02em;
 }
-.segment-country {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-align: right;
-}
 .segment-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   text-align: right;
 }
 .segment-actions button {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 10px;
+  transition: color 140ms ease;
 }
 .segment-actions button:hover { color: var(--blue); }
+.segment-actions .seg-edit {
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.segment-actions .seg-delete {
+  font-size: 22px;
+  font-weight: 300;
+  line-height: 1;
+}
 
 @media (max-width: 720px) {
   .segment-row {
-    grid-template-columns: 1fr 30px;
+    grid-template-columns: 1fr auto;
     gap: 8px;
   }
   .segment-name { grid-column: 1; }
   .segment-dates { grid-column: 1; font-size: 11px; }
-  .segment-country { display: none; }
   .segment-actions { grid-row: 1; grid-column: 2; }
 }
 

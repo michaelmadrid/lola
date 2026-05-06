@@ -52,14 +52,18 @@
         const dates = (s.date_start && s.date_end)
           ? `${util.formatNumericDate(s.date_start)} — ${util.formatNumericDate(s.date_end)}`
           : (s.date_start ? util.formatNumericDate(s.date_start) : '—');
+        const hasNotes = s.notes && s.notes.trim();
+        const notesHint = hasNotes ? '<span class="segment-notes-hint">notes</span>' : '';
         const deleteBtn = isOwner
           ? `<button class="seg-delete" data-id="${s.id}" aria-label="Delete">×</button>`
           : '';
+        const editBtn = isOwner
+          ? `<button class="seg-edit" data-id="${s.id}" aria-label="Edit">edit</button>`
+          : '';
         return `<div class="segment-row" data-id="${s.id}">
-          <span class="segment-name">${util.escapeHtml(label)}${isRegion ? '<span class="region-tag">region</span>' : ''}</span>
+          <span class="segment-name">${util.escapeHtml(label)}${isRegion ? '<span class="region-tag">region</span>' : ''}${notesHint}</span>
           <span class="segment-dates">${dates}</span>
-          <span class="segment-country">${util.escapeHtml(s.city_country || '')}</span>
-          <span class="segment-actions">${deleteBtn}</span>
+          <span class="segment-actions">${editBtn}${deleteBtn}</span>
         </div>`;
       }).join('');
     }
@@ -91,11 +95,15 @@
       const editBtn = document.getElementById('edit-trip-btn');
       if (editBtn) editBtn.addEventListener('click', openEditTrip);
       const addBtn = document.getElementById('add-seg-btn');
-      if (addBtn) addBtn.addEventListener('click', openAddSegment);
+      if (addBtn) addBtn.addEventListener('click', () => openSegmentModal(null));
+      pageEl.querySelectorAll('.seg-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const seg = segments.find(s => String(s.id) === String(btn.dataset.id));
+          if (seg) openSegmentModal(seg);
+        });
+      });
       pageEl.querySelectorAll('.seg-delete').forEach(btn => {
         btn.addEventListener('click', async () => {
-          // simple inline delete for segment, no type-confirm. Stops are small.
-          // animate fade-out, then call API
           const row = btn.closest('.segment-row');
           if (row) row.style.opacity = '0.4';
           try {
@@ -182,19 +190,32 @@
 
   document.getElementById('delete-trip-btn').addEventListener('click', openDeleteConfirm);
 
-  // ============ ADD SEGMENT MODAL ============
+  // ============ ADD/EDIT SEGMENT MODAL ============
   const segModal = document.getElementById('seg-modal');
+  const segTitle = document.getElementById('seg-modal-title');
   const cityInput = document.getElementById('s-city');
   const suggestBox = document.getElementById('s-city-suggestions');
   let pickedCityId = null;
   let pickedRegionLabel = null;
+  let editingSegmentId = null; // null = add, set = edit
 
-  function openAddSegment() {
+  function openSegmentModal(seg) {
     pickedCityId = null;
     pickedRegionLabel = null;
+    editingSegmentId = seg ? seg.id : null;
+    segTitle.textContent = seg ? 'Edit stop' : 'Add stop';
     document.getElementById('seg-form').reset();
     suggestBox.classList.remove('is-open');
     suggestBox.innerHTML = '';
+    if (seg) {
+      // prefill
+      cityInput.value = seg.city_name || seg.region_label || '';
+      pickedCityId = seg.city_id || null;
+      pickedRegionLabel = seg.city_id ? null : (seg.region_label || null);
+      document.getElementById('s-date-start').value = seg.date_start || '';
+      document.getElementById('s-date-end').value = seg.date_end || '';
+      document.getElementById('s-notes').value = seg.notes || '';
+    }
     segModal.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     setTimeout(() => cityInput.focus(), 50);
@@ -202,6 +223,7 @@
   function closeSegment() {
     segModal.classList.remove('is-open');
     document.body.style.overflow = '';
+    editingSegmentId = null;
   }
   document.getElementById('seg-modal-close').addEventListener('click', closeSegment);
 
@@ -285,7 +307,11 @@
       notes: document.getElementById('s-notes').value.trim() || null,
     };
     try {
-      await api.post(`/api/trips/${tripId}/segments`, body);
+      if (editingSegmentId) {
+        await api.patch(`/api/trips/${tripId}/segments/${editingSegmentId}`, body);
+      } else {
+        await api.post(`/api/trips/${tripId}/segments`, body);
+      }
       closeSegment();
       await load();
     } catch (err) {

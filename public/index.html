@@ -68,9 +68,14 @@
       <!-- ACTIVE: when on a trip today -->
       <div id="day-active" style="display:none">
         <button class="trip-strip" id="trip-strip" aria-label="Open itinerary">
-          <span class="trip-strip__name" id="trip-strip-name">—</span>
-          <span class="trip-strip__arc" id="trip-strip-arc">—</span>
-          <span class="trip-strip__dates" id="trip-strip-dates">—</span>
+          <span class="trip-strip__main">
+            <span class="trip-strip__name" id="trip-strip-name">—</span>
+            <span class="trip-strip__sub">
+              <span class="trip-strip__arc" id="trip-strip-arc">—</span>
+              <span class="trip-strip__sep" id="trip-strip-sep">·</span>
+              <span class="trip-strip__dates" id="trip-strip-dates">—</span>
+            </span>
+          </span>
           <span class="trip-strip__open">↗</span>
         </button>
 

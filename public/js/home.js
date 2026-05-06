@@ -225,7 +225,6 @@
     } else {
       itinSegments.innerHTML = activeSegments.map(s => {
         const label = s.city_name || s.region_label || '—';
-        const country = s.city_country ? ` · ${util.escapeHtml(s.city_country)}` : '';
         const arr = s.date_start ? util.formatLongDate(s.date_start) : '';
         const dep = s.date_end   ? util.formatLongDate(s.date_end)   : '';
         const nights = (s.date_start && s.date_end)
@@ -243,7 +242,7 @@
         return `<article class="itin-fs__seg${isToday ? ' is-here' : ''}">
           <div class="itin-fs__seg-date">${arr || '—'}</div>
           <div class="itin-fs__seg-body">
-            <h3 class="itin-fs__seg-name">${util.escapeHtml(label)}${country}</h3>
+            <h3 class="itin-fs__seg-name">${util.escapeHtml(label)}</h3>
             <div class="itin-fs__seg-meta">
               ${nightsLabel ? `<span>${nightsLabel}</span>` : ''}
               ${dep ? `<span>→ ${dep}</span>` : ''}
