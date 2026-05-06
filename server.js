@@ -16,6 +16,7 @@ app.use('/api/places',  require('./api/routes/places'));
 app.use('/api/trips',   require('./api/routes/trips'));
 app.use('/api/notes',   require('./api/routes/notes'));
 app.use('/api/saves',   require('./api/routes/saves'));
+app.use('/api/todos',   require('./api/routes/todos'));
 
 // ============ FALLBACK ============
 // If a request hits /something but no static file exists,

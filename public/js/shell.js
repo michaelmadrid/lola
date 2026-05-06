@@ -1,10 +1,29 @@
 /* =========================================================
    shell.js
    Header/footer behavior shared by every page.
-   Wires: live time, mobile menu, auth state, toast helper.
+   Wires: theme, live time, mobile menu, auth state, toast helper.
    ========================================================= */
 
 (function () {
+  // ----- Theme (dark mode) ----- runs FIRST to avoid flash
+  // The ultra-early <script> in <head> already applies the class;
+  // this just keeps in sync if settings change in another tab.
+  try {
+    if (localStorage.getItem('lola.theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+  } catch (e) {}
+
+  // ----- Apply home location to header (if user has set one) -----
+  try {
+    const homeLoc = localStorage.getItem('lola.home_location');
+    if (homeLoc) {
+      document.querySelectorAll('.head__right .where').forEach(el => {
+        el.textContent = homeLoc;
+      });
+    }
+  } catch (e) {}
+
   // ----- Live time in header -----
   const timeEl = document.getElementById('hdr-time');
   if (timeEl) {
@@ -12,7 +31,7 @@
       try {
         timeEl.textContent = new Date().toLocaleTimeString('en-US', {
           hour: 'numeric', minute: '2-digit', hour12: true,
-          // TODO: replace with user's home base TZ from settings later
+          // TODO: read user's home base TZ from settings later
           timeZone: 'Asia/Makassar'
         });
       } catch (e) {}

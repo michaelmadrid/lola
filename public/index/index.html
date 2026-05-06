@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
   <title>Index — lola</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/index.css">
@@ -38,7 +39,8 @@
     <a href="/trips.html" data-auth="in">Trips</a>
     <a href="/index/" class="is-active">Index</a>
     <a href="/idle/">Idle</a>
-    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+      <a href="/admin/" data-auth="in">Admin</a>
     <a href="/login.html" data-auth="out">Sign in</a>
     <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
   </div>
@@ -102,6 +104,7 @@
     </div>
     <div class="foot__right">
       <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/settings.html" data-auth="in">Settings</a>
       <a href="/admin/" data-auth="in">Admin</a>
     </div>
   </div>

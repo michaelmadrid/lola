@@ -272,44 +272,238 @@
   // refresh stream every 5 minutes to update relative times
   setInterval(loadStream, 5 * 60 * 1000);
 
-  // ============ TODOS (in-memory only for V1) ============
+  // ============ TODOS (notes-app style, API-persisted) ============
+  // Behaviour:
+  //  - Each line is a contenteditable row with a checkbox.
+  //  - Enter at end → creates a new empty todo, focus jumps there.
+  //  - Backspace on empty row → archives that todo, focus to prior row.
+  //  - Backspace at start of non-empty row → merges into previous row.
+  //  - Toggle checkbox → marks completed; stays visible today (greyed),
+  //    auto-archives tomorrow on first fetch.
+  //  - Arrow → opens fullscreen editor modal for that one todo.
+  //  - Saves debounced ~500ms after typing stops.
+
   const list = document.getElementById('todo-list');
   const addZone = document.getElementById('add-todo-zone');
 
-  function attachTodoBehavior(row) {
+  // editor modal
+  const todoEditor      = document.getElementById('todo-editor');
+  const todoEditorText  = document.getElementById('todo-editor-text');
+  const todoEditorClose = document.getElementById('todo-editor-close');
+  const todoEditorSave  = document.getElementById('todo-editor-save');
+  const todoEditorDel   = document.getElementById('todo-editor-delete');
+  let editingTodoId = null;
+
+  // local cache mirrors server. id → todo object.
+  const todos = new Map();
+
+  function rowFor(id) { return list.querySelector(`[data-id="${id}"]`); }
+
+  function makeRow(todo) {
+    const row = document.createElement('div');
+    row.className = 'todo' + (todo.completed_at ? ' is-done' : '');
+    row.setAttribute('data-id', todo.id);
+    row.innerHTML = `
+      <span class="todo__dot" role="checkbox" aria-checked="${!!todo.completed_at}" tabindex="-1"></span>
+      <span class="todo__text" contenteditable="true" spellcheck="true"></span>
+      <button class="todo__open" aria-label="Open editor" tabindex="-1">→</button>
+    `;
+    row.querySelector('.todo__text').textContent = todo.content || '';
+    attachRowBehavior(row);
+    return row;
+  }
+
+  // Debounced patch — one timer per id
+  const patchTimers = new Map();
+  function schedulePatch(id, body, delay = 500) {
+    clearTimeout(patchTimers.get(id));
+    patchTimers.set(id, setTimeout(async () => {
+      try {
+        const data = await api.patch('/api/todos/' + id, body);
+        todos.set(id, data.todo);
+      } catch (err) {
+        console.error('patch todo', err);
+        toast(err.message || 'Save failed');
+      }
+    }, delay));
+  }
+
+  function attachRowBehavior(row) {
+    const id = parseInt(row.dataset.id, 10);
     const dot = row.querySelector('.todo__dot');
     const text = row.querySelector('.todo__text');
-    dot.addEventListener('click', (e) => {
+    const open = row.querySelector('.todo__open');
+
+    // Toggle complete
+    dot.addEventListener('click', async (e) => {
       e.stopPropagation();
+      const wasDone = row.classList.contains('is-done');
       row.classList.toggle('is-done');
+      dot.setAttribute('aria-checked', !wasDone);
+      try {
+        const data = await api.patch('/api/todos/' + id, { completed: !wasDone });
+        todos.set(id, data.todo);
+      } catch (err) {
+        // revert on failure
+        row.classList.toggle('is-done');
+        dot.setAttribute('aria-checked', wasDone);
+        toast(err.message || 'Toggle failed');
+      }
     });
-    text.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); addNewTodo(true); }
-      if (e.key === 'Backspace' && text.textContent === '') {
+
+    // Open fullscreen editor
+    open.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openTodoEditor(id);
+    });
+
+    // Typing — debounced save
+    text.addEventListener('input', () => {
+      schedulePatch(id, { content: text.textContent });
+    });
+
+    // Keys
+    text.addEventListener('keydown', async (e) => {
+      // Enter → new todo below
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        // flush pending content first
+        clearTimeout(patchTimers.get(id));
+        try { await api.patch('/api/todos/' + id, { content: text.textContent }); } catch {}
+        addNewTodoAfter(row, true);
+      }
+      // Backspace at empty → archive, focus prev
+      else if (e.key === 'Backspace' && text.textContent === '') {
         e.preventDefault();
         const prev = row.previousElementSibling;
+        // archive on the server (soft)
+        try { await api.patch('/api/todos/' + id, { archived: true }); } catch {}
         row.remove();
+        todos.delete(id);
         if (prev && prev.classList.contains('todo')) {
-          const prevText = prev.querySelector('.todo__text');
-          prevText.focus();
+          const t = prev.querySelector('.todo__text');
+          t.focus();
+          // place cursor at end
           const range = document.createRange();
-          range.selectNodeContents(prevText);
+          range.selectNodeContents(t);
           range.collapse(false);
           const sel = window.getSelection();
           sel.removeAllRanges(); sel.addRange(range);
         }
       }
+      // Down arrow at end → next row
+      else if (e.key === 'ArrowDown') {
+        const next = row.nextElementSibling;
+        if (next && next.classList && next.classList.contains('todo')) {
+          e.preventDefault();
+          next.querySelector('.todo__text').focus();
+        }
+      }
+      // Up arrow at start → previous row
+      else if (e.key === 'ArrowUp') {
+        const prev = row.previousElementSibling;
+        if (prev && prev.classList && prev.classList.contains('todo')) {
+          e.preventDefault();
+          prev.querySelector('.todo__text').focus();
+        }
+      }
     });
   }
-  function addNewTodo(focusIt = true) {
-    const row = document.createElement('div');
-    row.className = 'todo';
-    row.innerHTML = `<span class="todo__dot"></span><span class="todo__text" contenteditable="true"></span>`;
-    list.appendChild(row);
-    attachTodoBehavior(row);
-    if (focusIt) row.querySelector('.todo__text').focus();
+
+  async function addNewTodoAfter(afterRow, focusIt = true) {
+    try {
+      const data = await api.post('/api/todos', { content: '' });
+      todos.set(data.todo.id, data.todo);
+      const row = makeRow(data.todo);
+      if (afterRow && afterRow.nextSibling) {
+        list.insertBefore(row, afterRow.nextSibling);
+      } else {
+        list.appendChild(row);
+      }
+      if (focusIt) row.querySelector('.todo__text').focus();
+    } catch (err) {
+      toast(err.message || 'Could not add');
+    }
   }
-  addZone.addEventListener('click', () => addNewTodo(true));
+
+  // Click empty zone below list → add a new todo
+  addZone.addEventListener('click', () => {
+    const last = list.lastElementChild;
+    addNewTodoAfter(last, true);
+  });
+
+  // ===== Editor modal =====
+  function openTodoEditor(id) {
+    const todo = todos.get(id);
+    if (!todo) return;
+    editingTodoId = id;
+    todoEditorText.value = todo.content || '';
+    todoEditor.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      todoEditorText.focus();
+      todoEditorText.setSelectionRange(todoEditorText.value.length, todoEditorText.value.length);
+    }, 50);
+  }
+  async function closeTodoEditor(save = true) {
+    if (save && editingTodoId) {
+      const newContent = todoEditorText.value;
+      const todo = todos.get(editingTodoId);
+      if (todo && todo.content !== newContent) {
+        try {
+          const data = await api.patch('/api/todos/' + editingTodoId, { content: newContent });
+          todos.set(editingTodoId, data.todo);
+          // reflect back into row
+          const row = rowFor(editingTodoId);
+          if (row) row.querySelector('.todo__text').textContent = newContent;
+        } catch (err) {
+          toast(err.message || 'Save failed');
+        }
+      }
+    }
+    todoEditor.classList.remove('is-open');
+    document.body.style.overflow = '';
+    editingTodoId = null;
+  }
+  if (todoEditorClose) todoEditorClose.addEventListener('click', () => closeTodoEditor(true));
+  if (todoEditorSave)  todoEditorSave.addEventListener('click', () => closeTodoEditor(true));
+  if (todoEditorDel) {
+    todoEditorDel.addEventListener('click', async () => {
+      if (!editingTodoId) return;
+      const id = editingTodoId;
+      try {
+        await api.patch('/api/todos/' + id, { archived: true });
+      } catch (err) {
+        toast(err.message || 'Delete failed');
+      }
+      const row = rowFor(id);
+      if (row) row.remove();
+      todos.delete(id);
+      todoEditor.classList.remove('is-open');
+      document.body.style.overflow = '';
+      editingTodoId = null;
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && todoEditor && todoEditor.classList.contains('is-open')) {
+      closeTodoEditor(true);
+    }
+  });
+
+  async function loadTodos() {
+    try {
+      const data = await api.get('/api/todos');
+      list.innerHTML = '';
+      todos.clear();
+      (data.todos || []).forEach(t => {
+        todos.set(t.id, t);
+        list.appendChild(makeRow(t));
+      });
+    } catch (err) {
+      console.error('load todos', err);
+    }
+  }
+  loadTodos();
 
   // ============ MISC ============
   // sign out from footer

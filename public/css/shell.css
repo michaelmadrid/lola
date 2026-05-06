@@ -44,6 +44,22 @@
   --gutter: 32px;
   --container: 1600px;
 }
+
+/* ----- Dark mode (global) ----- */
+html.dark,
+body.dark {
+  --bg: #161614;
+  --field: #1f1f1d;
+  --field-focus: #262624;
+  --ink: #ebeae5;
+  --ink-2: #a8a8a3;
+  --ink-3: #6c6c68;
+  --ink-4: #3e3e3b;
+  --rule: #2a2a27;
+  /* --blue stays the same — French blue reads well on both */
+}
+html.dark { background: #161614; }
+
 @media (max-width: 720px) { :root { --gutter: 18px; } }
 
 /* ----- Reset / base ----- */

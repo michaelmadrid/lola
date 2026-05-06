@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Settings — lola</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .page-settings { padding-top: 56px; }
+    @media (max-width: 720px) { .page-settings { padding-top: 32px; } }
+    .settings-mast {
+      margin-bottom: 40px;
+    }
+    .settings-mast__title {
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      margin: 0 0 8px;
+      line-height: 1;
+    }
+    .settings-list {
+      max-width: 520px;
+    }
+    .setting-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      padding: 22px 0;
+      border-top: 1px solid var(--rule);
+    }
+    .setting-row:first-of-type { border-top: 1px solid var(--rule); }
+    .setting-row__head {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .setting-row__label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      letter-spacing: -0.008em;
+    }
+    .setting-row__hint {
+      font-size: 13px;
+      color: var(--ink-3);
+    }
+    .setting-row__field input[type="text"] {
+      background: var(--field);
+      border: 0;
+      padding: 8px 14px;
+      border-radius: 2px;
+      font: inherit;
+      color: var(--ink);
+      outline: none;
+      width: 200px;
+      text-align: right;
+    }
+    .setting-row__field input[type="text"]:focus { background: var(--field-focus); }
+
+    /* toggle */
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+      cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle__slot {
+      position: absolute;
+      inset: 0;
+      background: var(--ink-4);
+      border-radius: 12px;
+      transition: background 200ms ease;
+    }
+    .toggle__knob {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background: var(--bg);
+      border-radius: 50%;
+      transition: transform 200ms ease, background 200ms ease;
+    }
+    .toggle input:checked + .toggle__slot {
+      background: var(--blue);
+    }
+    .toggle input:checked + .toggle__slot + .toggle__knob {
+      transform: translateX(20px);
+      background: #fff;
+    }
+    .toggle__layout {
+      position: relative;
+      display: inline-block;
+      width: 44px;
+      height: 24px;
+    }
+
+    .settings-foot {
+      margin-top: 60px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .settings-foot__more {
+      max-width: 520px;
+      padding: 18px 0;
+      border-top: 1px solid var(--rule);
+      color: var(--ink-3);
+    }
+  </style>
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">lola</a>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/">Idle</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/">Idle</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/settings.html">Settings</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-settings">
+
+  <header class="settings-mast">
+    <h1 class="settings-mast__title">Settings</h1>
+  </header>
+
+  <div class="settings-list">
+
+    <div class="setting-row">
+      <div class="setting-row__head">
+        <span class="setting-row__label">Dark mode</span>
+        <span class="setting-row__hint">Applies across the whole app</span>
+      </div>
+      <div class="setting-row__field">
+        <label class="toggle__layout">
+          <span class="toggle">
+            <input type="checkbox" id="dark-toggle">
+            <span class="toggle__slot"></span>
+            <span class="toggle__knob"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-row__head">
+        <span class="setting-row__label">Home location</span>
+        <span class="setting-row__hint">Shown in the top-right when no trip is active</span>
+      </div>
+      <div class="setting-row__field">
+        <input type="text" id="home-loc" placeholder="Bali" maxlength="40">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="settings-foot">
+    <div class="settings-foot__more">More coming · timezone, capture defaults, account</div>
+  </div>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <span class="ver">lola v0.5.0</span>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script>
+  if (!api.isSignedIn()) {
+    location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+  }
+
+  // Dark mode toggle
+  const darkInput = document.getElementById('dark-toggle');
+  darkInput.checked = localStorage.getItem('lola.theme') === 'dark';
+  darkInput.addEventListener('change', () => {
+    if (darkInput.checked) {
+      localStorage.setItem('lola.theme', 'dark');
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      localStorage.setItem('lola.theme', 'light');
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
+  });
+
+  // Home location
+  const locInput = document.getElementById('home-loc');
+  locInput.value = localStorage.getItem('lola.home_location') || 'Bali';
+  let saveLocTimer;
+  locInput.addEventListener('input', () => {
+    clearTimeout(saveLocTimer);
+    saveLocTimer = setTimeout(() => {
+      const v = locInput.value.trim() || 'Bali';
+      localStorage.setItem('lola.home_location', v);
+      window.toast && toast('Home location saved');
+    }, 400);
+  });
+
+  const signOutFoot = document.getElementById('signout-link-foot');
+  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
+</script>
+</body>
+</html>

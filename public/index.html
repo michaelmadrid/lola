@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
   <title>lola</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/home.css">
@@ -39,7 +40,8 @@
     <a href="/trips.html">Trips</a>
     <a href="/index/">Index</a>
     <a href="/idle/">Idle</a>
-    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+      <a href="/admin/" data-auth="in">Admin</a>
     <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
   </div>
 </div>
@@ -154,6 +156,28 @@
   </div>
 </div>
 
+<!-- ============ TODO EDITOR ============ -->
+<div class="modal" id="todo-editor">
+  <div class="modal__head">
+    <h3 class="modal__title">Todo</h3>
+    <button class="modal__close" id="todo-editor-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner">
+      <textarea
+        class="note-textarea"
+        id="todo-editor-text"
+        placeholder="…"
+        spellcheck="true"
+      ></textarea>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <button class="save-btn" id="todo-editor-delete" style="color: var(--ink-3)">delete</button>
+    <button class="save-btn" id="todo-editor-save">save ↵</button>
+  </div>
+</div>
+
 <!-- ============ FOOTER ============ -->
 <footer class="foot">
   <div class="foot__bar">
@@ -162,6 +186,7 @@
     </div>
     <div class="foot__right">
       <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/settings.html" data-auth="in">Settings</a>
       <a href="/admin/" data-auth="in">Admin</a>
       <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
     </div>
