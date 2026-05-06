@@ -1,0 +1,42 @@
+/* =========================================================
+   login.css — minimal centered login layout
+   ========================================================= */
+
+.head--minimal {
+  padding: 26px var(--gutter);
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px var(--gutter);
+  min-height: calc(100vh - 200px);
+}
+.login-box {
+  width: 100%;
+  max-width: 380px;
+}
+.login-title {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  margin: 0 0 32px;
+}
+.login-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+}
+.login-error {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #c0392b;
+  letter-spacing: -0.005em;
+  min-height: 18px;
+}

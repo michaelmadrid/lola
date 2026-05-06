@@ -1,0 +1,122 @@
+/* =========================================================
+   admin.css
+   ========================================================= */
+
+.page-admin { padding-top: 56px; }
+@media (max-width: 720px) { .page-admin { padding-top: 32px; } }
+
+/* admin hub list */
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+}
+.admin-link {
+  display: grid;
+  grid-template-columns: 200px 1fr 30px;
+  gap: 24px;
+  align-items: baseline;
+  padding: 22px 0;
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+.admin-link:first-child { border-top: 1px solid var(--rule); }
+.admin-link:hover { color: var(--blue); }
+.admin-link:hover .admin-link__arrow { transform: translateX(3px); color: var(--blue); }
+.admin-link__name {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.018em;
+}
+.admin-link__desc {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.admin-link__arrow {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-3);
+  text-align: right;
+  transition: transform 200ms ease, color 140ms ease;
+}
+
+/* admin table — places, cities, saves */
+.admin-table {
+  width: 100%;
+}
+.admin-table__head, .admin-table__row {
+  display: grid;
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 0;
+}
+.admin-table__head {
+  border-bottom: 1px solid var(--rule);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-weight: 400;
+}
+.admin-table__row {
+  border-top: 1px solid var(--rule);
+}
+.admin-table__row:first-of-type { border-top: 0; }
+.admin-table__row:hover { background: rgba(0,0,0,0.02); }
+
+.admin-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.admin-actions button { color: var(--ink-3); }
+.admin-actions button:hover { color: var(--blue); }
+.admin-actions button.is-danger:hover { color: #c0392b; }
+
+/* places-specific row layout */
+.places-head, .places-row {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) minmax(0, 2fr) 1fr 130px;
+}
+@media (max-width: 720px) {
+  .places-head { display: none !important; }
+  .places-row {
+    grid-template-columns: 1fr 110px;
+    gap: 8px;
+  }
+  .places-row .col-city,
+  .places-row .col-cat { display: none; }
+  .places-row .col-name {
+    font-size: 15px;
+  }
+}
+
+/* page header with action button */
+.admin-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.admin-head__title {
+  font-size: clamp(36px, 4.5vw, 56px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  margin: 0;
+  line-height: 1;
+}
+.admin-search {
+  background: var(--field);
+  padding: 10px 16px;
+  border-radius: 2px;
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  width: 240px;
+  margin-bottom: 24px;
+}
+@media (max-width: 720px) { .admin-search { width: 100%; } }

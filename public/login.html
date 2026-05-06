@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Sign in — lola</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+
+<header class="head head--minimal">
+  <a href="/" class="logo">lola</a>
+</header>
+
+<main class="login-page">
+  <div class="login-box">
+    <h1 class="login-title">Sign in</h1>
+    <form id="login-form" class="login-form" autocomplete="on">
+      <div class="field">
+        <label class="field__label" for="email">Email</label>
+        <input class="field__input" type="email" id="email" name="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label class="field__label" for="password">Password</label>
+        <input class="field__input" type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <div class="login-actions">
+        <button type="submit" class="btn" id="signin-btn">Sign in</button>
+        <a href="#" class="btn--secondary" id="register-toggle">Need an account?</a>
+      </div>
+      <p class="login-error" id="login-error"></p>
+    </form>
+
+    <form id="register-form" class="login-form" style="display:none" autocomplete="on">
+      <div class="field">
+        <label class="field__label" for="r-name">Name</label>
+        <input class="field__input" type="text" id="r-name" name="name" required>
+      </div>
+      <div class="field">
+        <label class="field__label" for="r-email">Email</label>
+        <input class="field__input" type="email" id="r-email" name="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label class="field__label" for="r-password">Password</label>
+        <input class="field__input" type="password" id="r-password" name="password" required minlength="6" autocomplete="new-password">
+      </div>
+      <div class="login-actions">
+        <button type="submit" class="btn" id="register-btn">Create account</button>
+        <a href="#" class="btn--secondary" id="signin-toggle">Have an account?</a>
+      </div>
+      <p class="login-error" id="register-error"></p>
+    </form>
+  </div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

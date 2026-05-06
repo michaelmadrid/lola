@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cities · Admin — lola</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">lola</a>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/admin/" class="is-active">Admin</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/admin/" class="is-active">Admin</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-admin">
+
+  <header class="admin-head">
+    <h1 class="admin-head__title">Cities</h1>
+    <div style="display:flex; gap:12px">
+      <a href="/admin/" class="btn--secondary">← admin</a>
+      <button class="btn" id="add-city-btn">+ Add city</button>
+    </div>
+  </header>
+
+  <input type="text" class="admin-search" id="search-input" placeholder="search cities…">
+
+  <div class="admin-table">
+    <div class="admin-table__head" style="grid-template-columns: minmax(0,3fr) minmax(0,2fr) minmax(0,2fr) 130px">
+      <span>Name</span>
+      <span>Country</span>
+      <span>Parent</span>
+      <span>Actions</span>
+    </div>
+    <div id="cities-list">
+      <div class="list-empty">Loading…</div>
+    </div>
+  </div>
+
+</main>
+
+<div class="modal" id="city-modal">
+  <div class="modal__head">
+    <h3 class="modal__title" id="city-modal-title">Add city</h3>
+    <button class="modal__close" id="city-modal-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner">
+      <form id="city-form">
+        <div class="field">
+          <label class="field__label" for="c-name">Name *</label>
+          <input class="field__input" id="c-name" required>
+        </div>
+        <div class="field__row">
+          <div class="field">
+            <label class="field__label" for="c-country">Country</label>
+            <input class="field__input" id="c-country" placeholder="France">
+          </div>
+          <div class="field">
+            <label class="field__label" for="c-parent">Parent (for neighborhoods)</label>
+            <select class="field__select" id="c-parent">
+              <option value="">— none —</option>
+            </select>
+          </div>
+        </div>
+        <div class="field__row">
+          <div class="field">
+            <label class="field__label" for="c-region">Region</label>
+            <input class="field__input" id="c-region" placeholder="Île-de-France">
+          </div>
+          <div class="field">
+            <label class="field__label" for="c-timezone">Timezone</label>
+            <input class="field__input" id="c-timezone" placeholder="Europe/Paris">
+          </div>
+        </div>
+        <div class="field">
+          <label style="display:flex; gap:10px; align-items:center; cursor:pointer">
+            <input type="checkbox" id="c-is-region">
+            <span style="font-size:13px; color:var(--ink-2)">This is a region/island, not a city (e.g. Bali, Tuscany)</span>
+          </label>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px">
+          <button type="button" class="btn btn--secondary" id="delete-city-btn" style="color:#c0392b; display:none">Delete city</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <span>esc to close</span>
+    <button class="save-btn" id="city-save">save ↵</button>
+  </div>
+</div>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <span class="ver">lola v0.5.0</span>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="#" id="signout-link-foot">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/admin-cities.js"></script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Idle — lola</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <style>
+    .idle-page {
+      padding-top: 80px;
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      gap: 20px;
+    }
+    .idle-page h1 {
+      font-size: clamp(40px, 5vw, 64px);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      margin: 0;
+    }
+    .idle-page p {
+      max-width: 360px;
+      color: var(--ink-2);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #snake-mount {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1;
+      background: var(--field);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--ink-3);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">lola</a>
+  </div>
+  <nav class="nav">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/" class="is-active">Idle</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/" class="is-active">Idle</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page idle-page">
+  <h1>Idle</h1>
+  <p>Something to keep your hands busy when you're between flights.</p>
+  <div id="snake-mount">snake — coming soon</div>
+</main>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <span class="ver">lola v0.5.0</span>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/snake.js"></script>
+</body>
+</html>

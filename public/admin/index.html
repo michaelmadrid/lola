@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — lola</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">lola</a>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/admin/" class="is-active">Admin</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/">Idle</a>
+    <a href="/admin/" class="is-active">Admin</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-admin">
+
+  <header class="trips-mast">
+    <h1 class="trips-mast__title">Admin</h1>
+  </header>
+
+  <nav class="admin-nav">
+    <a href="/admin/places.html" class="admin-link">
+      <span class="admin-link__name">Places</span>
+      <span class="admin-link__desc">Index entries — bookshops, coffee, galleries</span>
+      <span class="admin-link__arrow">→</span>
+    </a>
+    <a href="/admin/cities.html" class="admin-link">
+      <span class="admin-link__name">Cities</span>
+      <span class="admin-link__desc">Master gazetteer, neighborhoods, regions</span>
+      <span class="admin-link__arrow">→</span>
+    </a>
+    <a href="/admin/saves.html" class="admin-link">
+      <span class="admin-link__name">Saves</span>
+      <span class="admin-link__desc">Review captures, promote to Index</span>
+      <span class="admin-link__arrow">→</span>
+    </a>
+  </nav>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <span class="ver">lola v0.5.0</span>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="#" id="signout-link-foot">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script>
+  if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+  const signOutFoot = document.getElementById('signout-link-foot');
+  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
+</script>
+</body>
+</html>

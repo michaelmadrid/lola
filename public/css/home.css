@@ -1,0 +1,397 @@
+/* =========================================================
+   home.css — homepage layout
+   3/6/3 grid: day summary | capture + stream | todos
+   ========================================================= */
+
+.page-home {
+  padding-top: 56px;
+  display: grid;
+  grid-template-columns: 3fr 6fr 3fr;
+  column-gap: 56px;
+}
+
+/* 2-column intermediate: day + todos top, capture + stream below */
+@media (max-width: 1200px) and (min-width: 721px) {
+  .page-home {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 40px;
+    row-gap: 48px;
+  }
+  .col-left { order: 1; }
+  .col-right { order: 2; }
+  .col-mid {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-home {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding-top: 32px;
+  }
+  .capture-wrap { max-width: none !important; }
+  .capture { padding: 14px 16px; }
+}
+
+/* =========================================================
+   DAY SUMMARY (left column)
+   ========================================================= */
+.day-sum {}
+.day-sum__head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.day-sum__date {
+  font-size: clamp(26px, 2.6vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.15;
+}
+.day-sum__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+  flex-wrap: wrap;
+}
+.day-sum__meta .item { display: inline-flex; align-items: center; gap: 6px; }
+.day-sum__meta .sep { color: var(--ink-4); }
+.moon {
+  display: inline-block;
+  width: 10px; height: 10px;
+  vertical-align: -1px;
+}
+.day-sum__where-line {
+  font-size: 12px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  margin-bottom: 4px;
+}
+.day-sum__section {
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+}
+.day-sum__section__label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+/* travel segments inside day-sum */
+.segment + .segment { margin-top: 10px; }
+.segment__route {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+.segment__dates {
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-2);
+}
+.segment__dates .dash { color: var(--ink-3); margin: 0 4px; }
+
+/* note button — opens the overlay editor */
+.note-btn {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 4px 0;
+  cursor: pointer;
+  color: var(--ink);
+  transition: color 140ms ease;
+}
+.note-btn:hover { color: var(--blue); }
+.note-btn:hover .note-btn__arrow { color: var(--blue); transform: translateX(2px); }
+.note-btn__preview {
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  color: inherit;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.note-btn__preview.is-empty {
+  color: var(--ink-3);
+  font-style: italic;
+}
+.note-btn__arrow {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-3);
+  flex-shrink: 0;
+  transition: transform 200ms ease, color 140ms ease;
+}
+
+/* idle empty state */
+.day-sum__idle {
+  padding: 28px 0 8px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.day-sum__idle__svg {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  display: block;
+  color: var(--ink);
+}
+.day-sum__idle__quote {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  line-height: 1.5;
+  font-weight: 500;
+}
+.day-sum__idle__caption {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* =========================================================
+   CAPTURE + STREAM (middle)
+   ========================================================= */
+.col-mid {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.capture-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 520px;
+  width: 100%;
+  margin: 0 auto;
+}
+.capture {
+  background: var(--field);
+  padding: 14px 20px;
+  border-radius: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  transition: background 200ms ease;
+}
+.capture:focus-within { background: var(--field-focus); }
+.capture__plus {
+  font-size: 16px;
+  color: var(--ink-3);
+  flex-shrink: 0;
+  position: relative;
+  top: 1px;
+}
+.capture__input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  padding: 0;
+  width: 100%;
+}
+.capture__input::placeholder { color: var(--ink-3); }
+.capture__send {
+  font-size: 13px;
+  color: var(--ink-3);
+  opacity: 0;
+  transition: opacity 140ms ease, color 140ms ease;
+  flex-shrink: 0;
+}
+.capture__send.is-on { opacity: 1; }
+.capture__send:hover { color: var(--blue); }
+.capture__tags {
+  padding: 0 4px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 14px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.capture__tags .tag {
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.capture__tags .tag.is-on {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* stream */
+.stream__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+.stream__label {
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  font-weight: 500;
+}
+.stream__more {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.stream__more:hover { color: var(--blue); }
+
+.stream {
+  display: flex;
+  flex-direction: column;
+}
+.stream__empty {
+  padding: 24px 0;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+}
+.stream__item {
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: baseline;
+}
+.stream__item:first-child { border-top: 0; padding-top: 4px; }
+.stream__item:hover .stream__name { color: var(--blue); }
+.stream__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.stream__name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.008em;
+  line-height: 1.3;
+  transition: color 140ms ease;
+  word-break: break-word;
+}
+.stream__meta {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.stream__meta .dot { color: var(--ink-4); margin: 0 5px; }
+.stream__when {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: start;
+  padding-top: 2px;
+}
+
+/* =========================================================
+   TODOS (right column) — in-memory only for V1
+   ========================================================= */
+.todos__label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+  font-weight: 500;
+}
+.todo-list { display: flex; flex-direction: column; gap: 0; }
+.todo {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  padding: 8px 0;
+  align-items: baseline;
+}
+.todo__dot {
+  width: 13px; height: 13px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 50%;
+  background: transparent;
+  margin-top: 4px;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+  flex-shrink: 0;
+}
+.todo:hover .todo__dot { border-color: var(--ink); }
+.todo.is-done .todo__dot { background: var(--ink); border-color: var(--ink); }
+.todo__text {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.4;
+  outline: none;
+  cursor: text;
+  min-height: 1.4em;
+  padding: 0;
+}
+.todo.is-done .todo__text {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-thickness: 0.5px;
+}
+.todos__add-zone {
+  min-height: 28px;
+  cursor: text;
+  padding: 6px 0 0;
+}
+
+/* =========================================================
+   NOTE OVERLAY — full screen editor
+   ========================================================= */
+.note-textarea {
+  width: 100%;
+  min-height: 60vh;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 22px;
+  line-height: 1.5;
+  letter-spacing: -0.011em;
+  color: var(--ink);
+  resize: none;
+  padding: 0;
+  font-weight: 400;
+}
+.note-textarea::placeholder {
+  color: var(--ink-3);
+  font-style: italic;
+}

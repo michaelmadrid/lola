@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Trip — lola</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/trip.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">lola</a>
+  </div>
+  <nav class="nav">
+    <a href="/">Home</a>
+    <a href="/trips.html" class="is-active">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/">Idle</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/">Home</a>
+    <a href="/trips.html" class="is-active">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/idle/">Idle</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-trip" id="trip-page">
+  <div class="list-empty" id="trip-loading">Loading…</div>
+</main>
+
+<!-- Edit trip modal -->
+<div class="modal" id="edit-trip-modal">
+  <div class="modal__head">
+    <h3 class="modal__title">Edit trip</h3>
+    <button class="modal__close" id="edit-trip-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner">
+      <form id="edit-trip-form">
+        <div class="field">
+          <label class="field__label" for="et-name">Name</label>
+          <input class="field__input" id="et-name" required>
+        </div>
+        <div class="field__row">
+          <div class="field">
+            <label class="field__label" for="et-date-start">Start date</label>
+            <input class="field__input" id="et-date-start" type="date">
+          </div>
+          <div class="field">
+            <label class="field__label" for="et-date-end">End date</label>
+            <input class="field__input" id="et-date-end" type="date">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="et-notes">Notes</label>
+          <textarea class="field__textarea" id="et-notes" rows="4"></textarea>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px">
+          <button type="button" class="btn btn--secondary" id="delete-trip-btn" style="color:#c0392b">Delete trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <span>esc to close</span>
+    <button class="save-btn" id="edit-trip-save">save ↵</button>
+  </div>
+</div>
+
+<!-- Add segment modal -->
+<div class="modal" id="seg-modal">
+  <div class="modal__head">
+    <h3 class="modal__title" id="seg-modal-title">Add stop</h3>
+    <button class="modal__close" id="seg-modal-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner">
+      <form id="seg-form">
+        <div class="field">
+          <label class="field__label" for="s-city">City or region</label>
+          <input class="field__input" id="s-city" placeholder="Paris" autocomplete="off">
+          <div id="s-city-suggestions" class="city-suggestions"></div>
+        </div>
+        <div class="field__row">
+          <div class="field">
+            <label class="field__label" for="s-date-start">Arrive</label>
+            <input class="field__input" id="s-date-start" type="date">
+          </div>
+          <div class="field">
+            <label class="field__label" for="s-date-end">Depart</label>
+            <input class="field__input" id="s-date-end" type="date">
+          </div>
+        </div>
+        <div class="field">
+          <label class="field__label" for="s-notes">Notes</label>
+          <textarea class="field__textarea" id="s-notes" rows="3"></textarea>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <span id="seg-status">esc to close</span>
+    <button class="save-btn" id="seg-save">save ↵</button>
+  </div>
+</div>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <span class="ver">lola v0.5.0</span>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .city-suggestions {
+    background: var(--field);
+    border-radius: 2px;
+    margin-top: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+  }
+  .city-suggestions.is-open { display: block; }
+  .city-suggestion {
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    border-top: 1px solid rgba(0,0,0,0.04);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .city-suggestion:first-child { border-top: 0; }
+  .city-suggestion:hover { background: var(--field-focus); color: var(--blue); }
+  .city-suggestion__country {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .city-suggestion--new { color: var(--ink-3); font-style: italic; }
+  .city-suggestion--new:hover { color: var(--blue); font-style: normal; }
+</style>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/trip.js"></script>
+</body>
+</html>
