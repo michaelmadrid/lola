@@ -74,7 +74,7 @@
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px 12px;
   width: 100%;
   padding: 14px 0;
   margin: 0;
@@ -92,7 +92,6 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--ink);
-  letter-spacing: -0.005em;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -117,14 +116,21 @@
   margin-left: 4px;
   transition: transform 200ms ease, color 140ms ease;
 }
+/* If wrap kicks in, push dates to a new line and left-align */
+@media (max-width: 1320px) {
+  .trip-strip__dates {
+    margin-left: 0;
+    width: 100%;
+    text-align: left;
+  }
+}
 
 /* Today/Next sub-rows */
 .trip-now {
-  padding: 12px 0 4px;
+  padding: 12px 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  border-bottom: 1px solid var(--rule);
 }
 .trip-now__row {
   display: flex;

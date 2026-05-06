@@ -66,9 +66,14 @@
     // Strip top line: name
     tripStripName.textContent = activeTrip.name;
 
-    // Date range
-    const ds = activeTrip.date_start ? util.formatNumericDate(activeTrip.date_start) : '';
-    const de = activeTrip.date_end   ? util.formatNumericDate(activeTrip.date_end)   : '';
+    // Compact date range "5/12 → 6/24" for the strip — fits on one line
+    function shortDate(s) {
+      if (!s) return '';
+      const d = new Date(s);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    }
+    const ds = shortDate(activeTrip.date_start);
+    const de = shortDate(activeTrip.date_end);
     tripStripDates.textContent = (ds && de) ? `${ds} → ${de}` : (ds || '');
 
     // Load segments and compute today/next
