@@ -167,6 +167,23 @@
 }
 
 @media (max-width: 720px) {
+  .filter-bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 10px 0;
+    gap: 6px;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-group {
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+  }
+  .filter-group__label { margin-right: 4px; flex-shrink: 0; }
+  .filter-chip { padding: 4px 8px; flex-shrink: 0; }
+  .filter-divider { margin: 0 4px; flex-shrink: 0; }
+
   .list-head { display: none; }
   .list-row {
     grid-template-columns: 1fr 24px;
