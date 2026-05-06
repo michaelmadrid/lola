@@ -44,7 +44,7 @@
   let paused = false;
   let gameOver = false;
   let tickInterval = null;
-  const BASE_SPEED = 130;
+  const BASE_SPEED = 160;
 
   const overlay      = document.getElementById('snake-overlay');
   const overlayTitle = document.getElementById('snake-overlay-title');
@@ -86,7 +86,8 @@
 
   function scheduleTick() {
     if (tickInterval) clearInterval(tickInterval);
-    const speed = Math.max(60, BASE_SPEED - Math.floor(score / 5) * 6);
+    // Speed up gradually: -4ms per apple, every 3 apples. Floor at 70ms.
+    const speed = Math.max(70, BASE_SPEED - Math.floor(score / 3) * 4);
     tickInterval = setInterval(tick, speed);
   }
 
@@ -116,9 +117,15 @@
   function tick() {
     if (paused || gameOver) return;
     dir = nextDir;
-    const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+    let head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
 
-    if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS) return die();
+    // wrap around walls (Nokia 3310 rules)
+    if (head.x < 0) head.x = COLS - 1;
+    if (head.x >= COLS) head.x = 0;
+    if (head.y < 0) head.y = ROWS - 1;
+    if (head.y >= ROWS) head.y = 0;
+
+    // self collision = death
     if (snake.some((s, i) => i !== snake.length - 1 && s.x === head.x && s.y === head.y)) return die();
 
     snake.unshift(head);
