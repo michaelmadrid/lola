@@ -243,27 +243,50 @@
 
   const onCityType = util.debounce(() => {
     const q = cityInput.value.trim().toLowerCase();
+    if (!q) {
+      pickedCityId = null;
+      pickedRegionLabel = null;
+      suggestBox.classList.remove('is-open');
+      return;
+    }
+    // If the current input value matches the already-picked city's name, leave
+    // the pick intact and don't open suggestions. This keeps edit mode stable.
+    if (pickedCityId) {
+      const picked = cities.find(c => c.id === pickedCityId);
+      if (picked && picked.name.toLowerCase() === q) {
+        suggestBox.classList.remove('is-open');
+        return;
+      }
+    }
+    if (pickedRegionLabel && pickedRegionLabel.toLowerCase() === q) {
+      // Same idea for region picks
+      suggestBox.classList.remove('is-open');
+      return;
+    }
+    // Otherwise we're typing fresh — clear and show suggestions
     pickedCityId = null;
     pickedRegionLabel = null;
-    if (!q) { suggestBox.classList.remove('is-open'); return; }
     const matches = cities
       .filter(c => c.name.toLowerCase().includes(q))
       .slice(0, 6);
+    const exactMatch = cities.find(c => c.name.toLowerCase() === q);
     let html = matches.map(c =>
       `<div class="city-suggestion" data-id="${c.id}">
         <span>${util.escapeHtml(c.name)}</span>
         <span class="city-suggestion__country">${util.escapeHtml(c.country || '')}</span>
       </div>`
     ).join('');
-    html += `<div class="city-suggestion city-suggestion--new" data-action="new-city">+ Add as new city "${util.escapeHtml(cityInput.value.trim())}"</div>`;
-    html += `<div class="city-suggestion city-suggestion--new" data-action="region">+ Use as region label (e.g. coast, valley)</div>`;
+    if (!exactMatch) {
+      // Only offer "new city" / "region" if there's no exact match in gazetteer
+      html += `<div class="city-suggestion city-suggestion--new" data-action="new-city">+ Add as new city "${util.escapeHtml(cityInput.value.trim())}"</div>`;
+      html += `<div class="city-suggestion city-suggestion--new" data-action="region">+ Use as region label (e.g. coast, valley)</div>`;
+    }
     suggestBox.innerHTML = html;
     suggestBox.classList.add('is-open');
 
     suggestBox.querySelectorAll('.city-suggestion').forEach(el => {
       el.addEventListener('click', async () => {
         if (el.dataset.action === 'new-city') {
-          // Note: still using prompt() here — consider replacing in V2
           const country = window.prompt('Country for ' + cityInput.value.trim() + '?', '') || '';
           try {
             const data = await api.post('/api/cities', { name: cityInput.value.trim(), country });
@@ -291,7 +314,8 @@
     });
   }, 120);
   cityInput.addEventListener('input', onCityType);
-  cityInput.addEventListener('focus', onCityType);
+  // Don't auto-open on focus — only on actual typing. Avoids the edit-mode
+  // problem where opening a segment to edit triggered suggestions immediately.
 
   document.getElementById('seg-save').addEventListener('click', async () => {
     if (!pickedCityId && !pickedRegionLabel) {
