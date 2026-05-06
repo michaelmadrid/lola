@@ -4,12 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Index — kit</title>
+  <title>kit</title>
   <link rel="stylesheet" href="/css/shell.css">
-  <link rel="stylesheet" href="/css/index.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
 
+<!-- ============ HEADER ============ -->
 <header class="head">
   <div class="head__left">
     <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
@@ -21,11 +22,10 @@
     <a href="/" class="logo">kit</a>
   </div>
   <nav class="nav">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/trips.html" data-auth="in">Trips</a>
-    <a href="/index/" class="is-active">Index</a>
+    <a href="/" class="is-active">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
     <a href="/atlas/">Atlas</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
   </nav>
   <div class="head__right">
     <span class="where">Bali</span>
@@ -33,70 +33,148 @@
   </div>
 </header>
 
+<!-- mobile menu overlay -->
 <div class="menu-overlay" id="menu-overlay">
   <div class="menu-overlay__inner">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/trips.html" data-auth="in">Trips</a>
-    <a href="/index/" class="is-active">Index</a>
+    <a href="/" class="is-active">Home</a>
+    <a href="/trips.html">Trips</a>
+    <a href="/index/">Index</a>
     <a href="/atlas/">Atlas</a>
     <a href="/settings.html" data-auth="in">Settings</a>
       <a href="/admin/" data-auth="in">Admin</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
     <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
   </div>
 </div>
 
-<main class="page page-index">
+<!-- ============ PAGE ============ -->
+<main class="page page-home">
 
-  <header class="mast">
-    <h1 class="mast__title">Index</h1>
-    <p class="mast__intro">A directory of sorts.</p>
-    <div class="mast__meta">
-      <span id="entry-count">—</span> entries
+  <!-- LEFT — day summary -->
+  <aside class="col-left">
+    <div class="day-sum" id="day-sum">
+
+      <div class="day-sum__head">
+        <h2 class="day-sum__date" id="day-sum-date">—</h2>
+        <div class="day-sum__meta">
+          <svg class="moon" viewBox="0 0 12 12" aria-hidden="true">
+            <circle cx="6" cy="6" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/>
+            <path d="M 6 0.5 A 5.5 5.5 0 0 1 6 11.5 A 3.5 5.5 0 0 0 6 0.5 Z" fill="currentColor"/>
+          </svg>
+          <span class="sep">·</span>
+          <span class="item" id="day-sum-doy">—</span>
+        </div>
+      </div>
+
+      <!-- ACTIVE: when on a trip today -->
+      <div id="day-active" style="display:none">
+        <div class="day-sum__where-line" id="day-trip-context"></div>
+
+        <div class="day-sum__section" id="day-segments-section" style="display:none">
+          <div class="day-sum__section__label">Travel</div>
+          <div id="day-segments"></div>
+        </div>
+
+        <div class="day-sum__section">
+          <div class="day-sum__section__label">Note</div>
+          <button class="note-btn" id="note-open">
+            <span class="note-btn__preview" id="note-preview">write today</span>
+            <span class="note-btn__arrow">→</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- IDLE: no trip today -->
+      <div id="day-idle" class="day-sum__idle" style="display:none">
+        <p class="day-sum__idle__quote" id="idle-quote">—</p>
+        <span class="day-sum__idle__caption">OBLIQUE <span id="idle-num">001</span>/180</span>
+      </div>
+
     </div>
-  </header>
+  </aside>
 
-  <div class="filters">
-    <div class="filter-group" id="cat-filters">
-      <span class="filter-group__label">Type:</span>
-      <button class="filter-chip is-active" data-cat="all">All</button>
-      <button class="filter-chip" data-cat="bookshop">Bookshop</button>
-      <button class="filter-chip" data-cat="coffee">Coffee</button>
-      <button class="filter-chip" data-cat="film-lab">Film&nbsp;lab</button>
-      <button class="filter-chip" data-cat="gallery">Gallery</button>
-      <button class="filter-chip" data-cat="hotel">Hotel</button>
+  <!-- MIDDLE — capture + recently saved -->
+  <div class="col-mid">
+
+    <div class="capture-wrap">
+      <div class="capture">
+        <span class="capture__plus" aria-hidden="true">+</span>
+        <input
+          type="text"
+          class="capture__input"
+          id="capture-input"
+          placeholder="a place, a thought…"
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button class="capture__send" id="capture-send" aria-label="Save">save ↵</button>
+      </div>
+      <div class="capture__tags" id="capture-tags"></div>
     </div>
-    <div class="filter-group">
-      <select class="filter-select" id="city-select">
-        <option value="all">All cities</option>
-      </select>
-      <span class="filter-divider"></span>
-      <select class="filter-select" id="sort-select">
-        <option value="name">Sort: A–Z</option>
-        <option value="city">Sort: city</option>
-        <option value="country">Sort: country</option>
-      </select>
+
+    <section class="stream-section">
+      <div class="stream__head">
+        <span class="stream__label">Recently saved</span>
+        <a href="#" class="stream__more" id="stream-more">all saves ↗</a>
+      </div>
+      <div class="stream" id="stream">
+        <div class="stream__empty" id="stream-empty">No saves yet. Type something above.</div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- RIGHT — todos -->
+  <aside class="col-right">
+    <div class="todos">
+      <div class="todos__head">
+        <span class="todos__label">Today</span>
+        <button class="todos__expand" id="todos-expand" aria-label="Open fullscreen">↗</button>
+      </div>
+      <div class="todo-list" id="todo-list"></div>
+      <div class="todos__add-zone" id="add-todo-zone" aria-label="Add todo"></div>
     </div>
-  </div>
-
-  <div class="list-head">
-    <span class="list-head__col">Name</span>
-    <span class="list-head__col">City</span>
-    <span class="list-head__col">Country</span>
-    <span></span>
-  </div>
-
-  <div class="list" id="list">
-    <div class="list-empty" id="list-empty">Loading…</div>
-  </div>
-
-  <div class="list-summary">
-    <span><span id="summary-count">—</span> places · <span id="summary-cities">—</span> cities · <span id="summary-countries">—</span> countries</span>
-    <a href="/admin/places.html" class="list-summary__edit" data-auth="in">edit ↗</a>
-  </div>
+  </aside>
 
 </main>
 
+<!-- ============ NOTE OVERLAY EDITOR ============ -->
+<div class="modal" id="note-overlay">
+  <div class="modal__head">
+    <h3 class="modal__title">Note · <strong id="note-date">—</strong></h3>
+    <button class="modal__close" id="note-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner">
+      <textarea
+        class="note-textarea"
+        id="note-text"
+        placeholder="write today…"
+        spellcheck="true"
+      ></textarea>
+    </div>
+  </div>
+  <div class="modal__foot">
+    <span id="note-status">esc to close</span>
+    <button class="save-btn" id="note-save">save ↵</button>
+  </div>
+</div>
+
+<!-- ============ TODO FULLSCREEN EDITOR (all todos) ============ -->
+<div class="modal todo-fs" id="todo-editor">
+  <div class="modal__head">
+    <h3 class="todo-fs__title">TODO</h3>
+    <span class="todo-fs__date" id="todo-fs-date">—</span>
+    <button class="modal__close" id="todo-editor-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner todo-fs__inner">
+      <div class="todo-fs__list" id="todo-fs-list"></div>
+      <div class="todo-fs__addzone" id="todo-fs-addzone"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
 <footer class="foot">
   <div class="foot__bar">
     <div class="foot__left">
@@ -106,6 +184,7 @@
       <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
       <a href="/settings.html" data-auth="in">Settings</a>
       <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
     </div>
   </div>
 </footer>
@@ -113,6 +192,7 @@
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
-<script src="/js/index.js"></script>
+<script src="/js/oblique.js"></script>
+<script src="/js/home.js"></script>
 </body>
 </html>
