@@ -80,89 +80,61 @@
     try {
       const data = await api.get('/api/trips/' + activeTrip.id);
       activeSegments = (data.segments || []).filter(s => s.date_start);
-      // sort by date_start
       activeSegments.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
 
-      // Build the arc: first → last city/region
-      const labels = activeSegments
-        .map(s => s.city_name || s.region_label)
-        .filter(Boolean);
-      if (labels.length >= 2) {
-        tripStripArc.textContent = `${labels[0].toLowerCase()} ↦ ${labels[labels.length - 1].toLowerCase()}`;
-      } else if (labels.length === 1) {
-        tripStripArc.textContent = labels[0].toLowerCase();
-      } else {
-        tripStripArc.textContent = '';
-      }
+      // We removed the arc — one line is enough. Hide it.
+      tripStripArc.textContent = '';
+      tripStripArc.style.display = 'none';
+      const sepEl = document.getElementById('trip-strip-sep');
+      if (sepEl) sepEl.style.display = 'none';
 
-      // Today / Next
       const today = new Date().toISOString().split('T')[0];
       const isUpcoming = activeTrip.phase === 'upcoming';
 
+      // Single contextual phrase below the strip
+      let phrase = '';
       if (isUpcoming) {
-        // Trip hasn't started yet — show countdown to first segment
         const firstSeg = activeSegments[0];
         const firstStart = firstSeg ? firstSeg.date_start : activeTrip.date_start;
         if (firstStart) {
           const days = Math.ceil((new Date(firstStart) - new Date(today)) / 86400000);
-          const dayLabel = days === 1 ? 'tomorrow' : (days === 0 ? 'today' : `in ${days} days`);
-          const firstLabel = firstSeg
-            ? (firstSeg.city_name || firstSeg.region_label || activeTrip.name)
-            : activeTrip.name;
-          tripNowToday.style.display = 'none';
-          tripNowNext.style.display = '';
-          tripNowEl.style.display = '';
-          // Show as "First stop · Paris · in 32 days"
-          tripNowNextVal.textContent = `${firstLabel} · ${dayLabel}`;
-          // Re-label the row label to "STARTS"
-          const lbl = tripNowNext.querySelector('.trip-now__label');
-          if (lbl) lbl.textContent = 'Starts';
-        } else {
-          tripNowEl.style.display = 'none';
+          if (days === 0)      phrase = 'depart today';
+          else if (days === 1) phrase = 'depart tomorrow';
+          else                 phrase = `depart in ${days} days`;
         }
       } else {
-        // Active trip — show today's segment + next segment
         const todaySeg = activeSegments.find(s =>
           s.date_start && s.date_end && today >= s.date_start && today <= s.date_end
         );
         const futureSegs = activeSegments.filter(s => s.date_start > today);
         const nextSeg = futureSegs[0];
 
-        let anyShown = false;
         if (todaySeg) {
-          anyShown = true;
           const label = todaySeg.city_name || todaySeg.region_label || '—';
           const dayInfo = computeDayInfo(todaySeg, today);
-          tripNowToday.style.display = '';
-          tripNowTodayVal.textContent = dayInfo
-            ? `${label} · ${dayInfo}`
-            : label;
-          // ensure label says "Today"
-          const lbl = tripNowToday.querySelector('.trip-now__label');
-          if (lbl) lbl.textContent = 'Today';
-        } else {
-          tripNowToday.style.display = 'none';
-        }
-        if (nextSeg) {
-          anyShown = true;
+          phrase = dayInfo ? `${label} · ${dayInfo}` : label;
+        } else if (nextSeg) {
           const label = nextSeg.city_name || nextSeg.region_label || '—';
           const arr = nextSeg.date_start ? util.formatNumericDate(nextSeg.date_start) : '';
-          tripNowNext.style.display = '';
-          tripNowNextVal.textContent = arr ? `${label} · ${arr}` : label;
-          const lbl = tripNowNext.querySelector('.trip-now__label');
-          if (lbl) lbl.textContent = 'Next';
-        } else {
-          tripNowNext.style.display = 'none';
+          phrase = arr ? `next · ${label} · ${arr}` : `next · ${label}`;
         }
-        tripNowEl.style.display = anyShown ? '' : 'none';
+      }
+
+      if (phrase) {
+        tripNowToday.style.display = '';
+        tripNowTodayVal.textContent = phrase;
+        // hide the label column entirely — the phrase is self-describing
+        const lbl = tripNowToday.querySelector('.trip-now__label');
+        if (lbl) lbl.style.display = 'none';
+        tripNowNext.style.display = 'none';
+        tripNowEl.style.display = '';
+      } else {
+        tripNowEl.style.display = 'none';
       }
     } catch (err) {
       console.error('load segments', err);
       tripNowEl.style.display = 'none';
     }
-
-    // Load today's note
-    loadTodayNote();
   }
 
   // For "day 3 of 5" style hints when in an active segment
@@ -282,87 +254,6 @@
     if (e.key === 'Escape' && itinOverlay && itinOverlay.classList.contains('is-open')) {
       closeItinerary();
     }
-  });
-
-  // ============ NOTE OVERLAY ============
-  const noteOpen     = document.getElementById('note-open');
-  const noteOverlay  = document.getElementById('note-overlay');
-  const noteClose    = document.getElementById('note-close');
-  const noteSave     = document.getElementById('note-save');
-  const noteText     = document.getElementById('note-text');
-  const noteDate     = document.getElementById('note-date');
-  const notePreview  = document.getElementById('note-preview');
-  let currentNoteId = null;
-
-  async function loadTodayNote() {
-    if (!noteOpen) return;
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      const data = await api.get('/api/notes?date=' + today);
-      const note = (data.notes || [])[0];
-      if (note) {
-        currentNoteId = note.id;
-        noteText.value = note.content || '';
-        const firstLine = (note.content || '').split('\n')[0].trim();
-        notePreview.textContent = firstLine || 'write today';
-        notePreview.classList.toggle('is-empty', !firstLine);
-      } else {
-        currentNoteId = null;
-        noteText.value = '';
-        notePreview.textContent = 'write today';
-        notePreview.classList.add('is-empty');
-      }
-    } catch (err) {
-      console.error('loadTodayNote', err);
-    }
-  }
-
-  if (noteOpen) {
-    noteOpen.addEventListener('click', () => {
-      noteOverlay.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-      noteDate.textContent = util.formatShortDate(new Date());
-      setTimeout(() => {
-        noteText.focus();
-        noteText.setSelectionRange(noteText.value.length, noteText.value.length);
-      }, 50);
-    });
-  }
-
-  async function closeNote(save) {
-    if (save !== false) {
-      const content = noteText.value;
-      const today = new Date().toISOString().split('T')[0];
-      try {
-        if (currentNoteId) {
-          if (content.trim() === '') {
-            await api.delete('/api/notes/' + currentNoteId);
-            currentNoteId = null;
-          } else {
-            await api.patch('/api/notes/' + currentNoteId, { content });
-          }
-        } else if (content.trim() !== '') {
-          const body = { content, date: today };
-          if (activeTrip) body.trip_id = activeTrip.id;
-          const data = await api.post('/api/notes', body);
-          currentNoteId = data.note.id;
-        }
-      } catch (err) {
-        console.error('save note', err);
-        toast('Note save failed');
-      }
-    }
-    const firstLine = noteText.value.split('\n')[0].trim();
-    notePreview.textContent = firstLine || 'write today';
-    notePreview.classList.toggle('is-empty', !firstLine);
-    noteOverlay.classList.remove('is-open');
-    document.body.style.overflow = '';
-  }
-
-  if (noteClose) noteClose.addEventListener('click', () => closeNote(true));
-  if (noteSave)  noteSave.addEventListener('click', () => closeNote(true));
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && noteOverlay.classList.contains('is-open')) closeNote(true);
   });
 
   // ============ CAPTURE ============
@@ -751,7 +642,17 @@
     try {
       const data = await api.get('/api/todos');
       todos.clear();
-      (data.todos || []).forEach(t => todos.set(t.id, t));
+      // Local-midnight cutoff: completed-before-today gets hidden in user's local TZ.
+      // Server may not have archived them yet (UTC vs local mismatch on rollover day).
+      const localMidnight = new Date();
+      localMidnight.setHours(0, 0, 0, 0);
+      (data.todos || []).forEach(t => {
+        if (t.completed_at) {
+          const completedDate = new Date(t.completed_at);
+          if (completedDate < localMidnight) return; // hide; rolled over
+        }
+        todos.set(t.id, t);
+      });
       renderAll();
     } catch (err) {
       console.error('load todos', err);

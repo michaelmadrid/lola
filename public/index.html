@@ -89,14 +89,6 @@
             <span class="trip-now__value" id="trip-now-next-value">—</span>
           </div>
         </div>
-
-        <div class="day-sum__section">
-          <div class="day-sum__section__label">Note</div>
-          <button class="note-btn" id="note-open">
-            <span class="note-btn__preview" id="note-preview">write today</span>
-            <span class="note-btn__arrow">→</span>
-          </button>
-        </div>
       </div>
 
       <!-- IDLE: no trip today -->
@@ -153,28 +145,6 @@
 
 </main>
 
-<!-- ============ NOTE OVERLAY EDITOR ============ -->
-<div class="modal" id="note-overlay">
-  <div class="modal__head">
-    <h3 class="modal__title">Note · <strong id="note-date">—</strong></h3>
-    <button class="modal__close" id="note-close">close</button>
-  </div>
-  <div class="modal__body">
-    <div class="modal__body__inner">
-      <textarea
-        class="note-textarea"
-        id="note-text"
-        placeholder="write today…"
-        spellcheck="true"
-      ></textarea>
-    </div>
-  </div>
-  <div class="modal__foot">
-    <span id="note-status">esc to close</span>
-    <button class="save-btn" id="note-save">Save<span class="kbd">⌘ ↵</span></button>
-  </div>
-</div>
-
 <!-- ============ TODO FULLSCREEN EDITOR (all todos) ============ -->
 <div class="modal todo-fs" id="todo-editor">
   <div class="modal__head">
@@ -219,7 +189,6 @@
       <a class="ver" href="/idle/" title="snake">kit v0.5.1</a>
     </div>
     <div class="foot__right">
-      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
       <a href="/settings.html" data-auth="in">Settings</a>
       <a href="/admin/" data-auth="in">Admin</a>
       <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
