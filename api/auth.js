@@ -12,7 +12,7 @@ function authenticate(req, res, next) {
   }
 }
 
-function authenticateSoft(req, res, next) {
+function softAuthenticate(req, res, next) {
   const header = req.headers.authorization || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   if (token) {
@@ -21,4 +21,10 @@ function authenticateSoft(req, res, next) {
   next();
 }
 
-module.exports = { authenticate, authenticateSoft };
+function requireAdmin(req, res, next) {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  next();
+}
+
+module.exports = { authenticate, softAuthenticate, requireAdmin };
