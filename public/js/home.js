@@ -579,10 +579,15 @@
   const patchTimers = new Map();
   function schedulePatch(id, body, delay = 500) {
     clearTimeout(patchTimers.get(id));
+    // Update the Map optimistically with the new body so renderAll sees latest content
+    const existing = todos.get(id);
+    if (existing) todos.set(id, { ...existing, ...body });
     patchTimers.set(id, setTimeout(async () => {
+      // If the todo was deleted while debounce was waiting, skip
+      if (!todos.has(id)) return;
       try {
         const data = await api.patch('/api/todos/' + id, body);
-        todos.set(id, data.todo);
+        if (data && data.todo) todos.set(id, data.todo);
       } catch (err) {
         console.error('patch todo', err);
         toast(err.message || 'Save failed');
@@ -630,12 +635,20 @@
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         clearTimeout(patchTimers.get(id));
-        try { await api.patch('/api/todos/' + id, { content: text.textContent }); } catch {}
-        // stash where we are
+        // Save current content into the Map BEFORE the addNewTodoAfter triggers renderAll
+        const currentContent = text.textContent;
+        const local = todos.get(id);
+        if (local) todos.set(id, { ...local, content: currentContent });
+        try {
+          const data = await api.patch('/api/todos/' + id, { content: currentContent });
+          if (data && data.todo) todos.set(id, data.todo);
+        } catch (err) {
+          console.error('save todo on enter', err);
+          toast(err.message || 'Save failed');
+        }
         const after = row;
         const newRow = await addNewTodoAfter(after, false);
         if (newRow) {
-          // focus equivalent (fs or inline) row
           const focusRow = isFs ? fsRowFor(newRow.todoId) : rowFor(newRow.todoId);
           if (focusRow) {
             const t = focusRow.querySelector(textSelector);
@@ -647,7 +660,7 @@
       else if (e.key === 'Backspace' && text.textContent === '') {
         e.preventDefault();
         const prev = row.previousElementSibling;
-        try { await api.patch('/api/todos/' + id, { archived: true }); } catch {}
+        try { await api.patch('/api/todos/' + id, { archived: true }); } catch (err) { console.error(err); }
         todos.delete(id);
         renderAll();
         // focus the previous row in same view
