@@ -46,7 +46,7 @@
 
   async function loadActiveTrip() {
     try {
-      const data = await api.get('/api/trips/active');
+      const data = await api.get('/api/trips/next');
       activeTrip = data.trip;
       if (activeTrip) {
         renderActiveDay();
@@ -92,34 +92,65 @@
 
       // Today / Next
       const today = new Date().toISOString().split('T')[0];
-      const todaySeg = activeSegments.find(s =>
-        s.date_start && s.date_end && today >= s.date_start && today <= s.date_end
-      );
-      const futureSegs = activeSegments.filter(s => s.date_start > today);
-      const nextSeg = futureSegs[0];
+      const isUpcoming = activeTrip.phase === 'upcoming';
 
-      let anyShown = false;
-      if (todaySeg) {
-        anyShown = true;
-        const label = todaySeg.city_name || todaySeg.region_label || '—';
-        const dayInfo = computeDayInfo(todaySeg, today);
-        tripNowToday.style.display = '';
-        tripNowTodayVal.textContent = dayInfo
-          ? `${label} · ${dayInfo}`
-          : label;
+      if (isUpcoming) {
+        // Trip hasn't started yet — show countdown to first segment
+        const firstSeg = activeSegments[0];
+        const firstStart = firstSeg ? firstSeg.date_start : activeTrip.date_start;
+        if (firstStart) {
+          const days = Math.ceil((new Date(firstStart) - new Date(today)) / 86400000);
+          const dayLabel = days === 1 ? 'tomorrow' : (days === 0 ? 'today' : `in ${days} days`);
+          const firstLabel = firstSeg
+            ? (firstSeg.city_name || firstSeg.region_label || activeTrip.name)
+            : activeTrip.name;
+          tripNowToday.style.display = 'none';
+          tripNowNext.style.display = '';
+          tripNowEl.style.display = '';
+          // Show as "First stop · Paris · in 32 days"
+          tripNowNextVal.textContent = `${firstLabel} · ${dayLabel}`;
+          // Re-label the row label to "STARTS"
+          const lbl = tripNowNext.querySelector('.trip-now__label');
+          if (lbl) lbl.textContent = 'Starts';
+        } else {
+          tripNowEl.style.display = 'none';
+        }
       } else {
-        tripNowToday.style.display = 'none';
+        // Active trip — show today's segment + next segment
+        const todaySeg = activeSegments.find(s =>
+          s.date_start && s.date_end && today >= s.date_start && today <= s.date_end
+        );
+        const futureSegs = activeSegments.filter(s => s.date_start > today);
+        const nextSeg = futureSegs[0];
+
+        let anyShown = false;
+        if (todaySeg) {
+          anyShown = true;
+          const label = todaySeg.city_name || todaySeg.region_label || '—';
+          const dayInfo = computeDayInfo(todaySeg, today);
+          tripNowToday.style.display = '';
+          tripNowTodayVal.textContent = dayInfo
+            ? `${label} · ${dayInfo}`
+            : label;
+          // ensure label says "Today"
+          const lbl = tripNowToday.querySelector('.trip-now__label');
+          if (lbl) lbl.textContent = 'Today';
+        } else {
+          tripNowToday.style.display = 'none';
+        }
+        if (nextSeg) {
+          anyShown = true;
+          const label = nextSeg.city_name || nextSeg.region_label || '—';
+          const arr = nextSeg.date_start ? util.formatNumericDate(nextSeg.date_start) : '';
+          tripNowNext.style.display = '';
+          tripNowNextVal.textContent = arr ? `${label} · ${arr}` : label;
+          const lbl = tripNowNext.querySelector('.trip-now__label');
+          if (lbl) lbl.textContent = 'Next';
+        } else {
+          tripNowNext.style.display = 'none';
+        }
+        tripNowEl.style.display = anyShown ? '' : 'none';
       }
-      if (nextSeg) {
-        anyShown = true;
-        const label = nextSeg.city_name || nextSeg.region_label || '—';
-        const arr = nextSeg.date_start ? util.formatNumericDate(nextSeg.date_start) : '';
-        tripNowNext.style.display = '';
-        tripNowNextVal.textContent = arr ? `${label} · ${arr}` : label;
-      } else {
-        tripNowNext.style.display = 'none';
-      }
-      tripNowEl.style.display = anyShown ? '' : 'none';
     } catch (err) {
       console.error('load segments', err);
       tripNowEl.style.display = 'none';

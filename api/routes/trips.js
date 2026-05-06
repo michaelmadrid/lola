@@ -112,6 +112,47 @@ router.get('/active', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/trips/next — active trip if any, else next upcoming, else null
+router.get('/next', authenticate, async (req, res) => {
+  try {
+    const ids = await householdMemberIds(req.user.id);
+    // First try active
+    const active = await pool.query(
+      `SELECT t.*, u.name AS owner_name, (t.created_by = $1) AS is_owner,
+              'active' AS phase
+       FROM trips t
+       LEFT JOIN users u ON t.created_by = u.id
+       WHERE t.created_by = ANY($2::int[])
+         AND t.deleted_at IS NULL
+         AND t.date_start IS NOT NULL
+         AND t.date_end IS NOT NULL
+         AND CURRENT_DATE BETWEEN t.date_start AND t.date_end
+       ORDER BY t.date_start
+       LIMIT 1`,
+      [req.user.id, ids]
+    );
+    if (active.rows[0]) return res.json({ trip: active.rows[0] });
+
+    // Else next upcoming
+    const upcoming = await pool.query(
+      `SELECT t.*, u.name AS owner_name, (t.created_by = $1) AS is_owner,
+              'upcoming' AS phase
+       FROM trips t
+       LEFT JOIN users u ON t.created_by = u.id
+       WHERE t.created_by = ANY($2::int[])
+         AND t.deleted_at IS NULL
+         AND t.date_start IS NOT NULL
+         AND t.date_start > CURRENT_DATE
+       ORDER BY t.date_start
+       LIMIT 1`,
+      [req.user.id, ids]
+    );
+    res.json({ trip: upcoming.rows[0] || null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/trips/:id — single trip with segments
 router.get('/:id', authenticate, async (req, res) => {
   try {
