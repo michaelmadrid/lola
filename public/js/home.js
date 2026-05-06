@@ -86,23 +86,10 @@
   }
 
   // ============ IDLE STATE — prompt + SVG ============
-  const idlePrompts = [
-    'MOVE TOWARDS THE UNIMPORTANT',
-    'WHAT WOULD A STRANGER NOTICE FIRST',
-    'THE OBVIOUS THING IS USUALLY THE WRONG ONE',
-    'LISTEN TO THE QUIET PARTS',
-    'DO LESS, MORE SLOWLY',
-    'BORROW FROM SOMEWHERE ELSE',
-    'CHANGE THE SCALE',
-    'WHAT IS THE WEATHER ASKING OF YOU',
-    'LEAVE ROOM FOR THE ACCIDENT',
-    'TURN A CONSTRAINT INTO A FEATURE',
-    'REPEAT UNTIL IT MEANS SOMETHING',
-    'LOOK AT IT UPSIDE DOWN',
-    'THE FIRST IDEA IS NOT THE BEST',
-    'WHAT WOULD HAPPEN IF YOU STOPPED',
-    'WHAT IS THE OPPOSITE OF THIS',
-  ];
+  // Eno + Schmidt — Oblique Strategies. Loaded from oblique.js as window.OBLIQUE_STRATEGIES.
+  const idlePrompts = (window.OBLIQUE_STRATEGIES && window.OBLIQUE_STRATEGIES.length)
+    ? window.OBLIQUE_STRATEGIES
+    : ['Trust in the you of now'];
 
   function buildIdleSvg(seed) {
     let s = seed;
@@ -149,7 +136,7 @@
     const seed = Math.floor(today.getTime() / 86400000);
     const idx = seed % idlePrompts.length;
     document.getElementById('idle-quote').textContent = idlePrompts[idx];
-    document.getElementById('idle-num').textContent = String(idx + 1).padStart(2, '0');
+    document.getElementById('idle-num').textContent = String(idx + 1).padStart(3, '0');
     const svgEl = document.getElementById('idle-svg');
     if (svgEl) {
       svgEl.outerHTML = buildIdleSvg(seed).replace(
