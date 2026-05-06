@@ -5,12 +5,12 @@
     "philosophy": "Real-life phrases that work. No 'where is the bathroom' filler. Get the noun right, smile, and people will help you the rest of the way."
   },
   "languages": [
-    { "code": "fr", "name": "French",     "country": "France",   "flag": "🇫🇷" },
-    { "code": "es", "name": "Spanish",    "country": "Spain",    "flag": "🇪🇸" },
-    { "code": "it", "name": "Italian",    "country": "Italy",    "flag": "🇮🇹" },
-    { "code": "pt", "name": "Portuguese", "country": "Portugal", "flag": "🇵🇹" },
-    { "code": "de", "name": "German",     "country": "Germany",  "flag": "🇩🇪" },
-    { "code": "ja", "name": "Japanese",   "country": "Japan",    "flag": "🇯🇵" }
+    { "code": "es", "name": "Spanish",    "country": "Spain" },
+    { "code": "fr", "name": "French",     "country": "France" },
+    { "code": "it", "name": "Italian",    "country": "Italy" },
+    { "code": "pt", "name": "Portuguese", "country": "Portugal" },
+    { "code": "de", "name": "German",     "country": "Germany" },
+    { "code": "ja", "name": "Japanese",   "country": "Japan" }
   ],
   "tiers": [
     {

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Time · Atlas — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/atlas.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/" class="is-active">Atlas</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/" class="is-active">Atlas</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-atlas">
+
+  <header class="atlas-mast">
+    <h1 class="atlas-mast__title">Atlas</h1>
+    <nav class="atlas-subnav">
+      <a href="/atlas/phrasebook/" class="atlas-subnav__item">Phrasebook</a>
+      <a href="/atlas/time/" class="atlas-subnav__item is-active">Time</a>
+    </nav>
+  </header>
+
+  <div class="time-list" id="time-list"></div>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <a class="ver" href="/idle/" title="snake">kit v0.5.1</a>
+    </div>
+    <div class="foot__right">
+      <a href="https://summer-holiday.com" class="hide-sm" target="_blank" rel="noopener">Summer Holiday ↗</a>
+      <a href="/settings.html" data-auth="in">Settings</a>
+      <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script>
+(function () {
+  // Five default cities. Order: west to east.
+  const cities = [
+    { name: 'Los Angeles', tz: 'America/Los_Angeles' },
+    { name: 'Paris',       tz: 'Europe/Paris' },
+    { name: 'Rome',        tz: 'Europe/Rome' },
+    { name: 'Bali',        tz: 'Asia/Makassar' },
+    { name: 'Melbourne',   tz: 'Australia/Melbourne' },
+  ];
+
+  const listEl = document.getElementById('time-list');
+
+  // Build static row scaffolding
+  listEl.innerHTML = cities.map(c => `
+    <div class="time-row" data-tz="${c.tz}">
+      <span class="time-row__name">${c.name}</span>
+      <span class="time-row__time" data-time>—</span>
+      <span class="time-row__meta" data-meta>—</span>
+    </div>
+  `).join('');
+
+  // Local timezone for offset calculation
+  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  function offsetFromLocal(tz) {
+    // Compute the difference in hours by formatting current time in both zones
+    const now = new Date();
+    const localStr = now.toLocaleString('en-US', { timeZone: localTz });
+    const otherStr = now.toLocaleString('en-US', { timeZone: tz });
+    const diffMs = new Date(otherStr) - new Date(localStr);
+    const hours = Math.round(diffMs / 3600000 * 2) / 2; // half-hour precision
+    return hours;
+  }
+
+  function tick() {
+    cities.forEach(c => {
+      const row = listEl.querySelector(`[data-tz="${c.tz}"]`);
+      if (!row) return;
+
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', {
+        timeZone: c.tz,
+        hour: 'numeric', minute: '2-digit', hour12: true,
+      });
+
+      // Day of week — abbreviated
+      const dayLabel = now.toLocaleDateString('en-US', {
+        timeZone: c.tz,
+        weekday: 'short',
+      });
+
+      const off = offsetFromLocal(c.tz);
+      let offLabel = '';
+      if (off === 0) offLabel = 'same as you';
+      else if (off > 0) offLabel = `+${off}h`;
+      else offLabel = `${off}h`;
+
+      row.querySelector('[data-time]').textContent = time;
+      row.querySelector('[data-meta]').textContent = `${dayLabel} · ${offLabel}`;
+    });
+  }
+  tick();
+  setInterval(tick, 30 * 1000);
+
+  const signOutFoot = document.getElementById('signout-link-foot');
+  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
+})();
+</script>
+</body>
+</html>
