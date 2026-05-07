@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Capture — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/capture.css">
+</head>
+<body class="page-capture-body">
+
+<header class="capture-page__head">
+  <a href="/" class="capture-page__logo">kit</a>
+  <button class="capture-page__close" id="capture-close" aria-label="Close">close</button>
+</header>
+
+<main class="capture-page">
+  <div class="capture-page__inner">
+
+    <h1 class="capture-page__title">capture</h1>
+
+    <!-- City binding row -->
+    <div class="capture-page__bind">
+      <span class="capture-page__bind-label">in</span>
+      <button class="capture-page__city-btn" id="city-btn">
+        <span id="city-btn-name">Bali</span>
+        <span class="capture-page__city-caret">▾</span>
+      </button>
+      <div class="capture-page__city-popover" id="city-popover">
+        <input type="text" class="capture-page__city-search" id="city-search" placeholder="Type a city…" autocomplete="off">
+        <div class="capture-page__city-list" id="city-list"></div>
+      </div>
+    </div>
+
+    <!-- The big textarea -->
+    <div class="capture-page__field">
+      <textarea
+        class="capture-page__textarea"
+        id="capture-textarea"
+        placeholder="One place per line.&#10;Della Terra Pererenan, sit at the bar&#10;Mosto Canggu, natural wine&#10;Souvenir, hidden gem cocktails"
+        spellcheck="false"
+        autofocus
+      ></textarea>
+    </div>
+
+    <!-- Counter -->
+    <div class="capture-page__counter" id="capture-counter">0 places to add</div>
+
+  </div>
+</main>
+
+<footer class="capture-page__foot">
+  <div class="capture-page__foot-inner">
+    <button class="capture-page__submit capture-page__submit--secondary" id="submit-close">
+      Submit &amp; close <span class="kbd">⇧⌘↵</span>
+    </button>
+    <button class="capture-page__submit" id="submit-continue">
+      Submit &amp; continue <span class="kbd">⌘↵</span>
+    </button>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/capture.js"></script>
+</body>
+</html>
