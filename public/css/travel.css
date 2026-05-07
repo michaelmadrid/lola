@@ -7,13 +7,12 @@
 
 /* ===== Masthead with subnav ===== */
 .travel-mast {
-  margin-bottom: 24px;
+  margin-bottom: 36px;
   display: flex;
   align-items: baseline;
   gap: 32px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 22px;
+  padding-bottom: 0;
 }
 .travel-mast__title {
   font-size: clamp(40px, 5vw, 64px);
@@ -49,8 +48,8 @@
 @media (max-width: 720px) {
   .travel-mast {
     gap: 12px;
-    padding-bottom: 16px;
-    margin-bottom: 18px;
+    padding-bottom: 0;
+    margin-bottom: 24px;
   }
   .travel-subnav { top: 0; gap: 16px; }
   .travel-subnav__item { font-size: 14px; }
@@ -178,8 +177,6 @@
   color: var(--ink-3);
   font-weight: 500;
   margin: 0 0 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--rule);
 }
 .time-section__hint {
   margin: -4px 0 18px;
