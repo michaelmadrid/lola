@@ -287,18 +287,38 @@
     try {
       send.classList.remove('is-on');
       input.value = '';
+      autoGrow();
       tagsBox.innerHTML = '';
       await api.post('/api/saves', { text });
       await loadStream();
+      // Async AI parse happens server-side — refresh again after a beat to pick up the structure
+      setTimeout(() => loadStream(), 2500);
+      setTimeout(() => loadStream(), 6000);
     } catch (err) {
       console.error('save', err);
       toast(err.message || 'Save failed');
       input.value = text;
+      autoGrow();
     }
   }
+
+  // Auto-grow textarea: shrink to one line when empty, expand up to ~6 lines
+  function autoGrow() {
+    input.style.height = 'auto';
+    const max = 6 * parseFloat(getComputedStyle(input).lineHeight || 22);
+    input.style.height = Math.min(input.scrollHeight, max) + 'px';
+  }
+  input.addEventListener('input', autoGrow);
+  autoGrow();
+
   send.addEventListener('click', saveCapture);
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); saveCapture(); }
+    // Enter alone → submit. Shift+Enter → insert newline (default).
+    // Cmd/Ctrl+Enter → also submit (already handled by global shortcut elsewhere).
+    if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      saveCapture();
+    }
   });
 
   // ============ STREAM ============
@@ -320,9 +340,10 @@
       return;
     }
     streamEl.innerHTML = saves.map(s => {
-      const tagsLine = (s.tags && s.tags.length)
-        ? s.tags.map(t => '#' + util.escapeHtml(t)).join(' · ')
-        : '';
+      // Decide: structured render (parsed place) vs raw render (unparsed)
+      const hasPlace = s.place_name && s.place_name.trim();
+      const isPending = !s.ai_parsed_at && !s.ai_parse_error;
+
       const cityChips = (s.attached_cities && s.attached_cities.length)
         ? `<span class="stream__chips">` +
           s.attached_cities.map(c =>
@@ -333,11 +354,41 @@
           ).join('') +
           `</span>`
         : '';
-      return `<div class="stream__item" data-id="${s.id}">
-        <div class="stream__body">
-          <span class="stream__name">${util.escapeHtml(s.text)}</span>
+
+      const tagsLine = (s.tags && s.tags.length)
+        ? s.tags.map(t => '#' + util.escapeHtml(t)).join(' · ')
+        : '';
+
+      let bodyHtml;
+      if (hasPlace) {
+        // Structured: place name, optional tip, category chip + city chips
+        const tipLine = s.tip
+          ? `<span class="stream__tip">${util.escapeHtml(s.tip)}</span>`
+          : '';
+        const catChip = s.category
+          ? `<span class="stream__cat">${util.escapeHtml(s.category)}</span>`
+          : '';
+        bodyHtml = `
+          <span class="stream__name">${util.escapeHtml(s.place_name)}</span>
+          ${tipLine}
+          <span class="stream__chips-row">
+            ${catChip}
+            ${cityChips}
+          </span>
+        `;
+      } else {
+        // Raw text fallback (parse pending, parse failed, or non-place save)
+        const pendingBadge = isPending ? `<span class="stream__pending" title="Parsing…">…</span>` : '';
+        bodyHtml = `
+          <span class="stream__name stream__name--raw">${util.escapeHtml(s.text)} ${pendingBadge}</span>
           ${cityChips}
           ${tagsLine ? `<span class="stream__meta">${tagsLine}</span>` : ''}
+        `;
+      }
+
+      return `<div class="stream__item${hasPlace ? ' is-structured' : ''}" data-id="${s.id}">
+        <div class="stream__body">
+          ${bodyHtml}
         </div>
         <span class="stream__when">${util.timeAgo(s.created_at)}</span>
       </div>`;
@@ -362,7 +413,7 @@
     });
   }
   loadStream();
-  // refresh stream every 5 minutes to update relative times
+  // refresh stream every 5 minutes to update relative times AND pick up async-parsed structures
   setInterval(loadStream, 5 * 60 * 1000);
 
   // ============ TODOS (notes-app style, API-persisted) ============
