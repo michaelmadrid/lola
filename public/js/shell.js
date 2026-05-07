@@ -163,8 +163,8 @@
 
     const outerSweep = litRight ? 1 : 0;
     let termSweep;
-    if (litRight) termSweep = gibbous ? 1 : 0;
-    else          termSweep = gibbous ? 0 : 1;
+    if (litRight) termSweep = gibbous ? 0 : 1;
+    else          termSweep = gibbous ? 1 : 0;
 
     const d = `M ${cx} ${cy - r}
                A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r}
@@ -184,16 +184,10 @@
       return 'waning crescent';
     })();
     const svg = path.closest('svg');
-    if (svg) {
-      svg.setAttribute('aria-label', phaseName);
-      // Title needs to be a child element, not an attribute, for hover tooltip
-      let titleEl = svg.querySelector('title');
-      if (!titleEl) {
-        titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        svg.insertBefore(titleEl, svg.firstChild);
-      }
-      titleEl.textContent = phaseName;
-    }
+    if (svg) svg.setAttribute('aria-label', phaseName);
+    // Set title on the wrapping span so the browser tooltip shows reliably
+    const wrap = document.getElementById('moon-wrap');
+    if (wrap) wrap.setAttribute('title', phaseName);
   }
   renderMoonPath();
   setInterval(renderMoonPath, 60 * 60 * 1000);

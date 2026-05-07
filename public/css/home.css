@@ -67,6 +67,11 @@
 @media (max-width: 720px) {
   .day-sum__meta { font-size: 13px; }
 }
+.moon-wrap {
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
 .moon {
   display: inline-block;
   width: 10px; height: 10px;
