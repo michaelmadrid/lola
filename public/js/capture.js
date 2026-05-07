@@ -188,8 +188,22 @@
       const count = result.count || 1;
 
       if (thenClose) {
+        // Reset state IMMEDIATELY so UI doesn't get stuck if redirect stalls
+        isSubmitting = false;
+        submitContinue.disabled = false;
+        submitClose.disabled = false;
         toast(count === 1 ? 'Saved' : `${count} saves added`);
-        setTimeout(() => { window.location.href = '/'; }, 600);
+        // Redirect after short delay so user sees the toast
+        const redirectTimer = setTimeout(() => {
+          window.location.href = '/';
+        }, 600);
+        // Safety net: if for any reason we're still here after 3s, force-redirect
+        setTimeout(() => {
+          if (window.location.pathname.startsWith('/capture')) {
+            clearTimeout(redirectTimer);
+            window.location.href = '/';
+          }
+        }, 3000);
       } else {
         showStatus(count);
         textarea.value = '';

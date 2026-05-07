@@ -451,3 +451,19 @@ input, textarea, select { font: inherit; }
 }
 .btn--secondary:hover { color: var(--blue); background: transparent; }
 .btn--danger:hover { background: #c0392b; }
+
+/* ===== iOS zoom-on-focus fix =====
+   iOS Safari auto-zooms any input under 16px when focused, then sometimes
+   fails to reset zoom on blur. Setting min font-size 16px on all form
+   elements at mobile breakpoints prevents the zoom entirely. */
+@media (max-width: 720px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+  /* Special case: contenteditable elements behave the same */
+  [contenteditable="true"] {
+    font-size: 16px !important;
+  }
+}
