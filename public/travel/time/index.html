@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Time · Atlas — kit</title>
+  <title>Time — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/travel.css">
 </head>
@@ -58,14 +58,31 @@
     </nav>
   </header>
 
-  <div class="time-list" id="time-list"></div>
+  <section class="time-section">
+    <h2 class="time-section__label">Your cities</h2>
+    <div class="time-cities" id="time-cities">
+      <div class="time-cities__empty">Loading…</div>
+    </div>
+  </section>
 
-  <div class="time-soon">
-    <div class="time-soon__label">soon</div>
-    <p class="time-soon__text">A meeting finder. Tell us your call hours, pick a city, and we&rsquo;ll show you the overlap.</p>
-  </div>
+  <section class="time-section">
+    <h2 class="time-section__label">24-hour overlap</h2>
+    <p class="time-section__hint">Filled bars are awake hours. The line is now in your local time.</p>
+    <div class="time-timeline" id="time-timeline"></div>
+  </section>
+
+  <section class="time-section">
+    <h2 class="time-section__label">Best call windows</h2>
+    <p class="time-section__hint">Shown in your local time. Hours when the other side is awake.</p>
+    <div class="time-windows" id="time-windows"></div>
+  </section>
 
 </main>
+
+<div class="time-add-popover" id="time-add-popover">
+  <input type="text" class="time-add-search" id="time-add-search" placeholder="Type a city…" autocomplete="off">
+  <div class="time-add-list" id="time-add-list"></div>
+</div>
 
 <footer class="foot">
   <div class="foot__bar">
@@ -83,74 +100,6 @@
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
-<script>
-(function () {
-  // Five default cities. Order: west to east.
-  const cities = [
-    { name: 'Los Angeles', tz: 'America/Los_Angeles' },
-    { name: 'Paris',       tz: 'Europe/Paris' },
-    { name: 'Rome',        tz: 'Europe/Rome' },
-    { name: 'Bali',        tz: 'Asia/Makassar' },
-    { name: 'Melbourne',   tz: 'Australia/Melbourne' },
-  ];
-
-  const listEl = document.getElementById('time-list');
-
-  // Build static row scaffolding
-  listEl.innerHTML = cities.map(c => `
-    <div class="time-row" data-tz="${c.tz}">
-      <span class="time-row__name">${c.name}</span>
-      <span class="time-row__time" data-time>—</span>
-      <span class="time-row__meta" data-meta>—</span>
-    </div>
-  `).join('');
-
-  // Local timezone for offset calculation
-  const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  function offsetFromLocal(tz) {
-    // Compute the difference in hours by formatting current time in both zones
-    const now = new Date();
-    const localStr = now.toLocaleString('en-US', { timeZone: localTz });
-    const otherStr = now.toLocaleString('en-US', { timeZone: tz });
-    const diffMs = new Date(otherStr) - new Date(localStr);
-    const hours = Math.round(diffMs / 3600000 * 2) / 2; // half-hour precision
-    return hours;
-  }
-
-  function tick() {
-    cities.forEach(c => {
-      const row = listEl.querySelector(`[data-tz="${c.tz}"]`);
-      if (!row) return;
-
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-US', {
-        timeZone: c.tz,
-        hour: 'numeric', minute: '2-digit', hour12: true,
-      });
-
-      // Day of week — abbreviated
-      const dayLabel = now.toLocaleDateString('en-US', {
-        timeZone: c.tz,
-        weekday: 'short',
-      });
-
-      const off = offsetFromLocal(c.tz);
-      let offLabel = '';
-      if (off === 0) offLabel = 'same as you';
-      else if (off > 0) offLabel = `+${off}h`;
-      else offLabel = `${off}h`;
-
-      row.querySelector('[data-time]').textContent = time;
-      row.querySelector('[data-meta]').textContent = `${dayLabel} · ${offLabel}`;
-    });
-  }
-  tick();
-  setInterval(tick, 30 * 1000);
-
-  const signOutFoot = document.getElementById('signout-link-foot');
-  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
-})();
-</script>
+<script src="/js/time.js"></script>
 </body>
 </html>
