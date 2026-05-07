@@ -36,6 +36,7 @@ Rules:
 - Leave fields null only if truly uncertain. Don't punish weird names.
 - DO NOT fabricate a place_name. If the input is purely descriptors (e.g. "great bakery & coffee" with no business name), set place_name to null and put the descriptors in tip.
 - DO NOT treat a city or country name as a place_name. "Copenhagen" by itself is not a venue.
+- The tip field is the FULL remaining text after place_name and city are extracted. Do NOT shorten or paraphrase it. Do NOT drop words just because they overlap with the category (e.g. if category is "coffee", still keep "coffee" in the tip if the user wrote it).
 - Normalize spelling for known cities (e.g., "Bandng" → "Bandung").
 - DO NOT infer city from cuisine. "Italian restaurant" does not mean Italy. The COUNTRY follows the actual location, not the food.
 - DO NOT infer city from country alone. "Indonesia" alone leaves city null.
@@ -72,6 +73,9 @@ Output: {"place_name": "Neighbourhood", "city": null, "neighborhood": null, "cou
 Input: great bakery & coffee
 Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": "coffee", "tip": "great bakery & coffee"}
 
+Input: great coffee & pastries
+Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": "coffee", "tip": "great coffee & pastries"}
+
 Input: Copenhagen
 Output: {"place_name": null, "city": "Copenhagen", "neighborhood": null, "country": "Denmark", "category": null, "tip": null}
 
@@ -90,10 +94,22 @@ Output: {"place_name": null, "city": null, "neighborhood": null, "country": null
 /**
  * Parse a single capture text. Returns parsed object or { error }.
  * Never throws — always resolves.
+ *
+ * @param {string} text - the raw capture
+ * @param {object} [opts] - optional context
+ * @param {string} [opts.boundCityName] - if user explicitly bound this batch to a city, helps AI disambiguate
  */
-async function parseCapture(text) {
+async function parseCapture(text, opts = {}) {
   if (!text || !text.trim()) {
     return { place_name: null, city: null, country: null, category: null, tip: null };
+  }
+
+  // If user pre-bound this capture to a city, give AI that context.
+  // Helps with cases like "Copenhagen" being the name of a place IN Bali (a bakery),
+  // not the city Copenhagen.
+  let userMessage = text.trim();
+  if (opts.boundCityName) {
+    userMessage = `[Context: the user has bound this capture to the city "${opts.boundCityName}". When a line begins with a name that is also a city elsewhere, default to interpreting it as a place name in ${opts.boundCityName}, not as a different city. The bound city is the default location.]\n\n${userMessage}`;
   }
 
   try {
@@ -102,7 +118,7 @@ async function parseCapture(text) {
       max_tokens: 300,
       system: SYSTEM_PROMPT,
       messages: [
-        { role: 'user', content: text.trim() }
+        { role: 'user', content: userMessage }
       ],
     });
 

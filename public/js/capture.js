@@ -169,10 +169,7 @@
     submitClose.disabled = true;
 
     try {
-      // Pre-clean each line: strip leading bound-city + separator if user typed it
-      const cleaned = stripBoundCityPrefix(text, pickedCity.name);
-
-      const body = { text: cleaned, city_id: pickedCity.id };
+      const body = { text, city_id: pickedCity.id, city_name: pickedCity.name };
       const result = await api.post('/api/saves', body);
       const count = result.count || 1;
 
@@ -194,20 +191,6 @@
       submitContinue.disabled = false;
       submitClose.disabled = false;
     }
-  }
-
-  // Strip leading "City -" or "City," from each line (case-insensitive).
-  // Only at very start of line, only if a separator immediately follows.
-  // Bare "City" alone (no separator) is left as-is — user might have meant it as a place name.
-  function stripBoundCityPrefix(text, cityName) {
-    if (!cityName) return text;
-    const escaped = cityName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    // matches: "City -" or "City —" or "City," (with optional spaces) at line start
-    const re = new RegExp('^' + escaped + '\\s*[-–—,:]\\s*', 'i');
-    return text
-      .split(/\r?\n/)
-      .map(line => line.replace(re, ''))
-      .join('\n');
   }
 
   // ---------- Inline status line ----------

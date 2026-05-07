@@ -62,8 +62,8 @@ async function findOrCreateCity(name, country) {
 
 // Background: parse a save with Claude, update the row + attach city if needed.
 // Fire and forget — never blocks the user's POST. Errors are stored on the row.
-async function parseAndUpdate(saveId, text) {
-  const parsed = await parseCapture(text);
+async function parseAndUpdate(saveId, text, opts = {}) {
+  const parsed = await parseCapture(text, opts);
 
   if (parsed.error) {
     // Record the error, leave structured fields null
@@ -220,7 +220,8 @@ router.get('/', authenticate, async (req, res) => {
 // Create a single save row + run regex city detection. Async AI parse fires after.
 // Used by POST in both single-line and multi-line modes.
 // Note: cityIdHint is attached via save_cities (not a column on saves anymore).
-async function createSingleSave({ userId, text, tags, url, cityIdHint, place_id }) {
+// boundCityName is passed to the AI parser as disambiguation context.
+async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCityName, place_id }) {
   const result = await pool.query(
     `INSERT INTO saves (user_id, text, tags, url, place_id)
      VALUES ($1, $2, $3, $4, $5)
@@ -252,8 +253,8 @@ async function createSingleSave({ userId, text, tags, url, cityIdHint, place_id 
   }
   save.attached_cities = attached;
 
-  // Fire async AI parse — don't await
-  parseAndUpdate(save.id, save.text).catch(err => {
+  // Fire async AI parse — don't await. Bound city flows through as disambiguation hint.
+  parseAndUpdate(save.id, save.text, { boundCityName }).catch(err => {
     console.error('parseAndUpdate failed for save', save.id, err);
   });
 
@@ -264,10 +265,19 @@ async function createSingleSave({ userId, text, tags, url, cityIdHint, place_id 
 // Supports single-line input (one save) OR multi-line input (one save per line).
 // Multi-line: each non-empty line becomes its own save with its own AI parse.
 router.post('/', authenticate, async (req, res) => {
-  const { text, tags: explicitTags, url: explicitUrl, city_id, place_id } = req.body;
+  const { text, tags: explicitTags, url: explicitUrl, city_id, city_name, place_id } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
 
   try {
+    // If client sent city_id but not city_name, resolve it for AI context
+    let resolvedBoundCityName = city_name || null;
+    if (city_id && !resolvedBoundCityName) {
+      try {
+        const r = await pool.query(`SELECT name FROM cities WHERE id = $1 LIMIT 1`, [city_id]);
+        if (r.rows[0]) resolvedBoundCityName = r.rows[0].name;
+      } catch {}
+    }
+
     // Split on newlines, drop empty lines after trimming
     const lines = String(text)
       .split(/\r?\n/)
@@ -285,6 +295,7 @@ router.post('/', authenticate, async (req, res) => {
         tags,
         url,
         cityIdHint: city_id,
+        boundCityName: resolvedBoundCityName,
         place_id,
       });
       return res.json({ save });
@@ -300,7 +311,8 @@ router.post('/', authenticate, async (req, res) => {
         text: line,
         tags,
         url,
-        cityIdHint: city_id, // shared across batch if explicit
+        cityIdHint: city_id,
+        boundCityName: resolvedBoundCityName,
         place_id: null,
       });
       created.push(save);
@@ -408,6 +420,17 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
     if (!own.rows[0]) return res.status(404).json({ error: 'Save not found' });
     const save = own.rows[0];
 
+    // Use first attached city (if any) as disambiguation context
+    let boundCityName = null;
+    try {
+      const cityRes = await pool.query(
+        `SELECT c.name FROM save_cities sc JOIN cities c ON sc.city_id = c.id
+         WHERE sc.save_id = $1 LIMIT 1`,
+        [save.id]
+      );
+      if (cityRes.rows[0]) boundCityName = cityRes.rows[0].name;
+    } catch {}
+
     // Reset parse markers so the row renders as ghost during re-parse
     await pool.query(
       `UPDATE saves SET ai_parsed_at = NULL, ai_parse_error = NULL WHERE id = $1`,
@@ -416,7 +439,7 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
 
     // Respond immediately, fire async re-parse
     res.json({ success: true, save_id: save.id });
-    parseAndUpdate(save.id, save.text).catch(err => {
+    parseAndUpdate(save.id, save.text, { boundCityName }).catch(err => {
       console.error('reparse failed for save', save.id, err);
     });
   } catch (err) {
