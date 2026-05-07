@@ -280,6 +280,7 @@
 }
 .capture__input {
   flex: 1;
+  min-width: 0; /* allow shrink in flex row */
   border: 0;
   background: transparent;
   font-family: var(--sans);
@@ -289,11 +290,9 @@
   outline: none;
   padding: 0;
   margin: 0;
-  width: 100%;
   min-height: 22px;
   resize: none;
   overflow-y: auto;
-  /* match parent text rendering */
   letter-spacing: -0.005em;
 }
 .capture__input::placeholder { color: var(--ink-3); }
@@ -324,7 +323,11 @@
   opacity: 1;
   transform: translateY(0);
 }
-/* Inline batch link, sits just before the Save button */
+.capture__topline {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 4px 4px;
+}
 .capture__batch-link {
   font-family: var(--mono);
   font-size: 10px;
@@ -332,11 +335,6 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
-  flex-shrink: 0;
-  padding: 4px 6px;
-  margin: 0 4px 0 0;
-  border-right: 1px solid var(--rule);
-  align-self: center;
   transition: color 140ms ease;
 }
 .capture__batch-link:hover { color: var(--blue); }

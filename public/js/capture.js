@@ -40,7 +40,12 @@
   }
 
   async function loadDefaultCity() {
-    // Cascade: localStorage last-used → user's home_city → localStorage home_location string → first featured
+    // Cascade:
+    // 1. localStorage last-used (recent capture session)
+    //    Note: Settings clears this when home city changes, so a fresh home takes effect.
+    // 2. user's home_city from API
+    // 3. localStorage home_location string (legacy/fallback)
+    // 4. first featured city
     try {
       const cached = localStorage.getItem(STORAGE_KEY);
       if (cached) {
@@ -49,7 +54,6 @@
         if (found) { setPickedCity(found); return; }
       }
     } catch {}
-    // Try user's home city from API (most authoritative)
     try {
       const me = await api.get('/api/auth/me');
       if (me && me.user && me.user.home_city_id) {
@@ -57,7 +61,6 @@
         if (found) { setPickedCity(found); return; }
       }
     } catch {}
-    // Fallback: home_location string from localStorage matched against cities
     try {
       const lsName = localStorage.getItem('lola.home_location');
       if (lsName) {
@@ -65,7 +68,6 @@
         if (match) { setPickedCity(match); return; }
       }
     } catch {}
-    // Last fallback: first featured city (status=3)
     const firstFeatured = allCities.find(c => c.status === 3);
     if (firstFeatured) { setPickedCity(firstFeatured); return; }
     setPickedCity(null);

@@ -30,19 +30,20 @@
 
   // ----- Live time in header -----
   const timeEl = document.getElementById('hdr-time');
-  if (timeEl) {
-    const updateTime = () => {
-      try {
-        const tz = localStorage.getItem('lola.home_timezone') || 'Asia/Makassar';
-        timeEl.textContent = new Date().toLocaleTimeString('en-US', {
-          hour: 'numeric', minute: '2-digit', hour12: true,
-          timeZone: tz,
-        });
-      } catch (e) {}
-    };
-    updateTime();
-    setInterval(updateTime, 30 * 1000);
-  }
+  const updateTime = () => {
+    if (!timeEl) return;
+    try {
+      const tz = localStorage.getItem('lola.home_timezone') || 'Asia/Makassar';
+      timeEl.textContent = new Date().toLocaleTimeString('en-US', {
+        hour: 'numeric', minute: '2-digit', hour12: true,
+        timeZone: tz,
+      });
+    } catch (e) {}
+  };
+  updateTime();
+  setInterval(updateTime, 30 * 1000);
+  // Allow other pages (like settings) to trigger an immediate re-render
+  window.kitUpdateHeaderTime = updateTime;
 
   // ----- Mobile menu toggle -----
   const menuBtn = document.getElementById('menu-btn');

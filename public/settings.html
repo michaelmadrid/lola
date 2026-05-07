@@ -356,6 +356,10 @@
         // refresh stored token + user so the next page load reflects it
         if (resp.token) localStorage.setItem('lola.token', resp.token);
         if (resp.user) api.user.set(resp.user);
+        // Update the header greeting in-place
+        document.querySelectorAll('.head__right .where').forEach(el => {
+          el.textContent = 'Ciao, ' + v;
+        });
         window.toast && toast('Name saved');
       } catch (err) {
         window.toast && toast(err.message || 'Save failed');
@@ -398,9 +402,13 @@
       try {
         localStorage.setItem('lola.home_location', city.name);
         localStorage.setItem('lola.home_timezone', city.timezone || '');
+        // Clear capture last-used so the new home takes effect on next /capture/ visit
+        localStorage.removeItem('kit.capture.lastCity');
       } catch {}
     }
     homeCityPopover.classList.remove('is-open');
+    // Trigger immediate header time re-render (no page refresh needed)
+    if (window.kitUpdateHeaderTime) window.kitUpdateHeaderTime();
   }
 
   function renderHomeCityList(query) {
