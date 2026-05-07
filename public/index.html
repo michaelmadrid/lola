@@ -73,13 +73,16 @@
           <span class="trip-strip__main">
             <span class="trip-strip__name" id="trip-strip-name">—</span>
             <span class="trip-strip__sub">
-              <span class="trip-strip__arc" id="trip-strip-arc">—</span>
-              <span class="trip-strip__sep" id="trip-strip-sep">·</span>
               <span class="trip-strip__dates" id="trip-strip-dates">—</span>
+              <span class="trip-strip__sep" id="trip-strip-sep">·</span>
+              <span class="trip-strip__arc" id="trip-strip-arc">—</span>
             </span>
           </span>
           <span class="trip-strip__open">↗</span>
         </button>
+
+        <!-- Mini-month calendar — CdG-style days only -->
+        <div class="mm" id="mini-month" aria-hidden="true"></div>
 
         <div class="trip-now" id="trip-now" style="display:none">
           <div class="trip-now__row" id="trip-now-today" style="display:none">
@@ -270,6 +273,18 @@
     </div>
   </div>
 </footer>
+
+<!-- Year-view calendar overlay (CdG style) -->
+<div class="year-overlay" id="year-overlay" aria-hidden="true">
+  <div class="year-overlay__inner">
+    <div class="year-overlay__head">
+      <h2 class="year-overlay__title" id="year-overlay-title">—</h2>
+      <button class="year-overlay__close" id="year-overlay-close" aria-label="Close">×</button>
+    </div>
+    <div class="year-overlay__grid" id="year-months"></div>
+    <div class="year-overlay__foot">kit</div>
+  </div>
+</div>
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>

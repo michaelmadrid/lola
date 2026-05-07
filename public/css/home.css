@@ -988,3 +988,169 @@
 }
 .save-fs__danger:hover { color: #c33; }
 .save-fs__reparse:hover { color: var(--blue); }
+
+/* ===== Mini-month under trip strip (CdG-inspired, days only) ===== */
+.mm {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  padding: 18px 0 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.mm__cell {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-align: center;
+  padding: 6px 2px;
+  line-height: 1.2;
+}
+.mm__cell--empty {
+  color: transparent;
+}
+.mm__cell--trip {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+/* Make the date heading clickable */
+.day-sum__date {
+  user-select: none;
+  transition: color 140ms ease;
+}
+.day-sum__date:hover {
+  color: var(--blue);
+}
+.day-sum__date:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ===== Year-view calendar overlay (CdG 1986) ===== */
+.year-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 200;
+  display: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.year-overlay.is-open {
+  display: block;
+}
+.year-overlay__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 40px 80px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.year-overlay__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+.year-overlay__title {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+.year-overlay__close {
+  font-family: var(--sans);
+  font-size: 28px;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 0 8px;
+  margin-right: -8px;
+  cursor: pointer;
+  line-height: 1;
+  font-weight: 300;
+  transition: color 140ms ease;
+}
+.year-overlay__close:hover { color: var(--blue); }
+.year-overlay__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  column-gap: 32px;
+  row-gap: 56px;
+  flex: 1;
+}
+.year-overlay__foot {
+  margin-top: 56px;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
+}
+
+/* Each month block */
+.ym__month {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.ym__num {
+  font-family: var(--sans);
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.ym__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+.ym__cell {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  text-align: center;
+  padding: 5px 2px;
+  line-height: 1.3;
+}
+.ym__cell--empty {
+  color: transparent;
+}
+.ym__cell--trip {
+  color: var(--blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+/* Responsive: 3 cols on tablet, 2 cols on mobile */
+@media (max-width: 1100px) {
+  .year-overlay__grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 720px) {
+  .year-overlay__inner { padding: 24px 20px 60px; }
+  .year-overlay__head { margin-bottom: 28px; }
+  .year-overlay__grid {
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 20px;
+    row-gap: 36px;
+  }
+  .ym__num { font-size: 26px; }
+  .ym__cell { font-size: 12px; padding: 4px 1px; }
+  .year-overlay__close { font-size: 26px; }
+}

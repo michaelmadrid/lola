@@ -44,6 +44,91 @@
   updateDayDate();
   setInterval(updateDayDate, 60 * 60 * 1000);
 
+  // Click the date heading to open the year-view overlay
+  dayDateEl.style.cursor = 'pointer';
+  dayDateEl.setAttribute('role', 'button');
+  dayDateEl.setAttribute('tabindex', '0');
+  dayDateEl.setAttribute('aria-label', 'Open year calendar');
+  function openYearOverlay() {
+    const overlay = document.getElementById('year-overlay');
+    if (!overlay) return;
+    renderYearGrid();
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeYearOverlay() {
+    const overlay = document.getElementById('year-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+  dayDateEl.addEventListener('click', openYearOverlay);
+  dayDateEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openYearOverlay(); }
+  });
+  // Close handlers
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeYearOverlay();
+  });
+  // Wire close button after DOM ready
+  setTimeout(() => {
+    const closeBtn = document.getElementById('year-overlay-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeYearOverlay);
+    const overlay = document.getElementById('year-overlay');
+    if (overlay) {
+      overlay.addEventListener('click', (e) => {
+        // Click on the overlay backdrop (not inner content) closes
+        if (e.target === overlay) closeYearOverlay();
+      });
+    }
+  }, 0);
+
+  // ---------- Year overlay rendering ----------
+  function renderYearGrid() {
+    const monthsEl = document.getElementById('year-months');
+    if (!monthsEl) return;
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const titleEl = document.getElementById('year-overlay-title');
+    if (titleEl) titleEl.textContent = String(year);
+
+    // Trip dates from the active trip — for blue underline
+    const tripStart = activeTrip && activeTrip.date_start ? activeTrip.date_start.slice(0, 10) : null;
+    const tripEnd   = activeTrip && activeTrip.date_end   ? activeTrip.date_end.slice(0, 10)   : null;
+
+    function isInTrip(year, month, day) {
+      if (!tripStart || !tripEnd) return false;
+      const ymd = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      return ymd >= tripStart && ymd <= tripEnd;
+    }
+
+    let html = '';
+    for (let m = 0; m < 12; m++) {
+      const firstDay = new Date(year, m, 1);
+      const startCol = firstDay.getDay();
+      const daysInMonth = new Date(year, m + 1, 0).getDate();
+
+      let grid = '';
+      for (let i = 0; i < startCol; i++) {
+        grid += `<span class="ym__cell ym__cell--empty"></span>`;
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const cls = ['ym__cell'];
+        if (isInTrip(year, m, d)) cls.push('ym__cell--trip');
+        grid += `<span class="${cls.join(' ')}">${d}</span>`;
+      }
+
+      html += `
+        <div class="ym__month">
+          <div class="ym__num">${m + 1}</div>
+          <div class="ym__grid">${grid}</div>
+        </div>
+      `;
+    }
+    monthsEl.innerHTML = html;
+  }
+
   async function loadActiveTrip() {
     try {
       const data = await api.get('/api/trips/next');
@@ -82,33 +167,47 @@
       activeSegments = (data.segments || []).filter(s => s.date_start);
       activeSegments.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
 
-      // We removed the arc — one line is enough. Hide it.
-      tripStripArc.textContent = '';
-      tripStripArc.style.display = 'none';
-      const sepEl = document.getElementById('trip-strip-sep');
-      if (sepEl) sepEl.style.display = 'none';
-
       const today = new Date().toISOString().split('T')[0];
       const isUpcoming = activeTrip.phase === 'upcoming';
 
-      // Single contextual phrase below the strip
-      let phrase = '';
+      // For UPCOMING trips: put "depart in N days" inline next to dates (in the __arc slot)
+      // For ACTIVE trips: keep using the trip-now sub-row for "Today: city · day 3 of 5"
       if (isUpcoming) {
         const firstSeg = activeSegments[0];
         const firstStart = firstSeg ? firstSeg.date_start : activeTrip.date_start;
+        let phrase = '';
         if (firstStart) {
           const days = Math.ceil((new Date(firstStart) - new Date(today)) / 86400000);
           if (days === 0)      phrase = 'depart today';
           else if (days === 1) phrase = 'depart tomorrow';
           else                 phrase = `depart in ${days} days`;
         }
+        if (phrase) {
+          tripStripArc.textContent = phrase;
+          tripStripArc.style.display = '';
+          const sepEl = document.getElementById('trip-strip-sep');
+          if (sepEl) sepEl.style.display = '';
+        } else {
+          tripStripArc.style.display = 'none';
+          const sepEl = document.getElementById('trip-strip-sep');
+          if (sepEl) sepEl.style.display = 'none';
+        }
+        // Hide the old trip-now block — phrase is inline now
+        tripNowEl.style.display = 'none';
       } else {
+        // Active phase: hide the inline arc, use trip-now block
+        tripStripArc.textContent = '';
+        tripStripArc.style.display = 'none';
+        const sepEl = document.getElementById('trip-strip-sep');
+        if (sepEl) sepEl.style.display = 'none';
+
         const todaySeg = activeSegments.find(s =>
           s.date_start && s.date_end && today >= s.date_start && today <= s.date_end
         );
         const futureSegs = activeSegments.filter(s => s.date_start > today);
         const nextSeg = futureSegs[0];
 
+        let phrase = '';
         if (todaySeg) {
           const label = todaySeg.city_name || todaySeg.region_label || '—';
           const dayInfo = computeDayInfo(todaySeg, today);
@@ -118,23 +217,62 @@
           const arr = nextSeg.date_start ? util.formatNumericDate(nextSeg.date_start) : '';
           phrase = arr ? `next · ${label} · ${arr}` : `next · ${label}`;
         }
+
+        if (phrase) {
+          tripNowToday.style.display = '';
+          tripNowTodayVal.textContent = phrase;
+          const lbl = tripNowToday.querySelector('.trip-now__label');
+          if (lbl) lbl.style.display = 'none';
+          tripNowNext.style.display = 'none';
+          tripNowEl.style.display = '';
+        } else {
+          tripNowEl.style.display = 'none';
+        }
       }
 
-      if (phrase) {
-        tripNowToday.style.display = '';
-        tripNowTodayVal.textContent = phrase;
-        // hide the label column entirely — the phrase is self-describing
-        const lbl = tripNowToday.querySelector('.trip-now__label');
-        if (lbl) lbl.style.display = 'none';
-        tripNowNext.style.display = 'none';
-        tripNowEl.style.display = '';
-      } else {
-        tripNowEl.style.display = 'none';
-      }
+      // Render the mini-month calendar with trip dates highlighted
+      renderMiniMonth(activeTrip);
     } catch (err) {
       console.error('load segments', err);
       tripNowEl.style.display = 'none';
     }
+  }
+
+  // Render a CdG-style mini-month grid below the trip strip.
+  // Days only, Sunday-first, no headers, blue underline on trip dates within the month.
+  function renderMiniMonth(trip) {
+    const container = document.getElementById('mini-month');
+    if (!container) return;
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth(); // 0-indexed
+
+    const firstOfMonth = new Date(year, month, 1);
+    const startCol = firstOfMonth.getDay(); // 0 = Sunday
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Parse trip dates as YYYY-MM-DD strings to avoid TZ issues
+    const tripStart = trip.date_start ? trip.date_start.slice(0, 10) : null;
+    const tripEnd   = trip.date_end   ? trip.date_end.slice(0, 10)   : null;
+
+    function isInTrip(day) {
+      if (!tripStart || !tripEnd) return false;
+      const ymd = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      return ymd >= tripStart && ymd <= tripEnd;
+    }
+
+    let html = '';
+    // Empty cells before the 1st
+    for (let i = 0; i < startCol; i++) {
+      html += `<span class="mm__cell mm__cell--empty"></span>`;
+    }
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cls = ['mm__cell'];
+      if (isInTrip(d)) cls.push('mm__cell--trip');
+      html += `<span class="${cls.join(' ')}">${d}</span>`;
+    }
+    container.innerHTML = html;
   }
 
   // For "day 3 of 5" style hints when in an active segment
