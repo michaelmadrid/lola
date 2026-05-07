@@ -116,10 +116,7 @@
     saveBtn.click();
   });
   // ----- Phase-aware moon glyph -----
-  // Computes today's lunar phase and draws an SVG path matching it.
-  // Path approach: two arcs joined to form a moon shape. Inner arc's
-  // x-radius and sweep direction encode whether it's crescent or gibbous,
-  // waxing or waning.
+  // Draws today's lunar phase as the LIT (filled) portion of an SVG path.
   function renderMoonPath() {
     const path = document.getElementById('moon-path');
     if (!path) return;
@@ -130,44 +127,52 @@
     const days = (Date.now() - KNOWN_NEW_MOON) / 86400000;
     const phase = ((days % SYNODIC) + SYNODIC) % SYNODIC / SYNODIC; // 0..1
 
-    // SVG coords (matches viewBox 0 0 12 12)
     const cx = 6, cy = 6, r = 5.5;
-    // Illumination factor: -1 (new) → +1 (full)
-    const f = -Math.cos(2 * Math.PI * phase);
-    // Inner arc x-radius: 0 at half-moon, r at new/full
-    const xR = r * Math.abs(f);
 
-    // For waxing (phase < 0.5), the lit side is on the right
-    // For waning (phase > 0.5), the lit side is on the left
-    const waxing = phase < 0.5;
-    const gibbous = Math.abs(f) > 0 && f > 0; // full-ish (lit > 50%)
-    // Wait — f = -cos(2π·p). At full (p=0.5), f = -cos(π) = +1 (max bright).
-    // At new (p=0 or 1), f = -cos(0) = -1 (no light).
-    // So "gibbous-ish" = f > 0 (more than half illuminated)
-    // "crescent-ish" = f < 0 (less than half illuminated)
+    // Lit fraction: 0 (new) → 1 (full) → 0 (new)
+    // illum = (1 - cos(2π·phase)) / 2
+    const illum = (1 - Math.cos(2 * Math.PI * phase)) / 2;
 
-    // Build the path:
-    // - Always draw outer half: from top to bottom along the lit side
-    // - Then inner arc back to top, with x-radius = xR
-    //   The sweep flag of the inner arc determines crescent vs gibbous
-    // - For waxing: lit side is right (sweep CW = 0 outer, then inner sweep depends on phase)
-    // - For waning: mirror it
+    // Terminator x-radius. At full or new, terminator is at the limb (xR = r).
+    // At half phase, terminator is a vertical line through center (xR = 0).
+    const xR = r * Math.abs(1 - 2 * illum);
 
-    let d;
-    if (waxing) {
-      // Lit on the right — outer arc goes clockwise from top to bottom (right side)
-      // Then inner arc back. Sweep flag: 0 for crescent (curves leftward into moon), 1 for gibbous
-      const innerSweep = gibbous ? 0 : 1;
-      d = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${xR} ${r} 0 0 ${innerSweep} ${cx} ${cy - r} Z`;
-    } else {
-      // Lit on the left — outer arc goes counterclockwise from top to bottom (left side)
-      // Mirror of waxing
-      const innerSweep = gibbous ? 1 : 0;
-      d = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${xR} ${r} 0 0 ${innerSweep} ${cx} ${cy - r} Z`;
-    }
+    // Lit side: waxing (phase < 0.5) → right; waning → left.
+    const litRight = phase < 0.5;
+
+    // Whether the moon is more than half lit (gibbous) or less (crescent).
+    const gibbous = illum > 0.5;
+
+    // SVG path strategy:
+    // Draw a closed shape representing the LIT region.
+    // Always: move to top point (cx, cy - r).
+    // Outer arc: full half of the moon's outer circle, on the lit side.
+    //   - litRight: outer arc sweeps to (cx, cy+r) clockwise = sweep_flag 1
+    //   - litLeft:  sweeps counterclockwise = sweep_flag 0
+    // Terminator arc: from bottom back to top with x-radius xR.
+    //   - For crescent (illum < 0.5): terminator bulges TOWARD the dark side,
+    //     so the lit region is a thin sliver. The arc goes "inward" past center.
+    //   - For gibbous (illum > 0.5): terminator bulges TOWARD the lit side,
+    //     making the lit region most of the disc.
+    //
+    // The right combinations of sweep_flag for the terminator arc:
+    //   crescent + litRight: terminator is concave from the right's perspective → sweep 0
+    //   gibbous + litRight: terminator bulges outward from right → sweep 1
+    //   crescent + litLeft: mirror → sweep 1
+    //   gibbous + litLeft: mirror → sweep 0
+
+    const outerSweep = litRight ? 1 : 0;
+    let termSweep;
+    if (litRight) termSweep = gibbous ? 1 : 0;
+    else          termSweep = gibbous ? 0 : 1;
+
+    const d = `M ${cx} ${cy - r}
+               A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r}
+               A ${xR} ${r} 0 0 ${termSweep} ${cx} ${cy - r}
+               Z`;
     path.setAttribute('d', d);
 
-    // Pick a label for accessibility (and tooltip)
+    // Phase name for tooltip
     const phaseName = (() => {
       if (phase < 0.03 || phase > 0.97) return 'new moon';
       if (phase < 0.22) return 'waxing crescent';
@@ -179,10 +184,17 @@
       return 'waning crescent';
     })();
     const svg = path.closest('svg');
-    if (svg) svg.setAttribute('aria-label', phaseName);
-    if (svg) svg.setAttribute('title', phaseName);
+    if (svg) {
+      svg.setAttribute('aria-label', phaseName);
+      // Title needs to be a child element, not an attribute, for hover tooltip
+      let titleEl = svg.querySelector('title');
+      if (!titleEl) {
+        titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+        svg.insertBefore(titleEl, svg.firstChild);
+      }
+      titleEl.textContent = phaseName;
+    }
   }
   renderMoonPath();
-  // Re-render once an hour in case the page is left open across midnight
   setInterval(renderMoonPath, 60 * 60 * 1000);
 })();
