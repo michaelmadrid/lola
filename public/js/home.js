@@ -295,9 +295,12 @@
       injectGhostRow();
 
       await api.post('/api/saves', { text });
-      // Wait a beat for AI parse to land before reloading from server
-      setTimeout(() => loadStream(), 2500);
-      setTimeout(() => loadStream(), 6000);
+      // Poll a few times to catch the AI parse landing.
+      // renderStream knows to render not-yet-parsed-and-recent rows as ghosts,
+      // so race conditions never expose raw text.
+      setTimeout(() => loadStream(), 1500);
+      setTimeout(() => loadStream(), 3500);
+      setTimeout(() => loadStream(), 7000);
     } catch (err) {
       console.error('save', err);
       toast(err.message || 'Save failed');
@@ -366,15 +369,37 @@
       streamEl.innerHTML = '<div class="stream__empty">No saves yet. Type something above.</div>';
       return;
     }
+    const now = Date.now();
     streamEl.innerHTML = saves.map(s => {
       const hasPlace = s.place_name && s.place_name.trim();
-      const isPending = !s.ai_parsed_at && !s.ai_parse_error;
+      const hasParseRun = s.ai_parsed_at || s.ai_parse_error;
+      const createdMs = s.created_at ? new Date(s.created_at).getTime() : 0;
+      const isRecent = (now - createdMs) < 30000; // 30s window
 
-      // Build the quiet metadata line: "drink · bali" or just "bali" or just "drink"
+      // If parse hasn't run yet AND save is fresh → still pending → render as ghost
+      const isPendingFresh = !hasParseRun && isRecent;
+
+      if (isPendingFresh) {
+        return `<div class="stream__item stream__ghost" data-id="${s.id}">
+          <div class="stream__body">
+            <span class="stream__ghost-bar stream__ghost-bar--name"></span>
+            <span class="stream__ghost-bar stream__ghost-bar--tip"></span>
+            <span class="stream__ghost-bar stream__ghost-bar--meta"></span>
+          </div>
+          <span class="stream__when">…</span>
+        </div>`;
+      }
+
+      // Build the quiet metadata line: "drink · canggu, bali" or "drink · paris" etc.
       const cityNames = (s.attached_cities || []).map(c => c.name.toLowerCase());
+      const cityLabel = cityNames.length
+        ? (s.neighborhood
+            ? `${s.neighborhood.toLowerCase()}, ${cityNames[0]}`
+            : cityNames.join(' · '))
+        : (s.neighborhood ? s.neighborhood.toLowerCase() : '');
       const metaParts = [];
       if (s.category) metaParts.push(s.category);
-      if (cityNames.length) metaParts.push(cityNames.join(' · '));
+      if (cityLabel) metaParts.push(cityLabel);
       const metaLine = metaParts.length
         ? `<span class="stream__meta">${util.escapeHtml(metaParts.join(' · '))}</span>`
         : '';
@@ -394,9 +419,9 @@
           ${metaLine}
         `;
       } else {
-        const pendingBadge = isPending ? `<span class="stream__pending">…</span>` : '';
+        // Parse complete but no place extracted — non-place save, show raw quietly
         bodyHtml = `
-          <span class="stream__name stream__name--raw">${util.escapeHtml(s.text)} ${pendingBadge}</span>
+          <span class="stream__name stream__name--raw">${util.escapeHtml(s.text)}</span>
           ${metaLine || tagsLine}
         `;
       }
@@ -707,6 +732,235 @@
     }
   }
   loadTodos();
+
+  // ============ SAVE EDITOR ============
+  const saveEditor = document.getElementById('save-editor');
+  const saveFsCaptured = document.getElementById('save-fs-captured');
+  const saveFsPlace    = document.getElementById('save-fs-place');
+  const saveFsTip      = document.getElementById('save-fs-tip');
+  const saveFsCat      = document.getElementById('save-fs-category');
+  const saveFsCity     = document.getElementById('save-fs-city');
+  const saveFsCitySuggest = document.getElementById('save-fs-city-suggest');
+  const saveFsHood     = document.getElementById('save-fs-hood');
+  const saveFsCountry  = document.getElementById('save-fs-country');
+  const saveFsClose    = document.getElementById('save-editor-close');
+  const saveFsSave     = document.getElementById('save-fs-save');
+  const saveFsArchive  = document.getElementById('save-fs-archive');
+  const saveFsReparse  = document.getElementById('save-fs-reparse');
+
+  let editingSaveId = null;
+  let editingPickedCityId = null; // city id the user picked from suggestions
+  let editingOriginalCityName = '';
+
+  // Cache cities for autocomplete — refresh once on first open
+  let allCitiesCache = null;
+  async function ensureCitiesCache() {
+    if (allCitiesCache) return allCitiesCache;
+    try {
+      const data = await api.get('/api/cities');
+      allCitiesCache = (data.cities || []).filter(c => c.status !== 0);
+    } catch (err) {
+      console.error('ensureCitiesCache', err);
+      allCitiesCache = [];
+    }
+    return allCitiesCache;
+  }
+
+  function openSaveEditor(saveId) {
+    // Find the save row data — fetch the latest from server to be safe
+    api.get('/api/saves?limit=200').then(data => {
+      const save = (data.saves || []).find(s => s.id === parseInt(saveId, 10));
+      if (!save) {
+        toast('Save not found');
+        return;
+      }
+      editingSaveId = save.id;
+      editingPickedCityId = (save.attached_cities && save.attached_cities[0]) ? save.attached_cities[0].id : null;
+      editingOriginalCityName = (save.attached_cities && save.attached_cities[0]) ? save.attached_cities[0].name : '';
+
+      saveFsCaptured.textContent = save.text || '—';
+      saveFsPlace.value = save.place_name || '';
+      saveFsTip.value = save.tip || '';
+      saveFsCat.value = save.category || '';
+      saveFsCity.value = editingOriginalCityName;
+      saveFsHood.value = save.neighborhood || '';
+      saveFsCountry.textContent = save.country || '—';
+      saveFsCitySuggest.innerHTML = '';
+
+      saveEditor.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => saveFsPlace.focus(), 50);
+    }).catch(err => {
+      console.error('openSaveEditor', err);
+      toast('Could not load save');
+    });
+  }
+
+  function closeSaveEditor() {
+    saveEditor.classList.remove('is-open');
+    document.body.style.overflow = '';
+    editingSaveId = null;
+    editingPickedCityId = null;
+    saveFsCitySuggest.innerHTML = '';
+  }
+
+  if (saveFsClose) saveFsClose.addEventListener('click', closeSaveEditor);
+
+  // Click delegation: any stream row → open editor (skip ghost rows)
+  streamEl.addEventListener('click', (e) => {
+    const row = e.target.closest('.stream__item');
+    if (!row) return;
+    if (row.classList.contains('stream__ghost')) return;
+    const id = row.dataset.id;
+    if (id) openSaveEditor(id);
+  });
+
+  // City autocomplete in editor
+  async function renderCitySuggestions(query) {
+    const cities = await ensureCitiesCache();
+    const q = (query || '').trim().toLowerCase();
+    if (!q) { saveFsCitySuggest.innerHTML = ''; return; }
+
+    // Don't show suggestions if input matches the picked city's name
+    if (editingPickedCityId) {
+      const picked = cities.find(c => c.id === editingPickedCityId);
+      if (picked && picked.name.toLowerCase() === q) {
+        saveFsCitySuggest.innerHTML = '';
+        return;
+      }
+    }
+
+    const matches = cities
+      .filter(c => c.name.toLowerCase().includes(q))
+      .slice(0, 6);
+    const exact = matches.find(c => c.name.toLowerCase() === q);
+
+    let html = matches.map(c =>
+      `<button class="save-fs__suggest-item" data-city-id="${c.id}" data-city-name="${util.escapeHtml(c.name)}">
+        ${util.escapeHtml(c.name)}${c.country ? ` <span class="save-fs__suggest-meta">${util.escapeHtml(c.country)}</span>` : ''}
+      </button>`
+    ).join('');
+    if (!exact) {
+      html += `<button class="save-fs__suggest-item save-fs__suggest-item--create" data-city-name="${util.escapeHtml(query.trim())}">
+        + create "${util.escapeHtml(query.trim())}"
+      </button>`;
+    }
+    saveFsCitySuggest.innerHTML = html;
+
+    saveFsCitySuggest.querySelectorAll('.save-fs__suggest-item').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const cid = btn.dataset.cityId;
+        const cname = btn.dataset.cityName;
+        if (cid) {
+          editingPickedCityId = parseInt(cid, 10);
+          saveFsCity.value = cname;
+        } else {
+          // Create new city
+          try {
+            const result = await api.post('/api/cities', { name: cname });
+            const newCity = result.city || result;
+            editingPickedCityId = newCity.id;
+            saveFsCity.value = newCity.name;
+            // Bust cache so future opens see it
+            allCitiesCache = null;
+          } catch (err) {
+            console.error('create city', err);
+            toast(err.message || 'Could not create city');
+            return;
+          }
+        }
+        saveFsCitySuggest.innerHTML = '';
+      });
+    });
+  }
+  let cityDebounce = null;
+  saveFsCity.addEventListener('input', () => {
+    // If user is typing freely, clear the picked id so we don't re-attach the wrong city
+    if (saveFsCity.value !== editingOriginalCityName) {
+      editingPickedCityId = null;
+    }
+    clearTimeout(cityDebounce);
+    cityDebounce = setTimeout(() => renderCitySuggestions(saveFsCity.value), 80);
+  });
+  saveFsCity.addEventListener('blur', () => {
+    // Hide suggestions on blur after a tick (allow click to fire first)
+    setTimeout(() => { saveFsCitySuggest.innerHTML = ''; }, 200);
+  });
+
+  async function commitSaveEdit() {
+    if (!editingSaveId) return;
+    const body = {
+      place_name:   saveFsPlace.value.trim() || null,
+      tip:          saveFsTip.value.trim() || null,
+      category:     saveFsCat.value || null,
+      neighborhood: saveFsHood.value.trim() || null,
+    };
+    try {
+      await api.patch('/api/saves/' + editingSaveId, body);
+
+      // Update city attachment if it changed
+      const targetCityName = saveFsCity.value.trim();
+      if (targetCityName !== editingOriginalCityName) {
+        // Clear all current attachments, then attach the picked one if any
+        // Cheapest path: delete prior attachments for this save+city, then add fresh
+        if (editingPickedCityId) {
+          await api.post(`/api/saves/${editingSaveId}/cities`, { city_id: editingPickedCityId });
+        }
+        // Note: removing the OLD city attachment isn't yet wired here.
+        // For V1, we let the new attachment be added; orphaned old ones can be cleaned in admin.
+        // (In practice, we'll add a proper detach in C-3 or here as a follow-up.)
+      }
+      closeSaveEditor();
+      await loadStream();
+    } catch (err) {
+      console.error('save edit', err);
+      toast(err.message || 'Save failed');
+    }
+  }
+  if (saveFsSave) saveFsSave.addEventListener('click', commitSaveEdit);
+
+  // Archive
+  if (saveFsArchive) {
+    saveFsArchive.addEventListener('click', async () => {
+      if (!editingSaveId) return;
+      if (!confirm('Archive this save?')) return;
+      try {
+        await api.patch('/api/saves/' + editingSaveId, { archived_at: new Date().toISOString() });
+        closeSaveEditor();
+        await loadStream();
+      } catch (err) {
+        toast(err.message || 'Archive failed');
+      }
+    });
+  }
+
+  // Re-parse with AI
+  if (saveFsReparse) {
+    saveFsReparse.addEventListener('click', async () => {
+      if (!editingSaveId) return;
+      try {
+        // Endpoint we'll add server-side: POST /api/saves/:id/reparse
+        await api.post('/api/saves/' + editingSaveId + '/reparse', {});
+        // Wait a moment for parse to complete, then reload
+        toast('Re-parsing…');
+        setTimeout(async () => {
+          closeSaveEditor();
+          await loadStream();
+        }, 2000);
+      } catch (err) {
+        console.error('reparse', err);
+        toast(err.message || 'Re-parse failed');
+      }
+    });
+  }
+
+  // Esc + Cmd+Enter
+  document.addEventListener('keydown', (e) => {
+    if (!saveEditor.classList.contains('is-open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeSaveEditor(); }
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); commitSaveEdit(); }
+  });
 
   // ============ MISC ============
   // sign out from footer

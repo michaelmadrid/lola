@@ -374,5 +374,55 @@ router.delete('/:id/cities/:cityId', authenticate, async (req, res) => {
   }
 });
 
+// POST /api/saves/:id/cities — attach a city to a save, REPLACING any existing attachments.
+// Used by the save editor when user picks a different city.
+router.post('/:id/cities', authenticate, async (req, res) => {
+  const { city_id } = req.body;
+  if (!city_id) return res.status(400).json({ error: 'city_id required' });
+  try {
+    const own = await pool.query(
+      `SELECT 1 FROM saves WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    if (!own.rows[0]) return res.status(404).json({ error: 'Save not found' });
+
+    // Replace: clear existing attachments, then add the picked one
+    await pool.query(`DELETE FROM save_cities WHERE save_id = $1`, [req.params.id]);
+    await pool.query(
+      `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+      [req.params.id, city_id]
+    );
+    res.json({ success: true, save_id: parseInt(req.params.id, 10), city_id: parseInt(city_id, 10) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/saves/:id/reparse — re-run AI parser on the original text, overwriting structured fields
+router.post('/:id/reparse', authenticate, async (req, res) => {
+  try {
+    const own = await pool.query(
+      `SELECT id, text FROM saves WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    if (!own.rows[0]) return res.status(404).json({ error: 'Save not found' });
+    const save = own.rows[0];
+
+    // Reset parse markers so the row renders as ghost during re-parse
+    await pool.query(
+      `UPDATE saves SET ai_parsed_at = NULL, ai_parse_error = NULL WHERE id = $1`,
+      [save.id]
+    );
+
+    // Respond immediately, fire async re-parse
+    res.json({ success: true, save_id: save.id });
+    parseAndUpdate(save.id, save.text).catch(err => {
+      console.error('reparse failed for save', save.id, err);
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 module.exports.refreshCitiesCache = refreshCitiesCache;

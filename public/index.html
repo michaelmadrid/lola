@@ -182,6 +182,76 @@
   </div>
 </div>
 
+<!-- ============ SAVE EDITOR ============ -->
+<div class="modal save-fs" id="save-editor">
+  <div class="modal__head">
+    <h3 class="save-fs__title">Edit</h3>
+    <button class="modal__close" id="save-editor-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner save-fs__inner">
+      <!-- Original raw text — read-only context -->
+      <div class="save-fs__field">
+        <label class="save-fs__label">Captured</label>
+        <div class="save-fs__captured" id="save-fs-captured">—</div>
+      </div>
+
+      <!-- Place name -->
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-place">Place</label>
+        <input type="text" class="save-fs__input" id="save-fs-place" placeholder="Place name">
+      </div>
+
+      <!-- Tip -->
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-tip">Tip</label>
+        <textarea class="save-fs__textarea" id="save-fs-tip" rows="2" placeholder="Note, advice, what to order…"></textarea>
+      </div>
+
+      <!-- Category -->
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-category">Category</label>
+        <select class="save-fs__select" id="save-fs-category">
+          <option value="">— none —</option>
+          <option value="eat">Eat</option>
+          <option value="drink">Drink</option>
+          <option value="coffee">Coffee</option>
+          <option value="stay">Stay</option>
+          <option value="shop">Shop</option>
+          <option value="see">See</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <!-- City: type-to-search/create -->
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-city">City</label>
+        <input type="text" class="save-fs__input" id="save-fs-city" placeholder="City" autocomplete="off">
+        <div class="save-fs__suggest" id="save-fs-city-suggest"></div>
+      </div>
+
+      <!-- Neighborhood -->
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-hood">Neighborhood</label>
+        <input type="text" class="save-fs__input" id="save-fs-hood" placeholder="Optional">
+      </div>
+
+      <!-- Country (read-only) -->
+      <div class="save-fs__field">
+        <label class="save-fs__label">Country</label>
+        <div class="save-fs__readonly" id="save-fs-country">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal__foot save-fs__foot">
+    <div class="save-fs__foot-left">
+      <button class="save-fs__danger" id="save-fs-archive">Archive</button>
+      <button class="save-fs__reparse" id="save-fs-reparse">Re-parse with AI</button>
+    </div>
+    <button class="save-btn" id="save-fs-save">Save<span class="kbd">⌘ ↵</span></button>
+  </div>
+</div>
+
 <!-- ============ FOOTER ============ -->
 <footer class="foot">
   <div class="foot__bar">
