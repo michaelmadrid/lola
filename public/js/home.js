@@ -100,7 +100,8 @@
     function isInTrip(year, month, day) {
       if (!tripStart || !tripEnd) return false;
       const ymd = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      return ymd >= tripStart && ymd <= tripEnd;
+      // Only highlight the start and end dates, not the full range
+      return ymd === tripStart || ymd === tripEnd;
     }
 
     let html = '';
@@ -259,7 +260,8 @@
     function isInTrip(day) {
       if (!tripStart || !tripEnd) return false;
       const ymd = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      return ymd >= tripStart && ymd <= tripEnd;
+      // Only highlight the start and end dates, not the full range
+      return ymd === tripStart || ymd === tripEnd;
     }
 
     let html = '';
