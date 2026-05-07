@@ -806,139 +806,6 @@
 .jl-header__sev--significant { color: var(--blue); background: rgba(42, 78, 212, 0.08); }
 .jl-header__sev--severe      { color: var(--blue); background: rgba(42, 78, 212, 0.12); }
 
-/* Timeline grid */
-.jl-timeline {
-  margin-bottom: 18px;
-}
-.jl-tl__axis-row {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 12px;
-  align-items: end;
-  height: 18px;
-  margin-bottom: 6px;
-}
-.jl-tl__axis-spacer {}
-.jl-tl__axis {
-  position: relative;
-  height: 18px;
-}
-.jl-tl__tick {
-  position: absolute;
-  transform: translateX(-50%);
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--ink-4);
-  letter-spacing: 0.04em;
-}
-.jl-tl__row {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 12px;
-  align-items: center;
-  padding: 14px 0;
-}
-.jl-tl__label {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-right: 8px;
-}
-.jl-tl__day {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.jl-tl__date {
-  font-family: var(--sans);
-  font-size: 14px;
-  color: var(--ink-2);
-  letter-spacing: -0.005em;
-}
-.jl-tl__loc {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.jl-tl__sub {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.jl-tl__track {
-  position: relative;
-  height: 24px;
-}
-.jl-tl__track {
-  position: relative;
-  height: 20px;
-}
-.jl-tl__baseline {
-  position: absolute;
-  left: 0; right: 0;
-  top: 50%;
-  height: 1px;
-  background: var(--rule);
-}
-.jl-tl__mark {
-  position: absolute;
-  top: 50%;
-  width: 20px;
-  height: 20px;
-  margin-left: -10px;
-  margin-top: -10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink);
-  background: var(--bg);
-  border-radius: 50%;
-  cursor: help;
-}
-.jl-tl__mark .jl-icon {
-  width: 16px;
-  height: 16px;
-  display: block;
-}
-.jl-tl__mark--light { color: var(--ink); }
-.jl-tl__mark--dark  { color: var(--ink-2); }
-.jl-tl__mark--meal  { color: var(--ink); }
-.jl-tl__mark--coffee { color: var(--ink-2); }
-.jl-tl__mark--sleep  { color: var(--ink-2); }
-.jl-tl__mark--pill   { color: var(--blue); }
-
-/* Legend */
-.jl-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 22px;
-  padding: 18px 0;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 32px;
-}
-.jl-legend__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.jl-legend__item .jl-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--ink-2);
-}
-
 /* Today card */
 .jl-today {
   margin-bottom: 28px;
@@ -1011,6 +878,72 @@
   letter-spacing: -0.005em;
 }
 
+/* All days list — compact, click-to-activate */
+.jl-days {
+  margin-bottom: 32px;
+}
+.jl-days__label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+.jl-days__list {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--rule);
+}
+.jl-days__row {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1.2fr) minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 140ms ease;
+}
+.jl-days__row:hover { background: var(--field); }
+.jl-days__row.is-active {
+  background: var(--field-focus);
+}
+.jl-days__day {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.jl-days__date {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+}
+.jl-days__loc {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.jl-days__sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 /* Tips — single line of phrases */
 .jl-tips {
   font-family: var(--mono);
@@ -1045,19 +978,6 @@
   .jl-header__recover { font-size: 11px; }
   .jl-header__sev { font-size: 11px; }
 
-  .jl-tl__axis-row,
-  .jl-tl__row {
-    grid-template-columns: 110px 1fr;
-    gap: 10px;
-  }
-  .jl-tl__day { font-size: 12px; }
-  .jl-tl__date { font-size: 12px; }
-  .jl-tl__loc { font-size: 10px; }
-  .jl-tl__sub { font-size: 10px; }
-  .jl-tl__tick { font-size: 11px; }
-  .jl-tl__mark { width: 18px; height: 18px; margin-left: -9px; margin-top: -9px; }
-  .jl-tl__mark .jl-icon { width: 14px; height: 14px; }
-
   .jl-today__day { font-size: 19px; }
   .jl-today__date { font-size: 15px; }
   .jl-today__row { grid-template-columns: 24px 60px 1fr; gap: 10px; }
@@ -1065,9 +985,17 @@
   .jl-today__label { font-size: 15px; }
   .jl-today__icon .jl-icon { width: 16px; height: 16px; }
 
-  .jl-legend { gap: 14px; }
-  .jl-legend__item { font-size: 11px; }
-  .jl-legend__item .jl-icon { width: 14px; height: 14px; }
+  .jl-days__row {
+    grid-template-columns: 56px 1fr auto;
+    grid-template-areas: "day date date" "day loc sub";
+    row-gap: 2px;
+    column-gap: 10px;
+    padding: 12px 0;
+  }
+  .jl-days__day { grid-area: day; align-self: center; }
+  .jl-days__date { grid-area: date; }
+  .jl-days__loc { grid-area: loc; }
+  .jl-days__sub { grid-area: sub; text-align: right; }
 
   .jl-tips { font-size: 12px; }
 

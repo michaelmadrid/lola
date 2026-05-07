@@ -120,11 +120,13 @@ window.util = {
   },
 
   // Format an hour-float (e.g., 13.5 = 13:30) respecting user's time format.
-  // Used by the timeline / call windows.
+  // Used by the timeline / call windows. Handles overflow (25 → 1am next day).
   fmtTimeFloat(h) {
     const fmt = this.getTimeFormat();
-    const whole = Math.floor(h);
-    const minutes = Math.round((h - whole) * 60);
+    // Normalize to [0, 24) — handles overflow like 25 → 1
+    let normalized = ((h % 24) + 24) % 24;
+    const whole = Math.floor(normalized);
+    const minutes = Math.round((normalized - whole) * 60);
     if (fmt === '24h') {
       return `${String(whole).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
     }

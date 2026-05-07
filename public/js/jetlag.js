@@ -22,8 +22,8 @@
   const popList     = document.getElementById('jl-popover-list');
 
   const headerStrip = document.getElementById('jl-header');
-  const timelineEl  = document.getElementById('jl-timeline');
   const todayEl     = document.getElementById('jl-today');
+  const daysEl      = document.getElementById('jl-days');
   const tipsEl      = document.getElementById('jl-tips');
   const emptyEl     = document.getElementById('jl-empty-section');
   const planSection = document.getElementById('jl-plan-section');
@@ -153,29 +153,40 @@
 
     const days = [];
 
+    // Pre-trip days: only bedtime + light + coffee shift. Meals stay near normal.
+    // Day −1 has the biggest shift; Day −shiftDays the smallest.
     for (let d = shiftDays; d >= 1; d--) {
-      const dayShift = eastbound ? -d : +d;
-      const wakeBase = 7 + dayShift;
-      const sleepBase = 22 + dayShift;
-      const breakfast = 8 + dayShift;
-      const lunch = 13 + dayShift;
-      const dinner = 19 + dayShift;
-      const lastCoffee = 14 + dayShift;
-
+      const shiftAmount = (shiftDays - d + 1); // d=shiftDays → 1, d=1 → shiftDays
       const marks = [];
+
+      // Meals — stay close to normal (only nudge slightly)
+      const breakfast = 8;
+      const lunch = 13;
+      const dinner = 19;
+
       if (eastbound) {
-        marks.push({ hour: wakeBase, type: 'light', label: 'morning light' });
-        marks.push({ hour: sleepBase - 4, type: 'dark', label: 'avoid light' });
+        // Bedtime moves earlier; morning light reinforces early wake
+        const bedtime = 22 - shiftAmount;
+        const wake = 7 - Math.min(shiftAmount, 2); // don't go below 5am
+        const lastCoffee = Math.max(12, 14 - shiftAmount);
+        marks.push({ hour: wake, type: 'light', label: 'morning light' });
+        marks.push({ hour: breakfast, type: 'meal', label: 'breakfast' });
+        marks.push({ hour: lunch, type: 'meal', label: 'lunch' });
+        marks.push({ hour: lastCoffee, type: 'coffee', label: 'last coffee' });
+        marks.push({ hour: bedtime - 2, type: 'dark', label: 'dim lights' });
+        marks.push({ hour: dinner, type: 'meal', label: 'dinner' });
+        if (d === 1) marks.push({ hour: bedtime - 0.5, type: 'pill', label: 'optional 0.3mg melatonin' });
+        marks.push({ hour: bedtime, type: 'sleep', label: 'bedtime' });
       } else {
-        marks.push({ hour: sleepBase - 4, type: 'light', label: 'evening light' });
-      }
-      marks.push({ hour: breakfast, type: 'meal', label: 'breakfast' });
-      marks.push({ hour: lunch, type: 'meal', label: 'lunch' });
-      marks.push({ hour: dinner, type: 'meal', label: 'dinner' });
-      marks.push({ hour: lastCoffee, type: 'coffee', label: 'last coffee' });
-      marks.push({ hour: sleepBase, type: 'sleep', label: 'bedtime' });
-      if (eastbound && d === 1) {
-        marks.push({ hour: sleepBase - 0.5, type: 'pill', label: 'optional 0.3mg melatonin' });
+        // Bedtime moves later; evening light reinforces late sleep
+        const bedtime = 22 + shiftAmount;
+        const lastCoffee = Math.min(18, 14 + shiftAmount);
+        marks.push({ hour: 8, type: 'meal', label: 'breakfast' });
+        marks.push({ hour: lunch, type: 'meal', label: 'lunch' });
+        marks.push({ hour: lastCoffee, type: 'coffee', label: 'last coffee' });
+        marks.push({ hour: dinner, type: 'meal', label: 'dinner' });
+        marks.push({ hour: bedtime - 3, type: 'light', label: 'evening light' });
+        marks.push({ hour: bedtime, type: 'sleep', label: 'bedtime' });
       }
 
       days.push({
@@ -187,22 +198,23 @@
       });
     }
 
+    // Day 1 in destination — full destination schedule
     const arrivalMarks = [];
     if (eastbound) {
       arrivalMarks.push({ hour: 7, type: 'light', label: 'morning light' });
-      arrivalMarks.push({ hour: 18, type: 'dark', label: 'dim lights' });
       arrivalMarks.push({ hour: 8, type: 'meal', label: 'breakfast' });
       arrivalMarks.push({ hour: 13, type: 'meal', label: 'lunch' });
-      arrivalMarks.push({ hour: 19, type: 'meal', label: 'dinner' });
       arrivalMarks.push({ hour: 14, type: 'coffee', label: 'last coffee' });
+      arrivalMarks.push({ hour: 18, type: 'dark', label: 'dim lights' });
+      arrivalMarks.push({ hour: 19, type: 'meal', label: 'dinner' });
       arrivalMarks.push({ hour: 21.5, type: 'pill', label: 'optional 0.3mg melatonin' });
       arrivalMarks.push({ hour: 22, type: 'sleep', label: 'bedtime' });
     } else {
       arrivalMarks.push({ hour: 8, type: 'meal', label: 'breakfast' });
       arrivalMarks.push({ hour: 13, type: 'meal', label: 'lunch' });
+      arrivalMarks.push({ hour: 16, type: 'coffee', label: 'last coffee' });
       arrivalMarks.push({ hour: 17, type: 'light', label: 'evening light' });
       arrivalMarks.push({ hour: 19, type: 'meal', label: 'dinner' });
-      arrivalMarks.push({ hour: 16, type: 'coffee', label: 'last coffee' });
       arrivalMarks.push({ hour: 23, type: 'sleep', label: 'bedtime, push later' });
     }
     days.push({
@@ -262,39 +274,7 @@
       <span class="jl-header__sev jl-header__sev--${plan.severity}">${util.escapeHtml(plan.severity)}</span>
     `;
 
-    // Timeline
-    let tlHtml = '';
-    tlHtml += `
-      <div class="jl-tl__axis-row">
-        <div class="jl-tl__axis-spacer"></div>
-        <div class="jl-tl__axis">
-          ${[0, 6, 12, 18, 24].map(h => `<span class="jl-tl__tick" style="left:${(h/24)*100}%">${h}</span>`).join('')}
-        </div>
-      </div>
-    `;
-    for (const day of plan.days) {
-      const dateStr = dateForOffset(depDate, day.offset);
-      const cityName = day.location === 'origin' ? fromCity.name : toCity.name;
-      tlHtml += `
-        <div class="jl-tl__row">
-          <div class="jl-tl__label">
-            <span class="jl-tl__day">${util.escapeHtml(day.label)}</span>
-            ${dateStr ? `<span class="jl-tl__date">${util.escapeHtml(dateStr)}</span>` : ''}
-            <span class="jl-tl__loc">${util.escapeHtml(cityName)}</span>
-          </div>
-          <div class="jl-tl__track">
-            <div class="jl-tl__baseline"></div>
-            ${day.marks.map(m => {
-              const left = (m.hour / 24) * 100;
-              return `<div class="jl-tl__mark jl-tl__mark--${m.type}" style="left:${left}%" title="${util.escapeHtml(m.label)} · ${util.fmtTimeFloat(m.hour)}">${ICONS[m.type] || ''}</div>`;
-            }).join('')}
-          </div>
-        </div>
-      `;
-    }
-    timelineEl.innerHTML = tlHtml;
-
-    // Today card
+    // Today card (rendered first below)
     const todayInfo = pickTodayDay(plan, refDate);
     if (todayInfo) {
       const day = todayInfo.day;
@@ -321,8 +301,104 @@
       todayEl.innerHTML = '';
     }
 
+    // Days list — compact, click to switch active day
+    const activeOffset = todayInfo ? todayInfo.day.offset : null;
+    daysEl.innerHTML = `
+      <h3 class="jl-days__label">All days</h3>
+      <div class="jl-days__list">
+        ${plan.days.map(d => {
+          const dateStr = dateForOffset(depDate, d.offset);
+          const cityName = d.location === 'origin' ? fromCity.name : toCity.name;
+          const sub = sublabelForDay(d, depDate);
+          const isActive = d.offset === activeOffset;
+          return `
+            <button class="jl-days__row${isActive ? ' is-active' : ''}" data-offset="${d.offset}">
+              <span class="jl-days__day">${util.escapeHtml(d.label)}</span>
+              ${dateStr ? `<span class="jl-days__date">${util.escapeHtml(dateStr)}</span>` : ''}
+              <span class="jl-days__loc">${util.escapeHtml(cityName)}</span>
+              ${sub ? `<span class="jl-days__sub">${util.escapeHtml(sub)}</span>` : ''}
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+    // Wire row clicks: clicking a day makes it the today card
+    daysEl.querySelectorAll('.jl-days__row').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const off = parseInt(btn.dataset.offset, 10);
+        renderActiveDay(plan, off);
+      });
+    });
+
     const tips = pickTips(plan.directionLabel, plan.severity);
     tipsEl.textContent = tips.join(' · ');
+  }
+
+  // Render a specific day as the today card (used when user clicks a row in the days list)
+  function renderActiveDay(plan, offset) {
+    const day = plan.days.find(d => d.offset === offset);
+    if (!day) return;
+    const todayDate = dateForOffset(depDate, day.offset);
+    const todayCity = day.location === 'origin' ? fromCity.name : toCity.name;
+    const sub = sublabelForDay(day, depDate);
+    todayEl.innerHTML = `
+      <div class="jl-today__head">
+        <span class="jl-today__day">${util.escapeHtml(day.label)}</span>
+        ${todayDate ? `<span class="jl-today__date">${util.escapeHtml(todayDate)}</span>` : ''}
+        <span class="jl-today__loc">${util.escapeHtml(todayCity)}</span>
+        ${sub ? `<span class="jl-today__sub">${util.escapeHtml(sub)}</span>` : ''}
+      </div>
+      <div class="jl-today__grid">
+        ${day.marks.map(m => `
+          <div class="jl-today__row">
+            <span class="jl-today__icon">${ICONS[m.type]}</span>
+            <span class="jl-today__time">${util.fmtTimeFloat(m.hour)}</span>
+            <span class="jl-today__label">${util.escapeHtml(m.label)}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    // Update active state in days list
+    daysEl.querySelectorAll('.jl-days__row').forEach(b => {
+      b.classList.toggle('is-active', parseInt(b.dataset.offset, 10) === offset);
+    });
+    // Smooth-scroll today into view
+    todayEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // Compute a sublabel for a given day based on its relationship to today's date.
+  function sublabelForDay(day, depDateStr) {
+    if (!depDateStr) return day.sublabel || '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dep = new Date(depDateStr + 'T00:00:00');
+    const daysUntilDep = Math.round((dep - today) / 86400000);
+
+    if (day.offset === 1) {
+      if (daysUntilDep === 0) return 'today · flight day';
+      if (daysUntilDep > 0)   return `flight in ${daysUntilDep} day${daysUntilDep === 1 ? '' : 's'}`;
+      if (daysUntilDep < 0)   return 'arrival';
+    }
+    if (day.offset < 0) {
+      const daysFromNow = -day.offset + (daysUntilDep <= 0 ? 0 : -(0)); // pre-trip day occurs (depDate - |offset|) days from today
+      // Calculate calendar distance: this day is (daysUntilDep + day.offset) days from today (since offset is negative)
+      // When daysUntilDep=5 and offset=-3, day is 5+(-3)=2 days from today
+      const daysFromToday = daysUntilDep + day.offset;
+      if (daysFromToday === 0) return 'today';
+      if (daysFromToday === 1) return 'tomorrow';
+      if (daysFromToday > 1)   return `in ${daysFromToday} days`;
+      if (daysFromToday < 0)   return 'past';
+    }
+    if (day.offset > 1) {
+      // Day 2 = 1 day after flight, Day 3 = 2 days after flight, etc.
+      const daysAfterFlight = day.offset - 1;
+      const daysFromToday = daysUntilDep + daysAfterFlight;
+      if (daysFromToday === 0) return 'today';
+      if (daysFromToday === 1) return 'tomorrow';
+      if (daysFromToday > 1)   return `in ${daysFromToday} days`;
+      if (daysFromToday < 0)   return 'past';
+    }
+    return day.sublabel || '';
   }
 
   function pickTodayDay(plan, refDate) {
