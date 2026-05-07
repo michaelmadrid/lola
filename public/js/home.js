@@ -289,9 +289,13 @@
       input.value = '';
       autoGrow();
       tagsBox.innerHTML = '';
+
+      // Show a ghost row immediately so the stream visibly responds.
+      // It's a generic blank pulse — NOT an echo of the raw text.
+      injectGhostRow();
+
       await api.post('/api/saves', { text });
-      await loadStream();
-      // Async AI parse happens server-side — refresh again after a beat to pick up the structure
+      // Wait a beat for AI parse to land before reloading from server
       setTimeout(() => loadStream(), 2500);
       setTimeout(() => loadStream(), 6000);
     } catch (err) {
@@ -299,7 +303,30 @@
       toast(err.message || 'Save failed');
       input.value = text;
       autoGrow();
+      // Ensure we clean up the ghost on failure
+      const ghost = streamEl.querySelector('.stream__ghost');
+      if (ghost) ghost.remove();
     }
+  }
+
+  // Inject a generic pulsing ghost row at the top of the stream while AI parses.
+  // No raw text echo — just shape, so user sees something is happening.
+  function injectGhostRow() {
+    // Remove the empty state if present
+    const empty = streamEl.querySelector('.stream__empty');
+    if (empty) empty.remove();
+
+    const ghost = document.createElement('div');
+    ghost.className = 'stream__item stream__ghost';
+    ghost.innerHTML = `
+      <div class="stream__body">
+        <span class="stream__ghost-bar stream__ghost-bar--name"></span>
+        <span class="stream__ghost-bar stream__ghost-bar--tip"></span>
+        <span class="stream__ghost-bar stream__ghost-bar--meta"></span>
+      </div>
+      <span class="stream__when">…</span>
+    `;
+    streamEl.insertBefore(ghost, streamEl.firstChild);
   }
 
   // Auto-grow textarea: shrink to one line when empty, expand up to ~6 lines

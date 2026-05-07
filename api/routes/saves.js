@@ -91,20 +91,10 @@ async function parseAndUpdate(saveId, text) {
            category = $2,
            tip = $3,
            country = $4,
-           address = $5,
-           address_source = $6,
            ai_parsed_at = NOW(),
            ai_parse_error = NULL
-     WHERE id = $7`,
-    [
-      parsed.place_name,
-      parsed.category,
-      parsed.tip,
-      parsed.country,
-      parsed.address || null,
-      parsed.address ? 'ai' : null,
-      saveId,
-    ]
+     WHERE id = $5`,
+    [parsed.place_name, parsed.category, parsed.tip, parsed.country, saveId]
   );
 
   // Attach city via save_cities if AI gave us one (and regex didn't already)
@@ -324,7 +314,7 @@ router.post('/', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
     'text', 'tags', 'url', 'place_id', 'archived_at',
-    'place_name', 'category', 'tip', 'country', 'address', 'address_source',
+    'place_name', 'category', 'tip', 'country',
   ];
   const updates = [];
   const params = [];
@@ -333,11 +323,6 @@ router.patch('/:id', authenticate, async (req, res) => {
       params.push(req.body[key]);
       updates.push(`${key} = $${params.length}`);
     }
-  }
-  // If user is editing address but didn't pass an explicit source, mark it confirmed
-  if (req.body.address !== undefined && req.body.address_source === undefined) {
-    params.push('confirmed');
-    updates.push(`address_source = $${params.length}`);
   }
   if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
   params.push(req.params.id);

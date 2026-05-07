@@ -422,6 +422,31 @@
   opacity: 0.6;
 }
 
+/* Ghost row shown immediately on capture, while AI parse runs */
+.stream__ghost .stream__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stream__ghost-bar {
+  display: block;
+  background: var(--rule);
+  border-radius: 2px;
+  animation: ghostPulse 1.2s ease-in-out infinite;
+}
+.stream__ghost-bar--name { width: 38%; height: 14px; }
+.stream__ghost-bar--tip  { width: 62%; height: 11px; opacity: 0.7; animation-delay: 120ms; }
+.stream__ghost-bar--meta { width: 22%; height: 9px;  opacity: 0.55; animation-delay: 240ms; }
+@keyframes ghostPulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.95; }
+}
+.stream__ghost .stream__when {
+  font-family: var(--mono);
+  color: var(--ink-3);
+  opacity: 0.6;
+}
+
 /* =========================================================
    TODOS (right column) — notes-style, API-persisted
    ========================================================= */

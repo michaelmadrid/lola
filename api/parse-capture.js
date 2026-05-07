@@ -23,30 +23,53 @@ const SYSTEM_PROMPT = `You extract structured fields from short travel notes a u
 
 Return JSON only, no preamble or commentary. Schema:
 {
-  "place_name": string | null,   // the venue or business name (e.g. "Della Terra")
-  "city": string | null,         // just the city name, no country, no neighborhood
-  "country": string | null,      // ISO English country name (e.g. "France", "Indonesia")
+  "place_name": string | null,   // the venue or business name
+  "city": string | null,         // just the city or neighborhood — see rules
+  "country": string | null,      // ISO English country name
   "category": string | null,     // one of: eat, drink, coffee, stay, shop, see, other
-  "tip": string | null,          // any practical note: hours, what to order, what to avoid
-  "address": string | null       // street address ONLY if you are highly confident
+  "tip": string | null           // remaining advice/context
 }
 
 Rules:
-- Leave fields null if you are uncertain. Do not guess.
+- Try hard to extract a place_name. Even unusual or generic-sounding names like "Neighbourhood" can be real businesses.
+- Leave fields null only if truly uncertain. Don't punish weird names.
 - Normalize spelling for known cities (e.g., "Bandng" → "Bandung").
-- Do NOT infer city from country alone. If only "Indonesia" is mentioned, leave city null.
-- Strip the city name out of place_name (e.g., "Joes Coffee Paris" → place_name: "Joes Coffee", city: "Paris").
-- The tip field is the remaining advice/context after place_name and city are extracted.
-- Address: ONLY return if you are highly confident this is the actual street address of this specific place. Better to leave null than to guess. Format: full street address as commonly written.
+- DO NOT infer city from cuisine. "Italian restaurant" does not mean Italy. The COUNTRY follows the actual location, not the food.
+- DO NOT infer city from country alone. "Indonesia" alone leaves city null.
+- city can be a neighborhood (e.g., "Pererenan", "Marais", "Canggu") or a city proper. Use whichever the user wrote.
+- Order doesn't matter — "Pererenan, Della Terra" and "Della Terra Pererenan" both have place=Della Terra, city=Pererenan.
 - Categories:
-    eat = restaurants, food spots
-    drink = bars, cocktail places
+    eat = restaurants, food spots, bakeries
+    drink = bars, cocktail places, wine bars
     coffee = coffee shops, cafes
-    stay = hotels, accommodations
-    shop = stores, boutiques, bookshops, galleries-as-shop
-    see = galleries, museums, parks, neighborhoods, sights
-    other = anything else (or unclear)
-- If the input does not describe a place at all (e.g. "tape your mouth" — pure note), return all null.`;
+    stay = hotels, accommodations, airbnbs
+    shop = stores, boutiques, bookshops
+    see = galleries, museums, parks, sights
+    other = anything else
+- If input is not a place at all (e.g. "tape your mouth"), return all null.
+
+Examples:
+
+Input: Mosto Bali natural wine, Italian
+Output: {"place_name": "Mosto", "city": "Bali", "country": "Indonesia", "category": "drink", "tip": "natural wine, Italian"}
+
+Input: Della Terra Pererenan, sit at the bar
+Output: {"place_name": "Della Terra", "city": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "sit at the bar"}
+
+Input: Pererenan, Della Terra - so good, grab a bar seat
+Output: {"place_name": "Della Terra", "city": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "so good, grab a bar seat"}
+
+Input: Neighbourhood — best breakfast, Vegemite
+Output: {"place_name": "Neighbourhood", "city": null, "country": null, "category": "eat", "tip": "best breakfast, Vegemite"}
+
+Input: Joes Coffee Paris, cash only
+Output: {"place_name": "Joes Coffee", "city": "Paris", "country": "France", "category": "coffee", "tip": "cash only"}
+
+Input: Hatchards London bookshop, oldest in UK
+Output: {"place_name": "Hatchards", "city": "London", "country": "United Kingdom", "category": "shop", "tip": "oldest in UK"}
+
+Input: tape your mouth (Ritva Saarikko)
+Output: {"place_name": null, "city": null, "country": null, "category": null, "tip": null}`;
 
 /**
  * Parse a single capture text. Returns parsed object or { error }.
@@ -89,7 +112,7 @@ async function parseCapture(text) {
     }
 
     // Normalize empty strings to null
-    for (const k of ['place_name', 'city', 'country', 'tip', 'category', 'address']) {
+    for (const k of ['place_name', 'city', 'country', 'tip', 'category']) {
       if (parsed[k] === '' || parsed[k] === undefined) parsed[k] = null;
       if (typeof parsed[k] === 'string') parsed[k] = parsed[k].trim() || null;
     }
