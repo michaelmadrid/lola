@@ -27,6 +27,15 @@
   const tipsEl      = document.getElementById('jl-tips');
   const emptyEl     = document.getElementById('jl-empty-section');
   const planSection = document.getElementById('jl-plan-section');
+  const noDateEl    = document.getElementById('jl-no-date');
+  const noDateBtn   = document.getElementById('jl-no-date-btn');
+
+  if (noDateBtn) {
+    noDateBtn.addEventListener('click', () => {
+      dateInput.focus();
+      try { dateInput.showPicker && dateInput.showPicker(); } catch {}
+    });
+  }
 
   // ---------- SVG icons (12x12, currentColor) ----------
   const ICONS = {
@@ -87,6 +96,21 @@
     return Math.round(diff);
   }
 
+  // Take a YYYY-MM-DD string + day offset, return formatted "Sat May 10".
+  // Day offset is the day number from buildDays: -3, -2, -1, 1, 2, 3...
+  // Day 1 = departure date itself. Day −1 = 1 day before. Day 2 = 1 day after.
+  function dateForOffset(depDateStr, offset) {
+    if (!depDateStr) return null;
+    const base = new Date(depDateStr + 'T12:00:00');
+    if (isNaN(base.getTime())) return null;
+    // Day 1 = depDate. Day -1 = depDate - 1 day. Day 2 = depDate + 1 day.
+    // So: real offset in days = (offset > 0 ? offset - 1 : offset)
+    const dayDelta = offset > 0 ? offset - 1 : offset;
+    const d = new Date(base);
+    d.setDate(d.getDate() + dayDelta);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
   // ---------- Loaders ----------
   async function loadAllCities() {
     try {
@@ -116,8 +140,8 @@
         recoveryDays: 1,
         directionLabel: diff === 0 ? 'no shift' : (diff > 0 ? 'east' : 'west'),
         days: [
-          { label: 'Day 1', sublabel: 'arrival', location: 'destination', marks: defaultDayMarks(7, 22, 14) },
-          { label: 'Day 2', sublabel: '', location: 'destination', marks: defaultDayMarks(7, 22, 14) },
+          { label: 'Day 1', sublabel: 'arrival', offset: 1, location: 'destination', marks: defaultDayMarks(7, 22, 14) },
+          { label: 'Day 2', sublabel: '', offset: 2, location: 'destination', marks: defaultDayMarks(7, 22, 14) },
         ],
       };
     }
@@ -129,7 +153,6 @@
 
     const days = [];
 
-    // Pre-trip days: shift gradually
     for (let d = shiftDays; d >= 1; d--) {
       const dayShift = eastbound ? -d : +d;
       const wakeBase = 7 + dayShift;
@@ -157,13 +180,13 @@
 
       days.push({
         label: `Day −${d}`,
-        sublabel: 'origin',
+        sublabel: 'before flight',
+        offset: -d,
         location: 'origin',
         marks: marks.sort((a, b) => a.hour - b.hour),
       });
     }
 
-    // Day 1 in destination
     const arrivalMarks = [];
     if (eastbound) {
       arrivalMarks.push({ hour: 7, type: 'light', label: 'morning light' });
@@ -183,15 +206,14 @@
       arrivalMarks.push({ hour: 23, type: 'sleep', label: 'bedtime, push later' });
     }
     days.push({
-      label: 'Day 1', sublabel: 'arrival', location: 'destination',
+      label: 'Day 1', sublabel: 'arrival', offset: 1, location: 'destination',
       marks: arrivalMarks.slice().sort((a, b) => a.hour - b.hour),
     });
 
-    // Days 2-3+
     const followCount = Math.max(2, Math.min(recoveryDays - 1, 4));
     for (let d = 2; d <= followCount + 1; d++) {
       days.push({
-        label: `Day ${d}`, sublabel: '', location: 'destination',
+        label: `Day ${d}`, sublabel: '', offset: d, location: 'destination',
         marks: arrivalMarks.slice().sort((a, b) => a.hour - b.hour),
       });
     }
@@ -219,6 +241,9 @@
     }
     emptyEl.style.display = 'none';
     planSection.style.display = '';
+
+    // Show the no-date prompt only when departure date is missing
+    if (noDateEl) noDateEl.style.display = depDate ? 'none' : '';
 
     const refDate = depDate ? new Date(depDate + 'T12:00:00') : new Date();
     const diff = hourDiff(fromCity.timezone, toCity.timezone, refDate);
@@ -248,11 +273,14 @@
       </div>
     `;
     for (const day of plan.days) {
+      const dateStr = dateForOffset(depDate, day.offset);
+      const cityName = day.location === 'origin' ? fromCity.name : toCity.name;
       tlHtml += `
         <div class="jl-tl__row">
           <div class="jl-tl__label">
             <span class="jl-tl__day">${util.escapeHtml(day.label)}</span>
-            ${day.sublabel ? `<span class="jl-tl__sub">${util.escapeHtml(day.sublabel)}</span>` : ''}
+            ${dateStr ? `<span class="jl-tl__date">${util.escapeHtml(dateStr)}</span>` : ''}
+            <span class="jl-tl__loc">${util.escapeHtml(cityName)}</span>
           </div>
           <div class="jl-tl__track">
             <div class="jl-tl__baseline"></div>
@@ -270,10 +298,14 @@
     const todayInfo = pickTodayDay(plan, refDate);
     if (todayInfo) {
       const day = todayInfo.day;
+      const todayDate = dateForOffset(depDate, day.offset);
+      const todayCity = day.location === 'origin' ? fromCity.name : toCity.name;
       todayEl.innerHTML = `
         <div class="jl-today__head">
           <span class="jl-today__day">${util.escapeHtml(day.label)}</span>
-          <span class="jl-today__sub">${util.escapeHtml(todayInfo.sublabel)}</span>
+          ${todayDate ? `<span class="jl-today__date">${util.escapeHtml(todayDate)}</span>` : ''}
+          <span class="jl-today__loc">${util.escapeHtml(todayCity)}</span>
+          ${todayInfo.sublabel ? `<span class="jl-today__sub">${util.escapeHtml(todayInfo.sublabel)}</span>` : ''}
         </div>
         <div class="jl-today__grid">
           ${day.marks.map(m => `

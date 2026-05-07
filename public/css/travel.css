@@ -732,6 +732,37 @@
 .jl-prefill-hint a { color: var(--blue); text-decoration: none; }
 .jl-prefill-hint a:hover { text-decoration: underline; }
 
+/* No-date prompt above timeline */
+.jl-no-date {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+  font-style: italic;
+  letter-spacing: -0.005em;
+  margin: 0 0 18px;
+  padding: 0;
+}
+.jl-no-date__btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  background: none;
+  border: 1px solid var(--rule);
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-style: normal;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+.jl-no-date__btn:hover {
+  background: var(--field);
+  border-color: var(--blue);
+}
+
 /* Header strip */
 .jl-header {
   font-family: var(--sans);
@@ -781,7 +812,7 @@
 }
 .jl-tl__axis-row {
   display: grid;
-  grid-template-columns: 100px 1fr;
+  grid-template-columns: 130px 1fr;
   gap: 12px;
   align-items: end;
   height: 16px;
@@ -802,10 +833,10 @@
 }
 .jl-tl__row {
   display: grid;
-  grid-template-columns: 100px 1fr;
+  grid-template-columns: 130px 1fr;
   gap: 12px;
   align-items: center;
-  padding: 8px 0;
+  padding: 10px 0;
 }
 .jl-tl__label {
   display: flex;
@@ -818,6 +849,19 @@
   font-size: 11px;
   color: var(--ink);
   letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.jl-tl__date {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+}
+.jl-tl__loc {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .jl-tl__sub {
@@ -900,6 +944,7 @@
   align-items: baseline;
   gap: 10px;
   margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 .jl-today__day {
   font-family: var(--sans);
@@ -907,6 +952,19 @@
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.01em;
+}
+.jl-today__date {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+}
+.jl-today__loc {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 .jl-today__sub {
   font-family: var(--mono);
@@ -979,10 +1037,12 @@
 
   .jl-tl__axis-row,
   .jl-tl__row {
-    grid-template-columns: 70px 1fr;
+    grid-template-columns: 90px 1fr;
     gap: 8px;
   }
   .jl-tl__day { font-size: 10px; }
+  .jl-tl__date { font-size: 10px; }
+  .jl-tl__loc { font-size: 8px; }
   .jl-tl__sub { font-size: 8px; }
   .jl-tl__tick { font-size: 9px; }
   .jl-tl__mark { width: 12px; height: 12px; margin-left: -6px; margin-top: -6px; }
@@ -991,7 +1051,11 @@
   .jl-today__row { grid-template-columns: 20px 50px 1fr; gap: 8px; }
   .jl-today__time { font-size: 11px; }
   .jl-today__label { font-size: 13px; }
+  .jl-today__day { font-size: 16px; }
+  .jl-today__date { font-size: 13px; }
 
   .jl-legend { gap: 12px; }
   .jl-legend__item { font-size: 9px; }
+
+  .jl-no-date { flex-wrap: wrap; gap: 8px; }
 }
