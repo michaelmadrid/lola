@@ -59,11 +59,9 @@
     return frac === 0 ? `${sign}${whole}h` : `${sign}${whole}.${Math.round(frac * 10)}h`;
   }
 
-  // Format current time in a city's timezone like "13:49"
+  // Format current time in a city's timezone, respecting global time format preference
   function fmtCityTime(tz) {
-    return new Intl.DateTimeFormat('en-US', {
-      timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false,
-    }).format(new Date());
+    return util.fmtTime(new Date(), { timeZone: tz });
   }
 
   // Format current weekday + day in a city's timezone like "Wed May 6"
@@ -454,9 +452,7 @@
   }
 
   function fmtHour(h) {
-    const whole = Math.floor(h);
-    const minutes = Math.round((h - whole) * 60);
-    return `${String(whole).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    return util.fmtTimeFloat(h);
   }
 
   // ---------- Add city popover ----------

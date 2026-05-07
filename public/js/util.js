@@ -92,4 +92,46 @@ window.util = {
   query(name) {
     return new URLSearchParams(location.search).get(name);
   },
+
+  // ----- Time formatting (respects user's global time format preference) -----
+
+  // Returns '24h' or '12h'. Defaults to '24h' if not set.
+  getTimeFormat() {
+    try {
+      const v = localStorage.getItem('kit.time_format');
+      return v === '12h' ? '12h' : '24h';
+    } catch {
+      return '24h';
+    }
+  },
+
+  // Format a Date in a given timezone, respecting user's time format preference.
+  // Returns "13:49" or "1:49 PM".
+  fmtTime(date, opts = {}) {
+    const d = (date instanceof Date) ? date : new Date(date);
+    const fmt = this.getTimeFormat();
+    const config = {
+      hour: fmt === '24h' ? '2-digit' : 'numeric',
+      minute: '2-digit',
+      hour12: fmt === '12h',
+    };
+    if (opts.timeZone) config.timeZone = opts.timeZone;
+    return new Intl.DateTimeFormat('en-US', config).format(d);
+  },
+
+  // Format an hour-float (e.g., 13.5 = 13:30) respecting user's time format.
+  // Used by the timeline / call windows.
+  fmtTimeFloat(h) {
+    const fmt = this.getTimeFormat();
+    const whole = Math.floor(h);
+    const minutes = Math.round((h - whole) * 60);
+    if (fmt === '24h') {
+      return `${String(whole).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+    // 12h with AM/PM
+    const period = whole >= 12 ? 'pm' : 'am';
+    let display = whole % 12;
+    if (display === 0) display = 12;
+    return `${display}:${String(minutes).padStart(2, '0')} ${period}`;
+  },
 };

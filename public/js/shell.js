@@ -34,10 +34,8 @@
     if (!timeEl) return;
     try {
       const tz = localStorage.getItem('lola.home_timezone') || 'Asia/Makassar';
-      timeEl.textContent = new Date().toLocaleTimeString('en-US', {
-        hour: 'numeric', minute: '2-digit', hour12: true,
-        timeZone: tz,
-      });
+      timeEl.textContent = window.util ? window.util.fmtTime(new Date(), { timeZone: tz })
+        : new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: tz });
     } catch (e) {}
   };
   updateTime();

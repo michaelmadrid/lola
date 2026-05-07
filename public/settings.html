@@ -308,6 +308,22 @@
       </div>
     </div>
 
+    <div class="setting-row">
+      <div class="setting-row__head">
+        <span class="setting-row__label">24-hour clock</span>
+        <span class="setting-row__hint">Off shows times as 1:49 PM. On shows 13:49.</span>
+      </div>
+      <div class="setting-row__field">
+        <label class="toggle__layout">
+          <span class="toggle">
+            <input type="checkbox" id="time-format-toggle">
+            <span class="toggle__slot"></span>
+            <span class="toggle__knob"></span>
+          </span>
+        </label>
+      </div>
+    </div>
+
   </div>
 
   <div class="settings-foot">
@@ -378,6 +394,14 @@
       document.documentElement.classList.remove('dark');
       document.body.classList.remove('dark');
     }
+  });
+
+  // Time format toggle (24h on = checked; off = 12h AM/PM). Default: 24h.
+  const timeFormatInput = document.getElementById('time-format-toggle');
+  timeFormatInput.checked = localStorage.getItem('kit.time_format') !== '12h';
+  timeFormatInput.addEventListener('change', () => {
+    localStorage.setItem('kit.time_format', timeFormatInput.checked ? '24h' : '12h');
+    if (window.kitUpdateHeaderTime) window.kitUpdateHeaderTime();
   });
 
   // Home location — city picker (replaces free-text)
