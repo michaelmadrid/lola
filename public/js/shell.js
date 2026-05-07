@@ -33,10 +33,10 @@
   if (timeEl) {
     const updateTime = () => {
       try {
+        const tz = localStorage.getItem('lola.home_timezone') || 'Asia/Makassar';
         timeEl.textContent = new Date().toLocaleTimeString('en-US', {
           hour: 'numeric', minute: '2-digit', hour12: true,
-          // TODO: read user's home base TZ from settings later
-          timeZone: 'Asia/Makassar'
+          timeZone: tz,
         });
       } catch (e) {}
     };

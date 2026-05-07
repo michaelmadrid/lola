@@ -113,6 +113,109 @@
       border-top: 1px solid var(--rule);
       color: var(--ink-3);
     }
+
+    /* Home city picker */
+    .home-city-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .home-city-btn {
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--ink);
+      background: var(--field);
+      border: 0;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.005em;
+      transition: background 140ms ease;
+    }
+    .home-city-btn:hover { background: var(--field-focus); }
+    .home-city-caret { font-size: 10px; color: var(--ink-3); }
+    .home-city-tz {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .home-city-popover {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: 4px;
+      width: 320px;
+      max-width: calc(100vw - 32px);
+      z-index: 20;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+    }
+    .home-city-popover.is-open { display: flex; }
+    .home-city-search {
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      outline: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--rule);
+      letter-spacing: -0.005em;
+    }
+    .home-city-search::placeholder { color: var(--ink-3); }
+    .home-city-list {
+      max-height: 280px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    .home-city-item {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      width: 100%;
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink);
+      background: none;
+      border: 0;
+      padding: 9px 14px;
+      cursor: pointer;
+      text-align: left;
+      letter-spacing: -0.005em;
+    }
+    .home-city-item:hover { background: var(--field); }
+    .home-city-item.is-current { color: var(--blue); }
+    .home-city-country {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      margin-left: 8px;
+    }
+    .home-city-item-tz {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+    }
+    .home-city-item-tz--missing { color: var(--ink-4); font-style: italic; }
+    .home-city-empty {
+      padding: 14px;
+      font-size: 13px;
+      color: var(--ink-3);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -190,17 +293,27 @@
     <div class="setting-row">
       <div class="setting-row__head">
         <span class="setting-row__label">Home location</span>
-        <span class="setting-row__hint">Shown in the top-right when no trip is active</span>
+        <span class="setting-row__hint">Used for the time in the top-right and for capture defaults</span>
       </div>
       <div class="setting-row__field">
-        <input type="text" id="home-loc" placeholder="Bali" maxlength="40">
+        <div class="home-city-wrap">
+          <button type="button" class="home-city-btn" id="home-city-btn">
+            <span id="home-city-name">— pick a city —</span>
+            <span class="home-city-caret">▾</span>
+          </button>
+          <span class="home-city-tz" id="home-city-tz"></span>
+          <div class="home-city-popover" id="home-city-popover">
+            <input type="text" class="home-city-search" id="home-city-search" placeholder="Type a city…" autocomplete="off">
+            <div class="home-city-list" id="home-city-list"></div>
+          </div>
+        </div>
       </div>
     </div>
 
   </div>
 
   <div class="settings-foot">
-    <div class="settings-foot__more">More coming · timezone, capture defaults, account</div>
+    <div class="settings-foot__more">More coming · capture defaults, account</div>
   </div>
 
 </main>
@@ -265,18 +378,112 @@
     }
   });
 
-  // Home location
-  const locInput = document.getElementById('home-loc');
-  locInput.value = localStorage.getItem('lola.home_location') || 'Bali';
-  let saveLocTimer;
-  locInput.addEventListener('input', () => {
-    clearTimeout(saveLocTimer);
-    saveLocTimer = setTimeout(() => {
-      const v = locInput.value.trim() || 'Bali';
-      localStorage.setItem('lola.home_location', v);
-      window.toast && toast('Home location saved');
-    }, 400);
+  // Home location — city picker (replaces free-text)
+  const homeCityBtn      = document.getElementById('home-city-btn');
+  const homeCityName     = document.getElementById('home-city-name');
+  const homeCityTz       = document.getElementById('home-city-tz');
+  const homeCityPopover  = document.getElementById('home-city-popover');
+  const homeCitySearch   = document.getElementById('home-city-search');
+  const homeCityList     = document.getElementById('home-city-list');
+
+  let allCities = [];
+  let pickedHomeCity = null;
+
+  function setHomeCity(city) {
+    pickedHomeCity = city;
+    homeCityName.textContent = city ? city.name : '— pick a city —';
+    homeCityTz.textContent = city && city.timezone ? city.timezone : '';
+    // Mirror to localStorage for non-API consumers (header, etc.)
+    if (city) {
+      try {
+        localStorage.setItem('lola.home_location', city.name);
+        localStorage.setItem('lola.home_timezone', city.timezone || '');
+      } catch {}
+    }
+    homeCityPopover.classList.remove('is-open');
+  }
+
+  function renderHomeCityList(query) {
+    const q = (query || '').trim().toLowerCase();
+    // Featured first when no query, full match list when querying
+    const list = q
+      ? allCities.filter(c => c.name.toLowerCase().includes(q)).slice(0, 12)
+      : allCities.filter(c => c.status === 3 && c.timezone).slice(0, 20);
+    if (!list.length) {
+      homeCityList.innerHTML = '<div class="home-city-empty">No matches.</div>';
+      return;
+    }
+    homeCityList.innerHTML = list.map(c =>
+      `<button type="button" class="home-city-item${pickedHomeCity && pickedHomeCity.id === c.id ? ' is-current' : ''}" data-city-id="${c.id}">
+        <span>${util.escapeHtml(c.name)}${c.country ? `<span class="home-city-country">${util.escapeHtml(c.country)}</span>` : ''}</span>
+        ${c.timezone ? `<span class="home-city-item-tz">${util.escapeHtml(c.timezone)}</span>` : '<span class="home-city-item-tz home-city-item-tz--missing">no tz</span>'}
+      </button>`
+    ).join('');
+    homeCityList.querySelectorAll('.home-city-item').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const cid = parseInt(btn.dataset.cityId, 10);
+        const c = allCities.find(x => x.id === cid);
+        if (!c) return;
+        if (!c.timezone) {
+          window.toast && toast('That city has no timezone yet');
+          return;
+        }
+        setHomeCity(c);
+        try {
+          await api.patch('/api/auth/me', { home_city_id: c.id });
+          window.toast && toast('Home location saved');
+        } catch (err) {
+          window.toast && toast(err.message || 'Save failed');
+        }
+      });
+    });
+  }
+
+  homeCityBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    homeCityPopover.classList.toggle('is-open');
+    if (homeCityPopover.classList.contains('is-open')) {
+      homeCitySearch.value = '';
+      renderHomeCityList('');
+      setTimeout(() => homeCitySearch.focus(), 50);
+    }
   });
+  homeCitySearch.addEventListener('input', () => renderHomeCityList(homeCitySearch.value));
+  homeCitySearch.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { homeCityPopover.classList.remove('is-open'); }
+  });
+  document.addEventListener('click', (e) => {
+    if (!homeCityPopover.contains(e.target) && !homeCityBtn.contains(e.target)) {
+      homeCityPopover.classList.remove('is-open');
+    }
+  });
+
+  // Initial load: cities + current home from server
+  (async function initHomeCity() {
+    try {
+      const data = await api.get('/api/cities');
+      allCities = (data.cities || []).filter(c => c.status !== 0);
+    } catch {}
+    try {
+      const meResp = await api.get('/api/auth/me');
+      if (meResp.user) {
+        api.user.set(meResp.user);
+        nameInput.value = meResp.user.name || nameInput.value;
+        if (meResp.user.home_city) {
+          setHomeCity(meResp.user.home_city);
+        } else {
+          // Fallback to localStorage display, no DB-backed pick
+          const lsName = localStorage.getItem('lola.home_location');
+          if (lsName) {
+            const match = allCities.find(c => c.name.toLowerCase() === lsName.toLowerCase());
+            if (match) setHomeCity(match);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('me load', err);
+    }
+  })();
 
   const signOutFoot = document.getElementById('signout-link-foot');
   if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });

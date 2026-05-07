@@ -324,12 +324,7 @@
   opacity: 1;
   transform: translateY(0);
 }
-.capture__batch {
-  display: flex;
-  justify-content: flex-end;
-  padding: 4px 4px 0;
-  margin-top: -4px;
-}
+/* Inline batch link, sits just before the Save button */
 .capture__batch-link {
   font-family: var(--mono);
   font-size: 10px;
@@ -337,6 +332,11 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   text-decoration: none;
+  flex-shrink: 0;
+  padding: 4px 6px;
+  margin: 0 4px 0 0;
+  border-right: 1px solid var(--rule);
+  align-self: center;
   transition: color 140ms ease;
 }
 .capture__batch-link:hover { color: var(--blue); }

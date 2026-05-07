@@ -39,8 +39,8 @@
     cityPopover.classList.remove('is-open');
   }
 
-  function loadDefaultCity() {
-    // Cascade: localStorage last-used → home location (Bali) → first featured
+  async function loadDefaultCity() {
+    // Cascade: localStorage last-used → user's home_city → localStorage home_location string → first featured
     try {
       const cached = localStorage.getItem(STORAGE_KEY);
       if (cached) {
@@ -49,13 +49,25 @@
         if (found) { setPickedCity(found); return; }
       }
     } catch {}
-    // Fallback: Bali by name (user is Bali-based per memory)
-    const bali = allCities.find(c => c.name.toLowerCase() === 'bali');
-    if (bali) { setPickedCity(bali); return; }
+    // Try user's home city from API (most authoritative)
+    try {
+      const me = await api.get('/api/auth/me');
+      if (me && me.user && me.user.home_city_id) {
+        const found = allCities.find(c => c.id === me.user.home_city_id);
+        if (found) { setPickedCity(found); return; }
+      }
+    } catch {}
+    // Fallback: home_location string from localStorage matched against cities
+    try {
+      const lsName = localStorage.getItem('lola.home_location');
+      if (lsName) {
+        const match = allCities.find(c => c.name.toLowerCase() === lsName.toLowerCase());
+        if (match) { setPickedCity(match); return; }
+      }
+    } catch {}
     // Last fallback: first featured city (status=3)
     const firstFeatured = allCities.find(c => c.status === 3);
     if (firstFeatured) { setPickedCity(firstFeatured); return; }
-    // Truly empty
     setPickedCity(null);
   }
 
@@ -239,6 +251,6 @@
 
   // ---------- Init ----------
   await loadCities();
-  loadDefaultCity();
+  await loadDefaultCity();
   updateCounter();
 })();
