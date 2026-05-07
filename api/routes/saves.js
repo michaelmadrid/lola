@@ -187,14 +187,8 @@ async function attachedCitiesFor(saveIds) {
 // Adds attached_cities array per save
 router.get('/', authenticate, async (req, res) => {
   try {
-    let sql = `SELECT s.*,
-                      c.name AS city_name,
-                      p.name AS place_name,
-                      t.name AS trip_name
+    let sql = `SELECT s.*
                FROM saves s
-               LEFT JOIN cities c ON s.city_id = c.id
-               LEFT JOIN places p ON s.place_id = p.id
-               LEFT JOIN trips t ON s.trip_id = t.id
                WHERE s.user_id = $1`;
     const params = [req.user.id];
 
@@ -205,14 +199,14 @@ router.get('/', authenticate, async (req, res) => {
       params.push(req.query.tag);
       sql += ` AND $${params.length} = ANY(s.tags)`;
     }
-    if (req.query.trip_id) {
-      params.push(req.query.trip_id);
-      sql += ` AND s.trip_id = $${params.length}`;
-    }
     if (req.query.city_id) {
       // Filter saves that have this city attached (via save_cities)
       params.push(req.query.city_id);
       sql += ` AND s.id IN (SELECT save_id FROM save_cities WHERE city_id = $${params.length})`;
+    }
+    if (req.query.category) {
+      params.push(req.query.category);
+      sql += ` AND s.category = $${params.length}`;
     }
     sql += ` ORDER BY s.created_at DESC`;
 
@@ -234,19 +228,20 @@ router.get('/', authenticate, async (req, res) => {
 
 // Create a single save row + run regex city detection. Async AI parse fires after.
 // Used by POST in both single-line and multi-line modes.
-async function createSingleSave({ userId, text, tags, url, trip_id, city_id, place_id }) {
+// Note: cityIdHint is attached via save_cities (not a column on saves anymore).
+async function createSingleSave({ userId, text, tags, url, cityIdHint, place_id }) {
   const result = await pool.query(
-    `INSERT INTO saves (user_id, text, tags, url, trip_id, city_id, place_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO saves (user_id, text, tags, url, place_id)
+     VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [userId, text.trim(), tags, url, trip_id, city_id || null, place_id || null]
+    [userId, text.trim(), tags, url, place_id || null]
   );
   const save = result.rows[0];
 
   // Regex-based city tagging (fast, deterministic)
   const detectedIds = detectCities(text);
-  if (city_id && !detectedIds.includes(parseInt(city_id, 10))) {
-    detectedIds.push(parseInt(city_id, 10));
+  if (cityIdHint && !detectedIds.includes(parseInt(cityIdHint, 10))) {
+    detectedIds.push(parseInt(cityIdHint, 10));
   }
   for (const cid of detectedIds) {
     try {
@@ -278,25 +273,10 @@ async function createSingleSave({ userId, text, tags, url, trip_id, city_id, pla
 // Supports single-line input (one save) OR multi-line input (one save per line).
 // Multi-line: each non-empty line becomes its own save with its own AI parse.
 router.post('/', authenticate, async (req, res) => {
-  const { text, tags: explicitTags, url: explicitUrl, trip_id, city_id, place_id } = req.body;
+  const { text, tags: explicitTags, url: explicitUrl, city_id, place_id } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
 
   try {
-    // Resolve trip_id from active trip if not supplied
-    let resolvedTripId = trip_id || null;
-    if (!resolvedTripId) {
-      const active = await pool.query(
-        `SELECT t.id FROM trips t
-         JOIN trip_members tm ON t.id = tm.trip_id
-         WHERE tm.user_id = $1
-           AND t.date_start IS NOT NULL AND t.date_end IS NOT NULL
-           AND CURRENT_DATE BETWEEN t.date_start AND t.date_end
-         LIMIT 1`,
-        [req.user.id]
-      );
-      if (active.rows[0]) resolvedTripId = active.rows[0].id;
-    }
-
     // Split on newlines, drop empty lines after trimming
     const lines = String(text)
       .split(/\r?\n/)
@@ -313,8 +293,7 @@ router.post('/', authenticate, async (req, res) => {
         text: single,
         tags,
         url,
-        trip_id: resolvedTripId,
-        city_id,
+        cityIdHint: city_id,
         place_id,
       });
       return res.json({ save });
@@ -323,16 +302,15 @@ router.post('/', authenticate, async (req, res) => {
     // Multi-line: one save per line, return {saves: [...]}
     const created = [];
     for (const line of lines) {
-      const tags = extractTags(line); // per-line tags, ignore explicit batch tags
+      const tags = extractTags(line);
       const url = extractFirstUrl(line);
       const save = await createSingleSave({
         userId: req.user.id,
         text: line,
         tags,
         url,
-        trip_id: resolvedTripId,
-        city_id, // shared across batch if explicit
-        place_id: null, // never bulk-assign place_id
+        cityIdHint: city_id, // shared across batch if explicit
+        place_id: null,
       });
       created.push(save);
     }
@@ -345,7 +323,7 @@ router.post('/', authenticate, async (req, res) => {
 // PATCH /api/saves/:id
 router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
-    'text', 'tags', 'url', 'trip_id', 'city_id', 'place_id', 'archived_at',
+    'text', 'tags', 'url', 'place_id', 'archived_at',
     'place_name', 'category', 'tip', 'country', 'address', 'address_source',
   ];
   const updates = [];

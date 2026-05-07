@@ -373,16 +373,19 @@
   min-width: 0;
 }
 .stream__name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--ink);
-  letter-spacing: -0.008em;
+  letter-spacing: -0.012em;
   line-height: 1.3;
   word-break: break-word;
 }
 .stream__meta {
-  font-size: 13px;
-  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  margin-top: 4px;
 }
 .stream__meta .dot { color: var(--ink-4); margin: 0 5px; }
 .stream__when {
@@ -396,84 +399,18 @@
   padding-top: 2px;
 }
 
-/* Auto-detected city chips on save rows */
-.stream__chips {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 2px;
-}
-.stream__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  color: var(--ink-2);
-  background: transparent;
-  padding: 2px 0;
-  position: relative;
-}
-.stream__chip::before {
-  content: "·";
-  color: var(--ink-4);
-  margin-right: 2px;
-}
-.stream__chip:first-child::before { display: none; }
-.stream__chip-name {
-  text-transform: lowercase;
-  letter-spacing: 0.04em;
-}
-.stream__chip-x {
-  visibility: hidden;
-  font-family: var(--mono);
-  font-size: 14px;
-  color: var(--ink-3);
-  background: none;
-  border: 0;
-  padding: 4px 6px;
-  margin: -4px -6px -4px 0;
-  cursor: pointer;
-  transition: color 140ms ease;
-}
-.stream__chip:hover .stream__chip-x { visibility: visible; }
-.stream__chip-x:hover { color: var(--blue); }
-@media (max-width: 720px) {
-  /* always show the × on touch */
-  .stream__chip-x { visibility: visible; opacity: 0.5; }
-}
-
 /* Structured save rendering (when AI parsed a place_name) */
 .stream__name--raw {
-  /* Raw text display — slightly less prominent than parsed */
   font-weight: 400;
+  font-size: 15px;
   color: var(--ink-2);
 }
 .stream__tip {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink-2);
   letter-spacing: -0.005em;
-  line-height: 1.4;
-  margin-top: 2px;
-}
-.stream__chips-row {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 4px;
-}
-.stream__cat {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  padding: 1px 6px;
-  border: 1px solid var(--rule);
-  border-radius: 2px;
-  flex-shrink: 0;
+  line-height: 1.45;
+  margin-top: 3px;
 }
 .stream__pending {
   font-family: var(--mono);

@@ -340,49 +340,37 @@
       return;
     }
     streamEl.innerHTML = saves.map(s => {
-      // Decide: structured render (parsed place) vs raw render (unparsed)
       const hasPlace = s.place_name && s.place_name.trim();
       const isPending = !s.ai_parsed_at && !s.ai_parse_error;
 
-      const cityChips = (s.attached_cities && s.attached_cities.length)
-        ? `<span class="stream__chips">` +
-          s.attached_cities.map(c =>
-            `<span class="stream__chip" data-city-id="${c.id}" data-save-id="${s.id}">
-              <span class="stream__chip-name">${util.escapeHtml(c.name.toLowerCase())}</span>
-              <button class="stream__chip-x" data-save-id="${s.id}" data-city-id="${c.id}" aria-label="Remove tag">×</button>
-            </span>`
-          ).join('') +
-          `</span>`
+      // Build the quiet metadata line: "drink · bali" or just "bali" or just "drink"
+      const cityNames = (s.attached_cities || []).map(c => c.name.toLowerCase());
+      const metaParts = [];
+      if (s.category) metaParts.push(s.category);
+      if (cityNames.length) metaParts.push(cityNames.join(' · '));
+      const metaLine = metaParts.length
+        ? `<span class="stream__meta">${util.escapeHtml(metaParts.join(' · '))}</span>`
         : '';
 
       const tagsLine = (s.tags && s.tags.length)
-        ? s.tags.map(t => '#' + util.escapeHtml(t)).join(' · ')
+        ? `<span class="stream__meta">${s.tags.map(t => '#' + util.escapeHtml(t)).join(' · ')}</span>`
         : '';
 
       let bodyHtml;
       if (hasPlace) {
-        // Structured: place name, optional tip, category chip + city chips
         const tipLine = s.tip
           ? `<span class="stream__tip">${util.escapeHtml(s.tip)}</span>`
-          : '';
-        const catChip = s.category
-          ? `<span class="stream__cat">${util.escapeHtml(s.category)}</span>`
           : '';
         bodyHtml = `
           <span class="stream__name">${util.escapeHtml(s.place_name)}</span>
           ${tipLine}
-          <span class="stream__chips-row">
-            ${catChip}
-            ${cityChips}
-          </span>
+          ${metaLine}
         `;
       } else {
-        // Raw text fallback (parse pending, parse failed, or non-place save)
-        const pendingBadge = isPending ? `<span class="stream__pending" title="Parsing…">…</span>` : '';
+        const pendingBadge = isPending ? `<span class="stream__pending">…</span>` : '';
         bodyHtml = `
           <span class="stream__name stream__name--raw">${util.escapeHtml(s.text)} ${pendingBadge}</span>
-          ${cityChips}
-          ${tagsLine ? `<span class="stream__meta">${tagsLine}</span>` : ''}
+          ${metaLine || tagsLine}
         `;
       }
 
@@ -393,24 +381,6 @@
         <span class="stream__when">${util.timeAgo(s.created_at)}</span>
       </div>`;
     }).join('');
-
-    // Wire chip × buttons → remove the tag
-    streamEl.querySelectorAll('.stream__chip-x').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const saveId = btn.dataset.saveId;
-        const cityId = btn.dataset.cityId;
-        const chipEl = btn.closest('.stream__chip');
-        if (chipEl) chipEl.style.opacity = '0.4';
-        try {
-          await api.delete(`/api/saves/${saveId}/cities/${cityId}`);
-          if (chipEl) chipEl.remove();
-        } catch (err) {
-          if (chipEl) chipEl.style.opacity = '';
-          toast(err.message || 'Could not remove tag');
-        }
-      });
-    });
   }
   loadStream();
   // refresh stream every 5 minutes to update relative times AND pick up async-parsed structures
