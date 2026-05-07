@@ -998,11 +998,12 @@
   border-bottom: 1px solid var(--rule);
 }
 .mm__cell {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
+  letter-spacing: -0.005em;
   text-align: center;
   padding: 6px 2px;
   line-height: 1.2;
@@ -1012,9 +1013,6 @@
 }
 .mm__cell--trip {
   color: var(--blue);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
 }
 
 /* Make the date heading clickable */
@@ -1088,15 +1086,6 @@
   row-gap: 56px;
   flex: 1;
 }
-.year-overlay__foot {
-  margin-top: 56px;
-  text-align: center;
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--ink-2);
-}
 
 /* Each month block */
 .ym__month {
@@ -1118,12 +1107,12 @@
   gap: 0;
 }
 .ym__cell {
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 400;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
+  letter-spacing: -0.005em;
   text-align: center;
   padding: 5px 2px;
   line-height: 1.3;
@@ -1133,9 +1122,6 @@
 }
 .ym__cell--trip {
   color: var(--blue);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  text-decoration-thickness: 1px;
 }
 
 /* Responsive: 3 cols on tablet, 2 cols on mobile */
