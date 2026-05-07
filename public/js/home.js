@@ -504,9 +504,27 @@
     try {
       const data = await api.get('/api/saves?limit=30');
       renderStream(data.saves || []);
+      // If any ghost rows are visible (just-captured saves still being parsed by AI),
+      // schedule retry-fetches to replace them once parsing completes.
+      schedulePendingRetries();
     } catch (err) {
       console.error('loadStream', err);
     }
+  }
+
+  // If pending/ghost saves exist in the stream, poll a few times to catch the
+  // AI-parse completion. Idempotent: clears any prior schedule first.
+  let pendingRetryTimers = [];
+  function schedulePendingRetries() {
+    // Clear previous schedule
+    pendingRetryTimers.forEach(t => clearTimeout(t));
+    pendingRetryTimers = [];
+    const ghosts = streamEl.querySelectorAll('.stream__ghost');
+    if (!ghosts.length) return;
+    // Poll at 1.5s, 3.5s, 7s, 12s — covers most AI parse completion windows
+    [1500, 3500, 7000, 12000].forEach(delay => {
+      pendingRetryTimers.push(setTimeout(() => loadStream(), delay));
+    });
   }
 
   function renderStream(saves) {
