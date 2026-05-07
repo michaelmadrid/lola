@@ -137,34 +137,19 @@
     // At half phase, terminator is a vertical line through center (xR = 0).
     const xR = r * Math.abs(1 - 2 * illum);
 
-    // Lit side: waxing (phase < 0.5) → right; waning → left.
-    const litRight = phase < 0.5;
+    // We FILL the dark (shadow) side. The unfilled background = lit moon.
+    // This matches calendar/Muji convention where the ink is the shadow.
+    // Dark side is opposite of lit side: waxing → dark on left, waning → dark on right.
+    const darkRight = phase >= 0.5;
 
-    // Whether the moon is more than half lit (gibbous) or less (crescent).
-    const gibbous = illum > 0.5;
+    // Whether the SHADOW is the larger area (when moon is mostly dark, near new)
+    // or smaller area (when moon is mostly lit, near full).
+    const shadowIsBig = illum < 0.5; // less than half lit = mostly shadow
 
-    // SVG path strategy:
-    // Draw a closed shape representing the LIT region.
-    // Always: move to top point (cx, cy - r).
-    // Outer arc: full half of the moon's outer circle, on the lit side.
-    //   - litRight: outer arc sweeps to (cx, cy+r) clockwise = sweep_flag 1
-    //   - litLeft:  sweeps counterclockwise = sweep_flag 0
-    // Terminator arc: from bottom back to top with x-radius xR.
-    //   - For crescent (illum < 0.5): terminator bulges TOWARD the dark side,
-    //     so the lit region is a thin sliver. The arc goes "inward" past center.
-    //   - For gibbous (illum > 0.5): terminator bulges TOWARD the lit side,
-    //     making the lit region most of the disc.
-    //
-    // The right combinations of sweep_flag for the terminator arc:
-    //   crescent + litRight: terminator is concave from the right's perspective → sweep 0
-    //   gibbous + litRight: terminator bulges outward from right → sweep 1
-    //   crescent + litLeft: mirror → sweep 1
-    //   gibbous + litLeft: mirror → sweep 0
-
-    const outerSweep = litRight ? 1 : 0;
+    const outerSweep = darkRight ? 1 : 0;
     let termSweep;
-    if (litRight) termSweep = gibbous ? 1 : 0;
-    else          termSweep = gibbous ? 0 : 1;
+    if (darkRight) termSweep = shadowIsBig ? 1 : 0;
+    else           termSweep = shadowIsBig ? 0 : 1;
 
     const d = `M ${cx} ${cy - r}
                A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r}
