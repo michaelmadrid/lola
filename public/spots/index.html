@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Spots — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/spots.css">
+  <link rel="stylesheet" href="/css/home.css"><!-- reused for save editor + stream styles -->
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/spots/" class="is-active" data-auth="in">Spots</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/">Atlas</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/spots/" class="is-active" data-auth="in">Spots</a>
+    <a href="/index/">Index</a>
+    <a href="/atlas/">Atlas</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page page-spots">
+
+  <header class="mast">
+    <h1 class="mast__title">Spots</h1>
+    <p class="mast__intro">Your places, by city</p>
+  </header>
+
+  <div class="search-wrap">
+    <input
+      type="text"
+      class="search-input"
+      id="search-input"
+      placeholder="Search by name…"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+    >
+  </div>
+
+  <!-- City pills (single-select) -->
+  <div class="spots-cities" id="spots-cities">
+    <button class="city-pill is-active" data-city="all">all</button>
+  </div>
+
+  <!-- Type filter -->
+  <div class="filters">
+    <div class="filter-group" id="cat-filters">
+      <span class="filter-group__label">Type:</span>
+      <button class="filter-chip is-active" data-cat="all">All</button>
+      <button class="filter-chip" data-cat="eat">Eat</button>
+      <button class="filter-chip" data-cat="drink">Drink</button>
+      <button class="filter-chip" data-cat="coffee">Coffee</button>
+      <button class="filter-chip" data-cat="stay">Stay</button>
+      <button class="filter-chip" data-cat="shop">Shop</button>
+      <button class="filter-chip" data-cat="see">See</button>
+    </div>
+    <div class="filter-group filter-group--type-mobile">
+      <select class="filter-select" id="cat-select-mobile">
+        <option value="all">All types</option>
+        <option value="eat">Eat</option>
+        <option value="drink">Drink</option>
+        <option value="coffee">Coffee</option>
+        <option value="stay">Stay</option>
+        <option value="shop">Shop</option>
+        <option value="see">See</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- The list -->
+  <div class="stream" id="spots-list">
+    <div class="stream__empty">Loading…</div>
+  </div>
+
+</main>
+
+<!-- Save editor modal (same markup as home) -->
+<div class="modal save-fs" id="save-editor">
+  <div class="modal__head">
+    <h3 class="save-fs__title">Edit</h3>
+    <button class="modal__close" id="save-editor-close">close</button>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner save-fs__inner">
+      <div class="save-fs__field">
+        <label class="save-fs__label">Captured</label>
+        <div class="save-fs__captured" id="save-fs-captured">—</div>
+      </div>
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-place">Place</label>
+        <input type="text" class="save-fs__input" id="save-fs-place" placeholder="Place name">
+      </div>
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-tip">Tip</label>
+        <textarea class="save-fs__textarea" id="save-fs-tip" rows="2" placeholder="Note, advice…"></textarea>
+      </div>
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-category">Category</label>
+        <select class="save-fs__select" id="save-fs-category">
+          <option value="">— none —</option>
+          <option value="eat">Eat</option>
+          <option value="drink">Drink</option>
+          <option value="coffee">Coffee</option>
+          <option value="stay">Stay</option>
+          <option value="shop">Shop</option>
+          <option value="see">See</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-city">City</label>
+        <input type="text" class="save-fs__input" id="save-fs-city" placeholder="City" autocomplete="off">
+        <div class="save-fs__suggest" id="save-fs-city-suggest"></div>
+      </div>
+      <div class="save-fs__field">
+        <label class="save-fs__label" for="save-fs-hood">Neighborhood</label>
+        <input type="text" class="save-fs__input" id="save-fs-hood" placeholder="Optional">
+      </div>
+      <div class="save-fs__field">
+        <label class="save-fs__label">Country</label>
+        <div class="save-fs__readonly" id="save-fs-country">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal__foot save-fs__foot">
+    <div class="save-fs__foot-left">
+      <button class="save-fs__danger" id="save-fs-archive">Archive</button>
+      <button class="save-fs__reparse" id="save-fs-reparse">Re-parse with AI</button>
+    </div>
+    <button class="save-btn" id="save-fs-save">Save<span class="kbd">⌘ ↵</span></button>
+  </div>
+</div>
+
+<footer class="foot">
+  <div class="foot__bar">
+    <div class="foot__left">
+      <a class="ver" href="/idle/" title="snake">kit v0.5.1</a>
+    </div>
+    <div class="foot__right">
+      <a href="/settings.html" data-auth="in">Settings</a>
+      <a href="/admin/" data-auth="in">Admin</a>
+      <a href="#" id="signout-link-foot" data-auth="in">Sign out</a>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/spots.js"></script>
+</body>
+</html>

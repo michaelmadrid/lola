@@ -1,0 +1,163 @@
+/* =========================================================
+   spots.css — Spots page (your places, by city)
+   Reuses search-input, filters, stream__item, save-fs* from
+   index.css and home.css. This file holds the city pills + page mast.
+   ========================================================= */
+
+.page-spots {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 56px var(--gutter) 100px;
+}
+@media (max-width: 720px) { .page-spots { padding-top: 32px; } }
+
+.page-spots .mast {
+  padding-bottom: 26px;
+}
+.page-spots .mast__title {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.page-spots .mast__intro {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+/* Search input — copied from index.css since spots.css is standalone */
+.page-spots .search-wrap {
+  margin: 18px 0 0;
+}
+.page-spots .search-input {
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--field);
+  border: 0;
+  outline: 0;
+  padding: 12px 14px;
+  letter-spacing: -0.005em;
+  transition: background 140ms ease;
+}
+.page-spots .search-input::placeholder { color: var(--ink-3); }
+.page-spots .search-input:focus { background: var(--field-focus); }
+
+/* City pills row */
+.spots-cities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 18px 0 6px;
+}
+.city-pill {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 5px 11px;
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.city-pill:hover { color: var(--ink); border-color: var(--ink-3); }
+.city-pill.is-active {
+  color: var(--bg);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+.city-pill.is-active .city-pill__count { color: var(--bg); opacity: 0.7; }
+.city-pill__count {
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.06em;
+}
+
+/* Filter row (type filter — same pattern as index.css) */
+.page-spots .filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  align-items: baseline;
+  padding: 8px 0 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--rule);
+}
+.page-spots .filter-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+.page-spots .filter-group__label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-right: 4px;
+}
+.page-spots .filter-chip {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+  background: transparent;
+  border: 0;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: -0.005em;
+  transition: color 140ms ease;
+  position: relative;
+}
+.page-spots .filter-chip:hover { color: var(--ink); }
+.page-spots .filter-chip.is-active { color: var(--ink); font-weight: 500; }
+.page-spots .filter-chip.is-active::after {
+  content: '';
+  position: absolute;
+  left: 10px; right: 10px; bottom: -1px;
+  height: 1px;
+  background: var(--ink);
+}
+.page-spots .filter-select {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-2);
+  background: transparent;
+  border: 0;
+  padding: 4px 18px 4px 6px;
+  cursor: pointer;
+  appearance: none;
+  letter-spacing: -0.005em;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath fill='%23999' d='M4 6L0 0h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 4px center;
+}
+.page-spots .filter-select:hover { color: var(--ink); }
+
+.filter-group--type-mobile { display: none; }
+
+/* Stream list — uses home.css .stream__item rules */
+.page-spots .stream {
+  padding-top: 4px;
+}
+
+@media (max-width: 720px) {
+  .page-spots .filters { gap: 8px 16px; padding: 10px 0; }
+  #cat-filters { display: none; }
+  .filter-group--type-mobile { display: inline-flex; }
+  .page-spots .search-input { font-size: 16px; padding: 11px 12px; }
+  .city-pill { font-size: 11px; padding: 4px 9px; }
+  .page-spots .mast__title { font-size: 24px; }
+}
