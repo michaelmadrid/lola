@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const { authenticate } = require('../auth');
+const { parseCapture, CATEGORIES } = require('../parse-capture');
 
 function extractTags(text) {
   const matches = String(text).match(/#[a-z0-9_-]+/gi) || [];
@@ -10,6 +11,101 @@ function extractTags(text) {
 function extractFirstUrl(text) {
   const match = String(text).match(/https?:\/\/[^\s]+/);
   return match ? match[0] : null;
+}
+
+function slugifyCity(s) {
+  return String(s)
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .substring(0, 80);
+}
+
+// Find a city by name (case-insensitive whole match), or create it with status=1.
+// Returns the city row.
+async function findOrCreateCity(name, country) {
+  if (!name || !name.trim()) return null;
+  const trimmed = name.trim();
+  // Case-insensitive exact name match
+  const existing = await pool.query(
+    `SELECT * FROM cities WHERE LOWER(name) = LOWER($1) LIMIT 1`,
+    [trimmed]
+  );
+  if (existing.rows[0]) return existing.rows[0];
+
+  // Create new with status=1 (auto-created)
+  const slug = slugifyCity(trimmed);
+  try {
+    const created = await pool.query(
+      `INSERT INTO cities (name, slug, country, status, created_at)
+       VALUES ($1, $2, $3, 1, NOW())
+       RETURNING *`,
+      [trimmed, slug, country || null]
+    );
+    return created.rows[0];
+  } catch (err) {
+    // Slug conflict — try with random suffix
+    if (/duplicate key/i.test(err.message)) {
+      const altSlug = slug + '-' + Math.floor(Math.random() * 9999);
+      const retry = await pool.query(
+        `INSERT INTO cities (name, slug, country, status, created_at)
+         VALUES ($1, $2, $3, 1, NOW())
+         RETURNING *`,
+        [trimmed, altSlug, country || null]
+      );
+      return retry.rows[0];
+    }
+    throw err;
+  }
+}
+
+// Background: parse a save with Claude, update the row + attach city if needed.
+// Fire and forget — never blocks the user's POST. Errors are stored on the row.
+async function parseAndUpdate(saveId, text) {
+  const parsed = await parseCapture(text);
+
+  if (parsed.error) {
+    // Record the error, leave structured fields null
+    await pool.query(
+      `UPDATE saves SET ai_parsed_at = NOW(), ai_parse_error = $1 WHERE id = $2`,
+      [parsed.error, saveId]
+    );
+    return;
+  }
+
+  // Find or create city if AI returned one
+  let cityRow = null;
+  if (parsed.city) {
+    try {
+      cityRow = await findOrCreateCity(parsed.city, parsed.country);
+    } catch (err) {
+      console.error('parseAndUpdate findOrCreateCity', err.message);
+    }
+  }
+
+  // Update saves row with structured fields
+  await pool.query(
+    `UPDATE saves
+       SET place_name = $1,
+           category = $2,
+           tip = $3,
+           country = $4,
+           ai_parsed_at = NOW(),
+           ai_parse_error = NULL
+     WHERE id = $5`,
+    [parsed.place_name, parsed.category, parsed.tip, parsed.country, saveId]
+  );
+
+  // Attach city via save_cities if AI gave us one (and regex didn't already)
+  if (cityRow) {
+    await pool.query(
+      `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+      [saveId, cityRow.id]
+    );
+    // Also refresh cache so future captures see the new city
+    refreshCitiesCache();
+  }
 }
 
 // =============================================================
@@ -181,7 +277,14 @@ router.post('/', authenticate, async (req, res) => {
     }
     save.attached_cities = attached;
 
+    // Respond immediately with the regex-tagged save. AI parse runs async.
     res.json({ save });
+
+    // Fire-and-forget: AI parse the capture and update the row
+    // with structured fields. Errors are caught and stored.
+    parseAndUpdate(save.id, save.text).catch(err => {
+      console.error('parseAndUpdate failed', err);
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
