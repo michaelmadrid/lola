@@ -766,37 +766,37 @@
 /* Header strip */
 .jl-header {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 17px;
   color: var(--ink-2);
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   padding: 0 0 24px;
   border-bottom: 1px solid var(--rule);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .jl-header__route {
   color: var(--ink);
   font-weight: 500;
-  font-size: 16px;
-  letter-spacing: -0.005em;
+  font-size: 20px;
+  letter-spacing: -0.01em;
 }
 .jl-header__sep { color: var(--ink-4); }
 .jl-header__diff,
 .jl-header__recover {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .jl-header__sev {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 2px 7px;
+  padding: 3px 9px;
   border-radius: 999px;
   background: var(--field);
   color: var(--ink-3);
@@ -812,64 +812,68 @@
 }
 .jl-tl__axis-row {
   display: grid;
-  grid-template-columns: 130px 1fr;
+  grid-template-columns: 150px 1fr;
   gap: 12px;
   align-items: end;
-  height: 16px;
-  margin-bottom: 4px;
+  height: 18px;
+  margin-bottom: 6px;
 }
 .jl-tl__axis-spacer {}
 .jl-tl__axis {
   position: relative;
-  height: 16px;
+  height: 18px;
 }
 .jl-tl__tick {
   position: absolute;
   transform: translateX(-50%);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--ink-4);
   letter-spacing: 0.04em;
 }
 .jl-tl__row {
   display: grid;
-  grid-template-columns: 130px 1fr;
+  grid-template-columns: 150px 1fr;
   gap: 12px;
   align-items: center;
-  padding: 10px 0;
+  padding: 14px 0;
 }
 .jl-tl__label {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   padding-right: 8px;
 }
 .jl-tl__day {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .jl-tl__date {
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 14px;
   color: var(--ink-2);
   letter-spacing: -0.005em;
 }
 .jl-tl__loc {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .jl-tl__sub {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+.jl-tl__track {
+  position: relative;
+  height: 24px;
 }
 .jl-tl__track {
   position: relative;
@@ -885,10 +889,10 @@
 .jl-tl__mark {
   position: absolute;
   top: 50%;
-  width: 14px;
-  height: 14px;
-  margin-left: -7px;
-  margin-top: -7px;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -898,8 +902,8 @@
   cursor: help;
 }
 .jl-tl__mark .jl-icon {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   display: block;
 }
 .jl-tl__mark--light { color: var(--ink); }
@@ -913,62 +917,62 @@
 .jl-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
-  padding: 14px 0;
+  gap: 22px;
+  padding: 18px 0;
   border-top: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 .jl-legend__item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 .jl-legend__item .jl-icon {
-  width: 12px;
-  height: 12px;
+  width: 16px;
+  height: 16px;
   color: var(--ink-2);
 }
 
 /* Today card */
 .jl-today {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .jl-today__head {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
 }
 .jl-today__day {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.01em;
 }
 .jl-today__date {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 16px;
   color: var(--ink-2);
   letter-spacing: -0.005em;
 }
 .jl-today__loc {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .jl-today__sub {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -981,10 +985,10 @@
 }
 .jl-today__row {
   display: grid;
-  grid-template-columns: 24px 60px 1fr;
-  gap: 12px;
+  grid-template-columns: 28px 70px 1fr;
+  gap: 14px;
   align-items: center;
-  padding: 9px 0;
+  padding: 12px 0;
   border-bottom: 1px solid var(--rule);
 }
 .jl-today__icon {
@@ -993,16 +997,16 @@
   justify-content: center;
   color: var(--ink-2);
 }
-.jl-today__icon .jl-icon { width: 14px; height: 14px; }
+.jl-today__icon .jl-icon { width: 18px; height: 18px; }
 .jl-today__time {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 .jl-today__label {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--ink);
   letter-spacing: -0.005em;
 }
@@ -1010,13 +1014,13 @@
 /* Tips — single line of phrases */
 .jl-tips {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1.7;
   margin: 0;
-  padding: 18px 0 0;
+  padding: 22px 0 0;
   border-top: 1px solid var(--rule);
 }
 
@@ -1035,27 +1039,37 @@
   .jl-input-arrow { display: none; }
   .jl-city-btn { min-width: 0; padding: 8px 12px; }
 
+  .jl-header { font-size: 15px; gap: 10px; }
+  .jl-header__route { font-size: 17px; }
+  .jl-header__diff,
+  .jl-header__recover { font-size: 11px; }
+  .jl-header__sev { font-size: 11px; }
+
   .jl-tl__axis-row,
   .jl-tl__row {
-    grid-template-columns: 90px 1fr;
-    gap: 8px;
+    grid-template-columns: 110px 1fr;
+    gap: 10px;
   }
-  .jl-tl__day { font-size: 10px; }
-  .jl-tl__date { font-size: 10px; }
-  .jl-tl__loc { font-size: 8px; }
-  .jl-tl__sub { font-size: 8px; }
-  .jl-tl__tick { font-size: 9px; }
-  .jl-tl__mark { width: 12px; height: 12px; margin-left: -6px; margin-top: -6px; }
-  .jl-tl__mark .jl-icon { width: 10px; height: 10px; }
+  .jl-tl__day { font-size: 12px; }
+  .jl-tl__date { font-size: 12px; }
+  .jl-tl__loc { font-size: 10px; }
+  .jl-tl__sub { font-size: 10px; }
+  .jl-tl__tick { font-size: 11px; }
+  .jl-tl__mark { width: 18px; height: 18px; margin-left: -9px; margin-top: -9px; }
+  .jl-tl__mark .jl-icon { width: 14px; height: 14px; }
 
-  .jl-today__row { grid-template-columns: 20px 50px 1fr; gap: 8px; }
-  .jl-today__time { font-size: 11px; }
-  .jl-today__label { font-size: 13px; }
-  .jl-today__day { font-size: 16px; }
-  .jl-today__date { font-size: 13px; }
+  .jl-today__day { font-size: 19px; }
+  .jl-today__date { font-size: 15px; }
+  .jl-today__row { grid-template-columns: 24px 60px 1fr; gap: 10px; }
+  .jl-today__time { font-size: 13px; }
+  .jl-today__label { font-size: 15px; }
+  .jl-today__icon .jl-icon { width: 16px; height: 16px; }
 
-  .jl-legend { gap: 12px; }
-  .jl-legend__item { font-size: 9px; }
+  .jl-legend { gap: 14px; }
+  .jl-legend__item { font-size: 11px; }
+  .jl-legend__item .jl-icon { width: 14px; height: 14px; }
+
+  .jl-tips { font-size: 12px; }
 
   .jl-no-date { flex-wrap: wrap; gap: 8px; }
 }
