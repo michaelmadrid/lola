@@ -163,8 +163,8 @@
 
     const outerSweep = litRight ? 1 : 0;
     let termSweep;
-    if (litRight) termSweep = gibbous ? 0 : 1;
-    else          termSweep = gibbous ? 1 : 0;
+    if (litRight) termSweep = gibbous ? 1 : 0;
+    else          termSweep = gibbous ? 0 : 1;
 
     const d = `M ${cx} ${cy - r}
                A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r}
