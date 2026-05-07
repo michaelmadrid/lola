@@ -44,11 +44,14 @@
   updateDayDate();
   setInterval(updateDayDate, 60 * 60 * 1000);
 
-  // Click the date heading to open the year-view overlay
-  dayDateEl.style.cursor = 'pointer';
-  dayDateEl.setAttribute('role', 'button');
-  dayDateEl.setAttribute('tabindex', '0');
-  dayDateEl.setAttribute('aria-label', 'Open year calendar');
+  // Click "Day 127 / 365" to open the year-view overlay (easter egg)
+  if (dayDoyEl) {
+    dayDoyEl.style.cursor = 'pointer';
+    dayDoyEl.setAttribute('role', 'button');
+    dayDoyEl.setAttribute('tabindex', '0');
+    dayDoyEl.setAttribute('aria-label', 'Open year calendar');
+    dayDoyEl.classList.add('day-sum__doy--clickable');
+  }
   function openYearOverlay() {
     const overlay = document.getElementById('year-overlay');
     if (!overlay) return;
@@ -62,10 +65,12 @@
     overlay.classList.remove('is-open');
     document.body.style.overflow = '';
   }
-  dayDateEl.addEventListener('click', openYearOverlay);
-  dayDateEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openYearOverlay(); }
-  });
+  if (dayDoyEl) {
+    dayDoyEl.addEventListener('click', openYearOverlay);
+    dayDoyEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openYearOverlay(); }
+    });
+  }
   // Close handlers
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeYearOverlay();

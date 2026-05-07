@@ -994,18 +994,18 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 0;
-  padding: 18px 0 14px;
+  padding: 14px 0 12px;
   border-bottom: 1px solid var(--rule);
 }
 .mm__cell {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.005em;
   text-align: center;
-  padding: 6px 2px;
+  padding: 4px 2px;
   line-height: 1.2;
 }
 .mm__cell--empty {
@@ -1015,18 +1015,24 @@
   color: var(--blue);
 }
 
-/* Make the date heading clickable */
-.day-sum__date {
+/* Day-of-year — clickable to open year overlay (easter egg) */
+.day-sum__doy--clickable {
+  cursor: pointer;
   user-select: none;
   transition: color 140ms ease;
 }
-.day-sum__date:hover {
+.day-sum__doy--clickable:hover {
   color: var(--blue);
 }
-.day-sum__date:focus-visible {
+.day-sum__doy--clickable:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+/* Hide mini-month on mobile — too much vertical real estate */
+@media (max-width: 720px) {
+  .mm { display: none; }
 }
 
 /* ===== Year-view calendar overlay (CdG 1986) ===== */
