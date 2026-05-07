@@ -59,9 +59,8 @@
     </nav>
   </header>
 
-  <!-- INPUT ROW -->
+  <!-- Input row -->
   <section class="time-section jl-input-section">
-    <h2 class="time-section__label">Plan</h2>
     <div class="jl-input-row">
       <div class="jl-input">
         <span class="jl-input__label">From</span>
@@ -86,44 +85,38 @@
     <p class="jl-prefill-hint" id="jl-prefill-hint" style="display:none"></p>
   </section>
 
-  <!-- THE TRIP — summary -->
-  <section class="time-section" id="jl-summary-section" style="display:none">
-    <h2 class="time-section__label">The trip</h2>
-    <div class="jl-summary" id="jl-summary"></div>
+  <!-- Plan (everything appears together) -->
+  <section class="time-section" id="jl-plan-section" style="display:none">
+    <!-- Header strip — single line summary -->
+    <div class="jl-header" id="jl-header"></div>
+
+    <!-- Timeline grid -->
+    <div class="jl-timeline" id="jl-timeline"></div>
+
+    <!-- Legend -->
+    <div class="jl-legend">
+      <span class="jl-legend__item"><svg viewBox="0 0 12 12" class="jl-icon"><circle cx="6" cy="6" r="2" fill="currentColor"/><line x1="6" y1="0.5" x2="6" y2="2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="6" y1="10" x2="6" y2="11.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="0.5" y1="6" x2="2" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="10" y1="6" x2="11.5" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>light</span>
+      <span class="jl-legend__item"><svg viewBox="0 0 12 12" class="jl-icon"><path d="M 8.5 2.2 A 4.2 4.2 0 1 0 8.5 9.8 A 3.2 4.2 0 0 1 8.5 2.2 Z" fill="currentColor"/></svg>avoid light</span>
+      <span class="jl-legend__item"><svg viewBox="0 0 12 12" class="jl-icon"><circle cx="6" cy="6" r="2.6" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="6" cy="6" r="1.1" fill="currentColor"/><line x1="1.5" y1="3" x2="1.5" y2="9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><line x1="10.5" y1="3" x2="10.5" y2="9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>meal</span>
+      <span class="jl-legend__item"><svg viewBox="0 0 12 12" class="jl-icon"><path d="M 2.5 4.5 L 8 4.5 L 8 8 Q 8 9.5 6.5 9.5 L 4 9.5 Q 2.5 9.5 2.5 8 Z" fill="none" stroke="currentColor" stroke-width="1"/><path d="M 8 5.5 Q 10 5.5 10 7 Q 10 8 9 8" fill="none" stroke="currentColor" stroke-width="1"/></svg>last coffee</span>
+      <span class="jl-legend__item"><svg viewBox="0 0 12 12" class="jl-icon"><path d="M 3 4 L 7 4 L 3 8 L 7 8" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="miter"/><line x1="8" y1="6" x2="10.5" y2="6" stroke="currentColor" stroke-width="1"/></svg>sleep</span>
+      <span class="jl-legend__item"><svg viewBox="0 0 12 12" class="jl-icon"><rect x="2" y="4.5" width="8" height="3" rx="1.5" ry="1.5" fill="none" stroke="currentColor" stroke-width="1"/><line x1="6" y1="4.5" x2="6" y2="7.5" stroke="currentColor" stroke-width="1"/></svg>melatonin</span>
+    </div>
+
+    <!-- Today card -->
+    <div class="jl-today" id="jl-today"></div>
+
+    <!-- Tips -->
+    <p class="jl-tips" id="jl-tips"></p>
   </section>
 
-  <!-- BEFORE YOU LEAVE -->
-  <section class="time-section" id="jl-before-section" style="display:none">
-    <h2 class="time-section__label">Before you leave</h2>
-    <div class="jl-plan" id="jl-before"></div>
-  </section>
-
-  <!-- ON ARRIVAL — Day 1 -->
-  <section class="time-section" id="jl-arrival-section" style="display:none">
-    <h2 class="time-section__label">On arrival · day 1</h2>
-    <div class="jl-plan" id="jl-arrival"></div>
-  </section>
-
-  <!-- DAYS 2-3 -->
-  <section class="time-section" id="jl-followup-section" style="display:none">
-    <h2 class="time-section__label">Days 2–3</h2>
-    <div class="jl-plan" id="jl-followup"></div>
-  </section>
-
-  <!-- TIPS -->
-  <section class="time-section" id="jl-tips-section" style="display:none">
-    <h2 class="time-section__label">Tips</h2>
-    <ul class="jl-tips" id="jl-tips"></ul>
-  </section>
-
-  <!-- EMPTY STATE -->
+  <!-- Empty -->
   <section class="time-section" id="jl-empty-section">
-    <p class="jl-empty">Pick where you're flying from and to. We'll work out a plan to help you adjust faster.</p>
+    <p class="jl-empty">Pick where you're flying from and to. We'll work out a plan.</p>
   </section>
 
 </main>
 
-<!-- City picker popover (reused for both from/to) -->
 <div class="time-add-popover" id="jl-popover">
   <input type="text" class="time-add-search" id="jl-popover-search" placeholder="Type a city…" autocomplete="off">
   <div class="time-add-list" id="jl-popover-list"></div>

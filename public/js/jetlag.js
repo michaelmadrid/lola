@@ -1,20 +1,17 @@
 /* =========================================================
-   jetlag.js — Jetlag recovery planner
-   Pure rule-based. No AI, no DB writes — reads /api/auth/me
-   and /api/trips/next for prefill.
+   jetlag.js — Jetlag planner (v2: timeline grid)
+   Pure rule-based. Renders a daily plan with marks at specific hours.
    ========================================================= */
 
 (async function () {
-  // ---------- State ----------
   let allCities = [];
   let homeCity = null;
   let fromCity = null;
   let toCity = null;
-  let depDate = null;            // YYYY-MM-DD string
-  let popoverWhich = null;       // 'from' | 'to'
+  let depDate = null;
+  let popoverWhich = null;
   let popoverAnchor = null;
 
-  // ---------- DOM ----------
   const fromBtn  = document.getElementById('jl-from-btn');
   const toBtn    = document.getElementById('jl-to-btn');
   const dateInput = document.getElementById('jl-date');
@@ -24,32 +21,49 @@
   const popSearch   = document.getElementById('jl-popover-search');
   const popList     = document.getElementById('jl-popover-list');
 
-  const sumSection  = document.getElementById('jl-summary-section');
-  const sumEl       = document.getElementById('jl-summary');
-  const beforeSection = document.getElementById('jl-before-section');
-  const beforeEl    = document.getElementById('jl-before');
-  const arrivalSection = document.getElementById('jl-arrival-section');
-  const arrivalEl   = document.getElementById('jl-arrival');
-  const followSection = document.getElementById('jl-followup-section');
-  const followEl    = document.getElementById('jl-followup');
-  const tipsSection = document.getElementById('jl-tips-section');
+  const headerStrip = document.getElementById('jl-header');
+  const timelineEl  = document.getElementById('jl-timeline');
+  const todayEl     = document.getElementById('jl-today');
   const tipsEl      = document.getElementById('jl-tips');
-  const emptySection = document.getElementById('jl-empty-section');
+  const emptyEl     = document.getElementById('jl-empty-section');
+  const planSection = document.getElementById('jl-plan-section');
+
+  // ---------- SVG icons (12x12, currentColor) ----------
+  const ICONS = {
+    light: `<svg viewBox="0 0 12 12" class="jl-icon" aria-hidden="true">
+      <circle cx="6" cy="6" r="2" fill="currentColor"/>
+      <line x1="6" y1="0.5" x2="6" y2="2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="6" y1="10" x2="6" y2="11.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="0.5" y1="6" x2="2" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="10" y1="6" x2="11.5" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    </svg>`,
+    dark: `<svg viewBox="0 0 12 12" class="jl-icon" aria-hidden="true">
+      <path d="M 8.5 2.2 A 4.2 4.2 0 1 0 8.5 9.8 A 3.2 4.2 0 0 1 8.5 2.2 Z" fill="currentColor"/>
+    </svg>`,
+    coffee: `<svg viewBox="0 0 12 12" class="jl-icon" aria-hidden="true">
+      <path d="M 2.5 4.5 L 8 4.5 L 8 8 Q 8 9.5 6.5 9.5 L 4 9.5 Q 2.5 9.5 2.5 8 Z" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+      <path d="M 8 5.5 Q 10 5.5 10 7 Q 10 8 9 8" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="3.5" y1="3" x2="3.5" y2="3.8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="5.25" y1="2.5" x2="5.25" y2="3.8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="7" y1="3" x2="7" y2="3.8" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    </svg>`,
+    meal: `<svg viewBox="0 0 12 12" class="jl-icon" aria-hidden="true">
+      <circle cx="6" cy="6" r="2.6" fill="none" stroke="currentColor" stroke-width="1"/>
+      <circle cx="6" cy="6" r="1.1" fill="currentColor"/>
+      <line x1="1.5" y1="3" x2="1.5" y2="9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+      <line x1="10.5" y1="3" x2="10.5" y2="9" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    </svg>`,
+    sleep: `<svg viewBox="0 0 12 12" class="jl-icon" aria-hidden="true">
+      <path d="M 3 4 L 7 4 L 3 8 L 7 8" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="miter" stroke-linecap="round"/>
+      <line x1="8" y1="6" x2="10.5" y2="6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    </svg>`,
+    pill: `<svg viewBox="0 0 12 12" class="jl-icon" aria-hidden="true">
+      <rect x="2" y="4.5" width="8" height="3" rx="1.5" ry="1.5" fill="none" stroke="currentColor" stroke-width="1"/>
+      <line x1="6" y1="4.5" x2="6" y2="7.5" stroke="currentColor" stroke-width="1"/>
+    </svg>`,
+  };
 
   // ---------- Time math ----------
-  // Hour difference between two timezones at a given moment.
-  // Positive = `to` is AHEAD of `from` (going east means +N hours).
-  function hourDiff(fromTz, toTz, atDate = new Date()) {
-    if (!fromTz || !toTz) return 0;
-    const fromH = hourFloat(fromTz, atDate);
-    const toH = hourFloat(toTz, atDate);
-    let diff = toH - fromH;
-    // Normalize to [-12, +14] range (canonical timezone diff range)
-    if (diff > 14)  diff -= 24;
-    if (diff < -12) diff += 24;
-    return Math.round(diff);
-  }
-
   function hourFloat(tz, date = new Date()) {
     const fmt = new Intl.DateTimeFormat('en-US', {
       timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: false,
@@ -63,37 +77,268 @@
     if (h === 24) h = 0;
     return h + m / 60;
   }
+  function hourDiff(fromTz, toTz, atDate = new Date()) {
+    if (!fromTz || !toTz) return 0;
+    const fromH = hourFloat(fromTz, atDate);
+    const toH = hourFloat(toTz, atDate);
+    let diff = toH - fromH;
+    if (diff > 14)  diff -= 24;
+    if (diff < -12) diff += 24;
+    return Math.round(diff);
+  }
 
-  // ---------- Loading ----------
+  // ---------- Loaders ----------
   async function loadAllCities() {
     try {
       const data = await api.get('/api/cities');
       allCities = (data.cities || []).filter(c => c.timezone && c.status !== 0);
-    } catch {
-      allCities = [];
-    }
+    } catch { allCities = []; }
   }
-
   async function loadMe() {
     const data = await api.get('/api/auth/me');
-    if (data && data.user && data.user.home_city) {
-      homeCity = data.user.home_city;
-    }
+    if (data && data.user && data.user.home_city) homeCity = data.user.home_city;
   }
-
   async function loadActiveTrip() {
     try {
       const data = await api.get('/api/trips/next');
       if (!data || !data.trip || !data.trip.id) return null;
-      // Fetch trip detail to get segments with timezone
       const detail = await api.get('/api/trips/' + data.trip.id);
       return { trip: detail.trip, segments: detail.segments || [] };
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
 
-  // ---------- Setters ----------
+  // ---------- Plan generator ----------
+  function buildDays(diff) {
+    const absDiff = Math.abs(diff);
+    if (absDiff < 2) {
+      return {
+        severity: 'mild',
+        recoveryDays: 1,
+        directionLabel: diff === 0 ? 'no shift' : (diff > 0 ? 'east' : 'west'),
+        days: [
+          { label: 'Day 1', sublabel: 'arrival', location: 'destination', marks: defaultDayMarks(7, 22, 14) },
+          { label: 'Day 2', sublabel: '', location: 'destination', marks: defaultDayMarks(7, 22, 14) },
+        ],
+      };
+    }
+
+    const eastbound = diff > 0;
+    const recoveryDays = eastbound ? Math.ceil(absDiff * 1.0) : Math.ceil(absDiff * 0.7);
+    const severity = absDiff <= 4 ? 'moderate' : (absDiff <= 8 ? 'significant' : 'severe');
+    const shiftDays = Math.min(3, absDiff);
+
+    const days = [];
+
+    // Pre-trip days: shift gradually
+    for (let d = shiftDays; d >= 1; d--) {
+      const dayShift = eastbound ? -d : +d;
+      const wakeBase = 7 + dayShift;
+      const sleepBase = 22 + dayShift;
+      const breakfast = 8 + dayShift;
+      const lunch = 13 + dayShift;
+      const dinner = 19 + dayShift;
+      const lastCoffee = 14 + dayShift;
+
+      const marks = [];
+      if (eastbound) {
+        marks.push({ hour: wakeBase, type: 'light', label: 'morning light' });
+        marks.push({ hour: sleepBase - 4, type: 'dark', label: 'avoid light' });
+      } else {
+        marks.push({ hour: sleepBase - 4, type: 'light', label: 'evening light' });
+      }
+      marks.push({ hour: breakfast, type: 'meal', label: 'breakfast' });
+      marks.push({ hour: lunch, type: 'meal', label: 'lunch' });
+      marks.push({ hour: dinner, type: 'meal', label: 'dinner' });
+      marks.push({ hour: lastCoffee, type: 'coffee', label: 'last coffee' });
+      marks.push({ hour: sleepBase, type: 'sleep', label: 'bedtime' });
+      if (eastbound && d === 1) {
+        marks.push({ hour: sleepBase - 0.5, type: 'pill', label: 'optional 0.3mg melatonin' });
+      }
+
+      days.push({
+        label: `Day −${d}`,
+        sublabel: 'origin',
+        location: 'origin',
+        marks: marks.sort((a, b) => a.hour - b.hour),
+      });
+    }
+
+    // Day 1 in destination
+    const arrivalMarks = [];
+    if (eastbound) {
+      arrivalMarks.push({ hour: 7, type: 'light', label: 'morning light' });
+      arrivalMarks.push({ hour: 18, type: 'dark', label: 'dim lights' });
+      arrivalMarks.push({ hour: 8, type: 'meal', label: 'breakfast' });
+      arrivalMarks.push({ hour: 13, type: 'meal', label: 'lunch' });
+      arrivalMarks.push({ hour: 19, type: 'meal', label: 'dinner' });
+      arrivalMarks.push({ hour: 14, type: 'coffee', label: 'last coffee' });
+      arrivalMarks.push({ hour: 21.5, type: 'pill', label: 'optional 0.3mg melatonin' });
+      arrivalMarks.push({ hour: 22, type: 'sleep', label: 'bedtime' });
+    } else {
+      arrivalMarks.push({ hour: 8, type: 'meal', label: 'breakfast' });
+      arrivalMarks.push({ hour: 13, type: 'meal', label: 'lunch' });
+      arrivalMarks.push({ hour: 17, type: 'light', label: 'evening light' });
+      arrivalMarks.push({ hour: 19, type: 'meal', label: 'dinner' });
+      arrivalMarks.push({ hour: 16, type: 'coffee', label: 'last coffee' });
+      arrivalMarks.push({ hour: 23, type: 'sleep', label: 'bedtime, push later' });
+    }
+    days.push({
+      label: 'Day 1', sublabel: 'arrival', location: 'destination',
+      marks: arrivalMarks.slice().sort((a, b) => a.hour - b.hour),
+    });
+
+    // Days 2-3+
+    const followCount = Math.max(2, Math.min(recoveryDays - 1, 4));
+    for (let d = 2; d <= followCount + 1; d++) {
+      days.push({
+        label: `Day ${d}`, sublabel: '', location: 'destination',
+        marks: arrivalMarks.slice().sort((a, b) => a.hour - b.hour),
+      });
+    }
+
+    return { severity, recoveryDays, directionLabel: eastbound ? 'east' : 'west', days };
+  }
+
+  function defaultDayMarks(wake, sleep, lastCoffee) {
+    return [
+      { hour: wake, type: 'light', label: 'morning light' },
+      { hour: 8, type: 'meal', label: 'breakfast' },
+      { hour: 13, type: 'meal', label: 'lunch' },
+      { hour: lastCoffee, type: 'coffee', label: 'last coffee' },
+      { hour: 19, type: 'meal', label: 'dinner' },
+      { hour: sleep, type: 'sleep', label: 'bedtime' },
+    ];
+  }
+
+  // ---------- Render ----------
+  function render() {
+    if (!fromCity || !toCity) {
+      planSection.style.display = 'none';
+      emptyEl.style.display = '';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    planSection.style.display = '';
+
+    const refDate = depDate ? new Date(depDate + 'T12:00:00') : new Date();
+    const diff = hourDiff(fromCity.timezone, toCity.timezone, refDate);
+    const plan = buildDays(diff);
+
+    const diffLabel = diff === 0 ? 'no time change' :
+      `${Math.abs(diff)}h ${diff > 0 ? 'east' : 'west'}`;
+
+    headerStrip.innerHTML = `
+      <span class="jl-header__route">${util.escapeHtml(fromCity.name)} → ${util.escapeHtml(toCity.name)}</span>
+      <span class="jl-header__sep">·</span>
+      <span class="jl-header__diff">${util.escapeHtml(diffLabel)}</span>
+      <span class="jl-header__sep">·</span>
+      <span class="jl-header__recover">~${plan.recoveryDays} day${plan.recoveryDays === 1 ? '' : 's'}</span>
+      <span class="jl-header__sep">·</span>
+      <span class="jl-header__sev jl-header__sev--${plan.severity}">${util.escapeHtml(plan.severity)}</span>
+    `;
+
+    // Timeline
+    let tlHtml = '';
+    tlHtml += `
+      <div class="jl-tl__axis-row">
+        <div class="jl-tl__axis-spacer"></div>
+        <div class="jl-tl__axis">
+          ${[0, 6, 12, 18, 24].map(h => `<span class="jl-tl__tick" style="left:${(h/24)*100}%">${h}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    for (const day of plan.days) {
+      tlHtml += `
+        <div class="jl-tl__row">
+          <div class="jl-tl__label">
+            <span class="jl-tl__day">${util.escapeHtml(day.label)}</span>
+            ${day.sublabel ? `<span class="jl-tl__sub">${util.escapeHtml(day.sublabel)}</span>` : ''}
+          </div>
+          <div class="jl-tl__track">
+            <div class="jl-tl__baseline"></div>
+            ${day.marks.map(m => {
+              const left = (m.hour / 24) * 100;
+              return `<div class="jl-tl__mark jl-tl__mark--${m.type}" style="left:${left}%" title="${util.escapeHtml(m.label)} · ${util.fmtTimeFloat(m.hour)}">${ICONS[m.type] || ''}</div>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+    timelineEl.innerHTML = tlHtml;
+
+    // Today card
+    const todayInfo = pickTodayDay(plan, refDate);
+    if (todayInfo) {
+      const day = todayInfo.day;
+      todayEl.innerHTML = `
+        <div class="jl-today__head">
+          <span class="jl-today__day">${util.escapeHtml(day.label)}</span>
+          <span class="jl-today__sub">${util.escapeHtml(todayInfo.sublabel)}</span>
+        </div>
+        <div class="jl-today__grid">
+          ${day.marks.map(m => `
+            <div class="jl-today__row">
+              <span class="jl-today__icon">${ICONS[m.type]}</span>
+              <span class="jl-today__time">${util.fmtTimeFloat(m.hour)}</span>
+              <span class="jl-today__label">${util.escapeHtml(m.label)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } else {
+      todayEl.innerHTML = '';
+    }
+
+    const tips = pickTips(plan.directionLabel, plan.severity);
+    tipsEl.textContent = tips.join(' · ');
+  }
+
+  function pickTodayDay(plan, refDate) {
+    if (!plan.days.length) return null;
+    if (!depDate) {
+      const idx = plan.days.findIndex(d => d.label === 'Day 1');
+      return { day: plan.days[idx >= 0 ? idx : 0], sublabel: 'arrival day plan' };
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dep = new Date(depDate + 'T00:00:00');
+    const daysUntilDep = Math.round((dep - today) / 86400000);
+
+    if (daysUntilDep > plan.days.filter(d => d.label.startsWith('Day −')).length) {
+      const earliest = plan.days.find(d => d.label.startsWith('Day −'));
+      if (earliest) return { day: earliest, sublabel: `starts in ${daysUntilDep} days` };
+      return { day: plan.days[0], sublabel: '' };
+    }
+    if (daysUntilDep > 0) {
+      const target = `Day −${daysUntilDep}`;
+      const day = plan.days.find(d => d.label === target);
+      if (day) return { day, sublabel: `${daysUntilDep} day${daysUntilDep === 1 ? '' : 's'} before flight` };
+    }
+    if (daysUntilDep === 0) {
+      const day = plan.days.find(d => d.label === 'Day 1');
+      if (day) return { day, sublabel: 'flight day' };
+    }
+    if (daysUntilDep < 0) {
+      const dayN = Math.abs(daysUntilDep) + 1;
+      const target = `Day ${dayN}`;
+      const day = plan.days.find(d => d.label === target);
+      if (day) return { day, sublabel: `day ${dayN} in ${toCity.name}` };
+    }
+    return { day: plan.days[0], sublabel: '' };
+  }
+
+  function pickTips(direction, severity) {
+    const tips = ['Hydrate hard'];
+    if (direction === 'east') tips.push('Front-load sleep');
+    else tips.push('Push bedtime later');
+    tips.push('Skip airport coffee');
+    tips.push('Move your watch on takeoff');
+    tips.push('Sunlight beats supplements');
+    if (severity === 'severe' || severity === 'significant') tips.push('No meetings first 48h');
+    return tips;
+  }
+
+  // ---------- Picker ----------
   function setCity(which, city) {
     if (which === 'from') {
       fromCity = city;
@@ -104,14 +349,11 @@
     }
     render();
   }
-
   function setDate(d) {
     depDate = d || null;
     dateInput.value = d || '';
     render();
   }
-
-  // ---------- Picker popover ----------
   function openPopover(which, anchor) {
     popoverWhich = which;
     popoverAnchor = anchor;
@@ -127,17 +369,12 @@
     popover.classList.remove('is-open');
     popoverWhich = null;
   }
-
   function renderPopList(query) {
     const q = (query || '').trim().toLowerCase();
     const list = q
       ? allCities.filter(c => c.name.toLowerCase().includes(q)).slice(0, 12)
       : allCities.filter(c => c.status === 3).slice(0, 20);
-
-    if (!list.length) {
-      popList.innerHTML = '<div class="time-add-empty">No matches.</div>';
-      return;
-    }
+    if (!list.length) { popList.innerHTML = '<div class="time-add-empty">No matches.</div>'; return; }
     popList.innerHTML = list.map(c => `
       <button class="time-add-item" data-city-id="${c.id}">
         <span>${util.escapeHtml(c.name)}${c.country ? `<span class="time-add-country">${util.escapeHtml(c.country)}</span>` : ''}</span>
@@ -157,213 +394,26 @@
   popSearch.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopover(); });
   document.addEventListener('click', (e) => {
     if (popoverWhich === null) return;
-    if (!popover.contains(e.target) && !(popoverAnchor && popoverAnchor.contains(e.target))) {
-      closePopover();
-    }
+    if (!popover.contains(e.target) && !(popoverAnchor && popoverAnchor.contains(e.target))) closePopover();
   });
-
   fromBtn.addEventListener('click', (e) => { e.stopPropagation(); openPopover('from', fromBtn); });
   toBtn.addEventListener('click', (e) => { e.stopPropagation(); openPopover('to', toBtn); });
   dateInput.addEventListener('change', () => setDate(dateInput.value));
 
-  // ---------- Recommendations ----------
-  // Returns the full plan based on hour diff.
-  // Sign convention: positive diff = destination is ahead of origin (east).
-  function buildPlan(diff) {
-    const absDiff = Math.abs(diff);
-    if (absDiff < 2) {
-      return {
-        severity: 'mild',
-        days: 1,
-        direction: diff === 0 ? 'no time change' : (diff > 0 ? 'eastbound' : 'westbound'),
-        directionNote: 'Less than 2 hours — barely jetlag. You\'ll feel fine in a day.',
-        before: [],
-        arrival: [
-          { time: 'all day', text: 'Stay on local schedule. Light breakfast on arrival, normal meals.' },
-          { time: 'evening', text: 'Sleep at the local bedtime. Don\'t nap during the day.' },
-        ],
-        followup: [
-          { text: 'You\'re basically adjusted by day 2. Continue local schedule.' },
-        ],
-      };
-    }
-
-    const eastbound = diff > 0;
-    const days = eastbound ? Math.ceil(absDiff * 1.0) : Math.ceil(absDiff * 0.7);
-    const severity = absDiff <= 4 ? 'moderate' : (absDiff <= 8 ? 'significant' : 'severe');
-
-    // Pre-trip shift: cap at 3 hours, 1h per day
-    const shiftDays = Math.min(3, absDiff);
-    const before = [];
-    if (shiftDays > 0) {
-      for (let d = shiftDays; d >= 1; d--) {
-        const shift = d;
-        if (eastbound) {
-          before.push({
-            time: `${d} day${d === 1 ? '' : 's'} before`,
-            text: `Sleep ${shift}h earlier. Get bright light early. Avoid screens after dinner.`,
-          });
-        } else {
-          before.push({
-            time: `${d} day${d === 1 ? '' : 's'} before`,
-            text: `Sleep ${shift}h later. Get bright light in the evening. Coffee later in the day is fine.`,
-          });
-        }
-      }
-    }
-
-    // Day 1 plan in destination local time
-    let arrival = [];
-    if (eastbound) {
-      arrival = [
-        { time: 'on arrival', text: 'If you land in the morning, get sunlight immediately. If you land at night, dim the lights and aim for sleep.' },
-        { time: '07:00', text: 'Wake. Bright light walk. No napping today.' },
-        { time: '08:00', text: 'Light breakfast — protein, fruit, no heavy carbs.' },
-        { time: '13:00', text: 'Lunch outside if possible. Keep light exposure going.' },
-        { time: 'until 14:00', text: 'Caffeine OK before this. Cut it after.' },
-        { time: 'avoid', text: 'Bright light after sunset on day 1. Heavy dinners. Alcohol.' },
-        { time: '21:30', text: 'Dim lights. Optional 0.3–0.5mg melatonin.' },
-        { time: '22:00', text: 'Bedtime. Dark room, cool temperature.' },
-      ];
-    } else {
-      arrival = [
-        { time: 'on arrival', text: 'If you land mid-day, push through to a normal local bedtime. Power naps under 30min OK.' },
-        { time: '08:00', text: 'Wake at local time. Skip morning bright light if you\'re struggling — soft indoor light fine.' },
-        { time: '13:00', text: 'Lunch. Caffeine OK with lunch.' },
-        { time: 'after 17:00', text: 'Get strong evening light — sunset walk, café outside.' },
-        { time: 'until 16:00', text: 'Caffeine OK before this. Cut it after.' },
-        { time: 'avoid', text: 'Going to bed too early. Big nap after 16:00.' },
-        { time: '23:00', text: 'Bedtime — push later than feels natural to align with local.' },
-      ];
-    }
-
-    // Days 2-3
-    const followup = [];
-    if (severity === 'mild' || severity === 'moderate') {
-      followup.push({ text: 'Same daily plan. By day 3 you\'ll feel mostly aligned.' });
-    } else if (severity === 'significant') {
-      followup.push({ text: 'Same daily plan. Day 2 is often the worst — push through. Day 3 you turn the corner.' });
-      followup.push({ text: 'If you crashed early on day 1, expect a 4 AM wake-up. Don\'t fight it — get up, dim light, read, sleep again at 6 AM.' });
-    } else {
-      followup.push({ text: 'Severe shift. Stick to the plan strictly for 4–5 days. Resist napping past 30 minutes.' });
-      followup.push({ text: 'Day 2-3: weakest point. Don\'t schedule important meetings in the first 48 hours if you can avoid it.' });
-      followup.push({ text: `Full alignment around day ${days}.` });
-    }
-
-    return {
-      severity,
-      days,
-      direction: eastbound ? 'eastbound' : 'westbound',
-      directionNote: eastbound
-        ? 'Eastbound is harder — your body has to advance its clock, which fights its natural drift.'
-        : 'Westbound is easier — you\'re extending your day, which aligns with your natural drift.',
-      before,
-      arrival,
-      followup,
-    };
-  }
-
-  // ---------- Render ----------
-  function render() {
-    if (!fromCity || !toCity) {
-      [sumSection, beforeSection, arrivalSection, followSection, tipsSection]
-        .forEach(s => s.style.display = 'none');
-      emptySection.style.display = '';
-      return;
-    }
-    emptySection.style.display = 'none';
-
-    const refDate = depDate ? new Date(depDate + 'T12:00:00') : new Date();
-    const diff = hourDiff(fromCity.timezone, toCity.timezone, refDate);
-    const plan = buildPlan(diff);
-
-    // ----- Summary
-    const diffLabel = diff === 0 ? 'no time difference' :
-      `${Math.abs(diff)} hour${Math.abs(diff) === 1 ? '' : 's'} ${diff > 0 ? 'ahead' : 'behind'}`;
-    sumEl.innerHTML = `
-      <div class="jl-summary__row">
-        <span class="jl-summary__k">Difference</span>
-        <span class="jl-summary__v">${util.escapeHtml(diffLabel)}</span>
-      </div>
-      <div class="jl-summary__row">
-        <span class="jl-summary__k">Direction</span>
-        <span class="jl-summary__v">${util.escapeHtml(plan.direction)}</span>
-      </div>
-      <div class="jl-summary__row">
-        <span class="jl-summary__k">Severity</span>
-        <span class="jl-summary__v">${util.escapeHtml(plan.severity)}</span>
-      </div>
-      <div class="jl-summary__row">
-        <span class="jl-summary__k">Time to recover</span>
-        <span class="jl-summary__v">~${plan.days} day${plan.days === 1 ? '' : 's'}</span>
-      </div>
-      <p class="jl-summary__note">${util.escapeHtml(plan.directionNote)}</p>
-    `;
-    sumSection.style.display = '';
-
-    // ----- Before
-    if (plan.before.length) {
-      beforeEl.innerHTML = plan.before.map(p => `
-        <div class="jl-plan__row">
-          <span class="jl-plan__when">${util.escapeHtml(p.time)}</span>
-          <span class="jl-plan__what">${util.escapeHtml(p.text)}</span>
-        </div>
-      `).join('');
-      beforeSection.style.display = '';
-    } else {
-      beforeSection.style.display = 'none';
-    }
-
-    // ----- Arrival
-    arrivalEl.innerHTML = plan.arrival.map(p => `
-      <div class="jl-plan__row">
-        <span class="jl-plan__when">${util.escapeHtml(p.time)}</span>
-        <span class="jl-plan__what">${util.escapeHtml(p.text)}</span>
-      </div>
-    `).join('');
-    arrivalSection.style.display = '';
-
-    // ----- Followup
-    followEl.innerHTML = plan.followup.map(p => `
-      <div class="jl-plan__row">
-        <span class="jl-plan__what">${util.escapeHtml(p.text)}</span>
-      </div>
-    `).join('');
-    followSection.style.display = '';
-
-    // ----- Tips
-    tipsEl.innerHTML = jlTips.map(t => `<li>${util.escapeHtml(t)}</li>`).join('');
-    tipsSection.style.display = '';
-  }
-
-  const jlTips = [
-    'Hydration matters more than supplements. Two large glasses of water per flight hour.',
-    'Melatonin works best at low doses (0.3–0.5mg, not the 5mg pills). Take 30 minutes before target bedtime.',
-    'Skip the airport coffee unless it\'s your morning at destination. Adjust caffeine to local schedule.',
-    'Move your watch to destination time when you board. Eat and sleep on that schedule on the flight.',
-    'Sunlight is the strongest cue. Outdoor light in the morning at destination resets faster than any pill.',
-    'No alcohol on the flight. It compounds dehydration and disrupts the sleep architecture you need.',
-  ];
-
-  // ---------- Sign-in gate ----------
   if (!api.isSignedIn()) {
     location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
     return;
   }
 
-  // ---------- Init ----------
   await loadAllCities();
   await loadMe();
 
-  // Default 'from' = home
   if (homeCity) {
     setCity('from', { id: homeCity.id, name: homeCity.name, country: homeCity.country, timezone: homeCity.timezone });
   }
 
-  // Try to prefill 'to' + departure from active/upcoming trip
   const activeTrip = await loadActiveTrip();
   if (activeTrip && activeTrip.segments.length) {
-    // Sort segments by start date or sort_order to find the FIRST destination
     const segs = activeTrip.segments.slice().sort((a, b) => {
       if (a.date_start && b.date_start) return a.date_start.localeCompare(b.date_start);
       return (a.sort_order || 0) - (b.sort_order || 0);
@@ -371,26 +421,18 @@
     const first = segs.find(s => s.city_timezone && s.city_id);
     if (first) {
       setCity('to', {
-        id: first.city_id,
-        name: first.city_name,
-        country: first.city_country,
-        timezone: first.city_timezone,
+        id: first.city_id, name: first.city_name,
+        country: first.city_country, timezone: first.city_timezone,
       });
-      // Departure = trip start date (or first segment date)
       const dep = activeTrip.trip.date_start || first.date_start;
-      if (dep) {
-        const isoDate = String(dep).slice(0, 10);
-        setDate(isoDate);
-      }
+      if (dep) setDate(String(dep).slice(0, 10));
       prefillHint.style.display = '';
       prefillHint.innerHTML = `Prefilled from <a href="/trip.html?id=${activeTrip.trip.id}">${util.escapeHtml(activeTrip.trip.name)}</a>. Change anything above to plan a different trip.`;
     }
   }
 
-  // Trigger render after init
   render();
 
-  // ---------- Footer signout ----------
   const signOutFoot = document.getElementById('signout-link-foot');
   if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
 })();

@@ -661,7 +661,8 @@
   .extras-acc__spec { font-size: 10px; }
 }
 
-/* ===== Jetlag page ===== */
+
+/* ===== Jetlag page (v2: timeline grid) ===== */
 
 .jl-input-section { margin-bottom: 36px; }
 
@@ -670,7 +671,6 @@
   align-items: flex-end;
   gap: 18px;
   flex-wrap: wrap;
-  padding: 8px 0 4px;
 }
 .jl-input {
   display: flex;
@@ -703,10 +703,7 @@
   min-width: 140px;
 }
 .jl-city-btn:hover { background: var(--field-focus); }
-.jl-city-btn__caret {
-  font-size: 10px;
-  color: var(--ink-3);
-}
+.jl-city-btn__caret { font-size: 10px; color: var(--ink-3); }
 .jl-input-arrow {
   font-size: 18px;
   color: var(--ink-3);
@@ -724,11 +721,7 @@
   letter-spacing: -0.005em;
   font-variant-numeric: tabular-nums;
 }
-.jl-date:focus {
-  outline: none;
-  background: var(--field-focus);
-}
-
+.jl-date:focus { outline: none; background: var(--field-focus); }
 .jl-prefill-hint {
   font-size: 12px;
   color: var(--ink-3);
@@ -739,95 +732,237 @@
 .jl-prefill-hint a { color: var(--blue); text-decoration: none; }
 .jl-prefill-hint a:hover { text-decoration: underline; }
 
-/* ----- Summary ----- */
-.jl-summary {
-  border-top: 1px solid var(--rule);
-}
-.jl-summary__row {
-  display: grid;
-  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-  gap: 18px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--rule);
-  align-items: baseline;
-}
-.jl-summary__k {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.jl-summary__v {
-  font-size: 15px;
-  color: var(--ink);
-  font-weight: 500;
-  letter-spacing: -0.005em;
-}
-.jl-summary__note {
-  margin: 14px 0 0;
+/* Header strip */
+.jl-header {
+  font-family: var(--sans);
   font-size: 14px;
   color: var(--ink-2);
-  font-style: italic;
-  letter-spacing: -0.005em;
-  max-width: 540px;
-  line-height: 1.5;
-}
-
-/* ----- Plan rows ----- */
-.jl-plan {
-  border-top: 1px solid var(--rule);
-}
-.jl-plan__row {
-  display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
-  gap: 18px;
+  display: flex;
   align-items: baseline;
-  padding: 12px 0;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 0 24px;
   border-bottom: 1px solid var(--rule);
+  margin-bottom: 24px;
 }
-.jl-plan__row:has(:only-child) {
-  grid-template-columns: 1fr;
+.jl-header__route {
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: -0.005em;
 }
-.jl-plan__when {
+.jl-header__sep { color: var(--ink-4); }
+.jl-header__diff,
+.jl-header__recover {
   font-family: var(--mono);
   font-size: 11px;
+  color: var(--ink-3);
   letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.jl-header__sev {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--field);
+  color: var(--ink-3);
+}
+.jl-header__sev--mild        { color: var(--ink-3); }
+.jl-header__sev--moderate    { color: var(--ink); }
+.jl-header__sev--significant { color: var(--blue); background: rgba(42, 78, 212, 0.08); }
+.jl-header__sev--severe      { color: var(--blue); background: rgba(42, 78, 212, 0.12); }
+
+/* Timeline grid */
+.jl-timeline {
+  margin-bottom: 18px;
+}
+.jl-tl__axis-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  align-items: end;
+  height: 16px;
+  margin-bottom: 4px;
+}
+.jl-tl__axis-spacer {}
+.jl-tl__axis {
+  position: relative;
+  height: 16px;
+}
+.jl-tl__tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-4);
+  letter-spacing: 0.04em;
+}
+.jl-tl__row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+}
+.jl-tl__label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-right: 8px;
+}
+.jl-tl__day {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.jl-tl__sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.jl-tl__track {
+  position: relative;
+  height: 20px;
+}
+.jl-tl__baseline {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--rule);
+}
+.jl-tl__mark {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  margin-top: -7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  background: var(--bg);
+  border-radius: 50%;
+  cursor: help;
+}
+.jl-tl__mark .jl-icon {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+.jl-tl__mark--light { color: var(--ink); }
+.jl-tl__mark--dark  { color: var(--ink-2); }
+.jl-tl__mark--meal  { color: var(--ink); }
+.jl-tl__mark--coffee { color: var(--ink-2); }
+.jl-tl__mark--sleep  { color: var(--ink-2); }
+.jl-tl__mark--pill   { color: var(--blue); }
+
+/* Legend */
+.jl-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 28px;
+}
+.jl-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.jl-legend__item .jl-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--ink-2);
+}
+
+/* Today card */
+.jl-today {
+  margin-bottom: 24px;
+}
+.jl-today__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.jl-today__day {
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.jl-today__sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
-.jl-plan__what {
-  font-size: 14px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-  line-height: 1.5;
-}
-
-/* ----- Tips ----- */
-.jl-tips {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.jl-today__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   border-top: 1px solid var(--rule);
 }
-.jl-tips li {
-  padding: 12px 0 12px 18px;
+.jl-today__row {
+  display: grid;
+  grid-template-columns: 24px 60px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 0;
   border-bottom: 1px solid var(--rule);
+}
+.jl-today__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-2);
+}
+.jl-today__icon .jl-icon { width: 14px; height: 14px; }
+.jl-today__time {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.jl-today__label {
   font-size: 14px;
   color: var(--ink);
-  line-height: 1.55;
   letter-spacing: -0.005em;
-  max-width: 720px;
-  position: relative;
-}
-.jl-tips li::before {
-  content: "·";
-  position: absolute;
-  left: 0;
-  color: var(--ink-3);
 }
 
-/* ----- Empty ----- */
+/* Tips — single line of phrases */
+.jl-tips {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.7;
+  margin: 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--rule);
+}
+
+/* Empty */
 .jl-empty {
   font-size: 15px;
   color: var(--ink-3);
@@ -835,14 +970,28 @@
   letter-spacing: -0.005em;
   max-width: 540px;
   margin: 0;
-  padding: 0;
 }
 
 @media (max-width: 720px) {
   .jl-input-row { gap: 12px; }
   .jl-input-arrow { display: none; }
   .jl-city-btn { min-width: 0; padding: 8px 12px; }
-  .jl-plan__row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
-  .jl-plan__when { font-size: 10px; }
-  .jl-summary__row { grid-template-columns: 1fr; gap: 4px; }
+
+  .jl-tl__axis-row,
+  .jl-tl__row {
+    grid-template-columns: 70px 1fr;
+    gap: 8px;
+  }
+  .jl-tl__day { font-size: 10px; }
+  .jl-tl__sub { font-size: 8px; }
+  .jl-tl__tick { font-size: 9px; }
+  .jl-tl__mark { width: 12px; height: 12px; margin-left: -6px; margin-top: -6px; }
+  .jl-tl__mark .jl-icon { width: 10px; height: 10px; }
+
+  .jl-today__row { grid-template-columns: 20px 50px 1fr; gap: 8px; }
+  .jl-today__time { font-size: 11px; }
+  .jl-today__label { font-size: 13px; }
+
+  .jl-legend { gap: 12px; }
+  .jl-legend__item { font-size: 9px; }
 }
