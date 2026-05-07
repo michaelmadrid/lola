@@ -46,7 +46,7 @@
     let diff = otherH - homeH;
     // Normalize to (-12, +14] range
     if (diff > 14)  diff -= 24;
-    if (diff <= -12) diff += 24;
+    if (diff < -12) diff += 24;
     return Math.round(diff * 2) / 2; // half-hour precision
   }
 

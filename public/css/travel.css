@@ -660,3 +660,189 @@
   .extras-acc__name { font-size: 14px; }
   .extras-acc__spec { font-size: 10px; }
 }
+
+/* ===== Jetlag page ===== */
+
+.jl-input-section { margin-bottom: 36px; }
+
+.jl-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 8px 0 4px;
+}
+.jl-input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.jl-input__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.jl-city-btn {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--field);
+  border: 0;
+  padding: 9px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.005em;
+  transition: background 140ms ease;
+  min-width: 140px;
+}
+.jl-city-btn:hover { background: var(--field-focus); }
+.jl-city-btn__caret {
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.jl-input-arrow {
+  font-size: 18px;
+  color: var(--ink-3);
+  align-self: flex-end;
+  padding-bottom: 10px;
+}
+.jl-date {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--field);
+  border: 0;
+  padding: 9px 14px;
+  border-radius: 4px;
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+.jl-date:focus {
+  outline: none;
+  background: var(--field-focus);
+}
+
+.jl-prefill-hint {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-style: italic;
+  margin: 14px 0 0;
+  letter-spacing: -0.005em;
+}
+.jl-prefill-hint a { color: var(--blue); text-decoration: none; }
+.jl-prefill-hint a:hover { text-decoration: underline; }
+
+/* ----- Summary ----- */
+.jl-summary {
+  border-top: 1px solid var(--rule);
+}
+.jl-summary__row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: baseline;
+}
+.jl-summary__k {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.jl-summary__v {
+  font-size: 15px;
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.jl-summary__note {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ink-2);
+  font-style: italic;
+  letter-spacing: -0.005em;
+  max-width: 540px;
+  line-height: 1.5;
+}
+
+/* ----- Plan rows ----- */
+.jl-plan {
+  border-top: 1px solid var(--rule);
+}
+.jl-plan__row {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 18px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.jl-plan__row:has(:only-child) {
+  grid-template-columns: 1fr;
+}
+.jl-plan__when {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.jl-plan__what {
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  line-height: 1.5;
+}
+
+/* ----- Tips ----- */
+.jl-tips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+.jl-tips li {
+  padding: 12px 0 12px 18px;
+  border-bottom: 1px solid var(--rule);
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  max-width: 720px;
+  position: relative;
+}
+.jl-tips li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  color: var(--ink-3);
+}
+
+/* ----- Empty ----- */
+.jl-empty {
+  font-size: 15px;
+  color: var(--ink-3);
+  font-style: italic;
+  letter-spacing: -0.005em;
+  max-width: 540px;
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 720px) {
+  .jl-input-row { gap: 12px; }
+  .jl-input-arrow { display: none; }
+  .jl-city-btn { min-width: 0; padding: 8px 12px; }
+  .jl-plan__row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0; }
+  .jl-plan__when { font-size: 10px; }
+  .jl-summary__row { grid-template-columns: 1fr; gap: 4px; }
+}

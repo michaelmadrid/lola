@@ -172,7 +172,8 @@ router.get('/:id', authenticate, async (req, res) => {
       `SELECT s.*,
               c.name AS city_name,
               c.country AS city_country,
-              c.slug AS city_slug
+              c.slug AS city_slug,
+              c.timezone AS city_timezone
        FROM trip_segments s
        LEFT JOIN cities c ON s.city_id = c.id
        WHERE s.trip_id = $1
