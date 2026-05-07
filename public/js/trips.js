@@ -90,7 +90,7 @@
       const count = (data.trips || []).length;
       const footEl = document.getElementById('trips-foot');
       if (count > 0) {
-        footEl.innerHTML = `<a class="graveyard-link" href="/trips-graveyard.html">Graveyard (${count})</a>`;
+        footEl.innerHTML = `<a class="graveyard-link" href="/travel/graveyard/">Graveyard (${count})</a>`;
       } else {
         footEl.innerHTML = '';
       }

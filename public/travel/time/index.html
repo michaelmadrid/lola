@@ -6,7 +6,7 @@
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
   <title>Time · Atlas — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
-  <link rel="stylesheet" href="/css/atlas.css">
+  <link rel="stylesheet" href="/css/travel.css">
 </head>
 <body>
 
@@ -22,10 +22,9 @@
   </div>
   <nav class="nav">
     <a href="/" data-auth="in">Home</a>
-    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/travel/" data-auth="in">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
     <a href="/index/">Index</a>
-    <a href="/atlas/" class="is-active">Atlas</a>
     <a href="/login.html" data-auth="out">Sign in</a>
   </nav>
   <div class="head__right">
@@ -37,10 +36,9 @@
 <div class="menu-overlay" id="menu-overlay">
   <div class="menu-overlay__inner">
     <a href="/" data-auth="in">Home</a>
-    <a href="/trips.html" data-auth="in">Trips</a>
+    <a href="/travel/" data-auth="in">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
     <a href="/index/">Index</a>
-    <a href="/atlas/" class="is-active">Atlas</a>
     <a href="/admin/" data-auth="in">Admin</a>
     <a href="/settings.html" data-auth="in">Settings</a>
     <a href="/login.html" data-auth="out">Sign in</a>
@@ -50,12 +48,13 @@
 
 <main class="page page-atlas">
 
-  <header class="atlas-mast">
-    <h1 class="atlas-mast__title">Atlas</h1>
-    <nav class="atlas-subnav">
-      <a href="/atlas/phrasebook/" class="atlas-subnav__item">Phrasebook</a>
-      <a href="/atlas/time/"       class="atlas-subnav__item is-active">Time</a>
-      <a href="/atlas/extras/"     class="atlas-subnav__item">Extras</a>
+  <header class="travel-mast">
+    <h1 class="travel-mast__title">Travel</h1>
+    <nav class="travel-subnav">
+      <a href="/travel/trips/"      class="travel-subnav__item">Trips</a>
+      <a href="/travel/time/"       class="travel-subnav__item is-active">Time</a>
+      <a href="/travel/phrasebook/" class="travel-subnav__item">Phrasebook</a>
+      <a href="/travel/extras/"     class="travel-subnav__item">Extras</a>
     </nav>
   </header>
 

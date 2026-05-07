@@ -6,6 +6,23 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// ============ LEGACY URL REDIRECTS ============
+// Run BEFORE static so old paths redirect even if files still exist.
+// 301 (permanent) so browsers update bookmarks.
+app.get('/trips.html', (req, res) => res.redirect(301, '/travel/trips/'));
+app.get('/trips-graveyard.html', (req, res) => res.redirect(301, '/travel/graveyard/'));
+app.get('/atlas', (req, res) => res.redirect(301, '/travel/'));
+app.get('/atlas/', (req, res) => res.redirect(301, '/travel/'));
+app.get('/atlas/time', (req, res) => res.redirect(301, '/travel/time/'));
+app.get('/atlas/time/', (req, res) => res.redirect(301, '/travel/time/'));
+app.get('/atlas/phrasebook', (req, res) => res.redirect(301, '/travel/phrasebook/'));
+app.get('/atlas/phrasebook/', (req, res) => res.redirect(301, '/travel/phrasebook/'));
+app.get('/atlas/extras', (req, res) => res.redirect(301, '/travel/extras/'));
+app.get('/atlas/extras/', (req, res) => res.redirect(301, '/travel/extras/'));
+// Old phrasebook JSON path (cached old pages may still hit it)
+app.get('/atlas/phrasebook.json', (req, res) => res.redirect(301, '/travel/phrasebook.json'));
+
 app.use(express.static('public'));
 
 // ============ ROUTES ============

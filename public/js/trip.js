@@ -10,7 +10,7 @@
 
   const tripId = util.query('id');
   if (!tripId) {
-    location.href = '/trips.html';
+    location.href = '/travel/trips/';
     return;
   }
 
@@ -96,7 +96,7 @@
         <h1 class="trip-mast__title">${util.escapeHtml(trip.name)}</h1>
         <div class="trip-mast__dates">${dateLine}${ownerLabel}</div>
         <div class="trip-mast__actions">
-          <a href="/trips.html" class="btn--secondary">← all trips</a>
+          <a href="/travel/trips/" class="btn--secondary">← all trips</a>
           ${actionBtns}
         </div>
       </header>
@@ -200,7 +200,7 @@
     confirmBtn.disabled = true;
     try {
       await api.delete('/api/trips/' + tripId);
-      location.href = '/trips.html';
+      location.href = '/travel/trips/';
     } catch (err) {
       toast(err.message || 'Delete failed');
       confirmBtn.disabled = false;
