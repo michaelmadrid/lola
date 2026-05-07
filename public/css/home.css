@@ -70,7 +70,6 @@
 .moon-wrap {
   display: inline-flex;
   align-items: center;
-  cursor: help;
 }
 .moon {
   display: inline-block;

@@ -170,9 +170,6 @@
     })();
     const svg = path.closest('svg');
     if (svg) svg.setAttribute('aria-label', phaseName);
-    // Set title on the wrapping span so the browser tooltip shows reliably
-    const wrap = document.getElementById('moon-wrap');
-    if (wrap) wrap.setAttribute('title', phaseName);
   }
   renderMoonPath();
   setInterval(renderMoonPath, 60 * 60 * 1000);
