@@ -125,20 +125,11 @@
 .search-input:focus { background: var(--field-focus); }
 
 /* the list */
-.list-head, .list-row {
+.list-row {
   display: grid;
   grid-template-columns: minmax(0, 3.4fr) minmax(0, 1.6fr) minmax(0, 1.6fr) 40px;
   gap: 24px;
   align-items: baseline;
-}
-.list-head { padding: 24px 0 12px; }
-.list-head__col {
-  font-style: italic;
-  font-size: 13px;
-  color: var(--ink-3);
-  font-weight: 400;
-}
-.list-row {
   padding: 14px 0;
   border-top: 1px solid var(--rule);
   cursor: pointer;
@@ -202,7 +193,6 @@
 
   .search-input { font-size: 16px; padding: 11px 12px; }
 
-  .list-head { display: none; }
   .list-row {
     grid-template-columns: 1fr 24px;
     gap: 12px;
@@ -226,15 +216,10 @@
 .list-summary {
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--ink-3);
   letter-spacing: 0.04em;
-  text-transform: uppercase;
   padding: 28px 0 20px;
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: flex-end;
 }
 .list-summary__edit { color: var(--ink-3); }
 .list-summary__edit:hover { color: var(--blue); }
