@@ -27,6 +27,7 @@ Return JSON only, no preamble or commentary. Schema:
   "city": string | null,          // the recognizable city/island/region (the broader bucket)
   "neighborhood": string | null,  // a known sub-area inside that city, if any
   "country": string | null,       // ISO English country name
+  "timezone": string | null,      // IANA timezone for the city, e.g. "Europe/Paris", "Asia/Makassar". Null if uncertain.
   "category": string | null,      // one of: eat, drink, coffee, stay, shop, see, other
   "tip": string | null            // remaining advice/context
 }
@@ -40,6 +41,7 @@ Rules:
 - Normalize spelling for known cities (e.g., "Bandng" → "Bandung").
 - DO NOT infer city from cuisine. "Italian restaurant" does not mean Italy. The COUNTRY follows the actual location, not the food.
 - DO NOT infer city from country alone. "Indonesia" alone leaves city null.
+- For timezone: when city is set, return its standard IANA timezone (e.g., "Europe/Paris", "Asia/Tokyo", "America/New_York", "Asia/Makassar" for Bali). Only return a timezone you're highly confident in. If unsure, leave timezone null — better null than wrong.
 - Only ONE level of neighborhood. If a sub-region exists inside a recognizable city/island, use city + neighborhood. Otherwise just city.
 - For Bali: city is always "Bali". Villages/areas like Canggu, Pererenan, Seseh, Berawa, Ubud, Seminyak, Kuta, Sanur, Uluwatu, Jimbaran are neighborhoods.
 - For Paris: city is "Paris". Marais, Belleville, Pigalle, Montmartre, etc. are neighborhoods.
@@ -59,37 +61,37 @@ Rules:
 Examples:
 
 Input: Mosto Canggu natural wine, Italian
-Output: {"place_name": "Mosto", "city": "Bali", "neighborhood": "Canggu", "country": "Indonesia", "category": "drink", "tip": "natural wine, Italian"}
+Output: {"place_name": "Mosto", "city": "Bali", "neighborhood": "Canggu", "country": "Indonesia", "timezone": "Asia/Makassar", "category": "drink", "tip": "natural wine, Italian"}
 
 Input: Della Terra Pererenan, sit at the bar
-Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "sit at the bar"}
+Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "timezone": "Asia/Makassar", "category": "eat", "tip": "sit at the bar"}
 
 Input: Pererenan, Della Terra - so good, grab a bar seat
-Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "so good, grab a bar seat"}
+Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "timezone": "Asia/Makassar", "category": "eat", "tip": "so good, grab a bar seat"}
 
 Input: Neighbourhood — best breakfast, Vegemite
-Output: {"place_name": "Neighbourhood", "city": null, "neighborhood": null, "country": null, "category": "eat", "tip": "best breakfast, Vegemite"}
+Output: {"place_name": "Neighbourhood", "city": null, "neighborhood": null, "country": null, "timezone": null, "category": "eat", "tip": "best breakfast, Vegemite"}
 
 Input: great bakery & coffee
-Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": "coffee", "tip": "great bakery & coffee"}
+Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "timezone": null, "category": "coffee", "tip": "great bakery & coffee"}
 
 Input: great coffee & pastries
-Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": "coffee", "tip": "great coffee & pastries"}
+Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "timezone": null, "category": "coffee", "tip": "great coffee & pastries"}
 
 Input: Copenhagen
-Output: {"place_name": null, "city": "Copenhagen", "neighborhood": null, "country": "Denmark", "category": null, "tip": null}
+Output: {"place_name": null, "city": "Copenhagen", "neighborhood": null, "country": "Denmark", "timezone": "Europe/Copenhagen", "category": null, "tip": null}
 
 Input: Joes Coffee Marais, cash only
-Output: {"place_name": "Joes Coffee", "city": "Paris", "neighborhood": "Marais", "country": "France", "category": "coffee", "tip": "cash only"}
+Output: {"place_name": "Joes Coffee", "city": "Paris", "neighborhood": "Marais", "country": "France", "timezone": "Europe/Paris", "category": "coffee", "tip": "cash only"}
 
 Input: Comptoir de la Gastronomie Paris, classic French
-Output: {"place_name": "Comptoir de la Gastronomie", "city": "Paris", "neighborhood": null, "country": "France", "category": "eat", "tip": "classic French"}
+Output: {"place_name": "Comptoir de la Gastronomie", "city": "Paris", "neighborhood": null, "country": "France", "timezone": "Europe/Paris", "category": "eat", "tip": "classic French"}
 
 Input: Hatchards London bookshop, oldest in UK
-Output: {"place_name": "Hatchards", "city": "London", "neighborhood": null, "country": "United Kingdom", "category": "shop", "tip": "oldest in UK"}
+Output: {"place_name": "Hatchards", "city": "London", "neighborhood": null, "country": "United Kingdom", "timezone": "Europe/London", "category": "shop", "tip": "oldest in UK"}
 
 Input: tape your mouth (Ritva Saarikko)
-Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": null, "tip": null}`;
+Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "timezone": null, "category": null, "tip": null}`;
 
 /**
  * Parse a single capture text. Returns parsed object or { error }.
@@ -101,7 +103,7 @@ Output: {"place_name": null, "city": null, "neighborhood": null, "country": null
  */
 async function parseCapture(text, opts = {}) {
   if (!text || !text.trim()) {
-    return { place_name: null, city: null, country: null, category: null, tip: null };
+    return { place_name: null, city: null, neighborhood: null, country: null, timezone: null, category: null, tip: null };
   }
 
   // If user pre-bound this capture to a city, give AI that context.
@@ -144,9 +146,15 @@ async function parseCapture(text, opts = {}) {
     }
 
     // Normalize empty strings to null
-    for (const k of ['place_name', 'city', 'neighborhood', 'country', 'tip', 'category']) {
+    for (const k of ['place_name', 'city', 'neighborhood', 'country', 'timezone', 'tip', 'category']) {
       if (parsed[k] === '' || parsed[k] === undefined) parsed[k] = null;
       if (typeof parsed[k] === 'string') parsed[k] = parsed[k].trim() || null;
+    }
+
+    // Sanity check timezone shape: must look like "Region/City" or be null.
+    // Rejects garbage like "GMT+8" or "Asia" alone.
+    if (parsed.timezone && !/^[A-Z][A-Za-z_]+\/[A-Z][A-Za-z_/]+$/.test(parsed.timezone)) {
+      parsed.timezone = null;
     }
 
     return parsed;

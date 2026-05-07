@@ -115,4 +115,74 @@
     e.preventDefault();
     saveBtn.click();
   });
+  // ----- Phase-aware moon glyph -----
+  // Computes today's lunar phase and draws an SVG path matching it.
+  // Path approach: two arcs joined to form a moon shape. Inner arc's
+  // x-radius and sweep direction encode whether it's crescent or gibbous,
+  // waxing or waning.
+  function renderMoonPath() {
+    const path = document.getElementById('moon-path');
+    if (!path) return;
+
+    // Synodic month from a known new moon (Jan 6, 2000 18:14 UTC)
+    const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z').getTime();
+    const SYNODIC = 29.53058867;
+    const days = (Date.now() - KNOWN_NEW_MOON) / 86400000;
+    const phase = ((days % SYNODIC) + SYNODIC) % SYNODIC / SYNODIC; // 0..1
+
+    // SVG coords (matches viewBox 0 0 12 12)
+    const cx = 6, cy = 6, r = 5.5;
+    // Illumination factor: -1 (new) → +1 (full)
+    const f = -Math.cos(2 * Math.PI * phase);
+    // Inner arc x-radius: 0 at half-moon, r at new/full
+    const xR = r * Math.abs(f);
+
+    // For waxing (phase < 0.5), the lit side is on the right
+    // For waning (phase > 0.5), the lit side is on the left
+    const waxing = phase < 0.5;
+    const gibbous = Math.abs(f) > 0 && f > 0; // full-ish (lit > 50%)
+    // Wait — f = -cos(2π·p). At full (p=0.5), f = -cos(π) = +1 (max bright).
+    // At new (p=0 or 1), f = -cos(0) = -1 (no light).
+    // So "gibbous-ish" = f > 0 (more than half illuminated)
+    // "crescent-ish" = f < 0 (less than half illuminated)
+
+    // Build the path:
+    // - Always draw outer half: from top to bottom along the lit side
+    // - Then inner arc back to top, with x-radius = xR
+    //   The sweep flag of the inner arc determines crescent vs gibbous
+    // - For waxing: lit side is right (sweep CW = 0 outer, then inner sweep depends on phase)
+    // - For waning: mirror it
+
+    let d;
+    if (waxing) {
+      // Lit on the right — outer arc goes clockwise from top to bottom (right side)
+      // Then inner arc back. Sweep flag: 0 for crescent (curves leftward into moon), 1 for gibbous
+      const innerSweep = gibbous ? 0 : 1;
+      d = `M ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${cx} ${cy + r} A ${xR} ${r} 0 0 ${innerSweep} ${cx} ${cy - r} Z`;
+    } else {
+      // Lit on the left — outer arc goes counterclockwise from top to bottom (left side)
+      // Mirror of waxing
+      const innerSweep = gibbous ? 1 : 0;
+      d = `M ${cx} ${cy - r} A ${r} ${r} 0 0 0 ${cx} ${cy + r} A ${xR} ${r} 0 0 ${innerSweep} ${cx} ${cy - r} Z`;
+    }
+    path.setAttribute('d', d);
+
+    // Pick a label for accessibility (and tooltip)
+    const phaseName = (() => {
+      if (phase < 0.03 || phase > 0.97) return 'new moon';
+      if (phase < 0.22) return 'waxing crescent';
+      if (phase < 0.28) return 'first quarter';
+      if (phase < 0.47) return 'waxing gibbous';
+      if (phase < 0.53) return 'full moon';
+      if (phase < 0.72) return 'waning gibbous';
+      if (phase < 0.78) return 'last quarter';
+      return 'waning crescent';
+    })();
+    const svg = path.closest('svg');
+    if (svg) svg.setAttribute('aria-label', phaseName);
+    if (svg) svg.setAttribute('title', phaseName);
+  }
+  renderMoonPath();
+  // Re-render once an hour in case the page is left open across midnight
+  setInterval(renderMoonPath, 60 * 60 * 1000);
 })();

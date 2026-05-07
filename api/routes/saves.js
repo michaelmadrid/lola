@@ -24,7 +24,7 @@ function slugifyCity(s) {
 
 // Find a city by name (case-insensitive whole match), or create it with status=1.
 // Returns the city row.
-async function findOrCreateCity(name, country) {
+async function findOrCreateCity(name, country, timezone) {
   if (!name || !name.trim()) return null;
   const trimmed = name.trim();
   // Case-insensitive exact name match
@@ -32,16 +32,38 @@ async function findOrCreateCity(name, country) {
     `SELECT * FROM cities WHERE LOWER(name) = LOWER($1) LIMIT 1`,
     [trimmed]
   );
-  if (existing.rows[0]) return existing.rows[0];
+  if (existing.rows[0]) {
+    const row = existing.rows[0];
+    // Backfill timezone or country if they're null on the existing row and AI gave us one
+    const updates = [];
+    const params = [];
+    if (!row.timezone && timezone) {
+      params.push(timezone);
+      updates.push(`timezone = $${params.length}`);
+    }
+    if (!row.country && country) {
+      params.push(country);
+      updates.push(`country = $${params.length}`);
+    }
+    if (updates.length) {
+      params.push(row.id);
+      const r = await pool.query(
+        `UPDATE cities SET ${updates.join(', ')} WHERE id = $${params.length} RETURNING *`,
+        params
+      );
+      return r.rows[0];
+    }
+    return row;
+  }
 
   // Create new with status=1 (auto-created)
   const slug = slugifyCity(trimmed);
   try {
     const created = await pool.query(
-      `INSERT INTO cities (name, slug, country, status, created_at)
-       VALUES ($1, $2, $3, 1, NOW())
+      `INSERT INTO cities (name, slug, country, timezone, status, created_at)
+       VALUES ($1, $2, $3, $4, 1, NOW())
        RETURNING *`,
-      [trimmed, slug, country || null]
+      [trimmed, slug, country || null, timezone || null]
     );
     return created.rows[0];
   } catch (err) {
@@ -49,10 +71,10 @@ async function findOrCreateCity(name, country) {
     if (/duplicate key/i.test(err.message)) {
       const altSlug = slug + '-' + Math.floor(Math.random() * 9999);
       const retry = await pool.query(
-        `INSERT INTO cities (name, slug, country, status, created_at)
-         VALUES ($1, $2, $3, 1, NOW())
+        `INSERT INTO cities (name, slug, country, timezone, status, created_at)
+         VALUES ($1, $2, $3, $4, 1, NOW())
          RETURNING *`,
-        [trimmed, altSlug, country || null]
+        [trimmed, altSlug, country || null, timezone || null]
       );
       return retry.rows[0];
     }
@@ -78,7 +100,7 @@ async function parseAndUpdate(saveId, text, opts = {}) {
   let cityRow = null;
   if (parsed.city) {
     try {
-      cityRow = await findOrCreateCity(parsed.city, parsed.country);
+      cityRow = await findOrCreateCity(parsed.city, parsed.country, parsed.timezone);
     } catch (err) {
       console.error('parseAndUpdate findOrCreateCity', err.message);
     }
