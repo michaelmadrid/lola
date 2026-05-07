@@ -426,6 +426,14 @@
   font-size: 15px;
   color: var(--ink-2);
 }
+.stream__name--tip {
+  /* Tip without a place_name: render the tip as the heading, italic to signal "not a venue yet" */
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
 .stream__tip {
   font-size: 14px;
   color: var(--ink-2);

@@ -34,6 +34,8 @@ Return JSON only, no preamble or commentary. Schema:
 Rules:
 - Try hard to extract a place_name. Even unusual or generic-sounding names like "Neighbourhood" can be real businesses.
 - Leave fields null only if truly uncertain. Don't punish weird names.
+- DO NOT fabricate a place_name. If the input is purely descriptors (e.g. "great bakery & coffee" with no business name), set place_name to null and put the descriptors in tip.
+- DO NOT treat a city or country name as a place_name. "Copenhagen" by itself is not a venue.
 - Normalize spelling for known cities (e.g., "Bandng" → "Bandung").
 - DO NOT infer city from cuisine. "Italian restaurant" does not mean Italy. The COUNTRY follows the actual location, not the food.
 - DO NOT infer city from country alone. "Indonesia" alone leaves city null.
@@ -66,6 +68,12 @@ Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan
 
 Input: Neighbourhood — best breakfast, Vegemite
 Output: {"place_name": "Neighbourhood", "city": null, "neighborhood": null, "country": null, "category": "eat", "tip": "best breakfast, Vegemite"}
+
+Input: great bakery & coffee
+Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": "coffee", "tip": "great bakery & coffee"}
+
+Input: Copenhagen
+Output: {"place_name": null, "city": "Copenhagen", "neighborhood": null, "country": "Denmark", "category": null, "tip": null}
 
 Input: Joes Coffee Marais, cash only
 Output: {"place_name": "Joes Coffee", "city": "Paris", "neighborhood": "Marais", "country": "France", "category": "coffee", "tip": "cash only"}

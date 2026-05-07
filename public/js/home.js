@@ -409,6 +409,7 @@
         : '';
 
       let bodyHtml;
+      let isTipOnly = false;
       if (hasPlace) {
         const tipLine = s.tip
           ? `<span class="stream__tip">${util.escapeHtml(s.tip)}</span>`
@@ -418,15 +419,24 @@
           ${tipLine}
           ${metaLine}
         `;
+      } else if (s.tip && s.tip.trim()) {
+        // Tip-only: no specific place was named, but user wrote a hint.
+        // Render the tip as the heading (italicized to signal "not a place yet").
+        isTipOnly = true;
+        bodyHtml = `
+          <span class="stream__name stream__name--tip">${util.escapeHtml(s.tip)}</span>
+          ${metaLine}
+        `;
       } else {
-        // Parse complete but no place extracted — non-place save, show raw quietly
+        // Truly raw — no place, no tip (just freeform note)
         bodyHtml = `
           <span class="stream__name stream__name--raw">${util.escapeHtml(s.text)}</span>
           ${metaLine || tagsLine}
         `;
       }
 
-      return `<div class="stream__item${hasPlace ? ' is-structured' : ''}" data-id="${s.id}">
+      const variantClass = hasPlace ? ' is-structured' : (isTipOnly ? ' is-tip-only' : '');
+      return `<div class="stream__item${variantClass}" data-id="${s.id}">
         <div class="stream__body">
           ${bodyHtml}
         </div>

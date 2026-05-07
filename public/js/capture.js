@@ -10,6 +10,7 @@
   const cityList      = document.getElementById('city-list');
   const textarea      = document.getElementById('capture-textarea');
   const counter       = document.getElementById('capture-counter');
+  const statusEl      = document.getElementById('capture-status');
   const submitContinue = document.getElementById('submit-continue');
   const submitClose    = document.getElementById('submit-close');
   const closeBtn       = document.getElementById('capture-close');
@@ -168,16 +169,18 @@
     submitClose.disabled = true;
 
     try {
-      const body = { text, city_id: pickedCity.id };
+      // Pre-clean each line: strip leading bound-city + separator if user typed it
+      const cleaned = stripBoundCityPrefix(text, pickedCity.name);
+
+      const body = { text: cleaned, city_id: pickedCity.id };
       const result = await api.post('/api/saves', body);
       const count = result.count || 1;
 
       if (thenClose) {
-        // Toast briefly, then go home
         toast(count === 1 ? 'Saved' : `${count} saves added`);
         setTimeout(() => { window.location.href = '/'; }, 600);
       } else {
-        toast(count === 1 ? 'Saved' : `${count} saves added`);
+        showStatus(count);
         textarea.value = '';
         updateCounter();
         textarea.focus();
@@ -191,6 +194,41 @@
       submitContinue.disabled = false;
       submitClose.disabled = false;
     }
+  }
+
+  // Strip leading "City -" or "City," from each line (case-insensitive).
+  // Only at very start of line, only if a separator immediately follows.
+  // Bare "City" alone (no separator) is left as-is — user might have meant it as a place name.
+  function stripBoundCityPrefix(text, cityName) {
+    if (!cityName) return text;
+    const escaped = cityName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // matches: "City -" or "City —" or "City," (with optional spaces) at line start
+    const re = new RegExp('^' + escaped + '\\s*[-–—,:]\\s*', 'i');
+    return text
+      .split(/\r?\n/)
+      .map(line => line.replace(re, ''))
+      .join('\n');
+  }
+
+  // ---------- Inline status line ----------
+  let statusTimer = null;
+  function showStatus(count) {
+    if (!statusEl) return;
+    const word = count === 1 ? 'place' : 'places';
+    statusEl.textContent = `Last batch: ${count} ${word} added · just now`;
+    statusEl.classList.add('is-visible');
+    clearTimeout(statusTimer);
+    // Tick the timestamp once a second for the first 30s, then leave the line in place
+    let secs = 0;
+    statusTimer = setInterval(() => {
+      secs += 1;
+      if (secs >= 60) {
+        clearInterval(statusTimer);
+        return;
+      }
+      const ago = secs < 5 ? 'just now' : `${secs}s ago`;
+      statusEl.textContent = `Last batch: ${count} ${word} added · ${ago}`;
+    }, 1000);
   }
   submitContinue.addEventListener('click', () => doSubmit({ thenClose: false }));
   submitClose.addEventListener('click', () => doSubmit({ thenClose: true }));

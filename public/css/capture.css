@@ -206,6 +206,19 @@
   padding: 6px 4px;
 }
 
+/* ---------- Status ---------- */
+.capture-page__status {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  padding: 0 4px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.capture-page__status.is-visible { opacity: 1; }
+
 /* ---------- Foot ---------- */
 .capture-page__foot {
   position: fixed;
