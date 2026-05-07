@@ -91,10 +91,20 @@ async function parseAndUpdate(saveId, text) {
            category = $2,
            tip = $3,
            country = $4,
+           address = $5,
+           address_source = $6,
            ai_parsed_at = NOW(),
            ai_parse_error = NULL
-     WHERE id = $5`,
-    [parsed.place_name, parsed.category, parsed.tip, parsed.country, saveId]
+     WHERE id = $7`,
+    [
+      parsed.place_name,
+      parsed.category,
+      parsed.tip,
+      parsed.country,
+      parsed.address || null,
+      parsed.address ? 'ai' : null,
+      saveId,
+    ]
   );
 
   // Attach city via save_cities if AI gave us one (and regex didn't already)
@@ -222,12 +232,57 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
+// Create a single save row + run regex city detection. Async AI parse fires after.
+// Used by POST in both single-line and multi-line modes.
+async function createSingleSave({ userId, text, tags, url, trip_id, city_id, place_id }) {
+  const result = await pool.query(
+    `INSERT INTO saves (user_id, text, tags, url, trip_id, city_id, place_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [userId, text.trim(), tags, url, trip_id, city_id || null, place_id || null]
+  );
+  const save = result.rows[0];
+
+  // Regex-based city tagging (fast, deterministic)
+  const detectedIds = detectCities(text);
+  if (city_id && !detectedIds.includes(parseInt(city_id, 10))) {
+    detectedIds.push(parseInt(city_id, 10));
+  }
+  for (const cid of detectedIds) {
+    try {
+      await pool.query(
+        `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [save.id, cid]
+      );
+    } catch (e) {}
+  }
+  let attached = [];
+  if (detectedIds.length) {
+    const r = await pool.query(
+      `SELECT id, name, slug FROM cities WHERE id = ANY($1::int[])`,
+      [detectedIds]
+    );
+    attached = r.rows;
+  }
+  save.attached_cities = attached;
+
+  // Fire async AI parse — don't await
+  parseAndUpdate(save.id, save.text).catch(err => {
+    console.error('parseAndUpdate failed for save', save.id, err);
+  });
+
+  return save;
+}
+
 // POST /api/saves
+// Supports single-line input (one save) OR multi-line input (one save per line).
+// Multi-line: each non-empty line becomes its own save with its own AI parse.
 router.post('/', authenticate, async (req, res) => {
   const { text, tags: explicitTags, url: explicitUrl, trip_id, city_id, place_id } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
 
   try {
+    // Resolve trip_id from active trip if not supplied
     let resolvedTripId = trip_id || null;
     if (!resolvedTripId) {
       const active = await pool.query(
@@ -242,49 +297,46 @@ router.post('/', authenticate, async (req, res) => {
       if (active.rows[0]) resolvedTripId = active.rows[0].id;
     }
 
-    const tags = explicitTags || extractTags(text);
-    const url = explicitUrl || extractFirstUrl(text);
+    // Split on newlines, drop empty lines after trimming
+    const lines = String(text)
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean);
 
-    const result = await pool.query(
-      `INSERT INTO saves (user_id, text, tags, url, trip_id, city_id, place_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
-      [req.user.id, text.trim(), tags, url, resolvedTripId, city_id || null, place_id || null]
-    );
-    const save = result.rows[0];
-
-    // Auto-attach any matched cities from text
-    let attached = [];
-    const detectedIds = detectCities(text);
-    // Also add explicit city_id if user passed one (rare, but supported)
-    if (city_id && !detectedIds.includes(parseInt(city_id, 10))) {
-      detectedIds.push(parseInt(city_id, 10));
+    // Single line: create one save, return {save}
+    if (lines.length <= 1) {
+      const single = lines[0] || text.trim();
+      const tags = explicitTags || extractTags(single);
+      const url = explicitUrl || extractFirstUrl(single);
+      const save = await createSingleSave({
+        userId: req.user.id,
+        text: single,
+        tags,
+        url,
+        trip_id: resolvedTripId,
+        city_id,
+        place_id,
+      });
+      return res.json({ save });
     }
-    for (const cid of detectedIds) {
-      try {
-        await pool.query(
-          `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-          [save.id, cid]
-        );
-      } catch (e) { /* ignore individual failures */ }
-    }
-    if (detectedIds.length) {
-      const r = await pool.query(
-        `SELECT id, name, slug FROM cities WHERE id = ANY($1::int[])`,
-        [detectedIds]
-      );
-      attached = r.rows;
-    }
-    save.attached_cities = attached;
 
-    // Respond immediately with the regex-tagged save. AI parse runs async.
-    res.json({ save });
-
-    // Fire-and-forget: AI parse the capture and update the row
-    // with structured fields. Errors are caught and stored.
-    parseAndUpdate(save.id, save.text).catch(err => {
-      console.error('parseAndUpdate failed', err);
-    });
+    // Multi-line: one save per line, return {saves: [...]}
+    const created = [];
+    for (const line of lines) {
+      const tags = extractTags(line); // per-line tags, ignore explicit batch tags
+      const url = extractFirstUrl(line);
+      const save = await createSingleSave({
+        userId: req.user.id,
+        text: line,
+        tags,
+        url,
+        trip_id: resolvedTripId,
+        city_id, // shared across batch if explicit
+        place_id: null, // never bulk-assign place_id
+      });
+      created.push(save);
+    }
+    res.json({ saves: created, count: created.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -292,7 +344,10 @@ router.post('/', authenticate, async (req, res) => {
 
 // PATCH /api/saves/:id
 router.patch('/:id', authenticate, async (req, res) => {
-  const allowed = ['text', 'tags', 'url', 'trip_id', 'city_id', 'place_id', 'archived_at'];
+  const allowed = [
+    'text', 'tags', 'url', 'trip_id', 'city_id', 'place_id', 'archived_at',
+    'place_name', 'category', 'tip', 'country', 'address', 'address_source',
+  ];
   const updates = [];
   const params = [];
   for (const key of allowed) {
@@ -300,6 +355,11 @@ router.patch('/:id', authenticate, async (req, res) => {
       params.push(req.body[key]);
       updates.push(`${key} = $${params.length}`);
     }
+  }
+  // If user is editing address but didn't pass an explicit source, mark it confirmed
+  if (req.body.address !== undefined && req.body.address_source === undefined) {
+    params.push('confirmed');
+    updates.push(`address_source = $${params.length}`);
   }
   if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
   params.push(req.params.id);

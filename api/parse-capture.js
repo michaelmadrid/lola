@@ -27,7 +27,8 @@ Return JSON only, no preamble or commentary. Schema:
   "city": string | null,         // just the city name, no country, no neighborhood
   "country": string | null,      // ISO English country name (e.g. "France", "Indonesia")
   "category": string | null,     // one of: eat, drink, coffee, stay, shop, see, other
-  "tip": string | null           // any practical note: hours, what to order, what to avoid
+  "tip": string | null,          // any practical note: hours, what to order, what to avoid
+  "address": string | null       // street address ONLY if you are highly confident
 }
 
 Rules:
@@ -36,6 +37,7 @@ Rules:
 - Do NOT infer city from country alone. If only "Indonesia" is mentioned, leave city null.
 - Strip the city name out of place_name (e.g., "Joes Coffee Paris" → place_name: "Joes Coffee", city: "Paris").
 - The tip field is the remaining advice/context after place_name and city are extracted.
+- Address: ONLY return if you are highly confident this is the actual street address of this specific place. Better to leave null than to guess. Format: full street address as commonly written.
 - Categories:
     eat = restaurants, food spots
     drink = bars, cocktail places
@@ -87,7 +89,7 @@ async function parseCapture(text) {
     }
 
     // Normalize empty strings to null
-    for (const k of ['place_name', 'city', 'country', 'tip', 'category']) {
+    for (const k of ['place_name', 'city', 'country', 'tip', 'category', 'address']) {
       if (parsed[k] === '' || parsed[k] === undefined) parsed[k] = null;
       if (typeof parsed[k] === 'string') parsed[k] = parsed[k].trim() || null;
     }
