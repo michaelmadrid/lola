@@ -2,7 +2,7 @@
 
 Travel companion + curated index, by Summer Holiday.
 
-Live at [app.summer-holiday.com](https://app.summer-holiday.com).
+Live at [kit.summer-holiday.com](https://kit.summer-holiday.com).
 
 ## Stack
 
@@ -117,7 +117,7 @@ See `migrations/README.md` for full notes. Order matters:
 ```bash
 sudo -u postgres pg_dump lola > ~/lola-backup-pre-v05.sql
 
-cd /var/www/app.summer-holiday.com
+cd /var/www/kit.summer-holiday.com
 sudo -u postgres psql -d lola -f migrations/001_extend_cities.sql
 sudo -u postgres psql -d lola -f migrations/002_places.sql
 sudo -u postgres psql -d lola -f migrations/003_trips_v05.sql
