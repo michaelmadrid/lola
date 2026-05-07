@@ -91,10 +91,11 @@ async function parseAndUpdate(saveId, text) {
            category = $2,
            tip = $3,
            country = $4,
+           neighborhood = $5,
            ai_parsed_at = NOW(),
            ai_parse_error = NULL
-     WHERE id = $5`,
-    [parsed.place_name, parsed.category, parsed.tip, parsed.country, saveId]
+     WHERE id = $6`,
+    [parsed.place_name, parsed.category, parsed.tip, parsed.country, parsed.neighborhood, saveId]
   );
 
   // Attach city via save_cities if AI gave us one (and regex didn't already)
@@ -314,7 +315,7 @@ router.post('/', authenticate, async (req, res) => {
 router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
     'text', 'tags', 'url', 'place_id', 'archived_at',
-    'place_name', 'category', 'tip', 'country',
+    'place_name', 'category', 'tip', 'country', 'neighborhood',
   ];
   const updates = [];
   const params = [];

@@ -23,11 +23,12 @@ const SYSTEM_PROMPT = `You extract structured fields from short travel notes a u
 
 Return JSON only, no preamble or commentary. Schema:
 {
-  "place_name": string | null,   // the venue or business name
-  "city": string | null,         // just the city or neighborhood — see rules
-  "country": string | null,      // ISO English country name
-  "category": string | null,     // one of: eat, drink, coffee, stay, shop, see, other
-  "tip": string | null           // remaining advice/context
+  "place_name": string | null,    // the venue or business name
+  "city": string | null,          // the recognizable city/island/region (the broader bucket)
+  "neighborhood": string | null,  // a known sub-area inside that city, if any
+  "country": string | null,       // ISO English country name
+  "category": string | null,      // one of: eat, drink, coffee, stay, shop, see, other
+  "tip": string | null            // remaining advice/context
 }
 
 Rules:
@@ -36,8 +37,12 @@ Rules:
 - Normalize spelling for known cities (e.g., "Bandng" → "Bandung").
 - DO NOT infer city from cuisine. "Italian restaurant" does not mean Italy. The COUNTRY follows the actual location, not the food.
 - DO NOT infer city from country alone. "Indonesia" alone leaves city null.
-- city can be a neighborhood (e.g., "Pererenan", "Marais", "Canggu") or a city proper. Use whichever the user wrote.
-- Order doesn't matter — "Pererenan, Della Terra" and "Della Terra Pererenan" both have place=Della Terra, city=Pererenan.
+- Only ONE level of neighborhood. If a sub-region exists inside a recognizable city/island, use city + neighborhood. Otherwise just city.
+- For Bali: city is always "Bali". Villages/areas like Canggu, Pererenan, Seseh, Berawa, Ubud, Seminyak, Kuta, Sanur, Uluwatu, Jimbaran are neighborhoods.
+- For Paris: city is "Paris". Marais, Belleville, Pigalle, Montmartre, etc. are neighborhoods.
+- For most cities (small or medium ones): no neighborhood needed. Just city.
+- If user wrote a hood without an explicit city, you can still infer the city if you're confident (e.g., "Canggu" → city: Bali, neighborhood: Canggu).
+- Order doesn't matter — "Pererenan, Della Terra" and "Della Terra Pererenan" both have place=Della Terra, city=Bali, neighborhood=Pererenan.
 - Categories:
     eat = restaurants, food spots, bakeries
     drink = bars, cocktail places, wine bars
@@ -50,26 +55,29 @@ Rules:
 
 Examples:
 
-Input: Mosto Bali natural wine, Italian
-Output: {"place_name": "Mosto", "city": "Bali", "country": "Indonesia", "category": "drink", "tip": "natural wine, Italian"}
+Input: Mosto Canggu natural wine, Italian
+Output: {"place_name": "Mosto", "city": "Bali", "neighborhood": "Canggu", "country": "Indonesia", "category": "drink", "tip": "natural wine, Italian"}
 
 Input: Della Terra Pererenan, sit at the bar
-Output: {"place_name": "Della Terra", "city": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "sit at the bar"}
+Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "sit at the bar"}
 
 Input: Pererenan, Della Terra - so good, grab a bar seat
-Output: {"place_name": "Della Terra", "city": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "so good, grab a bar seat"}
+Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "category": "eat", "tip": "so good, grab a bar seat"}
 
 Input: Neighbourhood — best breakfast, Vegemite
-Output: {"place_name": "Neighbourhood", "city": null, "country": null, "category": "eat", "tip": "best breakfast, Vegemite"}
+Output: {"place_name": "Neighbourhood", "city": null, "neighborhood": null, "country": null, "category": "eat", "tip": "best breakfast, Vegemite"}
 
-Input: Joes Coffee Paris, cash only
-Output: {"place_name": "Joes Coffee", "city": "Paris", "country": "France", "category": "coffee", "tip": "cash only"}
+Input: Joes Coffee Marais, cash only
+Output: {"place_name": "Joes Coffee", "city": "Paris", "neighborhood": "Marais", "country": "France", "category": "coffee", "tip": "cash only"}
+
+Input: Comptoir de la Gastronomie Paris, classic French
+Output: {"place_name": "Comptoir de la Gastronomie", "city": "Paris", "neighborhood": null, "country": "France", "category": "eat", "tip": "classic French"}
 
 Input: Hatchards London bookshop, oldest in UK
-Output: {"place_name": "Hatchards", "city": "London", "country": "United Kingdom", "category": "shop", "tip": "oldest in UK"}
+Output: {"place_name": "Hatchards", "city": "London", "neighborhood": null, "country": "United Kingdom", "category": "shop", "tip": "oldest in UK"}
 
 Input: tape your mouth (Ritva Saarikko)
-Output: {"place_name": null, "city": null, "country": null, "category": null, "tip": null}`;
+Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "category": null, "tip": null}`;
 
 /**
  * Parse a single capture text. Returns parsed object or { error }.
@@ -112,7 +120,7 @@ async function parseCapture(text) {
     }
 
     // Normalize empty strings to null
-    for (const k of ['place_name', 'city', 'country', 'tip', 'category']) {
+    for (const k of ['place_name', 'city', 'neighborhood', 'country', 'tip', 'category']) {
       if (parsed[k] === '' || parsed[k] === undefined) parsed[k] = null;
       if (typeof parsed[k] === 'string') parsed[k] = parsed[k].trim() || null;
     }
