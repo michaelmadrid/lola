@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Guides — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/travel/" data-auth="in">Travel</a>
+    <a href="/spots/" data-auth="in">Spots</a>
+    <a href="/guides/" class="is-active" data-auth="in">Guides</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+  </nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay">
+  <div class="menu-overlay__inner">
+    <a href="/" data-auth="in">Home</a>
+    <a href="/travel/" data-auth="in">Travel</a>
+    <a href="/spots/" data-auth="in">Spots</a>
+    <a href="/guides/" class="is-active" data-auth="in">Guides</a>
+    <a href="/settings.html" data-auth="in">Settings</a>
+    <a href="/admin/" data-auth="in">Admin</a>
+    <a href="/login.html" data-auth="out">Sign in</a>
+    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+  </div>
+</div>
+
+<main class="page" style="max-width: 760px; margin: 0 auto; padding: 80px 32px;">
+  <div style="text-align: center;">
+    <h1 style="font-family: var(--sans); font-size: 32px; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 24px; color: var(--ink);">
+      Guides
+    </h1>
+    <p style="font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink-2); max-width: 480px; margin: 0 auto 8px;">
+      Curate your saves into editorial city guides. Drag, arrange, publish.
+    </p>
+    <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-top: 32px;">
+      coming soon
+    </p>
+  </div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+</body>
+</html>
