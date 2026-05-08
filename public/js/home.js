@@ -401,88 +401,286 @@
     }
   });
 
-  // ============ CAPTURE ============
-  const input    = document.getElementById('capture-input');
-  const send     = document.getElementById('capture-send');
-  const tagsBox  = document.getElementById('capture-tags');
-  const homeBeenBtn  = document.getElementById('home-been-btn');
-  const homeBeenText = document.getElementById('home-been-text');
+  // ============ CAPTURE — launcher + fullscreen overlay ============
+  // The home page no longer has an inline capture textarea.
+  // Instead, a "launcher" button looks like a field but opens a fullscreen
+  // overlay editor. Same UX as /capture/ but in-page (no navigation).
 
-  // Been toggle (shared key with /capture page)
-  const BEEN_KEY = 'kit.capture.lastBeen';
-  let homeBeen = true;
-  function applyHomeBeen(val) {
-    homeBeen = !!val;
-    if (homeBeenBtn)  homeBeenBtn.dataset.been = homeBeen ? 'true' : 'false';
-    if (homeBeenText) homeBeenText.textContent = homeBeen ? "I've been here" : "I want to go";
-    try { localStorage.setItem(BEEN_KEY, homeBeen ? '1' : '0'); } catch {}
+  const launcher           = document.getElementById('capture-launcher');
+  const launcherCityName   = document.getElementById('capture-launcher-city-name');
+
+  const captFs                 = document.getElementById('capture-captFs');
+  const captFsClose            = document.getElementById('capture-captFs-close');
+  const captFsTextarea         = document.getElementById('capture-captFs-textarea');
+  const captFsStatus           = document.getElementById('capture-captFs-status');
+  const captFsSubmitContinue   = document.getElementById('capture-captFs-submit-continue');
+  const captFsSubmitClose      = document.getElementById('capture-captFs-submit-close');
+
+  const captFsCityBtn          = document.getElementById('capture-captFs-city-btn');
+  const captFsCityBtnName      = document.getElementById('capture-captFs-city-btn-name');
+  const captFsCityPopover      = document.getElementById('capture-captFs-city-popover');
+  const captFsCitySearch       = document.getElementById('capture-captFs-city-search');
+  const captFsCityList         = document.getElementById('capture-captFs-city-list');
+
+  const captFsBeenBtn          = document.getElementById('capture-captFs-been-btn');
+  const captFsBeenText         = document.getElementById('capture-captFs-been-text');
+
+  // Shared keys — match /capture/ page so preferences persist across surfaces
+  const CITY_STORAGE_KEY = 'kit.capture.lastCity';
+  const BEEN_STORAGE_KEY = 'kit.capture.lastBeen';
+
+  let captFsAllCities = [];
+  let captFsPickedCity = null;
+  let captFsBeen = true;
+  let captFsIsSubmitting = false;
+
+  // ---- Been toggle ----
+  function applyCaptFsBeen(val) {
+    captFsBeen = !!val;
+    if (captFsBeenBtn)  captFsBeenBtn.dataset.been = captFsBeen ? 'true' : 'false';
+    if (captFsBeenText) captFsBeenText.textContent = captFsBeen ? "I've been here" : "I want to go";
+    try { localStorage.setItem(BEEN_STORAGE_KEY, captFsBeen ? '1' : '0'); } catch {}
   }
   try {
-    const stored = localStorage.getItem(BEEN_KEY);
-    applyHomeBeen(stored !== '0'); // default true
-  } catch { applyHomeBeen(true); }
-  if (homeBeenBtn) {
-    homeBeenBtn.addEventListener('click', () => applyHomeBeen(!homeBeen));
-  }
+    const stored = localStorage.getItem(BEEN_STORAGE_KEY);
+    applyCaptFsBeen(stored !== '0');
+  } catch { applyCaptFsBeen(true); }
+  if (captFsBeenBtn) captFsBeenBtn.addEventListener('click', () => applyCaptFsBeen(!captFsBeen));
 
-  function extractTags(text) {
-    const matches = (text.match(/#[a-z0-9_-]+/gi) || []);
-    return [...new Set(matches.map(t => t.toLowerCase().slice(1)))];
-  }
-
-  function renderLiveTags(text) {
-    tagsBox.innerHTML = '';
-    extractTags(text).forEach(t => {
-      const span = document.createElement('span');
-      span.className = 'tag is-on';
-      span.textContent = '#' + t;
-      tagsBox.appendChild(span);
-    });
-  }
-
-  input.addEventListener('input', () => {
-    send.classList.toggle('is-on', !!input.value.trim());
-    renderLiveTags(input.value);
-  });
-
-  async function saveCapture() {
-    const text = input.value.trim();
-    if (!text) return;
-    try {
-      send.classList.remove('is-on');
-      input.value = '';
-      autoGrow();
-      tagsBox.innerHTML = '';
-
-      // Show a ghost row immediately so the stream visibly responds.
-      // It's a generic blank pulse — NOT an echo of the raw text.
-      injectGhostRow();
-
-      await api.post('/api/saves', { text, been: homeBeen });
-      // Poll a few times to catch the AI parse landing.
-      // renderStream knows to render not-yet-parsed-and-recent rows as ghosts,
-      // so race conditions never expose raw text.
-      setTimeout(() => loadStream(), 1500);
-      setTimeout(() => loadStream(), 3500);
-      setTimeout(() => loadStream(), 7000);
-    } catch (err) {
-      console.error('save', err);
-      toast(err.message || 'Save failed');
-      input.value = text;
-      autoGrow();
-      // Ensure we clean up the ghost on failure
-      const ghost = streamEl.querySelector('.stream__ghost');
-      if (ghost) ghost.remove();
+  // ---- City picker ----
+  function setPickedCity(city) {
+    captFsPickedCity = city;
+    if (captFsCityBtnName) captFsCityBtnName.textContent = city ? city.name : 'pick a city';
+    if (launcherCityName) launcherCityName.textContent = city ? city.name : 'pick a city';
+    if (city) {
+      try {
+        localStorage.setItem(CITY_STORAGE_KEY, JSON.stringify({ id: city.id, name: city.name, country: city.country }));
+      } catch {}
     }
   }
 
+  // Try to restore last city from localStorage so the launcher knows where you were
+  try {
+    const raw = localStorage.getItem(CITY_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.id) {
+        // Provisional set — will be replaced once cities are loaded for full data
+        setPickedCity(parsed);
+      }
+    }
+  } catch {}
+
+  async function loadCitiesIfNeeded() {
+    if (captFsAllCities.length) return;
+    try {
+      const data = await api.get('/api/cities?limit=200');
+      captFsAllCities = data.cities || [];
+      // If no city picked yet, default to user's home_city, else first city
+      if (!captFsPickedCity || !captFsPickedCity.id) {
+        try {
+          const me = await api.get('/api/auth/me');
+          if (me && me.home_city_id) {
+            const home = captFsAllCities.find(c => c.id === me.home_city_id);
+            if (home) setPickedCity(home);
+          }
+        } catch {}
+        if (!captFsPickedCity || !captFsPickedCity.id) {
+          if (captFsAllCities[0]) setPickedCity(captFsAllCities[0]);
+        }
+      }
+    } catch (err) {
+      console.error('loadCities', err);
+    }
+  }
+
+  function renderCityList(filter) {
+    if (!captFsCityList) return;
+    const f = (filter || '').toLowerCase().trim();
+    let cities = captFsAllCities;
+    if (f) {
+      cities = cities.filter(c =>
+        c.name.toLowerCase().includes(f) ||
+        (c.country && c.country.toLowerCase().includes(f))
+      );
+    }
+    cities = cities.slice(0, 80);
+    captFsCityList.innerHTML = cities.map(c =>
+      `<button class="capture-fs__city-item${captFsPickedCity && captFsPickedCity.id === c.id ? ' is-current' : ''}" data-city-id="${c.id}">
+         ${util.escapeHtml(c.name)}<span class="capture-fs__city-item__country">${util.escapeHtml(c.country || '')}</span>
+       </button>`
+    ).join('');
+    captFsCityList.querySelectorAll('.capture-fs__city-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = parseInt(item.dataset.cityId, 10);
+        const city = captFsAllCities.find(c => c.id === id);
+        if (city) {
+          setPickedCity(city);
+          closeCityPopover();
+        }
+      });
+    });
+  }
+
+  function openCityPopover() {
+    if (!captFsCityPopover) return;
+    captFsCityPopover.classList.add('is-open');
+    if (captFsCitySearch) {
+      captFsCitySearch.value = '';
+      renderCityList('');
+      // Slight delay to focus after layout
+      setTimeout(() => captFsCitySearch.focus(), 30);
+    }
+  }
+  function closeCityPopover() {
+    if (captFsCityPopover) captFsCityPopover.classList.remove('is-open');
+  }
+  if (captFsCityBtn) {
+    captFsCityBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await loadCitiesIfNeeded();
+      if (captFsCityPopover && captFsCityPopover.classList.contains('is-open')) closeCityPopover();
+      else openCityPopover();
+    });
+  }
+  if (captFsCitySearch) captFsCitySearch.addEventListener('input', () => renderCityList(captFsCitySearch.value));
+  document.addEventListener('click', (e) => {
+    if (captFsCityPopover && !captFsCityPopover.contains(e.target) && !captFsCityBtn.contains(e.target)) {
+      closeCityPopover();
+    }
+  });
+
+  // ---- Open / close overlay ----
+  function openCaptFs() {
+    if (!captFs) return;
+    // Snapshot current scroll for restoration on close
+    captFs.hidden = false;
+    document.body.style.overflow = 'hidden';
+    // Force reflow so the entrance transition runs
+    void captFs.offsetHeight;
+    captFs.classList.add('is-open');
+    captFs.setAttribute('aria-hidden', 'false');
+    // Make sure cities load in the background
+    loadCitiesIfNeeded();
+    // Focus the textarea after the slide-in animation lands
+    setTimeout(() => {
+      if (captFsTextarea) captFsTextarea.focus();
+      autoGrowCaptFs();
+    }, 80);
+  }
+  function closeCaptFs() {
+    if (!captFs) return;
+    captFs.classList.remove('is-open');
+    captFs.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    // After the transition, hide entirely so it's out of tab order
+    setTimeout(() => {
+      if (!captFs.classList.contains('is-open')) captFs.hidden = true;
+    }, 260);
+  }
+  if (launcher) launcher.addEventListener('click', openCaptFs);
+  if (captFsClose)  captFsClose.addEventListener('click', closeCaptFs);
+  // Esc to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && captFs && captFs.classList.contains('is-open')) {
+      closeCaptFs();
+    }
+  });
+
+  // ---- Textarea grow + status ----
+  function autoGrowCaptFs() {
+    if (!captFsTextarea) return;
+    captFsTextarea.style.height = 'auto';
+    captFsTextarea.style.height = captFsTextarea.scrollHeight + 'px';
+  }
+  function updateStatus() {
+    if (!captFsStatus || !captFsTextarea) return;
+    const lines = captFsTextarea.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+    if (!lines.length) { captFsStatus.textContent = ''; return; }
+    captFsStatus.textContent = lines.length === 1
+      ? `1 entry`
+      : `${lines.length} entries`;
+  }
+  if (captFsTextarea) {
+    captFsTextarea.addEventListener('input', () => { autoGrowCaptFs(); updateStatus(); });
+  }
+
+  // ---- Submit ----
+  async function captFsDoSubmit({ thenClose }) {
+    if (captFsIsSubmitting) return;
+    if (!captFsTextarea) return;
+    const text = captFsTextarea.value.trim();
+    if (!text) return;
+    if (!captFsPickedCity) return;
+    captFsIsSubmitting = true;
+    captFsSubmitClose.disabled = true;
+    captFsSubmitContinue.disabled = true;
+    try {
+      const body = { text, city_id: captFsPickedCity.id, city_name: captFsPickedCity.name, been: captFsBeen };
+      const result = await api.post('/api/saves', body);
+      const count = result.count || 1;
+      // Reset state immediately so UI never gets stuck
+      captFsIsSubmitting = false;
+      captFsSubmitClose.disabled = false;
+      captFsSubmitContinue.disabled = false;
+      if (thenClose) {
+        // Clear, close, refresh stream
+        captFsTextarea.value = '';
+        autoGrowCaptFs();
+        updateStatus();
+        toast(count === 1 ? 'Saved' : `${count} saves`);
+        closeCaptFs();
+        // Show ghost row right away so home stream feels live, then poll for AI parse
+        injectGhostRow();
+        setTimeout(() => loadStream(), 1500);
+        setTimeout(() => loadStream(), 3500);
+        setTimeout(() => loadStream(), 7000);
+        setTimeout(() => loadStream(), 12000);
+      } else {
+        // Continue: clear field but keep overlay open
+        captFsTextarea.value = '';
+        autoGrowCaptFs();
+        updateStatus();
+        if (count === 1) toast('Saved');
+        else toast(`${count} saves`);
+        captFsTextarea.focus();
+        // Background-poll the stream so when user closes, it's already up to date
+        setTimeout(() => loadStream(), 1500);
+        setTimeout(() => loadStream(), 4000);
+      }
+    } catch (err) {
+      console.error('captFs save', err);
+      captFsIsSubmitting = false;
+      captFsSubmitClose.disabled = false;
+      captFsSubmitContinue.disabled = false;
+      toast(err.message || 'Save failed');
+    }
+  }
+  if (captFsSubmitClose)    captFsSubmitClose.addEventListener('click', () => captFsDoSubmit({ thenClose: true }));
+  if (captFsSubmitContinue) captFsSubmitContinue.addEventListener('click', () => captFsDoSubmit({ thenClose: false }));
+  // Keyboard shortcuts inside the textarea
+  if (captFsTextarea) {
+    captFsTextarea.addEventListener('keydown', (e) => {
+      // Cmd+Enter or Ctrl+Enter → save & continue
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        captFsDoSubmit({ thenClose: false });
+        return;
+      }
+      // Shift+Cmd+Enter → save & close
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'Enter') {
+        e.preventDefault();
+        captFsDoSubmit({ thenClose: true });
+        return;
+      }
+    });
+  }
+
   // Inject a generic pulsing ghost row at the top of the stream while AI parses.
-  // No raw text echo — just shape, so user sees something is happening.
+  // Same as before — used after captFs submit-and-close.
   function injectGhostRow() {
-    // Remove the empty state if present
     const empty = streamEl.querySelector('.stream__empty');
     if (empty) empty.remove();
-
     const ghost = document.createElement('div');
     ghost.className = 'stream__item stream__ghost';
     ghost.innerHTML = `
@@ -496,24 +694,6 @@
     streamEl.insertBefore(ghost, streamEl.firstChild);
   }
 
-  // Auto-grow textarea: shrink to one line when empty, expand up to ~6 lines
-  function autoGrow() {
-    input.style.height = 'auto';
-    const max = 6 * parseFloat(getComputedStyle(input).lineHeight || 22);
-    input.style.height = Math.min(input.scrollHeight, max) + 'px';
-  }
-  input.addEventListener('input', autoGrow);
-  autoGrow();
-
-  send.addEventListener('click', saveCapture);
-  input.addEventListener('keydown', (e) => {
-    // Enter alone → submit. Shift+Enter → insert newline (default).
-    // Cmd/Ctrl+Enter → also submit (already handled by global shortcut elsewhere).
-    if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
-      e.preventDefault();
-      saveCapture();
-    }
-  });
 
   // ============ STREAM ============
   const streamEl = document.getElementById('stream');

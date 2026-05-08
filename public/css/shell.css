@@ -43,6 +43,15 @@
 
   --gutter: 32px;
   --container: 1600px;
+
+  /* Radius system — single source of truth.
+     Edit these to retune the whole UI.
+     Inspired by Telescope's soft-rounded register. */
+  --r-pill:    999px;   /* inline tiny tappable pills (been toggle, batch link) */
+  --r-button:  16px;    /* primary action buttons (Save, Submit) — soft pill */
+  --r-input:    4px;    /* inputs, textareas, the capture launcher field */
+  --r-card:     6px;    /* cards, larger panels, modals, segmented controls */
+  --r-circle:  999px;   /* literal circles (avatar) */
 }
 
 /* ----- Dark mode (global) ----- */
@@ -487,10 +496,11 @@ input, textarea, select { font: inherit; }
   gap: 8px;
   background: var(--ink);
   color: var(--bg);
-  padding: 10px 22px;
-  border-radius: 2px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: var(--r-button);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.005em;
   cursor: pointer;
@@ -500,7 +510,7 @@ input, textarea, select { font: inherit; }
 .btn--secondary {
   background: transparent;
   color: var(--ink-2);
-  padding: 10px 0;
+  padding: 12px 0;
 }
 .btn--secondary:hover { color: var(--blue); background: transparent; }
 .btn--danger:hover { background: #c0392b; }
