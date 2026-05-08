@@ -194,6 +194,59 @@ input, textarea, select { font: inherit; }
   margin-top: 32px;
 }
 
+/* ===== Menu shortcuts (top of menu overlay, mobile only) =====
+   Tappable tiles that link to overlays on the home page.
+   Visually distinct from the main nav links — smaller, with a subtle
+   bottom rule separating them from the main navigation. */
+.menu-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.menu-shortcut {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--sans);
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.005em !important;
+  color: var(--ink) !important;
+  padding: 14px 0 !important;
+  text-decoration: none;
+  cursor: pointer;
+  min-height: 44px;
+  transition: color 140ms ease;
+}
+.menu-shortcut:hover {
+  color: var(--blue) !important;
+}
+.menu-shortcut__label {
+  flex: 0 0 auto;
+}
+.menu-shortcut__count {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-3);
+  min-width: 20px;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+.menu-shortcut__arrow {
+  margin-left: auto;
+  color: var(--ink-3);
+  font-size: 18px;
+  line-height: 1;
+}
+.menu-shortcut:hover .menu-shortcut__count,
+.menu-shortcut:hover .menu-shortcut__arrow {
+  color: var(--blue);
+}
+
 /* =========================================================
    FOOTER
    ========================================================= */
@@ -469,12 +522,11 @@ input, textarea, select { font: inherit; }
 }
 
 /* =====================================================================
-   Slim mobile header (rows 2 + 3)
-   - Row 2: moon glyph + readable date in sans
-   - Row 3: trip status (sentence-case) + pill buttons (Todos, etc.)
-   - Hidden on desktop
+   Mobile-only avatar circle (in header__right)
+   - Hidden on desktop (where Bali / time take its place)
+   - Shown on mobile via @media block below
    ===================================================================== */
-#slim-mobile, .slim-avatar { display: none; }
+.slim-avatar { display: none; }
 
 @media (max-width: 720px) {
   /* Allow header to grow vertically */
@@ -512,84 +564,6 @@ input, textarea, select { font: inherit; }
   }
   .slim-avatar:hover { color: var(--blue); }
   .slim-avatar:hover::before { border-color: var(--blue); }
-
-  #slim-mobile {
-    display: block;
-    width: 100%;
-    flex: 1 1 100%;
-    margin: 0;
-  }
-  .slim-mobile__row2 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--ink);
-  }
-  .slim-mobile__moon {
-    color: var(--ink-2);
-    flex-shrink: 0;
-  }
-  .slim-mobile__date {
-    font-family: var(--sans);
-    font-size: 22px;
-    font-weight: 500;
-    letter-spacing: -0.018em;
-    color: var(--ink);
-    line-height: 1.2;
-  }
-
-  .slim-mobile__row3 {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 8px;
-    margin-top: 10px;
-    min-height: 44px;
-  }
-  .slim-mobile__row3[hidden] { display: none; }
-
-  /* Glyph cluster (right side) — quiet pill. */
-  .slim-mobile__glyphs {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .slim-mobile__pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 36px;
-    min-width: 44px;
-    padding: 0 14px;
-    border: 1px solid var(--rule);
-    border-radius: 999px;
-    font-family: var(--sans);
-    font-size: 13px;
-    color: var(--ink);
-    text-decoration: none;
-    background: transparent;
-    transition: border-color 140ms ease, color 140ms ease;
-    cursor: pointer;
-  }
-  .slim-mobile__pill[hidden] { display: none; }
-  .slim-mobile__pill:hover {
-    border-color: var(--blue);
-    color: var(--blue);
-  }
-  .slim-mobile__pill-glyph {
-    color: var(--ink-3);
-    font-size: 13px;
-    line-height: 1;
-  }
-  .slim-mobile__pill-value {
-    color: var(--ink);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-  .slim-mobile__pill:hover .slim-mobile__pill-glyph,
-  .slim-mobile__pill:hover .slim-mobile__pill-value {
-    color: var(--blue);
-  }
 }
 
 /* =====================================================================

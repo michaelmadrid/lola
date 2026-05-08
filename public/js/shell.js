@@ -181,8 +181,11 @@
     const header = document.querySelector('header.head');
     if (!header) return;
 
-    // Always inject the mobile avatar circle into header__right (it's a row-1 element,
-    // useful on every page).
+    // Inject the mobile avatar circle into header__right (row-1 element).
+    // This is the only piece of "slim header" that survives — on mobile
+    // the home page is intentionally minimal: header → capture → stream.
+    // Date/moon and trip/todo affordances are accessible via the hamburger
+    // menu shortcuts (see buildMenuShortcuts).
     const right = header.querySelector('.head__right');
     if (right && !document.getElementById('slim-avatar')) {
       const a = document.createElement('a');
@@ -193,32 +196,6 @@
       a.textContent = '—';
       right.appendChild(a);
     }
-
-    // Rows 2 (date) + 3 (trip/todos pills) are home-only. On other pages, just
-    // the standard header (hamburger / logo / avatar) is enough.
-    const path = window.location.pathname;
-    const isHome = (path === '/' || path === '/index.html');
-    if (!isHome) return;
-
-    if (document.getElementById('slim-mobile')) return; // already built
-
-    const slim = document.createElement('div');
-    slim.id = 'slim-mobile';
-    slim.className = 'slim-mobile';
-    slim.innerHTML = `
-      <div class="slim-mobile__row2">
-        <svg class="slim-mobile__moon" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
-          <circle cx="6" cy="6" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/>
-          <path id="slim-moon-path" fill="currentColor"></path>
-        </svg>
-        <span class="slim-mobile__date" id="slim-date">—</span>
-      </div>
-      <div class="slim-mobile__row3" id="slim-row3" hidden>
-        <a href="#" class="slim-mobile__pill" id="slim-trip" hidden></a>
-        <div class="slim-mobile__glyphs" id="slim-glyphs"></div>
-      </div>
-    `;
-    header.appendChild(slim);
   }
 
   function renderSlimMoon() {
@@ -400,11 +377,124 @@
       .replace(/'/g, '&#39;');
   }
 
+  // ============================================================
+  // Mobile hamburger-menu shortcuts (Trip + Todos)
+  //
+  // Injects tappable tiles at the top of the menu overlay, ABOVE the standard
+  // nav links. Tiles render only on home page (where the underlying overlays
+  // live) and only when the data exists (no trip → no trip tile).
+  //
+  // Tap behavior: close menu + click the existing on-page button that owns
+  // the overlay. This avoids duplicating overlay state in shell.js.
+  // ============================================================
+  async function buildMenuShortcuts() {
+    const path = window.location.pathname;
+    const isHome = (path === '/' || path === '/index.html');
+    if (!isHome) return;
+
+    const overlay = document.getElementById('menu-overlay');
+    const inner = overlay && overlay.querySelector('.menu-overlay__inner');
+    if (!inner) return;
+
+    // Already built? bail.
+    if (document.getElementById('menu-shortcuts')) return;
+
+    // Container for the shortcut tiles
+    const wrap = document.createElement('div');
+    wrap.id = 'menu-shortcuts';
+    wrap.className = 'menu-shortcuts';
+    inner.insertBefore(wrap, inner.firstChild);
+
+    const isSignedIn = (window.api && window.api.isSignedIn && window.api.isSignedIn());
+    if (!isSignedIn) return;
+
+    // ---- Trip shortcut ----
+    try {
+      const data = await window.api.get('/api/trips');
+      const trips = (data && data.trips) || [];
+      const today = new Date();
+      const todayMs = today.setHours(0, 0, 0, 0);
+      let bestTrip = null;
+      let bestRank = Infinity;
+      for (const t of trips) {
+        if (!t.date_start || !t.date_end) continue;
+        const startMs = new Date(t.date_start).getTime();
+        const endMs   = new Date(t.date_end).getTime();
+        if (endMs < todayMs) continue;
+        let rank;
+        if (startMs <= todayMs && todayMs <= endMs) rank = -1;
+        else rank = (startMs - todayMs);
+        const daysOut = (startMs - todayMs) / 86400000;
+        if (rank > 0 && daysOut > 60) continue;
+        if (rank < bestRank) { bestRank = rank; bestTrip = t; }
+      }
+      if (bestTrip) {
+        const startMs = new Date(bestTrip.date_start).getTime();
+        const endMs   = new Date(bestTrip.date_end).getTime();
+        const isOnTrip = (startMs <= todayMs && todayMs <= endMs);
+        const tile = document.createElement('a');
+        tile.href = '#';
+        tile.className = 'menu-shortcut';
+        tile.id = 'menu-shortcut-trip';
+        tile.innerHTML = `
+          <span class="menu-shortcut__label">${isOnTrip ? 'On trip' : 'Next trip'}</span>
+          <span class="menu-shortcut__arrow">→</span>
+        `;
+        tile.addEventListener('click', (e) => {
+          e.preventDefault();
+          // Close the menu
+          overlay.classList.remove('is-open');
+          // Then trigger the on-page trip strip click (opens itinerary overlay)
+          const tripStrip = document.getElementById('trip-strip');
+          if (tripStrip) {
+            // Defer so the menu close animation can settle first
+            setTimeout(() => tripStrip.click(), 50);
+          }
+        });
+        wrap.appendChild(tile);
+      }
+    } catch (e) {
+      // No trips, no shortcut. Silent fail.
+    }
+
+    // ---- Todos shortcut ----
+    try {
+      const data = await window.api.get('/api/todos?view=today');
+      const todos = (data && data.todos) || [];
+      const open = todos.filter(t => !t.completed_at).length;
+      if (open > 0) {
+        const tile = document.createElement('a');
+        tile.href = '#';
+        tile.className = 'menu-shortcut';
+        tile.id = 'menu-shortcut-todos';
+        tile.innerHTML = `
+          <span class="menu-shortcut__label">Todos</span>
+          <span class="menu-shortcut__count">${open}</span>
+          <span class="menu-shortcut__arrow">→</span>
+        `;
+        tile.addEventListener('click', (e) => {
+          e.preventDefault();
+          overlay.classList.remove('is-open');
+          // Trigger fullscreen todo editor (existing button)
+          const todosExpand = document.getElementById('todos-expand');
+          if (todosExpand) {
+            setTimeout(() => todosExpand.click(), 50);
+          }
+        });
+        wrap.appendChild(tile);
+      }
+    } catch (e) {
+      // No todos endpoint yet, or no open todos. Silent fail.
+    }
+
+    // If neither tile was added, remove the empty wrap so menu doesn't have a phantom block
+    if (!wrap.firstChild) {
+      wrap.remove();
+    }
+  }
+
+
   buildSlimHeader();
-  renderSlimMoon();
-  renderSlimDate();
   renderSlimAvatar();
-  renderSlimContext();
-  // Refresh date around midnight
-  setInterval(renderSlimDate, 5 * 60 * 1000);
+  buildMenuShortcuts();
 })();
