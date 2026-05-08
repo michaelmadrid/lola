@@ -496,5 +496,4 @@
 
   buildSlimHeader();
   renderSlimAvatar();
-  buildMenuShortcuts();
 })();
