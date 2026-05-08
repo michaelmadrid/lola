@@ -29,7 +29,7 @@
   let initialized = false;
 
   let launcher, launcherCityName;
-  let captFs, captFsClose, captFsTextarea, captFsStatus;
+  let captFs, captFsClose, captFsTextarea;
   let captFsSubmitContinue, captFsSubmitClose;
   let captFsCityBtn, captFsCityBtnName, captFsCityPopover, captFsCitySearch, captFsCityList;
   let captFsBeenBtn, captFsBeenText;
@@ -54,7 +54,6 @@
     captFs                = document.getElementById('capture-fs');
     captFsClose           = document.getElementById('capture-fs-close');
     captFsTextarea        = document.getElementById('capture-fs-textarea');
-    captFsStatus          = document.getElementById('capture-fs-status');
     captFsSubmitContinue  = document.getElementById('capture-fs-submit-continue');
     captFsSubmitClose     = document.getElementById('capture-fs-submit-close');
 
@@ -120,7 +119,7 @@
 
     // Textarea grow + status + keyboard shortcuts
     if (captFsTextarea) {
-      captFsTextarea.addEventListener('input', () => { autoGrow(); updateStatus(); });
+      captFsTextarea.addEventListener('input', () => { autoGrow(); });
       captFsTextarea.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
@@ -290,12 +289,6 @@
     captFsTextarea.style.height = 'auto';
     captFsTextarea.style.height = captFsTextarea.scrollHeight + 'px';
   }
-  function updateStatus() {
-    if (!captFsStatus || !captFsTextarea) return;
-    const lines = captFsTextarea.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    if (!lines.length) { captFsStatus.textContent = ''; return; }
-    captFsStatus.textContent = lines.length === 1 ? `1 entry` : `${lines.length} entries`;
-  }
 
   // ------------------------------------------------------------------
   // Submit
@@ -319,7 +312,6 @@
       // Reset field
       captFsTextarea.value = '';
       autoGrow();
-      updateStatus();
       // Toast
       if (typeof window.toast === 'function') {
         window.toast(count === 1 ? 'Saved' : `${count} saves`);

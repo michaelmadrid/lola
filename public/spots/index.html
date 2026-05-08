@@ -64,24 +64,26 @@
   <div class="capture-fs" id="capture-fs" hidden aria-hidden="true">
     <div class="capture-fs__inner">
       <header class="capture-fs__head">
-        <button class="capture-fs__close" id="capture-fs-close" aria-label="Close">×</button>
-        <div class="capture-fs__bind">
-          <span class="capture-fs__bind-label">in</span>
+        <button class="btn-close-circle" id="capture-fs-close" aria-label="Close" type="button">×</button>
+      </header>
+
+      <div class="capture-fs__bind">
+        <div class="capture-fs__bind-row">
+          <span class="capture-fs__bind-label">In</span>
           <button class="capture-fs__city-btn" id="capture-fs-city-btn" type="button">
             <span id="capture-fs-city-btn-name">Bali</span>
             <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
           </button>
-          <div class="capture-fs__city-popover" id="capture-fs-city-popover">
-            <input type="text" class="capture-fs__city-search" id="capture-fs-city-search" placeholder="Type a city…" autocomplete="off">
-            <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
-          </div>
-
-          <span class="capture-fs__bind-sep">·</span>
-          <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
-            <span id="capture-fs-been-text">I've been here</span>
-          </button>
         </div>
-      </header>
+        <div class="capture-fs__city-popover" id="capture-fs-city-popover">
+          <input type="text" class="capture-fs__city-search" id="capture-fs-city-search" placeholder="Type a city…" autocomplete="off">
+          <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
+        </div>
+
+        <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
+          <span id="capture-fs-been-text">I've been here</span>
+        </button>
+      </div>
 
       <div class="capture-fs__body">
         <textarea
@@ -95,15 +97,12 @@
       </div>
 
       <footer class="capture-fs__foot">
-        <div class="capture-fs__foot-meta" id="capture-fs-status">&nbsp;</div>
-        <div class="capture-fs__foot-actions">
-          <button class="capture-fs__submit-secondary" id="capture-fs-submit-continue" type="button">
-            Save & continue <span class="kbd">⌘↵</span>
-          </button>
-          <button class="capture-fs__submit-primary btn" id="capture-fs-submit-close" type="button">
-            Save & close <span class="kbd">⇧⌘↵</span>
-          </button>
-        </div>
+        <button class="btn btn--secondary" id="capture-fs-submit-continue" type="button">
+          Save & continue <span class="kbd">⌘↵</span>
+        </button>
+        <button class="btn" id="capture-fs-submit-close" type="button">
+          Save & close <span class="kbd">⇧⌘↵</span>
+        </button>
       </footer>
     </div>
   </div>

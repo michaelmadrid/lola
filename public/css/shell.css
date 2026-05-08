@@ -490,30 +490,77 @@ input, textarea, select { font: inherit; }
 }
 
 /* Primary action button — used sparingly */
+/* =====================================================================
+   BUTTON SYSTEM — kit-wide standard
+
+   .btn              Primary filled action (Save, Submit, Confirm)
+   .btn--secondary   Outlined ghost action (same shape, same size, no fill)
+                     Use when paired with primary: side by side, equal weight
+   .btn--danger      Destructive variant (red on hover)
+   .btn-close-circle Outlined circle close button — top-left of any overlay
+                     38px diameter, × glyph centered. Universal "dismiss" affordance.
+
+   OVERLAY ACTION CONTRACT:
+   - Close button (×):      top-left, .btn-close-circle
+   - Primary action:        bottom-right of foot, .btn
+   - Secondary action:      to LEFT of primary in foot, .btn .btn--secondary
+   ===================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: var(--ink);
   color: var(--bg);
   padding: 12px 22px;
-  border: 0;
+  border: 1px solid var(--ink);
   border-radius: var(--r-button);
   font-family: var(--sans);
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.005em;
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
 }
-.btn:hover { background: var(--blue); }
+.btn:hover { background: var(--blue); border-color: var(--blue); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+
 .btn--secondary {
   background: transparent;
-  color: var(--ink-2);
-  padding: 12px 0;
+  color: var(--ink);
+  border: 1px solid var(--rule);
 }
-.btn--secondary:hover { color: var(--blue); background: transparent; }
-.btn--danger:hover { background: #c0392b; }
+.btn--secondary:hover {
+  color: var(--blue);
+  border-color: var(--blue);
+  background: transparent;
+}
+.btn--danger:hover { background: #c0392b; border-color: #c0392b; }
+
+/* Outlined circle close button — universal overlay close affordance */
+.btn-close-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-circle);
+  background: transparent;
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+  transition: color 140ms ease, border-color 140ms ease;
+  flex-shrink: 0;
+}
+.btn-close-circle:hover {
+  color: var(--ink);
+  border-color: var(--ink-2);
+}
 
 /* ===== iOS zoom-on-focus fix =====
    iOS Safari auto-zooms any input under 16px when focused, then sometimes
