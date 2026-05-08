@@ -8,15 +8,30 @@
 (function debugBanner() {
   try {
     const banner = document.createElement('div');
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#2a4ed4;color:#fff;padding:8px 12px;font:12px/1.4 monospace;text-align:center;';
+    banner.id = 'debug-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#2a4ed4;color:#fff;padding:8px 12px;font:11px/1.4 monospace;text-align:center;';
     const launcher = document.getElementById('capture-launcher');
     const fs = document.getElementById('capture-fs');
-    banner.textContent = 'home.js ran · launcher: ' + (launcher ? 'FOUND' : 'NULL') +
-                         ' · overlay: ' + (fs ? 'FOUND' : 'NULL') +
-                         ' · body chars: ' + document.body.innerHTML.length;
+    banner.textContent = 'home.js: launcher=' + (launcher ? 'FOUND' : 'NULL') +
+                         ' overlay=' + (fs ? 'FOUND' : 'NULL') +
+                         ' body=' + document.body.innerHTML.length;
     document.body.appendChild(banner);
+
+    // After 2s, check whether the click handler got bound by sniffing for it.
+    // If openCaptFs is undefined globally, the IIFE threw before reaching binding.
+    setTimeout(() => {
+      const bound = window.__kit_launcher_bound === true;
+      banner.textContent += ' | bound=' + (bound ? 'YES' : 'NO');
+      banner.style.background = bound ? '#2a8a4e' : '#c0392b';
+    }, 2000);
+
+    // Catch any unhandled errors that fire from the IIFE
+    window.addEventListener('error', (e) => {
+      banner.style.background = '#c0392b';
+      banner.textContent = 'JS ERROR @ ' + (e.filename || '?') + ':' + (e.lineno || '?') + ' — ' + (e.message || '?');
+    });
   } catch (e) {
-    alert('home.js banner failed: ' + e.message);
+    alert('debug banner failed: ' + e.message);
   }
 })();
 
@@ -597,6 +612,7 @@
     }, 260);
   }
   if (launcher) launcher.addEventListener('click', openCaptFs);
+  window.__kit_launcher_bound = !!launcher;
   if (captFsClose)  captFsClose.addEventListener('click', closeCaptFs);
   // Esc to close
   document.addEventListener('keydown', (e) => {
