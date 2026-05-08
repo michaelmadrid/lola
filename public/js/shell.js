@@ -171,4 +171,229 @@
   }
   renderMoonPath();
   setInterval(renderMoonPath, 60 * 60 * 1000);
+
+  // ===== Mobile slim header (rows 2 + 3) =====
+  // Injected once per page load. Visible only on mobile via CSS (media query).
+  // Row 2: moon glyph + readable date in sans
+  // Row 3: contextual items — primary (trip) gets text, secondary (todos, etc.)
+  //        get glyph + count. Hidden entirely if neither is present.
+  function buildSlimHeader() {
+    const header = document.querySelector('header.head');
+    if (!header) return;
+    if (document.getElementById('slim-mobile')) return; // already built
+
+    // Replace right side avatar on mobile (handled via CSS visibility),
+    // and inject rows 2 and 3 inside the header.
+    const slim = document.createElement('div');
+    slim.id = 'slim-mobile';
+    slim.className = 'slim-mobile';
+    slim.innerHTML = `
+      <div class="slim-mobile__row2">
+        <svg class="slim-mobile__moon" viewBox="0 0 12 12" width="14" height="14" aria-hidden="true">
+          <circle cx="6" cy="6" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/>
+          <path id="slim-moon-path" fill="currentColor"></path>
+        </svg>
+        <span class="slim-mobile__date" id="slim-date">—</span>
+      </div>
+      <div class="slim-mobile__row3" id="slim-row3" hidden>
+        <div class="slim-mobile__primary" id="slim-trip" hidden></div>
+        <div class="slim-mobile__glyphs" id="slim-glyphs"></div>
+      </div>
+    `;
+    header.appendChild(slim);
+
+    // Inject mobile-only avatar circle into header__right (also hidden via CSS on desktop)
+    const right = header.querySelector('.head__right');
+    if (right && !document.getElementById('slim-avatar')) {
+      const a = document.createElement('a');
+      a.id = 'slim-avatar';
+      a.className = 'slim-avatar';
+      a.href = '/settings.html';
+      a.setAttribute('aria-label', 'Settings');
+      a.textContent = '—';
+      right.appendChild(a);
+    }
+  }
+
+  function renderSlimMoon() {
+    const target = document.getElementById('slim-moon-path');
+    if (!target) return;
+    // Reuse the existing moon math; render into a separate path
+    const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z').getTime();
+    const SYNODIC = 29.53058867;
+    const days = (Date.now() - KNOWN_NEW_MOON) / 86400000;
+    const phase = ((days % SYNODIC) + SYNODIC) % SYNODIC / SYNODIC;
+    const cx = 6, cy = 6, r = 5.5;
+    const illum = (1 - Math.cos(2 * Math.PI * phase)) / 2;
+    const xR = r * Math.abs(1 - 2 * illum);
+    const darkRight = phase >= 0.5;
+    const shadowIsBig = illum < 0.5;
+    const outerSweep = darkRight ? 1 : 0;
+    let termSweep;
+    if (darkRight) termSweep = shadowIsBig ? 1 : 0;
+    else           termSweep = shadowIsBig ? 0 : 1;
+    const d = `M ${cx} ${cy - r}
+               A ${r} ${r} 0 0 ${outerSweep} ${cx} ${cy + r}
+               A ${xR} ${r} 0 0 ${termSweep} ${cx} ${cy - r}
+               Z`;
+    target.setAttribute('d', d);
+  }
+
+  function renderSlimDate() {
+    const dateEl = document.getElementById('slim-date');
+    if (!dateEl) return;
+    try {
+      const tz = localStorage.getItem('lola.home_timezone') || 'Asia/Makassar';
+      const d = new Date();
+      // "Friday, May 8" in the user's home tz
+      const day = d.toLocaleDateString('en-US', { weekday: 'long', timeZone: tz });
+      const month = d.toLocaleDateString('en-US', { month: 'long', timeZone: tz });
+      const num = d.toLocaleDateString('en-US', { day: 'numeric', timeZone: tz });
+      dateEl.textContent = `${day}, ${month} ${num}`;
+    } catch (e) {
+      dateEl.textContent = '';
+    }
+  }
+
+  function renderSlimAvatar() {
+    const av = document.getElementById('slim-avatar');
+    if (!av) return;
+    try {
+      const user = window.api && window.api.user.get();
+      const name = (user && user.name) ? user.name.trim() : '';
+      // First letter of first name, fallback to "?"
+      av.textContent = name ? name.charAt(0).toUpperCase() : '?';
+    } catch (e) {
+      av.textContent = '?';
+    }
+  }
+
+  // ----- Row 3 context items -----
+  // Trip: shown when there's an upcoming or active trip (within 60 days).
+  //   - upcoming → "NEXT TRIP · 5 days"
+  //   - active   → "ON TRIP · DAY 7"
+  //   - past     → hidden
+  //   The trip's NAME never appears here — that's reserved for the trip overlay.
+  //   Length-stable so any trip name works.
+  // Todos: pill button "TODOS · 3", hidden when 0.
+  async function renderSlimContext() {
+    const row3 = document.getElementById('slim-row3');
+    const tripEl = document.getElementById('slim-trip');
+    const glyphsEl = document.getElementById('slim-glyphs');
+    if (!row3 || !tripEl || !glyphsEl) return;
+
+    let hasTrip = false;
+    let hasGlyphs = false;
+
+    // ---- Trip status ----
+    let bestTrip = null;
+    if (window.api && window.api.isSignedIn && window.api.isSignedIn()) {
+      try {
+        const data = await window.api.get('/api/trips');
+        const trips = (data && data.trips) || [];
+        const today = new Date();
+        const todayMs = today.setHours(0, 0, 0, 0);
+        let bestRank = Infinity;
+        for (const t of trips) {
+          if (!t.date_start || !t.date_end) continue;
+          const startMs = new Date(t.date_start).getTime();
+          const endMs   = new Date(t.date_end).getTime();
+          if (endMs < todayMs) continue;
+          let rank;
+          if (startMs <= todayMs && todayMs <= endMs) rank = -1;
+          else rank = (startMs - todayMs);
+          const daysOut = (startMs - todayMs) / 86400000;
+          if (rank > 0 && daysOut > 60) continue;
+          if (rank < bestRank) { bestRank = rank; bestTrip = t; }
+        }
+        if (bestTrip) {
+          const startMs = new Date(bestTrip.date_start).getTime();
+          const endMs   = new Date(bestTrip.date_end).getTime();
+          let value;
+          if (startMs <= todayMs && todayMs <= endMs) {
+            const dayN = Math.floor((todayMs - startMs) / 86400000) + 1;
+            // Mid-trip: "d7" (day 7)
+            value = `d${dayN}`;
+          } else {
+            const days = Math.ceil((startMs - todayMs) / 86400000);
+            // Pre-trip: "5d"
+            value = `${days}d`;
+          }
+          // Glyph-led, no labels: "→ 5d" or "→ d7"
+          tripEl.innerHTML = `
+            <span class="slim-mobile__trip-glyph">→</span>
+            <span class="slim-mobile__trip-value">${value}</span>
+          `;
+          tripEl.dataset.tripId = bestTrip.id;
+          tripEl.hidden = false;
+          hasTrip = true;
+        } else {
+          tripEl.hidden = true;
+        }
+      } catch (e) {
+        tripEl.hidden = true;
+      }
+    } else {
+      tripEl.hidden = true;
+    }
+
+    // ---- Todos pill ----
+    glyphsEl.innerHTML = '';
+    if (window.api && window.api.isSignedIn && window.api.isSignedIn()) {
+      try {
+        const data = await window.api.get('/api/todos?view=today');
+        const todos = (data && data.todos) || [];
+        const open = todos.filter(t => !t.completed_at && !t.archived_at).length;
+        if (open > 0) {
+          const a = document.createElement('a');
+          a.className = 'slim-mobile__pill';
+          a.href = '#';
+          a.id = 'slim-todos';
+          a.setAttribute('aria-label', `${open} open todos`);
+          // Glyph-led, no labels: "✓ 3"
+          a.innerHTML = `<span class="slim-mobile__pill-glyph">✓</span><span class="slim-mobile__pill-value">${open}</span>`;
+          glyphsEl.appendChild(a);
+          hasGlyphs = true;
+          a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const fsBtn = document.getElementById('todos-expand');
+            if (fsBtn) { fsBtn.click(); }
+            else { window.location.href = '/'; }
+          });
+        }
+      } catch (e) {}
+    }
+
+    row3.hidden = !(hasTrip || hasGlyphs);
+
+    if (hasTrip) {
+      tripEl.style.cursor = 'pointer';
+      tripEl.onclick = () => {
+        const itinFs = document.getElementById('itinerary-fs') || document.getElementById('trip-fs');
+        if (itinFs && itinFs.classList) {
+          itinFs.classList.add('is-open');
+          document.body.style.overflow = 'hidden';
+        } else {
+          window.location.href = '/trip.html?id=' + tripEl.dataset.tripId;
+        }
+      };
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  buildSlimHeader();
+  renderSlimMoon();
+  renderSlimDate();
+  renderSlimAvatar();
+  renderSlimContext();
+  // Refresh date around midnight
+  setInterval(renderSlimDate, 5 * 60 * 1000);
 })();
