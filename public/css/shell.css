@@ -44,14 +44,35 @@
   --gutter: 32px;
   --container: 1600px;
 
-  /* Radius system — single source of truth.
-     Edit these to retune the whole UI.
-     Inspired by Telescope's soft-rounded register. */
-  --r-pill:    999px;   /* inline tiny tappable pills (been toggle, batch link) */
-  --r-button:  16px;    /* primary action buttons (Save, Submit) — soft pill */
-  --r-input:    4px;    /* inputs, textareas, the capture launcher field */
-  --r-card:     6px;    /* cards, larger panels, modals, segmented controls */
-  --r-circle:  999px;   /* literal circles (avatar) */
+  /* ============================================================
+     RADIUS SYSTEM — kit UI Guide
+
+     Single source of truth for corner radii. Edit these values
+     to retune the entire UI in one place.
+
+     Register: editorial-soft. NOT AirBnB-soft (16px+ pills),
+     NOT brutalist-sharp (0-2px). The middle ground that reads
+     as considered design rather than off-the-shelf SaaS.
+
+     --r-pill     999px   inline tappable pills (city, been, batch link)
+                          AND outlined small chips. These are TRUE pills.
+     --r-button     8px   primary + secondary action buttons (Save, Cancel)
+                          The kit-wide button radius. Tight but not sharp.
+     --r-input      4px   inputs, textareas, search fields, capture launcher
+                          Small radius reads as "field" in editorial register.
+     --r-card       6px   cards, panels, modals, popovers
+                          Slightly rounder than inputs to read as containers.
+     --r-circle   999px   true circles (avatar, .btn-close-circle uses 50%)
+
+     CONTRACT: do not hardcode border-radius values in component CSS.
+     Always reference one of these vars so the system is tweakable from
+     this single block.
+     ============================================================ */
+  --r-pill:    999px;
+  --r-button:    8px;
+  --r-input:     4px;
+  --r-card:      6px;
+  --r-circle:  999px;
 }
 
 /* ----- Dark mode (global) ----- */
@@ -542,20 +563,24 @@ input, textarea, select { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-circle);
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 50%;
   background: transparent;
   border: 1px solid var(--rule);
   color: var(--ink-2);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 400;
   line-height: 1;
   cursor: pointer;
   padding: 0;
+  margin: 0;
   text-decoration: none;
   transition: color 140ms ease, border-color 140ms ease;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 .btn-close-circle:hover {
   color: var(--ink);
@@ -633,5 +658,14 @@ input, textarea, select { font: inherit; }
   a.btn, a.btn--secondary,
   .menu-overlay__inner a {
     min-height: 44px;
+  }
+  /* Close circle is intentionally smaller (32x32) and must stay perfectly round.
+     The whole circle is the tap target — well above 30px guideline floor. */
+  button.btn-close-circle,
+  a.btn-close-circle {
+    min-height: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    width: 32px !important;
   }
 }

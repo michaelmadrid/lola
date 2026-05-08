@@ -410,7 +410,7 @@
   flex-shrink: 0;
 }
 
-/* Stacked bind controls: city button on its own line, been pill below.
+/* Stacked bind controls: "In [City]" on row 1, "I've been here" on row 2.
    Plenty of breathing room. */
 .capture-fs__bind {
   display: flex;
@@ -427,8 +427,9 @@
 }
 .capture-fs__bind-label {
   color: var(--ink-3);
-  font-size: 15px;
+  font-size: 16px;
   font-family: var(--sans);
+  letter-spacing: -0.005em;
 }
 
 /* City button — bigger, more substantial */
@@ -521,7 +522,10 @@
 .capture-fs__been-btn:hover { background: var(--field-focus); }
 .capture-fs__been-btn[data-been="false"] { color: var(--blue); }
 
-/* The actual writing surface — bare. No box. Cursor in air. Big and breathing. */
+/* The actual writing surface — bare. No box. Cursor in air. Big and breathing.
+   28px is well above iOS auto-zoom floor (16px), so we keep our chosen size
+   on mobile too. The !important wins the cascade against the global
+   "input/textarea must be 16px on mobile" iOS-zoom-fix rule. */
 .capture-fs__body {
   flex: 1;
   display: flex;
@@ -533,7 +537,7 @@
   border: 0;
   background: transparent;
   font-family: var(--sans);
-  font-size: 28px;
+  font-size: 28px !important;
   line-height: 1.4;
   letter-spacing: -0.018em;
   color: var(--ink);
@@ -574,7 +578,7 @@
   .capture-fs__head { margin-bottom: 16px; }
   .capture-fs__bind { margin-bottom: 24px; gap: 10px; }
   .capture-fs__textarea {
-    font-size: 26px;
+    /* Same 28px on mobile — wins via !important on the base rule */
     line-height: 1.4;
     min-height: 200px;
   }
