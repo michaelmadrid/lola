@@ -2,39 +2,6 @@
    home.js — homepage behavior, wired to API
    ========================================================= */
 
-// DEBUG BANNER — temporary diagnostic. Tells us whether home.js executes
-// and what state the DOM is in when it does. Remove after we resolve the
-// launcher-not-appearing bug.
-(function debugBanner() {
-  try {
-    const banner = document.createElement('div');
-    banner.id = 'debug-banner';
-    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#2a4ed4;color:#fff;padding:8px 12px;font:11px/1.4 monospace;text-align:center;';
-    const launcher = document.getElementById('capture-launcher');
-    const fs = document.getElementById('capture-fs');
-    banner.textContent = 'home.js: launcher=' + (launcher ? 'FOUND' : 'NULL') +
-                         ' overlay=' + (fs ? 'FOUND' : 'NULL') +
-                         ' body=' + document.body.innerHTML.length;
-    document.body.appendChild(banner);
-
-    // After 2s, check whether the click handler got bound by sniffing for it.
-    // If openCaptFs is undefined globally, the IIFE threw before reaching binding.
-    setTimeout(() => {
-      const bound = window.__kit_launcher_bound === true;
-      banner.textContent += ' | bound=' + (bound ? 'YES' : 'NO');
-      banner.style.background = bound ? '#2a8a4e' : '#c0392b';
-    }, 2000);
-
-    // Catch any unhandled errors that fire from the IIFE
-    window.addEventListener('error', (e) => {
-      banner.style.background = '#c0392b';
-      banner.textContent = 'JS ERROR @ ' + (e.filename || '?') + ':' + (e.lineno || '?') + ' — ' + (e.message || '?');
-    });
-  } catch (e) {
-    alert('debug banner failed: ' + e.message);
-  }
-})();
-
 (async function () {
   // Auth gate
   if (!api.isSignedIn()) {
@@ -442,21 +409,21 @@
   const launcher           = document.getElementById('capture-launcher');
   const launcherCityName   = document.getElementById('capture-launcher-city-name');
 
-  const captFs                 = document.getElementById('capture-captFs');
-  const captFsClose            = document.getElementById('capture-captFs-close');
-  const captFsTextarea         = document.getElementById('capture-captFs-textarea');
-  const captFsStatus           = document.getElementById('capture-captFs-status');
-  const captFsSubmitContinue   = document.getElementById('capture-captFs-submit-continue');
-  const captFsSubmitClose      = document.getElementById('capture-captFs-submit-close');
+  const captFs                 = document.getElementById('capture-fs');
+  const captFsClose            = document.getElementById('capture-fs-close');
+  const captFsTextarea         = document.getElementById('capture-fs-textarea');
+  const captFsStatus           = document.getElementById('capture-fs-status');
+  const captFsSubmitContinue   = document.getElementById('capture-fs-submit-continue');
+  const captFsSubmitClose      = document.getElementById('capture-fs-submit-close');
 
-  const captFsCityBtn          = document.getElementById('capture-captFs-city-btn');
-  const captFsCityBtnName      = document.getElementById('capture-captFs-city-btn-name');
-  const captFsCityPopover      = document.getElementById('capture-captFs-city-popover');
-  const captFsCitySearch       = document.getElementById('capture-captFs-city-search');
-  const captFsCityList         = document.getElementById('capture-captFs-city-list');
+  const captFsCityBtn          = document.getElementById('capture-fs-city-btn');
+  const captFsCityBtnName      = document.getElementById('capture-fs-city-btn-name');
+  const captFsCityPopover      = document.getElementById('capture-fs-city-popover');
+  const captFsCitySearch       = document.getElementById('capture-fs-city-search');
+  const captFsCityList         = document.getElementById('capture-fs-city-list');
 
-  const captFsBeenBtn          = document.getElementById('capture-captFs-been-btn');
-  const captFsBeenText         = document.getElementById('capture-captFs-been-text');
+  const captFsBeenBtn          = document.getElementById('capture-fs-been-btn');
+  const captFsBeenText         = document.getElementById('capture-fs-been-text');
 
   // Shared keys — match /capture/ page so preferences persist across surfaces
   const CITY_STORAGE_KEY = 'kit.capture.lastCity';
@@ -612,7 +579,6 @@
     }, 260);
   }
   if (launcher) launcher.addEventListener('click', openCaptFs);
-  window.__kit_launcher_bound = !!launcher;
   if (captFsClose)  captFsClose.addEventListener('click', closeCaptFs);
   // Esc to close
   document.addEventListener('keydown', (e) => {
