@@ -526,7 +526,7 @@ input, textarea, select { font: inherit; }
     color: var(--ink);
   }
   .slim-mobile__moon {
-    color: var(--ink);
+    color: var(--ink-3);
     flex-shrink: 0;
   }
   .slim-mobile__date {
@@ -547,36 +547,6 @@ input, textarea, select { font: inherit; }
     min-height: 44px;
   }
   .slim-mobile__row3[hidden] { display: none; }
-
-  /* Primary item — trip status. Glyph + countdown, no labels. */
-  .slim-mobile__primary {
-    font-family: var(--sans);
-    font-size: 14px;
-    color: var(--ink);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 4px;
-    /* 44px tap target via padding */
-    cursor: pointer;
-    transition: color 140ms ease;
-  }
-  .slim-mobile__primary[hidden] { display: none; }
-  .slim-mobile__primary:hover { color: var(--blue); }
-  .slim-mobile__trip-glyph {
-    color: var(--ink-3);
-    font-size: 14px;
-    line-height: 1;
-  }
-  .slim-mobile__trip-value {
-    color: var(--ink);
-    font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-  .slim-mobile__primary:hover .slim-mobile__trip-glyph,
-  .slim-mobile__primary:hover .slim-mobile__trip-value {
-    color: var(--blue);
-  }
 
   /* Glyph cluster (right side) — quiet pill. */
   .slim-mobile__glyphs {
@@ -599,7 +569,9 @@ input, textarea, select { font: inherit; }
     text-decoration: none;
     background: transparent;
     transition: border-color 140ms ease, color 140ms ease;
+    cursor: pointer;
   }
+  .slim-mobile__pill[hidden] { display: none; }
   .slim-mobile__pill:hover {
     border-color: var(--blue);
     color: var(--blue);

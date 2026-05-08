@@ -32,6 +32,27 @@
   }
   .capture-wrap { max-width: none !important; }
   .capture { padding: 14px 16px; }
+  /* Mobile capture: bigger font, line-height + min-height scale together
+     so the click target matches the text. iOS zoom rule already forces 16px,
+     this ensures the surrounding box is sized for it. */
+  .capture__input {
+    font-size: 17px;
+    line-height: 26px;
+    min-height: 26px;
+  }
+  .capture__plus {
+    font-size: 18px;
+    line-height: 26px;
+  }
+  /* Hide the big left-column day summary on mobile.
+     The slim header (date + moon + trip status) now carries this context.
+     !important + multiple selectors to defeat any stacking-order or cached older rules.
+     Also hide #day-sum directly in case col-left class is somehow stripped. */
+  .col-left,
+  .page-home .col-left,
+  aside.col-left,
+  #day-sum,
+  .day-sum { display: none !important; }
 }
 
 /* =========================================================

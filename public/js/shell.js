@@ -189,14 +189,14 @@
     slim.className = 'slim-mobile';
     slim.innerHTML = `
       <div class="slim-mobile__row2">
-        <svg class="slim-mobile__moon" viewBox="0 0 12 12" width="14" height="14" aria-hidden="true">
+        <svg class="slim-mobile__moon" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
           <circle cx="6" cy="6" r="5.5" fill="none" stroke="currentColor" stroke-width="1"/>
           <path id="slim-moon-path" fill="currentColor"></path>
         </svg>
         <span class="slim-mobile__date" id="slim-date">—</span>
       </div>
       <div class="slim-mobile__row3" id="slim-row3" hidden>
-        <div class="slim-mobile__primary" id="slim-trip" hidden></div>
+        <a href="#" class="slim-mobile__pill" id="slim-trip" hidden></a>
         <div class="slim-mobile__glyphs" id="slim-glyphs"></div>
       </div>
     `;
@@ -309,21 +309,11 @@
         if (bestTrip) {
           const startMs = new Date(bestTrip.date_start).getTime();
           const endMs   = new Date(bestTrip.date_end).getTime();
-          let value;
-          if (startMs <= todayMs && todayMs <= endMs) {
-            const dayN = Math.floor((todayMs - startMs) / 86400000) + 1;
-            // Mid-trip: "d7" (day 7)
-            value = `d${dayN}`;
-          } else {
-            const days = Math.ceil((startMs - todayMs) / 86400000);
-            // Pre-trip: "5d"
-            value = `${days}d`;
-          }
-          // Glyph-led, no labels: "→ 5d" or "→ d7"
-          tripEl.innerHTML = `
-            <span class="slim-mobile__trip-glyph">→</span>
-            <span class="slim-mobile__trip-value">${value}</span>
-          `;
+          const isOnTrip = (startMs <= todayMs && todayMs <= endMs);
+          const label = isOnTrip ? 'On trip' : 'Next trip';
+          // Trip is now a pill matching the todos pill exactly.
+          // No countdown, no glyph — just the label. Tap opens trip overlay.
+          tripEl.innerHTML = `<span class="slim-mobile__pill-value">${label}</span>`;
           tripEl.dataset.tripId = bestTrip.id;
           tripEl.hidden = false;
           hasTrip = true;
