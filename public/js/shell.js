@@ -282,6 +282,17 @@
     const glyphsEl = document.getElementById('slim-glyphs');
     if (!row3 || !tripEl || !glyphsEl) return;
 
+    // Row 3 (trip + todos) is home-only. Both overlays live on the home page,
+    // so showing the pills elsewhere creates dead-end taps. Bail early on other pages.
+    const path = window.location.pathname;
+    const isHome = (path === '/' || path === '/index.html');
+    if (!isHome) {
+      row3.hidden = true;
+      tripEl.hidden = true;
+      glyphsEl.innerHTML = '';
+      return;
+    }
+
     let hasTrip = false;
     let hasGlyphs = false;
 
