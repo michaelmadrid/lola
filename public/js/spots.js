@@ -101,7 +101,7 @@
         : '';
       const tipLine = s.tip ? `<span class="stream__tip">${util.escapeHtml(s.tip)}</span>` : '';
 
-      return `<div class="stream__item is-structured" data-id="${s.id}">
+      return `<div class="stream__item is-structured${s.been === false ? ' is-want' : ''}" data-id="${s.id}">
         <div class="stream__body">
           <span class="stream__name">${util.escapeHtml(s.place_name)}</span>
           ${tipLine}
@@ -163,11 +163,22 @@
   const saveFsSave     = document.getElementById('save-fs-save');
   const saveFsArchive  = document.getElementById('save-fs-archive');
   const saveFsReparse  = document.getElementById('save-fs-reparse');
+  const saveFsBeenYes  = document.getElementById('save-fs-been-yes');
+  const saveFsBeenNo   = document.getElementById('save-fs-been-no');
 
   let editingSaveId = null;
   let editingPickedCityId = null;
   let editingOriginalCityName = '';
+  let editingBeen = true;
   let allCitiesCache = null;
+
+  function applyEditingBeen(val) {
+    editingBeen = !!val;
+    if (saveFsBeenYes) saveFsBeenYes.dataset.active = editingBeen ? 'true' : 'false';
+    if (saveFsBeenNo)  saveFsBeenNo.dataset.active  = editingBeen ? 'false' : 'true';
+  }
+  if (saveFsBeenYes) saveFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
+  if (saveFsBeenNo)  saveFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
   function toast(msg) {
     // Lightweight toast — match shell.css patterns
@@ -208,6 +219,7 @@
     saveFsHood.value = save.neighborhood || '';
     saveFsCountry.textContent = save.country || '—';
     saveFsCitySuggest.innerHTML = '';
+    applyEditingBeen(typeof save.been === 'boolean' ? save.been : true);
 
     saveEditor.classList.add('is-open');
     document.body.style.overflow = 'hidden';
@@ -298,6 +310,7 @@
       tip:          saveFsTip.value.trim() || null,
       category:     saveFsCat.value || null,
       neighborhood: saveFsHood.value.trim() || null,
+      been:         editingBeen,
     };
     try {
       await api.patch('/api/saves/' + editingSaveId, body);

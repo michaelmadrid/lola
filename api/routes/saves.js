@@ -243,12 +243,14 @@ router.get('/', authenticate, async (req, res) => {
 // Used by POST in both single-line and multi-line modes.
 // Note: cityIdHint is attached via save_cities (not a column on saves anymore).
 // boundCityName is passed to the AI parser as disambiguation context.
-async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCityName, place_id }) {
+async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCityName, place_id, been }) {
+  // Default `been` to true if not specified
+  const beenValue = (typeof been === 'boolean') ? been : true;
   const result = await pool.query(
-    `INSERT INTO saves (user_id, text, tags, url, place_id)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO saves (user_id, text, tags, url, place_id, been)
+     VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING *`,
-    [userId, text.trim(), tags, url, place_id || null]
+    [userId, text.trim(), tags, url, place_id || null, beenValue]
   );
   const save = result.rows[0];
 
@@ -287,7 +289,7 @@ async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCity
 // Supports single-line input (one save) OR multi-line input (one save per line).
 // Multi-line: each non-empty line becomes its own save with its own AI parse.
 router.post('/', authenticate, async (req, res) => {
-  const { text, tags: explicitTags, url: explicitUrl, city_id, city_name, place_id } = req.body;
+  const { text, tags: explicitTags, url: explicitUrl, city_id, city_name, place_id, been } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
 
   try {
@@ -319,6 +321,7 @@ router.post('/', authenticate, async (req, res) => {
         cityIdHint: city_id,
         boundCityName: resolvedBoundCityName,
         place_id,
+        been,
       });
       return res.json({ save });
     }
@@ -336,6 +339,7 @@ router.post('/', authenticate, async (req, res) => {
         cityIdHint: city_id,
         boundCityName: resolvedBoundCityName,
         place_id: null,
+        been,
       });
       created.push(save);
     }
@@ -350,6 +354,7 @@ router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
     'text', 'tags', 'url', 'place_id', 'archived_at',
     'place_name', 'category', 'tip', 'country', 'neighborhood',
+    'been',
   ];
   const updates = [];
   const params = [];

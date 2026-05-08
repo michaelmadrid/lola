@@ -14,11 +14,32 @@
   const submitContinue = document.getElementById('submit-continue');
   const submitClose    = document.getElementById('submit-close');
   const closeBtn       = document.getElementById('capture-close');
+  const beenBtn       = document.getElementById('been-btn');
+  const beenText      = document.getElementById('been-text');
 
   const STORAGE_KEY = 'kit.capture.lastCity';
+  const BEEN_STORAGE_KEY = 'kit.capture.lastBeen';
   let allCities = [];
   let pickedCity = null;  // { id, name, country }
   let isSubmitting = false;
+  let been = true; // Default: been here
+
+  // ---------- Been toggle ----------
+  function applyBeen(val) {
+    been = !!val;
+    if (beenBtn)  beenBtn.dataset.been = been ? 'true' : 'false';
+    if (beenText) beenText.textContent = been ? "I've been here" : "I want to go";
+    try { localStorage.setItem(BEEN_STORAGE_KEY, been ? '1' : '0'); } catch {}
+  }
+  // Load last preference
+  try {
+    const stored = localStorage.getItem(BEEN_STORAGE_KEY);
+    if (stored === '0') applyBeen(false);
+    else applyBeen(true);
+  } catch { applyBeen(true); }
+  if (beenBtn) {
+    beenBtn.addEventListener('click', () => applyBeen(!been));
+  }
 
   // ---------- City binding ----------
   async function loadCities() {
@@ -183,7 +204,7 @@
     submitClose.disabled = true;
 
     try {
-      const body = { text, city_id: pickedCity.id, city_name: pickedCity.name };
+      const body = { text, city_id: pickedCity.id, city_name: pickedCity.name, been };
       const result = await api.post('/api/saves', body);
       const count = result.count || 1;
 

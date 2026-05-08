@@ -405,6 +405,25 @@
   const input    = document.getElementById('capture-input');
   const send     = document.getElementById('capture-send');
   const tagsBox  = document.getElementById('capture-tags');
+  const homeBeenBtn  = document.getElementById('home-been-btn');
+  const homeBeenText = document.getElementById('home-been-text');
+
+  // Been toggle (shared key with /capture page)
+  const BEEN_KEY = 'kit.capture.lastBeen';
+  let homeBeen = true;
+  function applyHomeBeen(val) {
+    homeBeen = !!val;
+    if (homeBeenBtn)  homeBeenBtn.dataset.been = homeBeen ? 'true' : 'false';
+    if (homeBeenText) homeBeenText.textContent = homeBeen ? "I've been here" : "I want to go";
+    try { localStorage.setItem(BEEN_KEY, homeBeen ? '1' : '0'); } catch {}
+  }
+  try {
+    const stored = localStorage.getItem(BEEN_KEY);
+    applyHomeBeen(stored !== '0'); // default true
+  } catch { applyHomeBeen(true); }
+  if (homeBeenBtn) {
+    homeBeenBtn.addEventListener('click', () => applyHomeBeen(!homeBeen));
+  }
 
   function extractTags(text) {
     const matches = (text.match(/#[a-z0-9_-]+/gi) || []);
@@ -439,7 +458,7 @@
       // It's a generic blank pulse — NOT an echo of the raw text.
       injectGhostRow();
 
-      await api.post('/api/saves', { text });
+      await api.post('/api/saves', { text, been: homeBeen });
       // Poll a few times to catch the AI parse landing.
       // renderStream knows to render not-yet-parsed-and-recent rows as ghosts,
       // so race conditions never expose raw text.
@@ -599,7 +618,8 @@
       }
 
       const variantClass = hasPlace ? ' is-structured' : (isTipOnly ? ' is-tip-only' : '');
-      return `<div class="stream__item${variantClass}" data-id="${s.id}">
+      const wantClass = (s.been === false) ? ' is-want' : '';
+      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}">
         <div class="stream__body">
           ${bodyHtml}
         </div>
@@ -920,10 +940,21 @@
   const saveFsSave     = document.getElementById('save-fs-save');
   const saveFsArchive  = document.getElementById('save-fs-archive');
   const saveFsReparse  = document.getElementById('save-fs-reparse');
+  const saveFsBeenYes  = document.getElementById('save-fs-been-yes');
+  const saveFsBeenNo   = document.getElementById('save-fs-been-no');
 
   let editingSaveId = null;
   let editingPickedCityId = null; // city id the user picked from suggestions
   let editingOriginalCityName = '';
+  let editingBeen = true;
+
+  function applyEditingBeen(val) {
+    editingBeen = !!val;
+    if (saveFsBeenYes) saveFsBeenYes.dataset.active = editingBeen ? 'true' : 'false';
+    if (saveFsBeenNo)  saveFsBeenNo.dataset.active  = editingBeen ? 'false' : 'true';
+  }
+  if (saveFsBeenYes) saveFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
+  if (saveFsBeenNo)  saveFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
   // Cache cities for autocomplete — refresh once on first open
   let allCitiesCache = null;
@@ -959,6 +990,8 @@
       saveFsHood.value = save.neighborhood || '';
       saveFsCountry.textContent = save.country || '—';
       saveFsCitySuggest.innerHTML = '';
+      // Default to true if missing (legacy rows before migration)
+      applyEditingBeen(typeof save.been === 'boolean' ? save.been : true);
 
       saveEditor.classList.add('is-open');
       document.body.style.overflow = 'hidden';
@@ -1068,6 +1101,7 @@
       tip:          saveFsTip.value.trim() || null,
       category:     saveFsCat.value || null,
       neighborhood: saveFsHood.value.trim() || null,
+      been:         editingBeen,
     };
     try {
       await api.patch('/api/saves/' + editingSaveId, body);

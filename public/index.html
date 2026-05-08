@@ -110,6 +110,9 @@
 
     <div class="capture-wrap">
       <div class="capture__topline">
+        <button class="capture__been-btn" id="home-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
+          <span id="home-been-text">I've been here</span>
+        </button>
         <a href="/capture/" class="capture__batch-link" title="Open batch capture">batch ↗</a>
       </div>
       <div class="capture">
@@ -229,6 +232,15 @@
           <option value="see">See</option>
           <option value="other">Other</option>
         </select>
+      </div>
+
+      <!-- Been / Want to go -->
+      <div class="save-fs__field">
+        <label class="save-fs__label">Status</label>
+        <div class="save-fs__been-row">
+          <button type="button" class="save-fs__been-pill" id="save-fs-been-yes" data-active="true">I've been here</button>
+          <button type="button" class="save-fs__been-pill" id="save-fs-been-no" data-active="false">I want to go</button>
+        </div>
       </div>
 
       <!-- City: type-to-search/create -->

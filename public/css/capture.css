@@ -100,6 +100,35 @@
   color: var(--ink-3);
 }
 
+/* Been / want-to-go toggle */
+.capture-page__bind-sep {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--ink-4);
+  margin: 0 2px;
+}
+.capture-page__been-btn {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--field);
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  letter-spacing: -0.005em;
+  transition: background 140ms ease, color 140ms ease;
+}
+.capture-page__been-btn:hover { background: var(--field-focus); }
+/* Want-to-go state: same shape, blue accent */
+.capture-page__been-btn[data-been="false"] {
+  color: var(--blue);
+}
+.capture-page__been-btn[data-been="false"]:hover {
+  background: var(--field-focus);
+}
+
 /* City popover */
 .capture-page__city-popover {
   position: absolute;
