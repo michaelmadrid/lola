@@ -442,10 +442,10 @@
   word-break: break-word;
 }
 .stream__meta {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--sans);
+  font-size: 13px;
   color: var(--ink-3);
-  letter-spacing: 0.04em;
+  letter-spacing: -0.005em;
   margin-top: 4px;
 }
 .stream__meta .dot { color: var(--ink-4); margin: 0 5px; }

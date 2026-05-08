@@ -88,11 +88,7 @@
 
     listEl.innerHTML = filtered.map(s => {
       const cityNames = (s.attached_cities || []).map(c => c.name.toLowerCase());
-      const cityLabel = cityNames.length
-        ? (s.neighborhood
-            ? `${s.neighborhood.toLowerCase()}, ${cityNames[0]}`
-            : cityNames.join(' · '))
-        : (s.neighborhood ? s.neighborhood.toLowerCase() : '');
+      const cityLabel = cityNames.length ? cityNames.join(' · ') : '';
       const metaParts = [];
       if (s.category) metaParts.push(s.category);
       if (cityLabel) metaParts.push(cityLabel);
@@ -157,7 +153,6 @@
   const saveFsCat      = document.getElementById('save-fs-category');
   const saveFsCity     = document.getElementById('save-fs-city');
   const saveFsCitySuggest = document.getElementById('save-fs-city-suggest');
-  const saveFsHood     = document.getElementById('save-fs-hood');
   const saveFsCountry  = document.getElementById('save-fs-country');
   const saveFsClose    = document.getElementById('save-editor-close');
   const saveFsSave     = document.getElementById('save-fs-save');
@@ -216,7 +211,6 @@
     saveFsTip.value = save.tip || '';
     saveFsCat.value = save.category || '';
     saveFsCity.value = editingOriginalCityName;
-    saveFsHood.value = save.neighborhood || '';
     saveFsCountry.textContent = save.country || '—';
     saveFsCitySuggest.innerHTML = '';
     applyEditingBeen(typeof save.been === 'boolean' ? save.been : true);
@@ -309,7 +303,6 @@
       place_name:   saveFsPlace.value.trim() || null,
       tip:          saveFsTip.value.trim() || null,
       category:     saveFsCat.value || null,
-      neighborhood: saveFsHood.value.trim() || null,
       been:         editingBeen,
     };
     try {
