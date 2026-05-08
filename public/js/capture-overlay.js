@@ -21,7 +21,10 @@
 (function () {
   if (window.CaptureOverlay) return; // idempotent
 
-  const CITY_STORAGE_KEY = 'kit.capture.lastCity';
+  // Storage keys. CITY key is versioned (-v2) to invalidate caches that
+  // got polluted by an earlier bug where Amsterdam (alphabetical first)
+  // was set as a "fallback" without user intent.
+  const CITY_STORAGE_KEY = 'kit.capture.lastCity-v2';
   const BEEN_STORAGE_KEY = 'kit.capture.lastBeen';
 
   // Module state
@@ -179,9 +182,11 @@
       allCities = data.cities || [];
       if (!pickedCity || !pickedCity.id) {
         try {
-          const me = await api.get('/api/auth/me');
-          if (me && me.home_city_id) {
-            const home = allCities.find(c => c.id === me.home_city_id);
+          const meResp = await api.get('/api/auth/me');
+          // Auth response is { user: { home_city_id, home_city: {...}, ... } }
+          const u = meResp && meResp.user;
+          if (u && u.home_city_id) {
+            const home = allCities.find(c => c.id === u.home_city_id);
             if (home) setPickedCity(home);
           }
         } catch {}

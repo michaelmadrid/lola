@@ -410,12 +410,13 @@
   flex-shrink: 0;
 }
 
-/* Stacked bind controls: "In [City]" on row 1, "I've been here" on row 2.
-   Plenty of breathing room. */
+/* Bind controls: "In [City] [been pill]" all on one line.
+   Single row, generous gap, breathing space between. */
 .capture-fs__bind {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
   position: relative;
   margin-bottom: 32px;
