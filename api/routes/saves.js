@@ -85,7 +85,8 @@ async function findOrCreateCity(name, country, timezone) {
 // Background: parse a save with Claude, update the row + attach city if needed.
 // Fire and forget — never blocks the user's POST. Errors are stored on the row.
 async function parseAndUpdate(saveId, text, opts = {}) {
-  const parsed = await parseCapture(text, opts);
+  const { boundCityName, cityIdHint } = opts;
+  const parsed = await parseCapture(text, { boundCityName });
 
   if (parsed.error) {
     // Record the error, leave structured fields null
@@ -120,14 +121,30 @@ async function parseAndUpdate(saveId, text, opts = {}) {
     [parsed.place_name, parsed.category, parsed.tip, parsed.country, parsed.neighborhood, saveId]
   );
 
-  // Attach city via save_cities if AI gave us one (and regex didn't already)
+  // Attach city via save_cities if AI gave us one
   if (cityRow) {
     await pool.query(
       `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
       [saveId, cityRow.id]
     );
-    // Also refresh cache so future captures see the new city
     refreshCitiesCache();
+    return;
+  }
+
+  // FALLBACK: if AI returned no city AND no city is currently attached (regex didn't
+  // find one either), attach the user's bound city as a last resort. This is option D —
+  // the user's binding only "wins" when nothing else can place the save.
+  if (cityIdHint) {
+    const existing = await pool.query(
+      `SELECT 1 FROM save_cities WHERE save_id = $1 LIMIT 1`,
+      [saveId]
+    );
+    if (existing.rowCount === 0) {
+      await pool.query(
+        `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [saveId, parseInt(cityIdHint, 10)]
+      );
+    }
   }
 }
 
@@ -243,6 +260,13 @@ router.get('/', authenticate, async (req, res) => {
 // Used by POST in both single-line and multi-line modes.
 // Note: cityIdHint is attached via save_cities (not a column on saves anymore).
 // boundCityName is passed to the AI parser as disambiguation context.
+//
+// City attachment policy (option D):
+// - Regex-based detection runs immediately; if it finds cities in the text, attach them.
+// - AI may add a city later via parseAndUpdate.
+// - cityIdHint (the user's bound city) is ONLY attached if regex + AI both return zero
+//   cities, i.e. as a last-resort fallback. This prevents "Tampopo Marseille — bound to
+//   Bali" from being tagged in BOTH cities — Marseille (the actual venue) wins.
 async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCityName, place_id, been }) {
   // Default `been` to true if not specified
   const beenValue = (typeof been === 'boolean') ? been : true;
@@ -254,11 +278,9 @@ async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCity
   );
   const save = result.rows[0];
 
-  // Regex-based city tagging (fast, deterministic)
+  // Regex-based city tagging (fast, deterministic) — attaches whatever cities are
+  // explicitly named in the text. NOTE: we no longer auto-attach the bound city here.
   const detectedIds = detectCities(text);
-  if (cityIdHint && !detectedIds.includes(parseInt(cityIdHint, 10))) {
-    detectedIds.push(parseInt(cityIdHint, 10));
-  }
   for (const cid of detectedIds) {
     try {
       await pool.query(
@@ -277,8 +299,9 @@ async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCity
   }
   save.attached_cities = attached;
 
-  // Fire async AI parse — don't await. Bound city flows through as disambiguation hint.
-  parseAndUpdate(save.id, save.text, { boundCityName }).catch(err => {
+  // Fire async AI parse — don't await. Bound city flows through as disambiguation
+  // hint AND as the cityIdHint fallback (used only if AI also finds no city).
+  parseAndUpdate(save.id, save.text, { boundCityName, cityIdHint }).catch(err => {
     console.error('parseAndUpdate failed for save', save.id, err);
   });
 
