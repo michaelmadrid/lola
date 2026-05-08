@@ -180,10 +180,28 @@
   function buildSlimHeader() {
     const header = document.querySelector('header.head');
     if (!header) return;
+
+    // Always inject the mobile avatar circle into header__right (it's a row-1 element,
+    // useful on every page).
+    const right = header.querySelector('.head__right');
+    if (right && !document.getElementById('slim-avatar')) {
+      const a = document.createElement('a');
+      a.id = 'slim-avatar';
+      a.className = 'slim-avatar';
+      a.href = '/settings.html';
+      a.setAttribute('aria-label', 'Settings');
+      a.textContent = '—';
+      right.appendChild(a);
+    }
+
+    // Rows 2 (date) + 3 (trip/todos pills) are home-only. On other pages, just
+    // the standard header (hamburger / logo / avatar) is enough.
+    const path = window.location.pathname;
+    const isHome = (path === '/' || path === '/index.html');
+    if (!isHome) return;
+
     if (document.getElementById('slim-mobile')) return; // already built
 
-    // Replace right side avatar on mobile (handled via CSS visibility),
-    // and inject rows 2 and 3 inside the header.
     const slim = document.createElement('div');
     slim.id = 'slim-mobile';
     slim.className = 'slim-mobile';
@@ -201,18 +219,6 @@
       </div>
     `;
     header.appendChild(slim);
-
-    // Inject mobile-only avatar circle into header__right (also hidden via CSS on desktop)
-    const right = header.querySelector('.head__right');
-    if (right && !document.getElementById('slim-avatar')) {
-      const a = document.createElement('a');
-      a.id = 'slim-avatar';
-      a.className = 'slim-avatar';
-      a.href = '/settings.html';
-      a.setAttribute('aria-label', 'Settings');
-      a.textContent = '—';
-      right.appendChild(a);
-    }
   }
 
   function renderSlimMoon() {
