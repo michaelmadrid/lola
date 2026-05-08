@@ -50,21 +50,14 @@
 <main class="page page-spots">
 
   <header class="mast">
-    <h1 class="mast__title">Spots</h1>
-    <p class="mast__intro">Your places, by city</p>
+    <div class="mast__head">
+      <div>
+        <h1 class="mast__title">Spots</h1>
+        <p class="mast__intro">Your places, by city</p>
+      </div>
+      <button class="btn" id="capture-launcher" type="button">+ Add a spot</button>
+    </div>
   </header>
-
-  <!-- Capture launcher — opens shared overlay -->
-  <div class="capture-wrap" style="margin-bottom: 24px;">
-    <button class="capture-launcher" id="capture-launcher" type="button" aria-label="Add a spot">
-      <span class="capture-launcher__plus" aria-hidden="true">+</span>
-      <span class="capture-launcher__placeholder">Add a spot</span>
-      <span class="capture-launcher__city" id="capture-launcher-city">
-        <span id="capture-launcher-city-name">Bali</span>
-        <span class="capture-launcher__city-caret" aria-hidden="true">▾</span>
-      </span>
-    </button>
-  </div>
 
   <!-- Capture overlay — same markup as home.
        Loaded by /js/capture-overlay.js -->

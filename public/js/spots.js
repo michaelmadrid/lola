@@ -361,7 +361,8 @@
   if (window.CaptureOverlay) {
     window.CaptureOverlay.init({
       launcher: '#capture-launcher',
-      launcherCity: '#capture-launcher-city-name',
+      // No launcherCity — the spots launcher is a simple "+ Add a spot" button
+      // and doesn't display the bound city. The overlay still tracks it internally.
       onSaved: ({ thenClose }) => {
         // Re-fetch list a few times to catch the AI parse landing
         setTimeout(() => loadSpots(), 1500);

@@ -15,6 +15,16 @@
 .page-spots .mast {
   padding-bottom: 26px;
 }
+.page-spots .mast__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-spots .mast__head .btn {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
 .page-spots .mast__title {
   font-size: 28px;
   font-weight: 500;
