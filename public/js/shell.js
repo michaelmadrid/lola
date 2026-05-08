@@ -358,14 +358,18 @@
 
     if (hasTrip) {
       tripEl.style.cursor = 'pointer';
-      tripEl.onclick = () => {
-        const itinFs = document.getElementById('itinerary-fs') || document.getElementById('trip-fs');
-        if (itinFs && itinFs.classList) {
-          itinFs.classList.add('is-open');
-          document.body.style.overflow = 'hidden';
-        } else {
-          window.location.href = '/trip.html?id=' + tripEl.dataset.tripId;
+      tripEl.onclick = (e) => {
+        e.preventDefault();
+        // On home page: click the existing trip-strip which has the full
+        // openItinerary() handler with activeTrip state populated.
+        const tripStrip = document.getElementById('trip-strip');
+        if (tripStrip) {
+          tripStrip.click();
+          return;
         }
+        // Off home: trip overlay's content is owned by home.js — go home.
+        // (User taps trip pill again on home and overlay opens cleanly.)
+        window.location.href = '/';
       };
     }
   }

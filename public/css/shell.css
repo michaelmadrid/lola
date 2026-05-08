@@ -526,7 +526,7 @@ input, textarea, select { font: inherit; }
     color: var(--ink);
   }
   .slim-mobile__moon {
-    color: var(--ink-3);
+    color: var(--ink-2);
     flex-shrink: 0;
   }
   .slim-mobile__date {
@@ -541,8 +541,8 @@ input, textarea, select { font: inherit; }
   .slim-mobile__row3 {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: flex-start;
+    gap: 8px;
     margin-top: 10px;
     min-height: 44px;
   }
