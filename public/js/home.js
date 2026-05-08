@@ -551,6 +551,27 @@
   });
 
   // ---- Open / close overlay ----
+  // Cache for placeholder strings, fetched once on first open.
+  let placeholderPool = null;
+  async function ensurePlaceholderPool() {
+    if (placeholderPool !== null) return placeholderPool;
+    try {
+      const res = await fetch('/data/capture-defaults.json', { cache: 'no-cache' });
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json();
+      placeholderPool = (data && Array.isArray(data.placeholders)) ? data.placeholders : [];
+    } catch (e) {
+      placeholderPool = []; // gracefully fall through to static placeholder in HTML
+    }
+    return placeholderPool;
+  }
+  async function refreshPlaceholder() {
+    const pool = await ensurePlaceholderPool();
+    if (!pool.length || !captFsTextarea) return;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    captFsTextarea.setAttribute('placeholder', pick);
+  }
+
   function openCaptFs() {
     if (!captFs) return;
     // Snapshot current scroll for restoration on close
@@ -560,6 +581,8 @@
     void captFs.offsetHeight;
     captFs.classList.add('is-open');
     captFs.setAttribute('aria-hidden', 'false');
+    // Pick a random placeholder for this session
+    refreshPlaceholder();
     // Make sure cities load in the background
     loadCitiesIfNeeded();
     // Focus the textarea after the slide-in animation lands
