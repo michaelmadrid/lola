@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Saves · Admin — kit</title>
+  <title>Spots · Admin — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
@@ -24,7 +24,7 @@
     <a href="/">Home</a>
     <a href="/travel/">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/index/">Blackbook</a>
+    <a href="/guides/" data-auth="in">Guides</a>
     <a href="/admin/" class="is-active">Admin</a>
   </nav>
   <div class="head__right">
@@ -38,7 +38,7 @@
     <a href="/">Home</a>
     <a href="/travel/">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/index/">Blackbook</a>
+    <a href="/guides/" data-auth="in">Guides</a>
     <a href="/admin/" class="is-active">Admin</a>
     <a href="#" id="signout-link" class="menu-overlay__signout">Sign out</a>
   </div>
@@ -47,12 +47,22 @@
 <main class="page page-admin">
 
   <header class="admin-head">
-    <h1 class="admin-head__title">Saves</h1>
+    <h1 class="admin-head__title">Spots</h1>
     <a href="/admin/" class="btn--secondary">← admin</a>
   </header>
 
+  <!-- Bulk-action bar — appears when at least one row is checked -->
+  <div class="bulk-bar" id="bulk-bar" hidden>
+    <span class="bulk-bar__count" id="bulk-count">0 selected</span>
+    <div class="bulk-bar__actions">
+      <button class="bulk-bar__cancel" id="bulk-cancel" type="button">Clear</button>
+      <button class="bulk-bar__delete" id="bulk-delete" type="button">Delete selected</button>
+    </div>
+  </div>
+
   <div class="admin-table">
-    <div class="admin-table__head" style="grid-template-columns: minmax(0,4fr) minmax(0,2fr) 90px 130px">
+    <div class="admin-table__head saves-head">
+      <span class="col-check"><input type="checkbox" id="check-all" aria-label="Check all"></span>
       <span>Text</span>
       <span>Tags</span>
       <span>When</span>
@@ -80,6 +90,6 @@
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
-<script src="/js/admin-saves.js"></script>
+<script src="/js/admin-spots.js"></script>
 </body>
 </html>

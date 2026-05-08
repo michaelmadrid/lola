@@ -1,5 +1,5 @@
 /* =========================================================
-   admin-places.js — manage Index entries
+   admin-blackbook.js — manage Blackbook entries (places table)
    ========================================================= */
 
 (async function () {
@@ -67,12 +67,29 @@
         <span class="col-cat">${util.escapeHtml(p.category || '')}</span>
         <span class="admin-actions">
           <button data-id="${p.id}" class="edit-btn">Edit</button>
+          <button data-id="${p.id}" data-name="${util.escapeHtml(p.name || '')}" class="row-delete-btn" title="Delete">×</button>
         </span>
       </div>
     `).join('');
 
     listEl.querySelectorAll('.edit-btn').forEach(btn => {
       btn.addEventListener('click', () => openEdit(parseInt(btn.dataset.id, 10)));
+    });
+    listEl.querySelectorAll('.row-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = parseInt(btn.dataset.id, 10);
+        const name = btn.dataset.name || 'this place';
+        if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+        const row = btn.closest('.admin-table__row');
+        if (row) row.style.opacity = '0.4';
+        try {
+          await api.delete('/api/places/' + id);
+          await loadAll();
+        } catch (err) {
+          if (row) row.style.opacity = '';
+          alert(err.message || 'Delete failed');
+        }
+      });
     });
   }
 

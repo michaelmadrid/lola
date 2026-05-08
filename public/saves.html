@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Admin — kit</title>
+  <title>Saves · Admin — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
@@ -46,27 +46,32 @@
 
 <main class="page page-admin">
 
-  <header class="trips-mast">
-    <h1 class="trips-mast__title">Admin</h1>
+  <header class="admin-head">
+    <h1 class="admin-head__title">Saves</h1>
+    <a href="/admin/" class="btn--secondary">← admin</a>
   </header>
 
-  <nav class="admin-nav">
-    <a href="/admin/blackbook.html" class="admin-link">
-      <span class="admin-link__name">Blackbook</span>
-      <span class="admin-link__desc">Curated places — bookshops, coffee, galleries</span>
-      <span class="admin-link__arrow">→</span>
-    </a>
-    <a href="/admin/cities.html" class="admin-link">
-      <span class="admin-link__name">Cities</span>
-      <span class="admin-link__desc">Master gazetteer, neighborhoods, regions</span>
-      <span class="admin-link__arrow">→</span>
-    </a>
-    <a href="/admin/spots.html" class="admin-link">
-      <span class="admin-link__name">Spots</span>
-      <span class="admin-link__desc">Review captures, bulk delete, promote to Blackbook</span>
-      <span class="admin-link__arrow">→</span>
-    </a>
-  </nav>
+  <!-- Bulk-action bar — appears when at least one row is checked -->
+  <div class="bulk-bar" id="bulk-bar" hidden>
+    <span class="bulk-bar__count" id="bulk-count">0 selected</span>
+    <div class="bulk-bar__actions">
+      <button class="bulk-bar__cancel" id="bulk-cancel" type="button">Clear</button>
+      <button class="bulk-bar__delete" id="bulk-delete" type="button">Delete selected</button>
+    </div>
+  </div>
+
+  <div class="admin-table">
+    <div class="admin-table__head saves-head">
+      <span class="col-check"><input type="checkbox" id="check-all" aria-label="Check all"></span>
+      <span>Text</span>
+      <span>Tags</span>
+      <span>When</span>
+      <span>Actions</span>
+    </div>
+    <div id="saves-list">
+      <div class="list-empty">Loading…</div>
+    </div>
+  </div>
 
 </main>
 
@@ -85,10 +90,6 @@
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
-<script>
-  if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
-  const signOutFoot = document.getElementById('signout-link-foot');
-  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
-</script>
+<script src="/js/admin-saves.js"></script>
 </body>
 </html>
