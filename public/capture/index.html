@@ -6,71 +6,93 @@
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
   <title>Capture — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
-  <link rel="stylesheet" href="/css/capture.css">
+  <link rel="stylesheet" href="/css/home.css"><!-- launcher + overlay styles -->
+  <style>
+    /* Standalone /capture/ page: chrome-less, just the overlay full-bleed.
+       The overlay markup is below; this CSS makes it visible immediately
+       on page load without needing a launcher. */
+    body { background: var(--bg); }
+    .capture-page-host {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
-<body class="page-capture-body">
+<body>
 
-<header class="capture-page__head">
-  <a href="/" class="capture-page__logo">kit</a>
-  <button class="capture-page__close" id="capture-close" aria-label="Close">close</button>
-</header>
+<main class="capture-page-host">
+  <!-- Capture overlay — same markup as home + spots.
+       On this page it auto-opens via CaptureOverlay.init({ autoOpen: true }). -->
+  <div class="capture-fs is-open" id="capture-fs" aria-hidden="false">
+    <div class="capture-fs__inner">
+      <header class="capture-fs__head">
+        <a href="/" class="capture-fs__close" id="capture-fs-close" aria-label="Close">×</a>
+        <div class="capture-fs__bind">
+          <span class="capture-fs__bind-label">in</span>
+          <button class="capture-fs__city-btn" id="capture-fs-city-btn" type="button">
+            <span id="capture-fs-city-btn-name">Bali</span>
+            <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
+          </button>
+          <div class="capture-fs__city-popover" id="capture-fs-city-popover">
+            <input type="text" class="capture-fs__city-search" id="capture-fs-city-search" placeholder="Type a city…" autocomplete="off">
+            <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
+          </div>
 
-<main class="capture-page">
-  <div class="capture-page__inner">
+          <span class="capture-fs__bind-sep">·</span>
+          <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
+            <span id="capture-fs-been-text">I've been here</span>
+          </button>
+        </div>
+      </header>
 
-    <h1 class="capture-page__title">capture</h1>
-
-    <!-- City binding row -->
-    <div class="capture-page__bind">
-      <span class="capture-page__bind-label">in</span>
-      <button class="capture-page__city-btn" id="city-btn">
-        <span id="city-btn-name">Bali</span>
-        <span class="capture-page__city-caret">▾</span>
-      </button>
-      <div class="capture-page__city-popover" id="city-popover">
-        <input type="text" class="capture-page__city-search" id="city-search" placeholder="Type a city…" autocomplete="off">
-        <div class="capture-page__city-list" id="city-list"></div>
+      <div class="capture-fs__body">
+        <textarea
+          class="capture-fs__textarea"
+          id="capture-fs-textarea"
+          placeholder="Tampopo - try the ramen"
+          autocomplete="off"
+          spellcheck="false"
+          rows="1"
+        ></textarea>
       </div>
 
-      <span class="capture-page__bind-sep">·</span>
-      <button class="capture-page__been-btn" id="been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
-        <span class="capture-page__been-text" id="been-text">I've been here</span>
-      </button>
+      <footer class="capture-fs__foot">
+        <div class="capture-fs__foot-meta" id="capture-fs-status">&nbsp;</div>
+        <div class="capture-fs__foot-actions">
+          <button class="capture-fs__submit-secondary" id="capture-fs-submit-continue" type="button">
+            Save & continue <span class="kbd">⌘↵</span>
+          </button>
+          <button class="capture-fs__submit-primary btn" id="capture-fs-submit-close" type="button">
+            Save & close <span class="kbd">⇧⌘↵</span>
+          </button>
+        </div>
+      </footer>
     </div>
-
-    <!-- The big textarea -->
-    <div class="capture-page__field">
-      <textarea
-        class="capture-page__textarea"
-        id="capture-textarea"
-        placeholder="One place per line.&#10;Della Terra Pererenan, sit at the bar&#10;Mosto Canggu, natural wine&#10;Souvenir, hidden gem cocktails"
-        spellcheck="false"
-        autofocus
-      ></textarea>
-    </div>
-
-    <!-- Counter -->
-    <div class="capture-page__counter" id="capture-counter">0 places to add</div>
-
-    <!-- Status line — appears after submit & continue, fades on next submit -->
-    <div class="capture-page__status" id="capture-status"></div>
-
   </div>
 </main>
 
-<footer class="capture-page__foot">
-  <div class="capture-page__foot-inner">
-    <button class="capture-page__submit capture-page__submit--secondary" id="submit-close">
-      Submit &amp; close <span class="kbd">⇧⌘↵</span>
-    </button>
-    <button class="capture-page__submit" id="submit-continue">
-      Submit &amp; continue <span class="kbd">⌘↵</span>
-    </button>
-  </div>
-</footer>
-
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
-<script src="/js/capture.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/capture-overlay.js"></script>
+<script>
+  // /capture/ standalone — auto-open the overlay, redirect home on close.
+  // The overlay HTML in this page is rendered open by default; init wires up
+  // event handlers and behavior. On save-and-close, redirect home so the
+  // user's stream shows the new save.
+  if (window.CaptureOverlay) {
+    window.CaptureOverlay.init({
+      onSaved: ({ thenClose }) => {
+        if (thenClose) {
+          window.location.href = '/';
+        }
+        // Continue mode: stays on this page, no nav.
+      },
+    });
+  }
+  // The "×" close button is just a link to home — handled by browser.
+</script>
 </body>
 </html>

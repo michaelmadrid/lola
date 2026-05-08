@@ -357,5 +357,19 @@
     signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
   }
 
+  // Wire the shared capture overlay. After a save, re-fetch the spots list.
+  if (window.CaptureOverlay) {
+    window.CaptureOverlay.init({
+      launcher: '#capture-launcher',
+      launcherCity: '#capture-launcher-city-name',
+      onSaved: ({ thenClose }) => {
+        // Re-fetch list a few times to catch the AI parse landing
+        setTimeout(() => loadSpots(), 1500);
+        setTimeout(() => loadSpots(), 4000);
+        setTimeout(() => loadSpots(), 9000);
+      },
+    });
+  }
+
   loadSpots();
 })();

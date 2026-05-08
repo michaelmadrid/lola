@@ -401,306 +401,32 @@
     }
   });
 
-  // ============ CAPTURE — launcher + fullscreen overlay ============
-  // The home page no longer has an inline capture textarea.
-  // Instead, a "launcher" button looks like a field but opens a fullscreen
-  // overlay editor. Same UX as /capture/ but in-page (no navigation).
-
-  const launcher           = document.getElementById('capture-launcher');
-  const launcherCityName   = document.getElementById('capture-launcher-city-name');
-
-  const captFs                 = document.getElementById('capture-fs');
-  const captFsClose            = document.getElementById('capture-fs-close');
-  const captFsTextarea         = document.getElementById('capture-fs-textarea');
-  const captFsStatus           = document.getElementById('capture-fs-status');
-  const captFsSubmitContinue   = document.getElementById('capture-fs-submit-continue');
-  const captFsSubmitClose      = document.getElementById('capture-fs-submit-close');
-
-  const captFsCityBtn          = document.getElementById('capture-fs-city-btn');
-  const captFsCityBtnName      = document.getElementById('capture-fs-city-btn-name');
-  const captFsCityPopover      = document.getElementById('capture-fs-city-popover');
-  const captFsCitySearch       = document.getElementById('capture-fs-city-search');
-  const captFsCityList         = document.getElementById('capture-fs-city-list');
-
-  const captFsBeenBtn          = document.getElementById('capture-fs-been-btn');
-  const captFsBeenText         = document.getElementById('capture-fs-been-text');
-
-  // Shared keys — match /capture/ page so preferences persist across surfaces
-  const CITY_STORAGE_KEY = 'kit.capture.lastCity';
-  const BEEN_STORAGE_KEY = 'kit.capture.lastBeen';
-
-  let captFsAllCities = [];
-  let captFsPickedCity = null;
-  let captFsBeen = true;
-  let captFsIsSubmitting = false;
-
-  // ---- Been toggle ----
-  function applyCaptFsBeen(val) {
-    captFsBeen = !!val;
-    if (captFsBeenBtn)  captFsBeenBtn.dataset.been = captFsBeen ? 'true' : 'false';
-    if (captFsBeenText) captFsBeenText.textContent = captFsBeen ? "I've been here" : "I want to go";
-    try { localStorage.setItem(BEEN_STORAGE_KEY, captFsBeen ? '1' : '0'); } catch {}
-  }
-  try {
-    const stored = localStorage.getItem(BEEN_STORAGE_KEY);
-    applyCaptFsBeen(stored !== '0');
-  } catch { applyCaptFsBeen(true); }
-  if (captFsBeenBtn) captFsBeenBtn.addEventListener('click', () => applyCaptFsBeen(!captFsBeen));
-
-  // ---- City picker ----
-  function setPickedCity(city) {
-    captFsPickedCity = city;
-    if (captFsCityBtnName) captFsCityBtnName.textContent = city ? city.name : 'pick a city';
-    if (launcherCityName) launcherCityName.textContent = city ? city.name : 'pick a city';
-    if (city) {
-      try {
-        localStorage.setItem(CITY_STORAGE_KEY, JSON.stringify({ id: city.id, name: city.name, country: city.country }));
-      } catch {}
-    }
-  }
-
-  // Try to restore last city from localStorage so the launcher knows where you were
-  try {
-    const raw = localStorage.getItem(CITY_STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.id) {
-        // Provisional set — will be replaced once cities are loaded for full data
-        setPickedCity(parsed);
-      }
-    }
-  } catch {}
-
-  async function loadCitiesIfNeeded() {
-    if (captFsAllCities.length) return;
-    try {
-      const data = await api.get('/api/cities?limit=200');
-      captFsAllCities = data.cities || [];
-      // If no city picked yet, default to user's home_city, else first city
-      if (!captFsPickedCity || !captFsPickedCity.id) {
-        try {
-          const me = await api.get('/api/auth/me');
-          if (me && me.home_city_id) {
-            const home = captFsAllCities.find(c => c.id === me.home_city_id);
-            if (home) setPickedCity(home);
-          }
-        } catch {}
-        if (!captFsPickedCity || !captFsPickedCity.id) {
-          if (captFsAllCities[0]) setPickedCity(captFsAllCities[0]);
+  // ============ CAPTURE — shared overlay module ============
+  // The overlay HTML lives in this page; the logic is in /js/capture-overlay.js,
+  // a shared module reused on /spots/ and /capture/.
+  if (window.CaptureOverlay) {
+    window.CaptureOverlay.init({
+      launcher: '#capture-launcher',
+      launcherCity: '#capture-launcher-city-name',
+      onSaved: ({ thenClose }) => {
+        // After a save: home injects ghost row, polls the stream
+        if (thenClose) {
+          injectGhostRow();
+          setTimeout(() => loadStream(), 1500);
+          setTimeout(() => loadStream(), 3500);
+          setTimeout(() => loadStream(), 7000);
+          setTimeout(() => loadStream(), 12000);
+        } else {
+          // Continue mode — background poll so closing the overlay shows fresh data
+          setTimeout(() => loadStream(), 1500);
+          setTimeout(() => loadStream(), 4000);
         }
-      }
-    } catch (err) {
-      console.error('loadCities', err);
-    }
-  }
-
-  function renderCityList(filter) {
-    if (!captFsCityList) return;
-    const f = (filter || '').toLowerCase().trim();
-    let cities = captFsAllCities;
-    if (f) {
-      cities = cities.filter(c =>
-        c.name.toLowerCase().includes(f) ||
-        (c.country && c.country.toLowerCase().includes(f))
-      );
-    }
-    cities = cities.slice(0, 80);
-    captFsCityList.innerHTML = cities.map(c =>
-      `<button class="capture-fs__city-item${captFsPickedCity && captFsPickedCity.id === c.id ? ' is-current' : ''}" data-city-id="${c.id}">
-         ${util.escapeHtml(c.name)}<span class="capture-fs__city-item__country">${util.escapeHtml(c.country || '')}</span>
-       </button>`
-    ).join('');
-    captFsCityList.querySelectorAll('.capture-fs__city-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const id = parseInt(item.dataset.cityId, 10);
-        const city = captFsAllCities.find(c => c.id === id);
-        if (city) {
-          setPickedCity(city);
-          closeCityPopover();
-        }
-      });
-    });
-  }
-
-  function openCityPopover() {
-    if (!captFsCityPopover) return;
-    captFsCityPopover.classList.add('is-open');
-    if (captFsCitySearch) {
-      captFsCitySearch.value = '';
-      renderCityList('');
-      // Slight delay to focus after layout
-      setTimeout(() => captFsCitySearch.focus(), 30);
-    }
-  }
-  function closeCityPopover() {
-    if (captFsCityPopover) captFsCityPopover.classList.remove('is-open');
-  }
-  if (captFsCityBtn) {
-    captFsCityBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      await loadCitiesIfNeeded();
-      if (captFsCityPopover && captFsCityPopover.classList.contains('is-open')) closeCityPopover();
-      else openCityPopover();
-    });
-  }
-  if (captFsCitySearch) captFsCitySearch.addEventListener('input', () => renderCityList(captFsCitySearch.value));
-  document.addEventListener('click', (e) => {
-    if (captFsCityPopover && !captFsCityPopover.contains(e.target) && !captFsCityBtn.contains(e.target)) {
-      closeCityPopover();
-    }
-  });
-
-  // ---- Open / close overlay ----
-  // Cache for placeholder strings, fetched once on first open.
-  let placeholderPool = null;
-  async function ensurePlaceholderPool() {
-    if (placeholderPool !== null) return placeholderPool;
-    try {
-      const res = await fetch('/data/capture-defaults.json', { cache: 'no-cache' });
-      if (!res.ok) throw new Error('failed');
-      const data = await res.json();
-      placeholderPool = (data && Array.isArray(data.placeholders)) ? data.placeholders : [];
-    } catch (e) {
-      placeholderPool = []; // gracefully fall through to static placeholder in HTML
-    }
-    return placeholderPool;
-  }
-  async function refreshPlaceholder() {
-    const pool = await ensurePlaceholderPool();
-    if (!pool.length || !captFsTextarea) return;
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    captFsTextarea.setAttribute('placeholder', pick);
-  }
-
-  function openCaptFs() {
-    if (!captFs) return;
-    // Snapshot current scroll for restoration on close
-    captFs.hidden = false;
-    document.body.style.overflow = 'hidden';
-    // Force reflow so the entrance transition runs
-    void captFs.offsetHeight;
-    captFs.classList.add('is-open');
-    captFs.setAttribute('aria-hidden', 'false');
-    // Pick a random placeholder for this session
-    refreshPlaceholder();
-    // Make sure cities load in the background
-    loadCitiesIfNeeded();
-    // Focus the textarea after the slide-in animation lands
-    setTimeout(() => {
-      if (captFsTextarea) captFsTextarea.focus();
-      autoGrowCaptFs();
-    }, 80);
-  }
-  function closeCaptFs() {
-    if (!captFs) return;
-    captFs.classList.remove('is-open');
-    captFs.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-    // After the transition, hide entirely so it's out of tab order
-    setTimeout(() => {
-      if (!captFs.classList.contains('is-open')) captFs.hidden = true;
-    }, 260);
-  }
-  if (launcher) launcher.addEventListener('click', openCaptFs);
-  if (captFsClose)  captFsClose.addEventListener('click', closeCaptFs);
-  // Esc to close
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && captFs && captFs.classList.contains('is-open')) {
-      closeCaptFs();
-    }
-  });
-
-  // ---- Textarea grow + status ----
-  function autoGrowCaptFs() {
-    if (!captFsTextarea) return;
-    captFsTextarea.style.height = 'auto';
-    captFsTextarea.style.height = captFsTextarea.scrollHeight + 'px';
-  }
-  function updateStatus() {
-    if (!captFsStatus || !captFsTextarea) return;
-    const lines = captFsTextarea.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-    if (!lines.length) { captFsStatus.textContent = ''; return; }
-    captFsStatus.textContent = lines.length === 1
-      ? `1 entry`
-      : `${lines.length} entries`;
-  }
-  if (captFsTextarea) {
-    captFsTextarea.addEventListener('input', () => { autoGrowCaptFs(); updateStatus(); });
-  }
-
-  // ---- Submit ----
-  async function captFsDoSubmit({ thenClose }) {
-    if (captFsIsSubmitting) return;
-    if (!captFsTextarea) return;
-    const text = captFsTextarea.value.trim();
-    if (!text) return;
-    if (!captFsPickedCity) return;
-    captFsIsSubmitting = true;
-    captFsSubmitClose.disabled = true;
-    captFsSubmitContinue.disabled = true;
-    try {
-      const body = { text, city_id: captFsPickedCity.id, city_name: captFsPickedCity.name, been: captFsBeen };
-      const result = await api.post('/api/saves', body);
-      const count = result.count || 1;
-      // Reset state immediately so UI never gets stuck
-      captFsIsSubmitting = false;
-      captFsSubmitClose.disabled = false;
-      captFsSubmitContinue.disabled = false;
-      if (thenClose) {
-        // Clear, close, refresh stream
-        captFsTextarea.value = '';
-        autoGrowCaptFs();
-        updateStatus();
-        toast(count === 1 ? 'Saved' : `${count} saves`);
-        closeCaptFs();
-        // Show ghost row right away so home stream feels live, then poll for AI parse
-        injectGhostRow();
-        setTimeout(() => loadStream(), 1500);
-        setTimeout(() => loadStream(), 3500);
-        setTimeout(() => loadStream(), 7000);
-        setTimeout(() => loadStream(), 12000);
-      } else {
-        // Continue: clear field but keep overlay open
-        captFsTextarea.value = '';
-        autoGrowCaptFs();
-        updateStatus();
-        if (count === 1) toast('Saved');
-        else toast(`${count} saves`);
-        captFsTextarea.focus();
-        // Background-poll the stream so when user closes, it's already up to date
-        setTimeout(() => loadStream(), 1500);
-        setTimeout(() => loadStream(), 4000);
-      }
-    } catch (err) {
-      console.error('captFs save', err);
-      captFsIsSubmitting = false;
-      captFsSubmitClose.disabled = false;
-      captFsSubmitContinue.disabled = false;
-      toast(err.message || 'Save failed');
-    }
-  }
-  if (captFsSubmitClose)    captFsSubmitClose.addEventListener('click', () => captFsDoSubmit({ thenClose: true }));
-  if (captFsSubmitContinue) captFsSubmitContinue.addEventListener('click', () => captFsDoSubmit({ thenClose: false }));
-  // Keyboard shortcuts inside the textarea
-  if (captFsTextarea) {
-    captFsTextarea.addEventListener('keydown', (e) => {
-      // Cmd+Enter or Ctrl+Enter → save & continue
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        captFsDoSubmit({ thenClose: false });
-        return;
-      }
-      // Shift+Cmd+Enter → save & close
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'Enter') {
-        e.preventDefault();
-        captFsDoSubmit({ thenClose: true });
-        return;
-      }
+      },
     });
   }
 
   // Inject a generic pulsing ghost row at the top of the stream while AI parses.
-  // Same as before — used after captFs submit-and-close.
+  // Used after submit-and-close from the overlay.
   function injectGhostRow() {
     const empty = streamEl.querySelector('.stream__empty');
     if (empty) empty.remove();
