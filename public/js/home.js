@@ -2,6 +2,24 @@
    home.js — homepage behavior, wired to API
    ========================================================= */
 
+// DEBUG BANNER — temporary diagnostic. Tells us whether home.js executes
+// and what state the DOM is in when it does. Remove after we resolve the
+// launcher-not-appearing bug.
+(function debugBanner() {
+  try {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#2a4ed4;color:#fff;padding:8px 12px;font:12px/1.4 monospace;text-align:center;';
+    const launcher = document.getElementById('capture-launcher');
+    const fs = document.getElementById('capture-fs');
+    banner.textContent = 'home.js ran · launcher: ' + (launcher ? 'FOUND' : 'NULL') +
+                         ' · overlay: ' + (fs ? 'FOUND' : 'NULL') +
+                         ' · body chars: ' + document.body.innerHTML.length;
+    document.body.appendChild(banner);
+  } catch (e) {
+    alert('home.js banner failed: ' + e.message);
+  }
+})();
+
 (async function () {
   // Auth gate
   if (!api.isSignedIn()) {
