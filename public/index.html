@@ -192,6 +192,14 @@
       <div class="todo-list" id="todo-list"></div>
       <div class="todos__add-zone" id="add-todo-zone" aria-label="Add todo"></div>
     </div>
+
+    <!-- Mobile-only affordance to open trip overlay.
+         On desktop the trip-strip in the left column does this job;
+         on mobile that column is hidden, so we surface this button instead. -->
+    <button class="trip-launch" id="trip-launch" type="button" hidden>
+      <span class="trip-launch__label" id="trip-launch-label">Open trip</span>
+      <span class="trip-launch__caret" aria-hidden="true">↗</span>
+    </button>
   </aside>
 
 </main>

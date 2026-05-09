@@ -154,6 +154,14 @@
     dayActiveEl.style.display = '';
     dayIdleEl.style.display = 'none';
 
+    // Mobile trip-launch button (under todos): label with trip name, unhide
+    const launchBtn   = document.getElementById('trip-launch');
+    const launchLabel = document.getElementById('trip-launch-label');
+    if (launchBtn) {
+      if (launchLabel) launchLabel.textContent = `Open ${activeTrip.name || 'trip'}`;
+      launchBtn.hidden = false;
+    }
+
     // Strip top line: name
     tripStripName.textContent = activeTrip.name;
 
@@ -303,6 +311,11 @@
   function renderIdleDay() {
     dayActiveEl.style.display = 'none';
     dayIdleEl.style.display = 'flex';
+
+    // Hide mobile trip-launch button when there's no upcoming trip
+    const launchBtn = document.getElementById('trip-launch');
+    if (launchBtn) launchBtn.hidden = true;
+
     // Random per page-load. (Switch to date-deterministic later if we want
     // "one per day" — for now random keeps it fresh on each visit.)
     const idx = Math.floor(Math.random() * idlePrompts.length);
@@ -420,6 +433,9 @@
   }
   if (tripStripEl) tripStripEl.addEventListener('click', openItinerary);
   if (itinClose)   itinClose.addEventListener('click', closeItinerary);
+  // Mobile-only trip launch button (under todos) — same handler as trip-strip
+  const launchBtnEl = document.getElementById('trip-launch');
+  if (launchBtnEl) launchBtnEl.addEventListener('click', openItinerary);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && itinOverlay && itinOverlay.classList.contains('is-open')) {
       closeItinerary();
