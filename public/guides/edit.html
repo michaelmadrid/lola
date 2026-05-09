@@ -48,7 +48,6 @@
 
 <main class="page page-guide-edit" id="page-guide-edit">
 
-  <!-- Top bar: back + status + actions -->
   <header class="ge-bar">
     <div class="ge-bar__left">
       <a href="/guides/" class="ge-bar__back" aria-label="Back to guides">←  All guides</a>
@@ -59,64 +58,67 @@
     <div class="ge-bar__right">
       <button class="ge-bar__btn" id="ge-preview-btn" type="button">Preview</button>
       <button class="ge-bar__btn ge-bar__btn--primary" id="ge-publish-btn" type="button">Publish</button>
-      <button class="ge-bar__btn ge-bar__btn--danger" id="ge-delete-btn" type="button" aria-label="Delete guide">Delete</button>
+      <button class="ge-bar__btn ge-bar__btn--danger" id="ge-delete-btn" type="button">Delete</button>
     </div>
   </header>
 
   <div class="ge-loading" id="ge-loading">Loading…</div>
   <div class="ge-error" id="ge-error" hidden></div>
 
-  <!-- ========== EDITOR MODE ========== -->
+  <!-- ========== EDITOR ========== -->
   <div class="ge-editor" id="ge-editor" hidden>
 
-    <!-- City binding -->
-    <div class="ge-city-row">
-      <span class="ge-city-row__label">City</span>
-      <button class="picker-btn ge-city-btn" id="ge-city-btn" type="button" aria-haspopup="true">
-        <span id="ge-city-name" class="picker-btn__label">Pick a city</span>
-        <span class="picker-btn__caret" aria-hidden="true">▾</span>
-      </button>
-      <div class="picker-popover ge-city-popover" id="ge-city-popover" hidden>
-        <input type="text" class="picker-search" id="ge-city-search" placeholder="Search cities…" autocomplete="off">
-        <div class="picker-list" id="ge-city-list"></div>
+    <!-- Setup row: city + title fields -->
+    <div class="ge-setup">
+      <div class="ge-city-row">
+        <span class="ge-city-row__label">City</span>
+        <button class="picker-btn ge-city-btn" id="ge-city-btn" type="button" aria-haspopup="true">
+          <span id="ge-city-name" class="picker-btn__label">Pick a city</span>
+          <span class="picker-btn__caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="picker-popover ge-city-popover" id="ge-city-popover" hidden>
+          <input type="text" class="picker-search" id="ge-city-search" placeholder="Search cities…" autocomplete="off">
+          <div class="picker-list" id="ge-city-list"></div>
+        </div>
       </div>
+
+      <input
+        type="text"
+        class="ge-title"
+        id="ge-title"
+        placeholder="Guide title"
+        autocomplete="off"
+      >
+
+      <input
+        type="text"
+        class="ge-subtitle"
+        id="ge-subtitle"
+        placeholder="A short subtitle (optional)"
+        autocomplete="off"
+      >
+
+      <textarea
+        class="ge-intro"
+        id="ge-intro"
+        placeholder="Optional intro… markdown supported"
+        rows="3"
+      ></textarea>
     </div>
 
-    <!-- Title -->
-    <input
-      type="text"
-      class="ge-title"
-      id="ge-title"
-      placeholder="Guide title"
-      autocomplete="off"
-    >
-
-    <!-- Subtitle -->
-    <input
-      type="text"
-      class="ge-subtitle"
-      id="ge-subtitle"
-      placeholder="A short subtitle (optional)"
-      autocomplete="off"
-    >
-
-    <!-- Intro markdown -->
-    <textarea
-      class="ge-intro"
-      id="ge-intro"
-      placeholder="Write a short intro… markdown supported"
-      rows="3"
-    ></textarea>
-
-    <!-- Sections list (rendered by JS) -->
-    <div class="ge-sections" id="ge-sections"></div>
-
-    <!-- Add section button -->
-    <button class="ge-add-section" id="ge-add-section" type="button">+ Add section</button>
+    <!-- Picker panel: tap-to-toggle list of city's spots -->
+    <div class="ge-picker">
+      <header class="ge-picker__head">
+        <span class="ge-picker__count" id="ge-picker-count"></span>
+        <button class="ge-picker__selectall" id="ge-picker-selectall" type="button" hidden>Select all</button>
+      </header>
+      <div class="ge-picker__empty" id="ge-picker-empty" hidden></div>
+      <div class="ge-picker__list" id="ge-picker-list"></div>
+    </div>
 
   </div>
 
-  <!-- ========== PREVIEW MODE ========== -->
+  <!-- ========== PREVIEW ========== -->
   <article class="ge-preview" id="ge-preview" hidden>
     <header class="ge-preview__head">
       <p class="ge-preview__city" id="ge-preview-city"></p>
@@ -124,33 +126,10 @@
       <p class="ge-preview__subtitle" id="ge-preview-subtitle"></p>
     </header>
     <div class="ge-preview__intro" id="ge-preview-intro"></div>
-    <div class="ge-preview__sections" id="ge-preview-sections"></div>
+    <div id="ge-preview-items"></div>
   </article>
 
 </main>
-
-<!-- Spot picker modal — shown when user clicks "+ Add spot" inside a section -->
-<div class="ge-spotpicker" id="ge-spotpicker" hidden>
-  <div class="ge-spotpicker__inner">
-    <header class="ge-spotpicker__head">
-      <button class="btn-close-circle" id="ge-spotpicker-close" type="button" aria-label="Close">×</button>
-      <h3 class="ge-spotpicker__title">Add a spot</h3>
-    </header>
-    <div class="ge-spotpicker__body">
-      <input
-        type="text"
-        class="ge-spotpicker__search"
-        id="ge-spotpicker-search"
-        placeholder="Search your spots…"
-        autocomplete="off"
-        spellcheck="false"
-      >
-      <div class="ge-spotpicker__list" id="ge-spotpicker-list">
-        <div class="ge-spotpicker__loading">Loading…</div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>

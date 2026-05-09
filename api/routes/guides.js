@@ -167,15 +167,16 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/guides/:id — full guide with sections + items expanded.
-// Single round trip: returns the guide, its sections in order, and each
-// section's items with the underlying save data hydrated.
+// GET /api/guides/:id — full guide with all items + sections.
+// V1.5 mental model: items belong to the guide. Sections are an
+// optional grouping. Returns all items in a flat array, sections separately.
+// Items have section_id (nullable) so the client can group when needed.
 router.get('/:id', authenticate, async (req, res) => {
   try {
     const guide = await loadOwnedGuide(req, res);
     if (!guide) return;
 
-    // Section list (ordered)
+    // Section list (ordered) — may be empty in V1.5
     const sectionsResult = await pool.query(
       `SELECT * FROM guide_sections
         WHERE guide_id = $1
@@ -184,28 +185,19 @@ router.get('/:id', authenticate, async (req, res) => {
     );
     const sections = sectionsResult.rows;
 
-    // Items for all sections in one query, hydrated with save data
-    const sectionIds = sections.map(s => s.id);
-    let itemsBySection = {};
-    if (sectionIds.length) {
-      const itemsResult = await pool.query(
-        `SELECT gsi.id, gsi.section_id, gsi.save_id, gsi.note, gsi.position,
-                s.place_name, s.tip AS save_tip, s.category, s.been, s.text AS save_text
-           FROM guide_section_items gsi
-           JOIN saves s ON s.id = gsi.save_id
-          WHERE gsi.section_id = ANY($1::int[])
-          ORDER BY gsi.section_id, gsi.position ASC, gsi.created_at ASC`,
-        [sectionIds]
-      );
-      for (const row of itemsResult.rows) {
-        if (!itemsBySection[row.section_id]) itemsBySection[row.section_id] = [];
-        itemsBySection[row.section_id].push(row);
-      }
-    }
-    const sectionsWithItems = sections.map(s => ({
-      ...s,
-      items: itemsBySection[s.id] || [],
-    }));
+    // ALL items in the guide, flat. Hydrated with save data.
+    // Includes attached_cities so the client can display per-spot locality.
+    const itemsResult = await pool.query(
+      `SELECT gsi.id, gsi.guide_id, gsi.section_id, gsi.save_id, gsi.note, gsi.position,
+              gsi.created_at,
+              s.place_name, s.tip AS save_tip, s.category, s.been, s.text AS save_text
+         FROM guide_section_items gsi
+         JOIN saves s ON s.id = gsi.save_id
+        WHERE gsi.guide_id = $1
+        ORDER BY gsi.position ASC, gsi.created_at ASC`,
+      [guide.id]
+    );
+    const items = itemsResult.rows;
 
     // City name (best-effort)
     let cityName = null;
@@ -216,7 +208,8 @@ router.get('/:id', authenticate, async (req, res) => {
 
     res.json({
       guide: { ...guide, city_name: cityName },
-      sections: sectionsWithItems,
+      sections,
+      items,
     });
   } catch (err) {
     console.error('GET /api/guides/:id', err);
@@ -255,6 +248,23 @@ router.patch('/:id', authenticate, async (req, res) => {
       const valid = ['draft', 'published', 'archived'];
       if (!valid.includes(updates.status)) {
         return res.status(400).json({ error: `Invalid status. Must be one of: ${valid.join(', ')}` });
+      }
+    }
+
+    // City lock: changing city_id is only allowed when the guide has no items.
+    // The city anchors the spot list; changing it mid-flight would orphan
+    // items from the wrong city. UX: client can only change after removing items.
+    if ('city_id' in updates && updates.city_id !== guide.city_id) {
+      const itemCount = await pool.query(
+        'SELECT COUNT(*)::int AS n FROM guide_section_items WHERE guide_id = $1',
+        [guide.id]
+      );
+      if (itemCount.rows[0].n > 0) {
+        return res.status(409).json({
+          error: 'Remove all spots from this guide before changing the city.',
+          code: 'city_locked',
+          item_count: itemCount.rows[0].n,
+        });
       }
     }
 
@@ -437,10 +447,10 @@ router.post('/:id/sections/:sectionId/items', authenticate, async (req, res) => 
     }
 
     const result = await pool.query(
-      `INSERT INTO guide_section_items (section_id, save_id, note, position)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO guide_section_items (guide_id, section_id, save_id, note, position)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [section.id, saveId, note || null, pos]
+      [guide.id, section.id, saveId, note || null, pos]
     );
     await pool.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
 
@@ -527,6 +537,221 @@ router.delete('/:id/sections/:sectionId/items/:itemId', authenticate, async (req
   } catch (err) {
     console.error('DELETE /api/guides/:id/sections/:sectionId/items/:itemId', err);
     res.status(500).json({ error: 'Failed to remove item' });
+  }
+});
+
+// =====================================================================
+// V1.5 — FLAT ITEMS (ungrouped, items belong to guide directly)
+// =====================================================================
+
+// POST /api/guides/:id/items — add a save to the guide WITHOUT a section.
+// V1.5 default flow. Body: { save_id, note?, position? }.
+// section_id is set to NULL so the item is "ungrouped" until/unless
+// a section is later assigned.
+router.post('/:id/items', authenticate, async (req, res) => {
+  try {
+    const guide = await loadOwnedGuide(req, res);
+    if (!guide) return;
+
+    const { save_id, note, position } = req.body || {};
+    const saveId = parseInt(save_id, 10);
+    if (!saveId) return res.status(400).json({ error: 'save_id required' });
+
+    // Verify save belongs to this user
+    const saveCheck = await pool.query(
+      'SELECT id, user_id FROM saves WHERE id = $1',
+      [saveId]
+    );
+    if (!saveCheck.rows.length) return res.status(404).json({ error: 'Save not found' });
+    if (saveCheck.rows[0].user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Save belongs to another user' });
+    }
+
+    // Prevent duplicate adds — same save in the same guide. The schema
+    // doesn't enforce uniqueness (intentional, in case sections later allow
+    // the same save to appear in multiple sections), so we check here.
+    const dup = await pool.query(
+      'SELECT id FROM guide_section_items WHERE guide_id = $1 AND save_id = $2 LIMIT 1',
+      [guide.id, saveId]
+    );
+    if (dup.rows.length) {
+      return res.status(409).json({ error: 'This spot is already in the guide.', code: 'duplicate' });
+    }
+
+    // Default position = end of guide (flat list, ignoring section)
+    let pos = position;
+    if (typeof pos !== 'number') {
+      const r = await pool.query(
+        'SELECT COALESCE(MAX(position), -1) + 1 AS next FROM guide_section_items WHERE guide_id = $1',
+        [guide.id]
+      );
+      pos = r.rows[0].next;
+    }
+
+    const result = await pool.query(
+      `INSERT INTO guide_section_items (guide_id, section_id, save_id, note, position)
+       VALUES ($1, NULL, $2, $3, $4)
+       RETURNING *`,
+      [guide.id, saveId, note || null, pos]
+    );
+    await pool.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
+
+    res.status(201).json({ item: result.rows[0] });
+  } catch (err) {
+    console.error('POST /api/guides/:id/items', err);
+    res.status(500).json({ error: 'Failed to add item' });
+  }
+});
+
+// PATCH /api/guides/:id/items/:itemId — update an item in the guide
+// (note, position, or section assignment). Allows moving an item between
+// sections by patching section_id (or NULL to ungroup).
+router.patch('/:id/items/:itemId', authenticate, async (req, res) => {
+  try {
+    const guide = await loadOwnedGuide(req, res);
+    if (!guide) return;
+
+    const itemId = parseInt(req.params.itemId, 10);
+    if (!itemId) return res.status(400).json({ error: 'Invalid item id' });
+
+    const itemCheck = await pool.query(
+      'SELECT * FROM guide_section_items WHERE id = $1',
+      [itemId]
+    );
+    if (!itemCheck.rows.length) return res.status(404).json({ error: 'Item not found' });
+    if (itemCheck.rows[0].guide_id !== guide.id) {
+      return res.status(403).json({ error: 'Item does not belong to this guide' });
+    }
+
+    // If section_id is provided, validate it belongs to this guide
+    if ('section_id' in (req.body || {}) && req.body.section_id !== null) {
+      const section = await loadSection(res, req.body.section_id, guide.id);
+      if (!section) return; // loadSection already responded
+    }
+
+    const allowed = ['note', 'position', 'section_id'];
+    const fields = [];
+    const values = [];
+    const updates = req.body || {};
+    for (const key of allowed) {
+      if (key in updates) {
+        fields.push(key);
+        values.push(updates[key]);
+      }
+    }
+    if (!fields.length) return res.json({ item: itemCheck.rows[0] });
+
+    values.push(itemId);
+    const sql = `UPDATE guide_section_items
+                    SET ${fields.map((f, i) => `${f} = $${i + 1}`).join(', ')}
+                  WHERE id = $${values.length}
+                  RETURNING *`;
+    const result = await pool.query(sql, values);
+    await pool.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
+
+    res.json({ item: result.rows[0] });
+  } catch (err) {
+    console.error('PATCH /api/guides/:id/items/:itemId', err);
+    res.status(500).json({ error: 'Failed to update item' });
+  }
+});
+
+// DELETE /api/guides/:id/items/:itemId — remove from guide entirely
+router.delete('/:id/items/:itemId', authenticate, async (req, res) => {
+  try {
+    const guide = await loadOwnedGuide(req, res);
+    if (!guide) return;
+
+    const itemId = parseInt(req.params.itemId, 10);
+    if (!itemId) return res.status(400).json({ error: 'Invalid item id' });
+
+    const itemCheck = await pool.query(
+      'SELECT id, guide_id FROM guide_section_items WHERE id = $1',
+      [itemId]
+    );
+    if (!itemCheck.rows.length) return res.status(404).json({ error: 'Item not found' });
+    if (itemCheck.rows[0].guide_id !== guide.id) {
+      return res.status(403).json({ error: 'Item does not belong to this guide' });
+    }
+
+    await pool.query('DELETE FROM guide_section_items WHERE id = $1', [itemId]);
+    await pool.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('DELETE /api/guides/:id/items/:itemId', err);
+    res.status(500).json({ error: 'Failed to remove item' });
+  }
+});
+
+// =====================================================================
+// PUBLIC — accessing published guides by slug (no auth)
+// =====================================================================
+
+// GET /api/public/guides/:slug — for /g/:slug viewing.
+// IMPORTANT: this is mounted at /api/guides/_public/:slug to keep all
+// guide routes co-located. Uses softAuthenticate to allow public access.
+const { softAuthenticate } = require('../auth');
+
+router.get('/_public/:slug', softAuthenticate, async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    if (!slug) return res.status(400).json({ error: 'Slug required' });
+
+    // Only published, non-archived guides
+    const guideRes = await pool.query(
+      `SELECT g.*, c.name AS city_name, u.name AS author_name
+         FROM guides g
+         LEFT JOIN cities c ON c.id = g.city_id
+         LEFT JOIN users u ON u.id = g.user_id
+        WHERE g.slug = $1 AND g.status = 'published'
+        LIMIT 1`,
+      [slug]
+    );
+    if (!guideRes.rows.length) {
+      return res.status(404).json({ error: 'Guide not found' });
+    }
+    const guide = guideRes.rows[0];
+
+    // Sections (may be empty in V1.5)
+    const sectionsRes = await pool.query(
+      `SELECT id, title, intro, position
+         FROM guide_sections
+        WHERE guide_id = $1
+        ORDER BY position ASC, created_at ASC`,
+      [guide.id]
+    );
+
+    // All items, hydrated with save data
+    const itemsRes = await pool.query(
+      `SELECT gsi.id, gsi.section_id, gsi.note, gsi.position,
+              s.place_name, s.tip AS save_tip, s.category
+         FROM guide_section_items gsi
+         JOIN saves s ON s.id = gsi.save_id
+        WHERE gsi.guide_id = $1
+        ORDER BY gsi.position ASC, gsi.created_at ASC`,
+      [guide.id]
+    );
+
+    // Strip user_id from public payload — don't leak owner identity beyond name
+    const publicGuide = {
+      title: guide.title,
+      subtitle: guide.subtitle,
+      intro: guide.intro,
+      slug: guide.slug,
+      city_name: guide.city_name,
+      author_name: guide.author_name,
+      published_at: guide.published_at,
+    };
+
+    res.json({
+      guide: publicGuide,
+      sections: sectionsRes.rows,
+      items: itemsRes.rows,
+    });
+  } catch (err) {
+    console.error('GET /api/guides/_public/:slug', err);
+    res.status(500).json({ error: 'Failed to load guide' });
   }
 });
 

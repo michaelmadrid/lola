@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Loading guide… — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/guides.css">
+</head>
+<body>
+
+<header class="head head--public">
+  <div class="head__left">
+    <a href="https://kit.summer-holiday.com" class="logo">kit</a>
+  </div>
+  <div class="head__right">
+    <span class="head__public-tag">A guide on kit</span>
+  </div>
+</header>
+
+<main class="page page-guide-public">
+
+  <div class="g-loading" id="g-loading">Loading…</div>
+  <div class="g-error" id="g-error" hidden></div>
+
+  <article class="g-public" id="g-public" hidden>
+    <header class="g-public__head">
+      <p class="g-public__city" id="g-public-city"></p>
+      <h1 class="g-public__title" id="g-public-title"></h1>
+      <p class="g-public__subtitle" id="g-public-subtitle"></p>
+      <p class="g-public__author" id="g-public-author"></p>
+    </header>
+    <div class="g-public__intro" id="g-public-intro"></div>
+    <div id="g-public-items"></div>
+    <footer class="g-public__foot">
+      <p class="g-public__footnote">
+        Made with <a href="https://kit.summer-holiday.com">kit</a>.
+      </p>
+    </footer>
+  </article>
+
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script>
+(function () {
+  // Extract slug from URL — /g/{slug}
+  const path = location.pathname;
+  const match = path.match(/^\/g\/([^/]+)\/?$/);
+  if (!match) {
+    showError('Invalid guide URL.');
+    return;
+  }
+  const slug = decodeURIComponent(match[1]);
+
+  const loadingEl = document.getElementById('g-loading');
+  const errorEl   = document.getElementById('g-error');
+  const articleEl = document.getElementById('g-public');
+
+  const titleEl    = document.getElementById('g-public-title');
+  const subtitleEl = document.getElementById('g-public-subtitle');
+  const cityEl     = document.getElementById('g-public-city');
+  const authorEl   = document.getElementById('g-public-author');
+  const introEl    = document.getElementById('g-public-intro');
+  const itemsEl    = document.getElementById('g-public-items');
+
+  function showError(msg) {
+    loadingEl.hidden = true;
+    errorEl.hidden = false;
+    errorEl.textContent = msg;
+    document.title = 'Guide not found — kit';
+  }
+
+  async function loadPublic() {
+    try {
+      // Public endpoint — no auth required
+      const res = await fetch('/api/guides/_public/' + encodeURIComponent(slug), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        if (res.status === 404) {
+          showError('Guide not found.');
+        } else {
+          showError('Could not load this guide.');
+        }
+        return;
+      }
+      const data = await res.json();
+      render(data);
+    } catch (err) {
+      console.error('loadPublic', err);
+      showError('Could not load this guide.');
+    }
+  }
+
+  function render(data) {
+    const guide = data.guide;
+    const items = data.items || [];
+
+    document.title = (guide.title || 'Untitled guide') + ' — kit';
+
+    const md = (s) => util.safeMarkdown ? util.safeMarkdown(s || '') : util.escapeHtml(s || '').replace(/\n/g, '<br>');
+
+    cityEl.textContent = guide.city_name || '';
+    titleEl.textContent = guide.title || 'Untitled guide';
+
+    subtitleEl.textContent = guide.subtitle || '';
+    subtitleEl.hidden = !guide.subtitle;
+
+    authorEl.textContent = guide.author_name ? `By ${guide.author_name}` : '';
+    authorEl.hidden = !guide.author_name;
+
+    introEl.innerHTML = md(guide.intro);
+    introEl.hidden = !guide.intro;
+
+    if (!items.length) {
+      itemsEl.innerHTML = '<p class="g-public__empty">No spots in this guide yet.</p>';
+    } else {
+      itemsEl.innerHTML = `
+        <ol class="g-public__items">
+          ${items.map(it => {
+            const tip = it.note || it.save_tip || '';
+            const tipLine = tip ? `<p class="g-public__item-tip">${util.escapeHtml(tip)}</p>` : '';
+            return `
+              <li class="g-public__item">
+                <h3 class="g-public__item-name">${util.escapeHtml(it.place_name || '(unnamed)')}</h3>
+                ${tipLine}
+              </li>
+            `;
+          }).join('')}
+        </ol>
+      `;
+    }
+
+    loadingEl.hidden = true;
+    articleEl.hidden = false;
+  }
+
+  loadPublic();
+})();
+</script>
+</body>
+</html>

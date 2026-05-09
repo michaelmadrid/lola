@@ -38,6 +38,14 @@ app.use('/api/saves',   require('./api/routes/saves'));
 app.use('/api/todos',   require('./api/routes/todos'));
 app.use('/api/guides',  require('./api/routes/guides'));
 
+// ============ PUBLIC GUIDE VIEW ============
+// /g/:slug serves a static public guide page. The page itself fetches
+// the guide data via /api/guides/_public/:slug. No auth required for
+// either the page or the API endpoint.
+app.get('/g/:slug', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'g.html'));
+});
+
 // ============ FALLBACK ============
 // If a request hits /something but no static file exists,
 // fall through to index.html (so client-side links still work)
