@@ -688,14 +688,16 @@ input, textarea, select { font: inherit; }
 .time-popover__list {
   display: flex;
   flex-direction: column;
+  padding: 6px 0;
 }
 .time-popover__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 10px 16px;
   gap: 12px;
-  min-height: 48px;
+  min-height: 52px;
+  box-sizing: border-box;
 }
 .time-popover__row + .time-popover__row {
   border-top: 1px solid var(--rule);
@@ -704,7 +706,7 @@ input, textarea, select { font: inherit; }
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
 .time-popover__city {
@@ -722,10 +724,11 @@ input, textarea, select { font: inherit; }
   font-size: 11px;
   color: var(--ink-3);
   letter-spacing: -0.005em;
+  min-height: 14px; /* reserve line for empty home-city slot */
 }
 .time-popover__time {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--ink);
   font-weight: 500;
   letter-spacing: -0.005em;
@@ -751,7 +754,7 @@ input, textarea, select { font: inherit; }
   font-size: 13px;
   color: var(--ink-2);
   text-decoration: none;
-  text-align: center;
+  text-align: right;
   transition: color 140ms ease, background 140ms ease;
 }
 .time-popover__open:hover {

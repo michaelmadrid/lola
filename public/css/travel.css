@@ -15,7 +15,6 @@
    ============================================================ */
 .page-clocks .mast {
   padding-bottom: 26px;
-  max-width: 920px;
 }
 .page-clocks .mast__head {
   display: flex;
@@ -198,7 +197,6 @@
 
 .time-section {
   margin-bottom: 56px;
-  max-width: 920px;
 }
 .time-section:last-of-type { margin-bottom: 0; }
 .time-section__label {
