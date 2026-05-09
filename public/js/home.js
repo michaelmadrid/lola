@@ -325,9 +325,25 @@
     if (!activeTrip) return;
 
     itinTitle.textContent = activeTrip.name;
-    const ds = activeTrip.date_start ? util.formatLongDate(activeTrip.date_start) : '';
-    const de = activeTrip.date_end   ? util.formatLongDate(activeTrip.date_end)   : '';
-    itinDates.textContent = (ds && de) ? `${ds} — ${de}` : (ds || '');
+
+    // Subtitle: "May 12 — Jun 24 • 2026" (sentence case, sans, no weekday)
+    if (activeTrip.date_start && activeTrip.date_end) {
+      const ds = new Date(activeTrip.date_start);
+      const de = new Date(activeTrip.date_end);
+      const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const left = `${m[ds.getUTCMonth()]} ${ds.getUTCDate()}`;
+      const right = `${m[de.getUTCMonth()]} ${de.getUTCDate()}`;
+      const year = ds.getUTCFullYear();
+      // If trip spans years (rare, e.g., Dec → Feb), show both years
+      const yearLabel = ds.getUTCFullYear() === de.getUTCFullYear()
+        ? year
+        : `${ds.getUTCFullYear()}–${de.getUTCFullYear()}`;
+      itinDates.textContent = `${left} — ${right} • ${yearLabel}`;
+    } else if (activeTrip.date_start) {
+      itinDates.textContent = util.formatLongDate(activeTrip.date_start);
+    } else {
+      itinDates.textContent = '';
+    }
 
     // Owner attribution if not yours
     if (activeTrip.owner_name && !activeTrip.is_owner) {
@@ -348,14 +364,27 @@
       }
     }
 
-    // Render segments as a vertical timeline
+    // Render segments — single column, no date-rail. Title + nights pill on top row,
+    // dates underneath, then notes/items.
     if (!activeSegments.length) {
       itinSegments.innerHTML = '<p class="itin-fs__empty">No stops yet.</p>';
     } else {
+      const monShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fmtRange = (a, b) => {
+        if (!a) return '';
+        const da = new Date(a);
+        if (!b) return `${monShort[da.getUTCMonth()]} ${da.getUTCDate()}`;
+        const db = new Date(b);
+        const left = `${monShort[da.getUTCMonth()]} ${da.getUTCDate()}`;
+        const right = (da.getUTCMonth() === db.getUTCMonth())
+          ? `${db.getUTCDate()}`
+          : `${monShort[db.getUTCMonth()]} ${db.getUTCDate()}`;
+        return `${left} — ${right}`;
+      };
+
       itinSegments.innerHTML = activeSegments.map(s => {
         const label = s.city_name || s.region_label || '—';
-        const arr = s.date_start ? util.formatLongDate(s.date_start) : '';
-        const dep = s.date_end   ? util.formatLongDate(s.date_end)   : '';
+        const dateRange = fmtRange(s.date_start, s.date_end);
         const nights = (s.date_start && s.date_end)
           ? Math.max(0, Math.round((new Date(s.date_end) - new Date(s.date_start)) / 86400000))
           : null;
@@ -366,19 +395,15 @@
           (new Date().toISOString().split('T')[0] >= s.date_start &&
            new Date().toISOString().split('T')[0] <= s.date_end);
         const notes = s.notes
-          ? `<p class="itin-fs__seg-notes">${util.safeMarkdown(s.notes)}</p>`
+          ? `<div class="itin-fs__seg-notes">${util.safeMarkdown(s.notes)}</div>`
           : '';
         return `<article class="itin-fs__seg${isToday ? ' is-here' : ''}">
-          <div class="itin-fs__seg-date">${arr || '—'}</div>
-          <div class="itin-fs__seg-body">
-            <h3 class="itin-fs__seg-name">${util.escapeHtml(label)}</h3>
-            <div class="itin-fs__seg-meta">
-              ${nightsLabel ? `<span>${nightsLabel}</span>` : ''}
-              ${dep ? `<span>→ ${dep}</span>` : ''}
-              ${isToday ? '<span class="itin-fs__here">you are here</span>' : ''}
-            </div>
-            ${notes}
+          <div class="itin-fs__seg-row">
+            <h2 class="itin-fs__seg-name">${util.escapeHtml(label)}</h2>
+            ${nightsLabel ? `<span class="itin-fs__seg-pill">${nightsLabel}</span>` : ''}
           </div>
+          ${dateRange ? `<div class="itin-fs__seg-dates">${dateRange}${isToday ? ' <span class="itin-fs__here">· you are here</span>' : ''}</div>` : ''}
+          ${notes}
         </article>`;
       }).join('');
     }

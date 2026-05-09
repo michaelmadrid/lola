@@ -212,15 +212,15 @@
 
 <!-- ============ ITINERARY OVERLAY ============ -->
 <div class="modal itin-fs" id="itin-overlay">
-  <div class="modal__head">
-    <div class="itin-fs__head">
-      <h3 class="itin-fs__title" id="itin-title">—</h3>
-      <span class="itin-fs__dates" id="itin-dates">—</span>
-    </div>
-    <button class="modal__close" id="itin-close">close</button>
+  <div class="modal__head itin-fs__head-bar">
+    <button class="btn-close-circle" id="itin-close" aria-label="Close" type="button">×</button>
   </div>
   <div class="modal__body">
     <div class="modal__body__inner itin-fs__inner">
+      <header class="itin-fs__head">
+        <h1 class="itin-fs__title" id="itin-title">—</h1>
+        <p class="itin-fs__dates" id="itin-dates">—</p>
+      </header>
       <div id="itin-meta" class="itin-fs__meta"></div>
       <div id="itin-trip-notes" class="itin-fs__trip-notes"></div>
       <div id="itin-segments" class="itin-fs__segments"></div>

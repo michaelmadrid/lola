@@ -947,37 +947,47 @@
 
 /* =========================================================
    ITINERARY OVERLAY (full-screen modal)
+   New layout: close button top-left in head bar, content
+   block has its own header with title + clean subtitle.
+   Segments are single-column, no date-rail.
    ========================================================= */
+
+/* Top bar: just the close button on the left */
+.itin-fs__head-bar {
+  justify-content: flex-start;
+  padding: 18px var(--gutter) 0;
+}
+
+/* Header within the content block */
 .itin-fs__head {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  margin-bottom: 32px;
 }
 .itin-fs__title {
   font-size: clamp(28px, 3.5vw, 42px);
   font-weight: 500;
   letter-spacing: -0.025em;
-  margin: 0;
+  margin: 0 0 6px;
   line-height: 1.05;
   color: var(--ink);
 }
 .itin-fs__dates {
-  font-family: var(--mono);
-  font-size: 12px;
+  font-family: var(--sans);
+  font-size: 14px;
   color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  margin: 0;
 }
 .itin-fs__inner {
   max-width: 720px;
 }
 .itin-fs__meta {
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--sans);
+  font-size: 12px;
   color: var(--ink-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 32px;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  margin-bottom: 24px;
 }
 .itin-fs__meta:empty { display: none; }
 .itin-fs__trip-notes {
@@ -1019,6 +1029,8 @@
   color: var(--ink);
   font-weight: 500;
 }
+
+/* Segments — single column, no date rail */
 .itin-fs__segments {
   display: flex;
   flex-direction: column;
@@ -1026,43 +1038,53 @@
   margin-bottom: 48px;
 }
 .itin-fs__seg {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  gap: 24px;
   padding: 24px 0;
   border-top: 1px solid var(--rule);
 }
 .itin-fs__seg:last-child { border-bottom: 1px solid var(--rule); }
-.itin-fs__seg-date {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding-top: 4px;
+
+/* Top row: segment name + nights pill on opposite ends */
+.itin-fs__seg-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
 }
 .itin-fs__seg-name {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
   letter-spacing: -0.018em;
-  margin: 0 0 6px;
+  margin: 0;
   color: var(--ink);
 }
-.itin-fs__seg-meta {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-family: var(--mono);
+.itin-fs__seg-pill {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-pill);
+  font-family: var(--sans);
   font-size: 11px;
+  letter-spacing: -0.005em;
   color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
+  background: transparent;
+  white-space: nowrap;
+}
+.itin-fs__seg-dates {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  margin-bottom: 14px;
 }
 .itin-fs__here {
   color: var(--blue);
   font-weight: 500;
 }
+
+/* "You are here" indicator dot */
 .itin-fs__seg.is-here .itin-fs__seg-name {
   position: relative;
 }
