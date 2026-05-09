@@ -856,3 +856,20 @@
   border-bottom: 1px solid var(--rule);
 }
 .g-public__footnote a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* View on Google Maps link — sits below item name + tip */
+.g-public__item-maps {
+  display: inline-block;
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--blue);
+  text-decoration: none;
+  letter-spacing: -0.005em;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1px;
+  transition: border-color 140ms ease;
+}
+.g-public__item-maps:hover {
+  border-bottom-color: var(--blue);
+}

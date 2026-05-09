@@ -119,15 +119,30 @@
     if (!items.length) {
       itemsEl.innerHTML = '<p class="g-public__empty">No spots in this guide yet.</p>';
     } else {
+      // Build "View on Google Maps" URL per item.
+      // Query = "{place name} {city}" for disambiguation.
+      // Falls back to just place_name if no city.
+      const cityName = guide.city_name || '';
+      const buildMapsUrl = (placeName) => {
+        const query = [placeName, cityName].filter(Boolean).join(' ');
+        return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+      };
+
       itemsEl.innerHTML = `
         <ol class="g-public__items">
           ${items.map(it => {
+            const placeName = it.place_name || '(unnamed)';
             const tip = it.note || it.save_tip || '';
             const tipLine = tip ? `<p class="g-public__item-tip">${util.escapeHtml(tip)}</p>` : '';
+            const mapsHref = buildMapsUrl(placeName);
+            const mapsLink = it.place_name
+              ? `<a class="g-public__item-maps" href="${mapsHref}" target="_blank" rel="noopener noreferrer">View on Google Maps&nbsp;↗</a>`
+              : '';
             return `
               <li class="g-public__item">
-                <h3 class="g-public__item-name">${util.escapeHtml(it.place_name || '(unnamed)')}</h3>
+                <h3 class="g-public__item-name">${util.escapeHtml(placeName)}</h3>
                 ${tipLine}
+                ${mapsLink}
               </li>
             `;
           }).join('')}
