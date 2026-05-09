@@ -704,6 +704,7 @@ input, textarea, select { font: inherit; }
 .user-panel__scrim {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: rgba(0, 0, 0, 0.18);
   opacity: 0;
   transition: opacity 220ms ease;
@@ -716,6 +717,7 @@ input, textarea, select { font: inherit; }
 
 .user-panel__sheet {
   position: absolute;
+  z-index: 2;
   background: var(--bg);
   pointer-events: auto;
   display: flex;
@@ -771,6 +773,13 @@ input, textarea, select { font: inherit; }
     margin: 12px auto 0;
     opacity: 0.5;
   }
+  /* Mobile: more comfortable tap targets on links */
+  .user-panel__link,
+  .user-panel__signout {
+    min-height: 48px;
+    padding: 14px 24px;
+    font-size: 15px;
+  }
 }
 
 /* Sheet content */
@@ -807,14 +816,14 @@ input, textarea, select { font: inherit; }
 .user-panel__nav {
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
+  padding: 6px 0;
 }
 .user-panel__link,
 .user-panel__signout {
   display: block;
-  padding: 14px 24px;
+  padding: 10px 24px;
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: -0.005em;
   color: var(--ink);
   text-decoration: none;
@@ -824,7 +833,6 @@ input, textarea, select { font: inherit; }
   cursor: pointer;
   transition: color 140ms ease, background 140ms ease;
   width: 100%;
-  min-height: 44px;
 }
 .user-panel__link:hover,
 .user-panel__signout:hover {
@@ -834,7 +842,7 @@ input, textarea, select { font: inherit; }
 .user-panel__signout {
   color: var(--ink-2);
   border-top: 1px solid var(--rule);
-  margin-top: 8px;
+  margin-top: 6px;
 }
 .user-panel__signout:hover {
   color: #c0392b;

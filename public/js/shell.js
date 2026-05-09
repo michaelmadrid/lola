@@ -14,18 +14,13 @@
     }
   } catch (e) {}
 
-  // ----- Apply header label: greeting if signed in, location if not -----
-  // TODO: switch greeting word based on user's home language.
-  // For now always "Ciao, [name]" when signed in.
+  // ----- Apply header location label -----
+  // The user identity now lives in the avatar (top-right desktop, bottom-right mobile).
+  // The .where element is just the location/home city — always.
   try {
-    const user = window.api && window.api.user.get();
     const homeLoc = localStorage.getItem('lola.home_location') || 'Bali';
     const whereEls = document.querySelectorAll('.head__right .where');
-    if (user && user.name) {
-      whereEls.forEach(el => { el.textContent = 'Ciao, ' + user.name; });
-    } else {
-      whereEls.forEach(el => { el.textContent = homeLoc; });
-    }
+    whereEls.forEach(el => { el.textContent = homeLoc; });
   } catch (e) {}
 
   // ----- Live time in header -----
@@ -235,6 +230,7 @@
     panel.setAttribute('aria-hidden', 'true');
     panel.hidden = true;
     panel.innerHTML = `
+      <div class="user-panel__scrim" aria-hidden="true"></div>
       <div class="user-panel__sheet" role="dialog" aria-label="Account">
         <div class="user-panel__handle" aria-hidden="true"></div>
         <div class="user-panel__head">
@@ -251,7 +247,6 @@
           <span class="user-panel__ver">kit v0.5.2</span>
         </div>
       </div>
-      <div class="user-panel__scrim" aria-hidden="true"></div>
     `;
     document.body.appendChild(panel);
 
