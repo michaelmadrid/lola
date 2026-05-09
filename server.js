@@ -37,6 +37,7 @@ app.use('/api/notes',   require('./api/routes/notes'));
 app.use('/api/saves',   require('./api/routes/saves'));
 app.use('/api/todos',   require('./api/routes/todos'));
 app.use('/api/guides',  require('./api/routes/guides'));
+app.use('/api/phrases', require('./api/routes/phrases'));
 
 // ============ PUBLIC GUIDE VIEW ============
 // /g/:slug serves a static public guide page. The page itself fetches

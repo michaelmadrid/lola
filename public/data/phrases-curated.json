@@ -1,0 +1,1165 @@
+{
+  "_meta": {
+    "version": 1,
+    "languages": ["fr", "es", "it", "pt", "de", "ja"],
+    "language_names": {
+      "fr": "Français",
+      "es": "Español",
+      "it": "Italiano",
+      "pt": "Português",
+      "de": "Deutsch",
+      "ja": "日本語"
+    },
+    "language_flags": {
+      "fr": "FR",
+      "es": "ES",
+      "it": "IT",
+      "pt": "PT",
+      "de": "DE",
+      "ja": "JA"
+    },
+    "categories": [
+      { "key": "coffee", "label": "Coffee" },
+      { "key": "food", "label": "Food" },
+      { "key": "friends", "label": "Friends" },
+      { "key": "movement", "label": "Movement" },
+      { "key": "shopping", "label": "Shopping" },
+      { "key": "stay", "label": "Apartment / Hotel" },
+      { "key": "going_out", "label": "Going out" },
+      { "key": "trouble", "label": "Emergencies / Health" },
+      { "key": "mood", "label": "Mood words" },
+      { "key": "wifi", "label": "Internet / Phone / Payment" }
+    ],
+    "note": "Translations AI-drafted for V1. Refine over time through real use."
+  },
+
+  "coffee": [
+    {
+      "text": "An espresso, please.",
+      "translations": {
+        "fr": "Un espresso, s'il vous plaît.",
+        "es": "Un espresso, por favor.",
+        "it": "Un espresso, per favore.",
+        "pt": "Um espresso, por favor.",
+        "de": "Einen Espresso, bitte.",
+        "ja": "エスプレッソをお願いします。"
+      }
+    },
+    {
+      "text": "A flat white with oat milk.",
+      "translations": {
+        "fr": "Un flat white au lait d'avoine.",
+        "es": "Un flat white con leche de avena.",
+        "it": "Un flat white con latte di avena.",
+        "pt": "Um flat white com leite de aveia.",
+        "de": "Einen Flat White mit Hafermilch.",
+        "ja": "オーツミルクのフラットホワイトをお願いします。"
+      }
+    },
+    {
+      "text": "Do you have oat milk?",
+      "translations": {
+        "fr": "Vous avez du lait d'avoine ?",
+        "es": "¿Tienen leche de avena?",
+        "it": "Avete il latte di avena?",
+        "pt": "Têm leite de aveia?",
+        "de": "Haben Sie Hafermilch?",
+        "ja": "オーツミルクはありますか?"
+      }
+    },
+    {
+      "text": "To go, please.",
+      "translations": {
+        "fr": "À emporter, s'il vous plaît.",
+        "es": "Para llevar, por favor.",
+        "it": "Da portare via, per favore.",
+        "pt": "Para levar, por favor.",
+        "de": "Zum Mitnehmen, bitte.",
+        "ja": "テイクアウトでお願いします。"
+      }
+    },
+    {
+      "text": "For here.",
+      "translations": {
+        "fr": "Sur place.",
+        "es": "Para tomar aquí.",
+        "it": "Da consumare qui.",
+        "pt": "Para tomar aqui.",
+        "de": "Zum Hieressen.",
+        "ja": "店内で。"
+      }
+    },
+    {
+      "text": "An iced coffee.",
+      "translations": {
+        "fr": "Un café glacé.",
+        "es": "Un café helado.",
+        "it": "Un caffè freddo.",
+        "pt": "Um café gelado.",
+        "de": "Einen Eiskaffee.",
+        "ja": "アイスコーヒーをください。"
+      }
+    },
+    {
+      "text": "Without sugar, please.",
+      "translations": {
+        "fr": "Sans sucre, s'il vous plaît.",
+        "es": "Sin azúcar, por favor.",
+        "it": "Senza zucchero, per favore.",
+        "pt": "Sem açúcar, por favor.",
+        "de": "Ohne Zucker, bitte.",
+        "ja": "砂糖なしでお願いします。"
+      }
+    },
+    {
+      "text": "Is the coffee good here?",
+      "translations": {
+        "fr": "Le café est bon ici ?",
+        "es": "¿Es bueno el café aquí?",
+        "it": "Il caffè è buono qui?",
+        "pt": "O café aqui é bom?",
+        "de": "Ist der Kaffee hier gut?",
+        "ja": "ここのコーヒーは美味しいですか?"
+      }
+    },
+    {
+      "text": "What do you recommend?",
+      "translations": {
+        "fr": "Qu'est-ce que vous recommandez ?",
+        "es": "¿Qué recomienda?",
+        "it": "Cosa mi consiglia?",
+        "pt": "O que você recomenda?",
+        "de": "Was empfehlen Sie?",
+        "ja": "おすすめは何ですか?"
+      }
+    },
+    {
+      "text": "Where are the best coffee shops nearby?",
+      "translations": {
+        "fr": "Où sont les meilleurs cafés dans le coin ?",
+        "es": "¿Dónde están las mejores cafeterías de por aquí?",
+        "it": "Dove sono i migliori bar qui vicino?",
+        "pt": "Onde ficam as melhores cafeterias por aqui?",
+        "de": "Wo sind die besten Cafés in der Nähe?",
+        "ja": "近くで一番美味しいコーヒー屋さんはどこですか?"
+      }
+    }
+  ],
+
+  "food": [
+    {
+      "text": "A table for two, please.",
+      "translations": {
+        "fr": "Une table pour deux, s'il vous plaît.",
+        "es": "Una mesa para dos, por favor.",
+        "it": "Un tavolo per due, per favore.",
+        "pt": "Uma mesa para dois, por favor.",
+        "de": "Einen Tisch für zwei, bitte.",
+        "ja": "二人席をお願いします。"
+      }
+    },
+    {
+      "text": "The menu, please.",
+      "translations": {
+        "fr": "La carte, s'il vous plaît.",
+        "es": "La carta, por favor.",
+        "it": "Il menù, per favore.",
+        "pt": "O menu, por favor.",
+        "de": "Die Speisekarte, bitte.",
+        "ja": "メニューをお願いします。"
+      }
+    },
+    {
+      "text": "What's the dish of the day?",
+      "translations": {
+        "fr": "Quel est le plat du jour ?",
+        "es": "¿Cuál es el plato del día?",
+        "it": "Qual è il piatto del giorno?",
+        "pt": "Qual é o prato do dia?",
+        "de": "Was ist das Tagesgericht?",
+        "ja": "本日のおすすめは何ですか?"
+      }
+    },
+    {
+      "text": "I'd like this one.",
+      "translations": {
+        "fr": "Je voudrais celui-ci.",
+        "es": "Me gustaría este.",
+        "it": "Vorrei questo.",
+        "pt": "Eu gostaria deste.",
+        "de": "Ich hätte gerne das.",
+        "ja": "これをお願いします。"
+      }
+    },
+    {
+      "text": "I'm vegetarian.",
+      "translations": {
+        "fr": "Je suis végétarien.",
+        "es": "Soy vegetariano.",
+        "it": "Sono vegetariano.",
+        "pt": "Sou vegetariano.",
+        "de": "Ich bin Vegetarier.",
+        "ja": "ベジタリアンです。"
+      }
+    },
+    {
+      "text": "I have an allergy.",
+      "translations": {
+        "fr": "J'ai une allergie.",
+        "es": "Tengo una alergia.",
+        "it": "Ho un'allergia.",
+        "pt": "Tenho uma alergia.",
+        "de": "Ich habe eine Allergie.",
+        "ja": "アレルギーがあります。"
+      }
+    },
+    {
+      "text": "Still water, please.",
+      "translations": {
+        "fr": "De l'eau plate, s'il vous plaît.",
+        "es": "Agua sin gas, por favor.",
+        "it": "Acqua naturale, per favore.",
+        "pt": "Água sem gás, por favor.",
+        "de": "Stilles Wasser, bitte.",
+        "ja": "お水をお願いします。"
+      }
+    },
+    {
+      "text": "It's delicious.",
+      "translations": {
+        "fr": "C'est délicieux.",
+        "es": "Está delicioso.",
+        "it": "È delizioso.",
+        "pt": "Está delicioso.",
+        "de": "Es ist köstlich.",
+        "ja": "とても美味しいです。"
+      }
+    },
+    {
+      "text": "The bill, please.",
+      "translations": {
+        "fr": "L'addition, s'il vous plaît.",
+        "es": "La cuenta, por favor.",
+        "it": "Il conto, per favore.",
+        "pt": "A conta, por favor.",
+        "de": "Die Rechnung, bitte.",
+        "ja": "お会計をお願いします。"
+      }
+    },
+    {
+      "text": "Where would you eat tonight?",
+      "translations": {
+        "fr": "Où mangeriez-vous ce soir ?",
+        "es": "¿Dónde comerías esta noche?",
+        "it": "Dove mangeresti stasera?",
+        "pt": "Onde você comeria hoje à noite?",
+        "de": "Wo würden Sie heute Abend essen?",
+        "ja": "今夜どこで食べますか?"
+      }
+    }
+  ],
+
+  "friends": [
+    {
+      "text": "Nice to meet you.",
+      "translations": {
+        "fr": "Enchanté.",
+        "es": "Encantado.",
+        "it": "Piacere.",
+        "pt": "Prazer em conhecer.",
+        "de": "Freut mich.",
+        "ja": "はじめまして。"
+      }
+    },
+    {
+      "text": "What's your name?",
+      "translations": {
+        "fr": "Comment vous appelez-vous ?",
+        "es": "¿Cómo te llamas?",
+        "it": "Come ti chiami?",
+        "pt": "Qual é o seu nome?",
+        "de": "Wie heißen Sie?",
+        "ja": "お名前は何ですか?"
+      }
+    },
+    {
+      "text": "Where are you from?",
+      "translations": {
+        "fr": "D'où venez-vous ?",
+        "es": "¿De dónde eres?",
+        "it": "Di dove sei?",
+        "pt": "De onde você é?",
+        "de": "Woher kommen Sie?",
+        "ja": "どちらから来ましたか?"
+      }
+    },
+    {
+      "text": "I'm from Bali.",
+      "translations": {
+        "fr": "Je viens de Bali.",
+        "es": "Soy de Bali.",
+        "it": "Vengo da Bali.",
+        "pt": "Eu sou de Bali.",
+        "de": "Ich komme aus Bali.",
+        "ja": "バリ島から来ました。"
+      }
+    },
+    {
+      "text": "I'm a photographer.",
+      "translations": {
+        "fr": "Je suis photographe.",
+        "es": "Soy fotógrafo.",
+        "it": "Sono fotografo.",
+        "pt": "Sou fotógrafo.",
+        "de": "Ich bin Fotograf.",
+        "ja": "写真家です。"
+      }
+    },
+    {
+      "text": "How long have you lived here?",
+      "translations": {
+        "fr": "Vous habitez ici depuis combien de temps ?",
+        "es": "¿Cuánto tiempo llevas viviendo aquí?",
+        "it": "Da quanto tempo vivi qui?",
+        "pt": "Há quanto tempo você mora aqui?",
+        "de": "Wie lange wohnen Sie schon hier?",
+        "ja": "ここに住んでどのくらいですか?"
+      }
+    },
+    {
+      "text": "Let's grab a drink.",
+      "translations": {
+        "fr": "On va boire un verre ?",
+        "es": "Vamos a tomar algo.",
+        "it": "Andiamo a bere qualcosa.",
+        "pt": "Vamos beber algo.",
+        "de": "Lass uns was trinken gehen.",
+        "ja": "一杯飲みに行きましょう。"
+      }
+    },
+    {
+      "text": "Can I have your number?",
+      "translations": {
+        "fr": "Tu peux me donner ton numéro ?",
+        "es": "¿Me das tu número?",
+        "it": "Mi dai il tuo numero?",
+        "pt": "Pode me dar o seu número?",
+        "de": "Kannst du mir deine Nummer geben?",
+        "ja": "電話番号を教えてもらえますか?"
+      }
+    },
+    {
+      "text": "Are you on Instagram?",
+      "translations": {
+        "fr": "Tu es sur Instagram ?",
+        "es": "¿Estás en Instagram?",
+        "it": "Sei su Instagram?",
+        "pt": "Você está no Instagram?",
+        "de": "Bist du auf Instagram?",
+        "ja": "インスタグラムやってますか?"
+      }
+    },
+    {
+      "text": "It was great meeting you.",
+      "translations": {
+        "fr": "C'était super de te rencontrer.",
+        "es": "Encantado de conocerte.",
+        "it": "È stato un piacere conoscerti.",
+        "pt": "Foi ótimo conhecer você.",
+        "de": "Es war schön, dich kennenzulernen.",
+        "ja": "お会いできてよかったです。"
+      }
+    }
+  ],
+
+  "movement": [
+    {
+      "text": "Where is the metro?",
+      "translations": {
+        "fr": "Où est le métro ?",
+        "es": "¿Dónde está el metro?",
+        "it": "Dov'è la metro?",
+        "pt": "Onde fica o metrô?",
+        "de": "Wo ist die U-Bahn?",
+        "ja": "地下鉄はどこですか?"
+      }
+    },
+    {
+      "text": "How do I get to the train station?",
+      "translations": {
+        "fr": "Comment je vais à la gare ?",
+        "es": "¿Cómo llego a la estación de tren?",
+        "it": "Come arrivo alla stazione?",
+        "pt": "Como chego à estação de trem?",
+        "de": "Wie komme ich zum Bahnhof?",
+        "ja": "駅にはどう行けばいいですか?"
+      }
+    },
+    {
+      "text": "Is it walkable from here?",
+      "translations": {
+        "fr": "C'est accessible à pied d'ici ?",
+        "es": "¿Se puede ir caminando desde aquí?",
+        "it": "È raggiungibile a piedi da qui?",
+        "pt": "Dá para ir a pé daqui?",
+        "de": "Kann man von hier aus laufen?",
+        "ja": "ここから歩いて行けますか?"
+      }
+    },
+    {
+      "text": "Can you call me a taxi?",
+      "translations": {
+        "fr": "Vous pouvez m'appeler un taxi ?",
+        "es": "¿Me puede llamar un taxi?",
+        "it": "Mi può chiamare un taxi?",
+        "pt": "Pode me chamar um táxi?",
+        "de": "Können Sie mir ein Taxi rufen?",
+        "ja": "タクシーを呼んでもらえますか?"
+      }
+    },
+    {
+      "text": "How long does it take?",
+      "translations": {
+        "fr": "Ça prend combien de temps ?",
+        "es": "¿Cuánto tarda?",
+        "it": "Quanto ci vuole?",
+        "pt": "Quanto tempo demora?",
+        "de": "Wie lange dauert es?",
+        "ja": "どのくらいかかりますか?"
+      }
+    },
+    {
+      "text": "Is this seat taken?",
+      "translations": {
+        "fr": "Cette place est prise ?",
+        "es": "¿Está ocupado este asiento?",
+        "it": "È occupato questo posto?",
+        "pt": "Este lugar está ocupado?",
+        "de": "Ist dieser Platz frei?",
+        "ja": "この席は空いていますか?"
+      }
+    },
+    {
+      "text": "Which platform?",
+      "translations": {
+        "fr": "Quel quai ?",
+        "es": "¿Qué andén?",
+        "it": "Quale binario?",
+        "pt": "Qual plataforma?",
+        "de": "Welches Gleis?",
+        "ja": "何番ホームですか?"
+      }
+    },
+    {
+      "text": "I'm lost.",
+      "translations": {
+        "fr": "Je suis perdu.",
+        "es": "Estoy perdido.",
+        "it": "Mi sono perso.",
+        "pt": "Estou perdido.",
+        "de": "Ich habe mich verlaufen.",
+        "ja": "道に迷いました。"
+      }
+    },
+    {
+      "text": "Can you show me on the map?",
+      "translations": {
+        "fr": "Vous pouvez me montrer sur la carte ?",
+        "es": "¿Me puede mostrar en el mapa?",
+        "it": "Me lo può mostrare sulla mappa?",
+        "pt": "Pode me mostrar no mapa?",
+        "de": "Können Sie es mir auf der Karte zeigen?",
+        "ja": "地図で教えてもらえますか?"
+      }
+    },
+    {
+      "text": "Is there a bike I can rent?",
+      "translations": {
+        "fr": "Il y a un vélo à louer ?",
+        "es": "¿Hay alguna bici para alquilar?",
+        "it": "C'è una bici da noleggiare?",
+        "pt": "Tem bicicleta para alugar?",
+        "de": "Gibt es ein Fahrrad zum Mieten?",
+        "ja": "レンタル自転車はありますか?"
+      }
+    }
+  ],
+
+  "shopping": [
+    {
+      "text": "How much is this?",
+      "translations": {
+        "fr": "C'est combien ?",
+        "es": "¿Cuánto cuesta?",
+        "it": "Quanto costa?",
+        "pt": "Quanto custa?",
+        "de": "Wie viel kostet das?",
+        "ja": "これはいくらですか?"
+      }
+    },
+    {
+      "text": "Do you have it in another size?",
+      "translations": {
+        "fr": "Vous l'avez dans une autre taille ?",
+        "es": "¿Lo tiene en otra talla?",
+        "it": "Ce l'avete in un'altra taglia?",
+        "pt": "Tem em outro tamanho?",
+        "de": "Haben Sie es in einer anderen Größe?",
+        "ja": "別のサイズはありますか?"
+      }
+    },
+    {
+      "text": "Can I try it on?",
+      "translations": {
+        "fr": "Je peux l'essayer ?",
+        "es": "¿Me lo puedo probar?",
+        "it": "Posso provarlo?",
+        "pt": "Posso experimentar?",
+        "de": "Kann ich es anprobieren?",
+        "ja": "試着してもいいですか?"
+      }
+    },
+    {
+      "text": "I'm just looking, thanks.",
+      "translations": {
+        "fr": "Je regarde, merci.",
+        "es": "Solo estoy mirando, gracias.",
+        "it": "Sto solo guardando, grazie.",
+        "pt": "Só estou olhando, obrigado.",
+        "de": "Ich schaue mich nur um, danke.",
+        "ja": "見ているだけです、ありがとう。"
+      }
+    },
+    {
+      "text": "Do you take card?",
+      "translations": {
+        "fr": "Vous prenez la carte ?",
+        "es": "¿Aceptan tarjeta?",
+        "it": "Accettate la carta?",
+        "pt": "Aceitam cartão?",
+        "de": "Akzeptieren Sie Karte?",
+        "ja": "カードは使えますか?"
+      }
+    },
+    {
+      "text": "Is there a discount?",
+      "translations": {
+        "fr": "Il y a une réduction ?",
+        "es": "¿Hay descuento?",
+        "it": "C'è uno sconto?",
+        "pt": "Tem desconto?",
+        "de": "Gibt es einen Rabatt?",
+        "ja": "割引はありますか?"
+      }
+    },
+    {
+      "text": "Where is the fitting room?",
+      "translations": {
+        "fr": "Où est la cabine d'essayage ?",
+        "es": "¿Dónde está el probador?",
+        "it": "Dove sono i camerini?",
+        "pt": "Onde fica o provador?",
+        "de": "Wo ist die Umkleide?",
+        "ja": "試着室はどこですか?"
+      }
+    },
+    {
+      "text": "I'll take it.",
+      "translations": {
+        "fr": "Je le prends.",
+        "es": "Me lo llevo.",
+        "it": "Lo prendo.",
+        "pt": "Vou levar.",
+        "de": "Ich nehme es.",
+        "ja": "これにします。"
+      }
+    },
+    {
+      "text": "Can I have a bag?",
+      "translations": {
+        "fr": "Je peux avoir un sac ?",
+        "es": "¿Me puede dar una bolsa?",
+        "it": "Mi può dare un sacchetto?",
+        "pt": "Pode me dar uma sacola?",
+        "de": "Kann ich eine Tüte haben?",
+        "ja": "袋をもらえますか?"
+      }
+    },
+    {
+      "text": "Where can I find a bookshop?",
+      "translations": {
+        "fr": "Où je peux trouver une librairie ?",
+        "es": "¿Dónde puedo encontrar una librería?",
+        "it": "Dove posso trovare una libreria?",
+        "pt": "Onde posso encontrar uma livraria?",
+        "de": "Wo finde ich eine Buchhandlung?",
+        "ja": "本屋さんはどこにありますか?"
+      }
+    }
+  ],
+
+  "stay": [
+    {
+      "text": "I have a reservation.",
+      "translations": {
+        "fr": "J'ai une réservation.",
+        "es": "Tengo una reserva.",
+        "it": "Ho una prenotazione.",
+        "pt": "Tenho uma reserva.",
+        "de": "Ich habe eine Reservierung.",
+        "ja": "予約があります。"
+      }
+    },
+    {
+      "text": "What time is check-in?",
+      "translations": {
+        "fr": "À quelle heure est le check-in ?",
+        "es": "¿A qué hora es el check-in?",
+        "it": "A che ora è il check-in?",
+        "pt": "A que horas é o check-in?",
+        "de": "Wann ist Check-in?",
+        "ja": "チェックインは何時ですか?"
+      }
+    },
+    {
+      "text": "Where can I leave my bags?",
+      "translations": {
+        "fr": "Où je peux laisser mes bagages ?",
+        "es": "¿Dónde puedo dejar las maletas?",
+        "it": "Dove posso lasciare le valigie?",
+        "pt": "Onde posso deixar minhas malas?",
+        "de": "Wo kann ich mein Gepäck lassen?",
+        "ja": "荷物はどこに置けますか?"
+      }
+    },
+    {
+      "text": "The wifi password, please.",
+      "translations": {
+        "fr": "Le mot de passe wifi, s'il vous plaît.",
+        "es": "La contraseña del wifi, por favor.",
+        "it": "La password del wifi, per favore.",
+        "pt": "A senha do wifi, por favor.",
+        "de": "Das WLAN-Passwort, bitte.",
+        "ja": "Wi-Fiのパスワードを教えてください。"
+      }
+    },
+    {
+      "text": "How does the heating work?",
+      "translations": {
+        "fr": "Comment fonctionne le chauffage ?",
+        "es": "¿Cómo funciona la calefacción?",
+        "it": "Come funziona il riscaldamento?",
+        "pt": "Como funciona o aquecimento?",
+        "de": "Wie funktioniert die Heizung?",
+        "ja": "暖房はどうやって使うんですか?"
+      }
+    },
+    {
+      "text": "Can I have an extra towel?",
+      "translations": {
+        "fr": "Je peux avoir une serviette en plus ?",
+        "es": "¿Me puede dar una toalla extra?",
+        "it": "Posso avere un asciugamano in più?",
+        "pt": "Pode me dar uma toalha extra?",
+        "de": "Kann ich ein extra Handtuch haben?",
+        "ja": "タオルをもう一枚もらえますか?"
+      }
+    },
+    {
+      "text": "There's no hot water.",
+      "translations": {
+        "fr": "Il n'y a pas d'eau chaude.",
+        "es": "No hay agua caliente.",
+        "it": "Non c'è acqua calda.",
+        "pt": "Não tem água quente.",
+        "de": "Es gibt kein heißes Wasser.",
+        "ja": "お湯が出ません。"
+      }
+    },
+    {
+      "text": "What's the checkout time?",
+      "translations": {
+        "fr": "Quelle est l'heure du check-out ?",
+        "es": "¿A qué hora es el check-out?",
+        "it": "A che ora è il check-out?",
+        "pt": "A que horas é o check-out?",
+        "de": "Wann ist Check-out?",
+        "ja": "チェックアウトは何時ですか?"
+      }
+    },
+    {
+      "text": "Can we have a late checkout?",
+      "translations": {
+        "fr": "On peut avoir un late check-out ?",
+        "es": "¿Podemos tener un check-out tardío?",
+        "it": "Possiamo fare il check-out più tardi?",
+        "pt": "Podemos fazer um late check-out?",
+        "de": "Können wir später auschecken?",
+        "ja": "レイトチェックアウトはできますか?"
+      }
+    },
+    {
+      "text": "Can you store our bags after checkout?",
+      "translations": {
+        "fr": "Vous pouvez garder nos bagages après le check-out ?",
+        "es": "¿Pueden guardar nuestras maletas después del check-out?",
+        "it": "Potete tenere le nostre valigie dopo il check-out?",
+        "pt": "Podem guardar nossas malas depois do check-out?",
+        "de": "Können Sie unser Gepäck nach dem Check-out aufbewahren?",
+        "ja": "チェックアウト後に荷物を預かってもらえますか?"
+      }
+    }
+  ],
+
+  "going_out": [
+    {
+      "text": "What's a good bar nearby?",
+      "translations": {
+        "fr": "Quel est un bon bar dans le coin ?",
+        "es": "¿Cuál es un buen bar por aquí?",
+        "it": "Qual è un buon bar qui vicino?",
+        "pt": "Qual é um bom bar por aqui?",
+        "de": "Welche gute Bar ist in der Nähe?",
+        "ja": "近くで良いバーはありますか?"
+      }
+    },
+    {
+      "text": "Where do locals go?",
+      "translations": {
+        "fr": "Où vont les locaux ?",
+        "es": "¿A dónde van los locales?",
+        "it": "Dove vanno i locali?",
+        "pt": "Onde vão os locais?",
+        "de": "Wo gehen die Einheimischen hin?",
+        "ja": "地元の人はどこに行きますか?"
+      }
+    },
+    {
+      "text": "Is there a cover charge?",
+      "translations": {
+        "fr": "Il y a une entrée payante ?",
+        "es": "¿Hay que pagar entrada?",
+        "it": "C'è il coperto?",
+        "pt": "Tem couvert?",
+        "de": "Gibt es einen Eintritt?",
+        "ja": "入場料はありますか?"
+      }
+    },
+    {
+      "text": "Two of those, please.",
+      "translations": {
+        "fr": "Deux de ceux-là, s'il vous plaît.",
+        "es": "Dos de esos, por favor.",
+        "it": "Due di quelli, per favore.",
+        "pt": "Dois desses, por favor.",
+        "de": "Zwei davon, bitte.",
+        "ja": "それを二つください。"
+      }
+    },
+    {
+      "text": "What's on tap?",
+      "translations": {
+        "fr": "Qu'est-ce que vous avez à la pression ?",
+        "es": "¿Qué tienen de barril?",
+        "it": "Che birra avete alla spina?",
+        "pt": "O que tem de chope?",
+        "de": "Was haben Sie vom Fass?",
+        "ja": "生ビールは何がありますか?"
+      }
+    },
+    {
+      "text": "A glass of red wine.",
+      "translations": {
+        "fr": "Un verre de vin rouge.",
+        "es": "Una copa de vino tinto.",
+        "it": "Un bicchiere di vino rosso.",
+        "pt": "Uma taça de vinho tinto.",
+        "de": "Ein Glas Rotwein.",
+        "ja": "赤ワインを一杯ください。"
+      }
+    },
+    {
+      "text": "It's on me.",
+      "translations": {
+        "fr": "C'est pour moi.",
+        "es": "Yo invito.",
+        "it": "Offro io.",
+        "pt": "Eu pago.",
+        "de": "Das geht auf mich.",
+        "ja": "私のおごりです。"
+      }
+    },
+    {
+      "text": "Cheers!",
+      "translations": {
+        "fr": "Santé !",
+        "es": "¡Salud!",
+        "it": "Salute!",
+        "pt": "Saúde!",
+        "de": "Prost!",
+        "ja": "乾杯!"
+      }
+    },
+    {
+      "text": "What time do you close?",
+      "translations": {
+        "fr": "Vous fermez à quelle heure ?",
+        "es": "¿A qué hora cierran?",
+        "it": "A che ora chiudete?",
+        "pt": "A que horas fecham?",
+        "de": "Wann schließen Sie?",
+        "ja": "何時に閉まりますか?"
+      }
+    },
+    {
+      "text": "Where's the bathroom?",
+      "translations": {
+        "fr": "Où sont les toilettes ?",
+        "es": "¿Dónde están los baños?",
+        "it": "Dov'è il bagno?",
+        "pt": "Onde fica o banheiro?",
+        "de": "Wo ist die Toilette?",
+        "ja": "お手洗いはどこですか?"
+      }
+    }
+  ],
+
+  "trouble": [
+    {
+      "text": "I don't feel well.",
+      "translations": {
+        "fr": "Je ne me sens pas bien.",
+        "es": "No me siento bien.",
+        "it": "Non mi sento bene.",
+        "pt": "Não me sinto bem.",
+        "de": "Mir geht es nicht gut.",
+        "ja": "気分が悪いです。"
+      }
+    },
+    {
+      "text": "Where's the nearest pharmacy?",
+      "translations": {
+        "fr": "Où est la pharmacie la plus proche ?",
+        "es": "¿Dónde está la farmacia más cercana?",
+        "it": "Dov'è la farmacia più vicina?",
+        "pt": "Onde fica a farmácia mais próxima?",
+        "de": "Wo ist die nächste Apotheke?",
+        "ja": "一番近い薬局はどこですか?"
+      }
+    },
+    {
+      "text": "I need a doctor.",
+      "translations": {
+        "fr": "J'ai besoin d'un médecin.",
+        "es": "Necesito un médico.",
+        "it": "Ho bisogno di un medico.",
+        "pt": "Preciso de um médico.",
+        "de": "Ich brauche einen Arzt.",
+        "ja": "医者が必要です。"
+      }
+    },
+    {
+      "text": "Do you have something for a headache?",
+      "translations": {
+        "fr": "Vous avez quelque chose pour le mal de tête ?",
+        "es": "¿Tienen algo para el dolor de cabeza?",
+        "it": "Avete qualcosa per il mal di testa?",
+        "pt": "Tem algo para dor de cabeça?",
+        "de": "Haben Sie etwas gegen Kopfschmerzen?",
+        "ja": "頭痛に効くものはありますか?"
+      }
+    },
+    {
+      "text": "I'm allergic to nuts.",
+      "translations": {
+        "fr": "Je suis allergique aux noix.",
+        "es": "Soy alérgico a los frutos secos.",
+        "it": "Sono allergico alla frutta secca.",
+        "pt": "Sou alérgico a nozes.",
+        "de": "Ich bin allergisch gegen Nüsse.",
+        "ja": "ナッツアレルギーです。"
+      }
+    },
+    {
+      "text": "I lost my passport.",
+      "translations": {
+        "fr": "J'ai perdu mon passeport.",
+        "es": "Perdí mi pasaporte.",
+        "it": "Ho perso il passaporto.",
+        "pt": "Perdi meu passaporte.",
+        "de": "Ich habe meinen Reisepass verloren.",
+        "ja": "パスポートをなくしました。"
+      }
+    },
+    {
+      "text": "Help, please!",
+      "translations": {
+        "fr": "À l'aide, s'il vous plaît !",
+        "es": "¡Ayuda, por favor!",
+        "it": "Aiuto, per favore!",
+        "pt": "Socorro, por favor!",
+        "de": "Hilfe, bitte!",
+        "ja": "助けてください!"
+      }
+    },
+    {
+      "text": "Call the police.",
+      "translations": {
+        "fr": "Appelez la police.",
+        "es": "Llame a la policía.",
+        "it": "Chiami la polizia.",
+        "pt": "Chame a polícia.",
+        "de": "Rufen Sie die Polizei.",
+        "ja": "警察を呼んでください。"
+      }
+    },
+    {
+      "text": "I need to see a dentist.",
+      "translations": {
+        "fr": "J'ai besoin de voir un dentiste.",
+        "es": "Necesito ver a un dentista.",
+        "it": "Ho bisogno di un dentista.",
+        "pt": "Preciso ver um dentista.",
+        "de": "Ich muss zum Zahnarzt.",
+        "ja": "歯医者に行く必要があります。"
+      }
+    },
+    {
+      "text": "Can you write that down?",
+      "translations": {
+        "fr": "Vous pouvez l'écrire ?",
+        "es": "¿Lo puede escribir?",
+        "it": "Lo può scrivere?",
+        "pt": "Pode escrever isso?",
+        "de": "Können Sie das aufschreiben?",
+        "ja": "書いてもらえますか?"
+      }
+    }
+  ],
+
+  "mood": [
+    {
+      "text": "It's beautiful.",
+      "translations": {
+        "fr": "C'est beau.",
+        "es": "Es hermoso.",
+        "it": "È bellissimo.",
+        "pt": "É lindo.",
+        "de": "Es ist wunderschön.",
+        "ja": "とても綺麗です。"
+      }
+    },
+    {
+      "text": "I love this place.",
+      "translations": {
+        "fr": "J'adore cet endroit.",
+        "es": "Me encanta este lugar.",
+        "it": "Adoro questo posto.",
+        "pt": "Adoro este lugar.",
+        "de": "Ich liebe diesen Ort.",
+        "ja": "この場所が大好きです。"
+      }
+    },
+    {
+      "text": "I'm tired.",
+      "translations": {
+        "fr": "Je suis fatigué.",
+        "es": "Estoy cansado.",
+        "it": "Sono stanco.",
+        "pt": "Estou cansado.",
+        "de": "Ich bin müde.",
+        "ja": "疲れました。"
+      }
+    },
+    {
+      "text": "I'm hungry.",
+      "translations": {
+        "fr": "J'ai faim.",
+        "es": "Tengo hambre.",
+        "it": "Ho fame.",
+        "pt": "Estou com fome.",
+        "de": "Ich habe Hunger.",
+        "ja": "お腹が空きました。"
+      }
+    },
+    {
+      "text": "It's too loud.",
+      "translations": {
+        "fr": "C'est trop bruyant.",
+        "es": "Hay demasiado ruido.",
+        "it": "C'è troppo rumore.",
+        "pt": "Está muito alto.",
+        "de": "Es ist zu laut.",
+        "ja": "うるさすぎます。"
+      }
+    },
+    {
+      "text": "What a vibe.",
+      "translations": {
+        "fr": "Quelle ambiance.",
+        "es": "Qué ambiente.",
+        "it": "Che atmosfera.",
+        "pt": "Que vibe.",
+        "de": "Was für eine Stimmung.",
+        "ja": "良い雰囲気ですね。"
+      }
+    },
+    {
+      "text": "I'm so happy right now.",
+      "translations": {
+        "fr": "Je suis tellement heureux là.",
+        "es": "Estoy muy feliz ahora mismo.",
+        "it": "Sono così felice in questo momento.",
+        "pt": "Estou tão feliz agora.",
+        "de": "Ich bin gerade so glücklich.",
+        "ja": "今とても幸せです。"
+      }
+    },
+    {
+      "text": "I needed this.",
+      "translations": {
+        "fr": "J'avais besoin de ça.",
+        "es": "Necesitaba esto.",
+        "it": "Ne avevo bisogno.",
+        "pt": "Eu precisava disso.",
+        "de": "Das hatte ich gebraucht.",
+        "ja": "これが必要でした。"
+      }
+    },
+    {
+      "text": "It's freezing.",
+      "translations": {
+        "fr": "Il fait un froid de canard.",
+        "es": "Hace un frío que pela.",
+        "it": "Fa un freddo cane.",
+        "pt": "Está congelante.",
+        "de": "Es ist eiskalt.",
+        "ja": "凍えそうです。"
+      }
+    },
+    {
+      "text": "I could stay here forever.",
+      "translations": {
+        "fr": "Je pourrais rester ici pour toujours.",
+        "es": "Me quedaría aquí para siempre.",
+        "it": "Potrei restare qui per sempre.",
+        "pt": "Eu poderia ficar aqui para sempre.",
+        "de": "Ich könnte für immer hier bleiben.",
+        "ja": "ずっとここにいたいです。"
+      }
+    }
+  ],
+
+  "wifi": [
+    {
+      "text": "Is there wifi?",
+      "translations": {
+        "fr": "Il y a du wifi ?",
+        "es": "¿Hay wifi?",
+        "it": "C'è il wifi?",
+        "pt": "Tem wifi?",
+        "de": "Gibt es WLAN?",
+        "ja": "Wi-Fiはありますか?"
+      }
+    },
+    {
+      "text": "What's the password?",
+      "translations": {
+        "fr": "C'est quoi le mot de passe ?",
+        "es": "¿Cuál es la contraseña?",
+        "it": "Qual è la password?",
+        "pt": "Qual é a senha?",
+        "de": "Wie lautet das Passwort?",
+        "ja": "パスワードは何ですか?"
+      }
+    },
+    {
+      "text": "The wifi isn't working.",
+      "translations": {
+        "fr": "Le wifi ne marche pas.",
+        "es": "El wifi no funciona.",
+        "it": "Il wifi non funziona.",
+        "pt": "O wifi não está funcionando.",
+        "de": "Das WLAN funktioniert nicht.",
+        "ja": "Wi-Fiが繋がりません。"
+      }
+    },
+    {
+      "text": "Where can I buy a sim card?",
+      "translations": {
+        "fr": "Où je peux acheter une carte sim ?",
+        "es": "¿Dónde puedo comprar una tarjeta sim?",
+        "it": "Dove posso comprare una sim?",
+        "pt": "Onde posso comprar um chip?",
+        "de": "Wo kann ich eine SIM-Karte kaufen?",
+        "ja": "SIMカードはどこで買えますか?"
+      }
+    },
+    {
+      "text": "Do you have a charger?",
+      "translations": {
+        "fr": "Vous avez un chargeur ?",
+        "es": "¿Tienen un cargador?",
+        "it": "Avete un caricatore?",
+        "pt": "Tem um carregador?",
+        "de": "Haben Sie ein Ladegerät?",
+        "ja": "充電器はありますか?"
+      }
+    },
+    {
+      "text": "Can I pay with card?",
+      "translations": {
+        "fr": "Je peux payer par carte ?",
+        "es": "¿Puedo pagar con tarjeta?",
+        "it": "Posso pagare con la carta?",
+        "pt": "Posso pagar com cartão?",
+        "de": "Kann ich mit Karte zahlen?",
+        "ja": "カードで払えますか?"
+      }
+    },
+    {
+      "text": "Apple Pay, please.",
+      "translations": {
+        "fr": "Apple Pay, s'il vous plaît.",
+        "es": "Apple Pay, por favor.",
+        "it": "Apple Pay, per favore.",
+        "pt": "Apple Pay, por favor.",
+        "de": "Apple Pay, bitte.",
+        "ja": "Apple Payでお願いします。"
+      }
+    },
+    {
+      "text": "Cash only?",
+      "translations": {
+        "fr": "Seulement en espèces ?",
+        "es": "¿Solo efectivo?",
+        "it": "Solo contanti?",
+        "pt": "Só dinheiro?",
+        "de": "Nur Bargeld?",
+        "ja": "現金のみですか?"
+      }
+    },
+    {
+      "text": "Where's a cash machine?",
+      "translations": {
+        "fr": "Où est un distributeur ?",
+        "es": "¿Dónde hay un cajero?",
+        "it": "Dove c'è un bancomat?",
+        "pt": "Onde tem um caixa eletrônico?",
+        "de": "Wo ist ein Geldautomat?",
+        "ja": "ATMはどこにありますか?"
+      }
+    },
+    {
+      "text": "I need to send a quick email.",
+      "translations": {
+        "fr": "Je dois envoyer un mail rapide.",
+        "es": "Necesito enviar un correo rápido.",
+        "it": "Devo mandare una mail veloce.",
+        "pt": "Preciso mandar um e-mail rápido.",
+        "de": "Ich muss schnell eine E-Mail schicken.",
+        "ja": "メールを一通送りたいんですが。"
+      }
+    }
+  ]
+}

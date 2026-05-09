@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Guides — kit</title>
+  <title>Phrases — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
-  <link rel="stylesheet" href="/css/guides.css">
+  <link rel="stylesheet" href="/css/phrases.css">
 </head>
-<body>
+<body class="body-phrases">
 
 <header class="head">
   <div class="head__left">
@@ -24,13 +24,11 @@
     <a href="/" data-auth="in">Home</a>
     <a href="/travel/" data-auth="in">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" class="is-active" data-auth="in">Guides</a>
-    <a href="/phrases/" data-auth="in">Phrases</a>
+    <a href="/phrases/" class="is-active" data-auth="in">Phrases</a>
     <a href="/login.html" data-auth="out">Sign in</a>
   </nav>
   <div class="head__right">
-    <span class="where">Bali</span>
-    <span id="hdr-time">—</span>
+    <span class="ph-translating" id="ph-translating">Translating…</span>
   </div>
 </header>
 
@@ -39,8 +37,8 @@
     <a href="/" data-auth="in">Home</a>
     <a href="/travel/" data-auth="in">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" class="is-active" data-auth="in">Guides</a>
-    <a href="/phrases/" data-auth="in">Phrases</a>
+    <a href="/guides/" data-auth="in">Guides</a>
+    <a href="/phrases/" class="is-active" data-auth="in">Phrases</a>
     <a href="/settings.html" data-auth="in">Settings</a>
     <a href="/admin/" data-auth="in">Admin</a>
     <a href="/login.html" data-auth="out">Sign in</a>
@@ -48,27 +46,26 @@
   </div>
 </div>
 
-<main class="page page-guides">
+<main class="page page-phrases">
 
-  <header class="mast">
-    <div class="mast__head">
-      <div>
-        <h1 class="mast__title">Guides</h1>
-        <p class="mast__intro">Curated city stories from your spots.</p>
-      </div>
-      <button class="btn" id="new-guide-btn" type="button">+ New guide</button>
-    </div>
-  </header>
+  <!-- Language picker — None / FR / ES / IT / PT / DE / JA -->
+  <div class="ph-langs" id="ph-langs"></div>
 
-  <div class="guides-list" id="guides-list">
-    <div class="guides-list__loading">Loading…</div>
+  <!-- Category chips: All + per-category -->
+  <div class="ph-cats" id="ph-cats"></div>
+
+  <!-- Phrase groups -->
+  <div id="ph-groups">
+    <div class="ph-loading" id="ph-loading">Loading phrases…</div>
   </div>
 
 </main>
 
+<a href="/phrases/capture/" class="ph-add">+ Add phrase</a>
+
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
-<script src="/js/guides-index.js"></script>
+<script src="/js/phrases-view.js"></script>
 </body>
 </html>
