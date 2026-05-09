@@ -159,7 +159,7 @@
           <div class="time-popover__row">
             <div class="time-popover__row-lhs">
               <div class="time-popover__city">${escapeHtml(r.name)}</div>
-              ${offLabel ? `<div class="time-popover__off">${offLabel}</div>` : ''}
+              <div class="time-popover__off">${offLabel || '\u00a0'}</div>
             </div>
             <div class="time-popover__time">${time}</div>
           </div>

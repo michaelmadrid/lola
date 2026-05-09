@@ -241,11 +241,11 @@
             <span class="time-card__name">${util.escapeHtml(name)}</span>
             <span class="time-card__date">${util.escapeHtml(date)}</span>
           </div>
-          <div class="time-card__rhs">
-            <span class="time-card__time">${time}</span>
-            <span class="time-card__offset">${offLabel}</span>
-          </div>
-          ${!isHome ? '<button class="time-card__remove" aria-label="Remove">×</button>' : ''}
+          <div class="time-card__time">${time}</div>
+          <div class="time-card__offset">${offLabel}</div>
+          ${!isHome
+            ? '<button class="time-card__remove" type="button" aria-label="Remove">×</button>'
+            : '<span class="time-card__remove-slot" aria-hidden="true"></span>'}
         </div>
         ${expandedHtml}
       </div>
@@ -452,7 +452,27 @@
     popoverAnchor = anchor;
     const rect = anchor.getBoundingClientRect();
     const top = rect.bottom + window.scrollY + 6;
-    const left = rect.left + window.scrollX;
+    const popWidth = 320; // matches .time-add-popover width
+    const viewportW = document.documentElement.clientWidth;
+
+    // Decide alignment: prefer left-aligned to anchor (popover grows rightward),
+    // but if anchor is too close to right edge to fit, right-align to anchor
+    // (popover grows leftward) so it stays in the viewport.
+    const naturalRightEdge = rect.left + popWidth;
+    const margin = 16; // breathing room from viewport edge
+
+    let left;
+    if (naturalRightEdge + margin <= viewportW) {
+      // Fits left-aligned — use anchor's left
+      left = rect.left + window.scrollX;
+    } else {
+      // Right-align: popover's right edge sits at anchor's right edge
+      left = rect.right - popWidth + window.scrollX;
+      // Clamp to viewport (don't go off the LEFT edge if very narrow viewport)
+      const minLeft = margin + window.scrollX;
+      if (left < minLeft) left = minLeft;
+    }
+
     popover.style.top = top + 'px';
     popover.style.left = left + 'px';
     popover.classList.add('is-open');

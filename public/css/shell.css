@@ -177,7 +177,7 @@ input, textarea, select { font: inherit; }
   white-space: nowrap;
   justify-self: end;
 }
-.head__right .where { color: var(--ink); font-weight: 500; margin-right: 6px; }
+.head__right .where { display: none; }
 .head__right .signin {
   color: var(--ink-2);
 }
@@ -627,8 +627,7 @@ input, textarea, select { font: inherit; }
   font-variant-numeric: tabular-nums;
 }
 .time-trigger:hover { color: var(--blue); }
-.time-trigger:hover .where { color: var(--blue); }
-.time-trigger .where { transition: color 140ms ease; }
+.time-trigger .where { display: none; } /* time-only in header; city is implicit */
 
 /* =====================================================================
    TIME POPOVER — mini clocks view
@@ -694,8 +693,9 @@ input, textarea, select { font: inherit; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 0 16px;
   gap: 12px;
+  min-height: 48px;
 }
 .time-popover__row + .time-popover__row {
   border-top: 1px solid var(--rule);
@@ -703,7 +703,8 @@ input, textarea, select { font: inherit; }
 .time-popover__row-lhs {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: center;
+  gap: 1px;
   min-width: 0;
 }
 .time-popover__city {
