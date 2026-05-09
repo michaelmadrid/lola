@@ -26,7 +26,7 @@ const CATEGORIES = new Set([
 ]);
 
 // Hardcoded language allow-list. Mirrors phrases-curated.json _meta.languages.
-const LANGUAGES = new Set(['fr', 'es', 'it', 'pt', 'de', 'ja']);
+const LANGUAGES = new Set(['fr', 'es', 'it', 'pt', 'de']);
 
 const LANG_FULL_NAME = {
   fr: 'French',
@@ -34,7 +34,6 @@ const LANG_FULL_NAME = {
   it: 'Italian',
   pt: 'Portuguese',
   de: 'German',
-  ja: 'Japanese',
 };
 
 // ---- GET /api/phrases — all custom phrases for current user ----
@@ -135,7 +134,7 @@ router.post('/translate', authenticate, async (req, res) => {
         .join('\n');
 
       const langName = LANG_FULL_NAME[target_lang];
-      const prompt = `Translate each of these short phrases to ${langName}. Output ONLY the translations as a numbered list with the same numbers, nothing else. No explanations, no quotes, no commentary. Use natural, polite, conversational register suitable for a traveler. For Japanese, use polite (です/ます) form.\n\n${numbered}`;
+      const prompt = `Translate each of these short phrases to ${langName}. Output ONLY the translations as a numbered list with the same numbers, nothing else. No explanations, no quotes, no commentary. Use natural, polite, conversational register suitable for a traveler.\n\n${numbered}`;
 
       let translated;
       try {

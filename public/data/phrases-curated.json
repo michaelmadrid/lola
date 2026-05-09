@@ -1,38 +1,71 @@
 {
   "_meta": {
     "version": 1,
-    "languages": ["fr", "es", "it", "pt", "de", "ja"],
+    "languages": [
+      "fr",
+      "es",
+      "it",
+      "pt",
+      "de"
+    ],
     "language_names": {
       "fr": "Français",
       "es": "Español",
       "it": "Italiano",
       "pt": "Português",
-      "de": "Deutsch",
-      "ja": "日本語"
+      "de": "Deutsch"
     },
     "language_flags": {
       "fr": "FR",
       "es": "ES",
       "it": "IT",
       "pt": "PT",
-      "de": "DE",
-      "ja": "JA"
+      "de": "DE"
     },
     "categories": [
-      { "key": "coffee", "label": "Coffee" },
-      { "key": "food", "label": "Food" },
-      { "key": "friends", "label": "Friends" },
-      { "key": "movement", "label": "Movement" },
-      { "key": "shopping", "label": "Shopping" },
-      { "key": "stay", "label": "Apartment / Hotel" },
-      { "key": "going_out", "label": "Going out" },
-      { "key": "trouble", "label": "Emergencies / Health" },
-      { "key": "mood", "label": "Mood words" },
-      { "key": "wifi", "label": "Internet / Phone / Payment" }
+      {
+        "key": "coffee",
+        "label": "Coffee"
+      },
+      {
+        "key": "food",
+        "label": "Food"
+      },
+      {
+        "key": "friends",
+        "label": "Friends"
+      },
+      {
+        "key": "movement",
+        "label": "Movement"
+      },
+      {
+        "key": "shopping",
+        "label": "Shopping"
+      },
+      {
+        "key": "stay",
+        "label": "Apartment / Hotel"
+      },
+      {
+        "key": "going_out",
+        "label": "Going out"
+      },
+      {
+        "key": "trouble",
+        "label": "Emergencies / Health"
+      },
+      {
+        "key": "mood",
+        "label": "Mood words"
+      },
+      {
+        "key": "wifi",
+        "label": "Internet / Phone / Payment"
+      }
     ],
     "note": "Translations AI-drafted for V1. Refine over time through real use."
   },
-
   "coffee": [
     {
       "text": "An espresso, please.",
@@ -41,8 +74,7 @@
         "es": "Un espresso, por favor.",
         "it": "Un espresso, per favore.",
         "pt": "Um espresso, por favor.",
-        "de": "Einen Espresso, bitte.",
-        "ja": "エスプレッソをお願いします。"
+        "de": "Einen Espresso, bitte."
       }
     },
     {
@@ -52,8 +84,7 @@
         "es": "Un flat white con leche de avena.",
         "it": "Un flat white con latte di avena.",
         "pt": "Um flat white com leite de aveia.",
-        "de": "Einen Flat White mit Hafermilch.",
-        "ja": "オーツミルクのフラットホワイトをお願いします。"
+        "de": "Einen Flat White mit Hafermilch."
       }
     },
     {
@@ -63,8 +94,7 @@
         "es": "¿Tienen leche de avena?",
         "it": "Avete il latte di avena?",
         "pt": "Têm leite de aveia?",
-        "de": "Haben Sie Hafermilch?",
-        "ja": "オーツミルクはありますか?"
+        "de": "Haben Sie Hafermilch?"
       }
     },
     {
@@ -74,8 +104,7 @@
         "es": "Para llevar, por favor.",
         "it": "Da portare via, per favore.",
         "pt": "Para levar, por favor.",
-        "de": "Zum Mitnehmen, bitte.",
-        "ja": "テイクアウトでお願いします。"
+        "de": "Zum Mitnehmen, bitte."
       }
     },
     {
@@ -85,8 +114,7 @@
         "es": "Para tomar aquí.",
         "it": "Da consumare qui.",
         "pt": "Para tomar aqui.",
-        "de": "Zum Hieressen.",
-        "ja": "店内で。"
+        "de": "Zum Hieressen."
       }
     },
     {
@@ -96,8 +124,7 @@
         "es": "Un café helado.",
         "it": "Un caffè freddo.",
         "pt": "Um café gelado.",
-        "de": "Einen Eiskaffee.",
-        "ja": "アイスコーヒーをください。"
+        "de": "Einen Eiskaffee."
       }
     },
     {
@@ -107,8 +134,7 @@
         "es": "Sin azúcar, por favor.",
         "it": "Senza zucchero, per favore.",
         "pt": "Sem açúcar, por favor.",
-        "de": "Ohne Zucker, bitte.",
-        "ja": "砂糖なしでお願いします。"
+        "de": "Ohne Zucker, bitte."
       }
     },
     {
@@ -118,8 +144,7 @@
         "es": "¿Es bueno el café aquí?",
         "it": "Il caffè è buono qui?",
         "pt": "O café aqui é bom?",
-        "de": "Ist der Kaffee hier gut?",
-        "ja": "ここのコーヒーは美味しいですか?"
+        "de": "Ist der Kaffee hier gut?"
       }
     },
     {
@@ -129,8 +154,7 @@
         "es": "¿Qué recomienda?",
         "it": "Cosa mi consiglia?",
         "pt": "O que você recomenda?",
-        "de": "Was empfehlen Sie?",
-        "ja": "おすすめは何ですか?"
+        "de": "Was empfehlen Sie?"
       }
     },
     {
@@ -140,12 +164,10 @@
         "es": "¿Dónde están las mejores cafeterías de por aquí?",
         "it": "Dove sono i migliori bar qui vicino?",
         "pt": "Onde ficam as melhores cafeterias por aqui?",
-        "de": "Wo sind die besten Cafés in der Nähe?",
-        "ja": "近くで一番美味しいコーヒー屋さんはどこですか?"
+        "de": "Wo sind die besten Cafés in der Nähe?"
       }
     }
   ],
-
   "food": [
     {
       "text": "A table for two, please.",
@@ -154,8 +176,7 @@
         "es": "Una mesa para dos, por favor.",
         "it": "Un tavolo per due, per favore.",
         "pt": "Uma mesa para dois, por favor.",
-        "de": "Einen Tisch für zwei, bitte.",
-        "ja": "二人席をお願いします。"
+        "de": "Einen Tisch für zwei, bitte."
       }
     },
     {
@@ -165,8 +186,7 @@
         "es": "La carta, por favor.",
         "it": "Il menù, per favore.",
         "pt": "O menu, por favor.",
-        "de": "Die Speisekarte, bitte.",
-        "ja": "メニューをお願いします。"
+        "de": "Die Speisekarte, bitte."
       }
     },
     {
@@ -176,8 +196,7 @@
         "es": "¿Cuál es el plato del día?",
         "it": "Qual è il piatto del giorno?",
         "pt": "Qual é o prato do dia?",
-        "de": "Was ist das Tagesgericht?",
-        "ja": "本日のおすすめは何ですか?"
+        "de": "Was ist das Tagesgericht?"
       }
     },
     {
@@ -187,8 +206,7 @@
         "es": "Me gustaría este.",
         "it": "Vorrei questo.",
         "pt": "Eu gostaria deste.",
-        "de": "Ich hätte gerne das.",
-        "ja": "これをお願いします。"
+        "de": "Ich hätte gerne das."
       }
     },
     {
@@ -198,8 +216,7 @@
         "es": "Soy vegetariano.",
         "it": "Sono vegetariano.",
         "pt": "Sou vegetariano.",
-        "de": "Ich bin Vegetarier.",
-        "ja": "ベジタリアンです。"
+        "de": "Ich bin Vegetarier."
       }
     },
     {
@@ -209,8 +226,7 @@
         "es": "Tengo una alergia.",
         "it": "Ho un'allergia.",
         "pt": "Tenho uma alergia.",
-        "de": "Ich habe eine Allergie.",
-        "ja": "アレルギーがあります。"
+        "de": "Ich habe eine Allergie."
       }
     },
     {
@@ -220,8 +236,7 @@
         "es": "Agua sin gas, por favor.",
         "it": "Acqua naturale, per favore.",
         "pt": "Água sem gás, por favor.",
-        "de": "Stilles Wasser, bitte.",
-        "ja": "お水をお願いします。"
+        "de": "Stilles Wasser, bitte."
       }
     },
     {
@@ -231,8 +246,7 @@
         "es": "Está delicioso.",
         "it": "È delizioso.",
         "pt": "Está delicioso.",
-        "de": "Es ist köstlich.",
-        "ja": "とても美味しいです。"
+        "de": "Es ist köstlich."
       }
     },
     {
@@ -242,8 +256,7 @@
         "es": "La cuenta, por favor.",
         "it": "Il conto, per favore.",
         "pt": "A conta, por favor.",
-        "de": "Die Rechnung, bitte.",
-        "ja": "お会計をお願いします。"
+        "de": "Die Rechnung, bitte."
       }
     },
     {
@@ -253,12 +266,10 @@
         "es": "¿Dónde comerías esta noche?",
         "it": "Dove mangeresti stasera?",
         "pt": "Onde você comeria hoje à noite?",
-        "de": "Wo würden Sie heute Abend essen?",
-        "ja": "今夜どこで食べますか?"
+        "de": "Wo würden Sie heute Abend essen?"
       }
     }
   ],
-
   "friends": [
     {
       "text": "Nice to meet you.",
@@ -267,8 +278,7 @@
         "es": "Encantado.",
         "it": "Piacere.",
         "pt": "Prazer em conhecer.",
-        "de": "Freut mich.",
-        "ja": "はじめまして。"
+        "de": "Freut mich."
       }
     },
     {
@@ -278,8 +288,7 @@
         "es": "¿Cómo te llamas?",
         "it": "Come ti chiami?",
         "pt": "Qual é o seu nome?",
-        "de": "Wie heißen Sie?",
-        "ja": "お名前は何ですか?"
+        "de": "Wie heißen Sie?"
       }
     },
     {
@@ -289,8 +298,7 @@
         "es": "¿De dónde eres?",
         "it": "Di dove sei?",
         "pt": "De onde você é?",
-        "de": "Woher kommen Sie?",
-        "ja": "どちらから来ましたか?"
+        "de": "Woher kommen Sie?"
       }
     },
     {
@@ -300,8 +308,7 @@
         "es": "Soy de Bali.",
         "it": "Vengo da Bali.",
         "pt": "Eu sou de Bali.",
-        "de": "Ich komme aus Bali.",
-        "ja": "バリ島から来ました。"
+        "de": "Ich komme aus Bali."
       }
     },
     {
@@ -311,8 +318,7 @@
         "es": "Soy fotógrafo.",
         "it": "Sono fotografo.",
         "pt": "Sou fotógrafo.",
-        "de": "Ich bin Fotograf.",
-        "ja": "写真家です。"
+        "de": "Ich bin Fotograf."
       }
     },
     {
@@ -322,8 +328,7 @@
         "es": "¿Cuánto tiempo llevas viviendo aquí?",
         "it": "Da quanto tempo vivi qui?",
         "pt": "Há quanto tempo você mora aqui?",
-        "de": "Wie lange wohnen Sie schon hier?",
-        "ja": "ここに住んでどのくらいですか?"
+        "de": "Wie lange wohnen Sie schon hier?"
       }
     },
     {
@@ -333,8 +338,7 @@
         "es": "Vamos a tomar algo.",
         "it": "Andiamo a bere qualcosa.",
         "pt": "Vamos beber algo.",
-        "de": "Lass uns was trinken gehen.",
-        "ja": "一杯飲みに行きましょう。"
+        "de": "Lass uns was trinken gehen."
       }
     },
     {
@@ -344,8 +348,7 @@
         "es": "¿Me das tu número?",
         "it": "Mi dai il tuo numero?",
         "pt": "Pode me dar o seu número?",
-        "de": "Kannst du mir deine Nummer geben?",
-        "ja": "電話番号を教えてもらえますか?"
+        "de": "Kannst du mir deine Nummer geben?"
       }
     },
     {
@@ -355,8 +358,7 @@
         "es": "¿Estás en Instagram?",
         "it": "Sei su Instagram?",
         "pt": "Você está no Instagram?",
-        "de": "Bist du auf Instagram?",
-        "ja": "インスタグラムやってますか?"
+        "de": "Bist du auf Instagram?"
       }
     },
     {
@@ -366,12 +368,10 @@
         "es": "Encantado de conocerte.",
         "it": "È stato un piacere conoscerti.",
         "pt": "Foi ótimo conhecer você.",
-        "de": "Es war schön, dich kennenzulernen.",
-        "ja": "お会いできてよかったです。"
+        "de": "Es war schön, dich kennenzulernen."
       }
     }
   ],
-
   "movement": [
     {
       "text": "Where is the metro?",
@@ -380,8 +380,7 @@
         "es": "¿Dónde está el metro?",
         "it": "Dov'è la metro?",
         "pt": "Onde fica o metrô?",
-        "de": "Wo ist die U-Bahn?",
-        "ja": "地下鉄はどこですか?"
+        "de": "Wo ist die U-Bahn?"
       }
     },
     {
@@ -391,8 +390,7 @@
         "es": "¿Cómo llego a la estación de tren?",
         "it": "Come arrivo alla stazione?",
         "pt": "Como chego à estação de trem?",
-        "de": "Wie komme ich zum Bahnhof?",
-        "ja": "駅にはどう行けばいいですか?"
+        "de": "Wie komme ich zum Bahnhof?"
       }
     },
     {
@@ -402,8 +400,7 @@
         "es": "¿Se puede ir caminando desde aquí?",
         "it": "È raggiungibile a piedi da qui?",
         "pt": "Dá para ir a pé daqui?",
-        "de": "Kann man von hier aus laufen?",
-        "ja": "ここから歩いて行けますか?"
+        "de": "Kann man von hier aus laufen?"
       }
     },
     {
@@ -413,8 +410,7 @@
         "es": "¿Me puede llamar un taxi?",
         "it": "Mi può chiamare un taxi?",
         "pt": "Pode me chamar um táxi?",
-        "de": "Können Sie mir ein Taxi rufen?",
-        "ja": "タクシーを呼んでもらえますか?"
+        "de": "Können Sie mir ein Taxi rufen?"
       }
     },
     {
@@ -424,8 +420,7 @@
         "es": "¿Cuánto tarda?",
         "it": "Quanto ci vuole?",
         "pt": "Quanto tempo demora?",
-        "de": "Wie lange dauert es?",
-        "ja": "どのくらいかかりますか?"
+        "de": "Wie lange dauert es?"
       }
     },
     {
@@ -435,8 +430,7 @@
         "es": "¿Está ocupado este asiento?",
         "it": "È occupato questo posto?",
         "pt": "Este lugar está ocupado?",
-        "de": "Ist dieser Platz frei?",
-        "ja": "この席は空いていますか?"
+        "de": "Ist dieser Platz frei?"
       }
     },
     {
@@ -446,8 +440,7 @@
         "es": "¿Qué andén?",
         "it": "Quale binario?",
         "pt": "Qual plataforma?",
-        "de": "Welches Gleis?",
-        "ja": "何番ホームですか?"
+        "de": "Welches Gleis?"
       }
     },
     {
@@ -457,8 +450,7 @@
         "es": "Estoy perdido.",
         "it": "Mi sono perso.",
         "pt": "Estou perdido.",
-        "de": "Ich habe mich verlaufen.",
-        "ja": "道に迷いました。"
+        "de": "Ich habe mich verlaufen."
       }
     },
     {
@@ -468,8 +460,7 @@
         "es": "¿Me puede mostrar en el mapa?",
         "it": "Me lo può mostrare sulla mappa?",
         "pt": "Pode me mostrar no mapa?",
-        "de": "Können Sie es mir auf der Karte zeigen?",
-        "ja": "地図で教えてもらえますか?"
+        "de": "Können Sie es mir auf der Karte zeigen?"
       }
     },
     {
@@ -479,12 +470,10 @@
         "es": "¿Hay alguna bici para alquilar?",
         "it": "C'è una bici da noleggiare?",
         "pt": "Tem bicicleta para alugar?",
-        "de": "Gibt es ein Fahrrad zum Mieten?",
-        "ja": "レンタル自転車はありますか?"
+        "de": "Gibt es ein Fahrrad zum Mieten?"
       }
     }
   ],
-
   "shopping": [
     {
       "text": "How much is this?",
@@ -493,8 +482,7 @@
         "es": "¿Cuánto cuesta?",
         "it": "Quanto costa?",
         "pt": "Quanto custa?",
-        "de": "Wie viel kostet das?",
-        "ja": "これはいくらですか?"
+        "de": "Wie viel kostet das?"
       }
     },
     {
@@ -504,8 +492,7 @@
         "es": "¿Lo tiene en otra talla?",
         "it": "Ce l'avete in un'altra taglia?",
         "pt": "Tem em outro tamanho?",
-        "de": "Haben Sie es in einer anderen Größe?",
-        "ja": "別のサイズはありますか?"
+        "de": "Haben Sie es in einer anderen Größe?"
       }
     },
     {
@@ -515,8 +502,7 @@
         "es": "¿Me lo puedo probar?",
         "it": "Posso provarlo?",
         "pt": "Posso experimentar?",
-        "de": "Kann ich es anprobieren?",
-        "ja": "試着してもいいですか?"
+        "de": "Kann ich es anprobieren?"
       }
     },
     {
@@ -526,8 +512,7 @@
         "es": "Solo estoy mirando, gracias.",
         "it": "Sto solo guardando, grazie.",
         "pt": "Só estou olhando, obrigado.",
-        "de": "Ich schaue mich nur um, danke.",
-        "ja": "見ているだけです、ありがとう。"
+        "de": "Ich schaue mich nur um, danke."
       }
     },
     {
@@ -537,8 +522,7 @@
         "es": "¿Aceptan tarjeta?",
         "it": "Accettate la carta?",
         "pt": "Aceitam cartão?",
-        "de": "Akzeptieren Sie Karte?",
-        "ja": "カードは使えますか?"
+        "de": "Akzeptieren Sie Karte?"
       }
     },
     {
@@ -548,8 +532,7 @@
         "es": "¿Hay descuento?",
         "it": "C'è uno sconto?",
         "pt": "Tem desconto?",
-        "de": "Gibt es einen Rabatt?",
-        "ja": "割引はありますか?"
+        "de": "Gibt es einen Rabatt?"
       }
     },
     {
@@ -559,8 +542,7 @@
         "es": "¿Dónde está el probador?",
         "it": "Dove sono i camerini?",
         "pt": "Onde fica o provador?",
-        "de": "Wo ist die Umkleide?",
-        "ja": "試着室はどこですか?"
+        "de": "Wo ist die Umkleide?"
       }
     },
     {
@@ -570,8 +552,7 @@
         "es": "Me lo llevo.",
         "it": "Lo prendo.",
         "pt": "Vou levar.",
-        "de": "Ich nehme es.",
-        "ja": "これにします。"
+        "de": "Ich nehme es."
       }
     },
     {
@@ -581,8 +562,7 @@
         "es": "¿Me puede dar una bolsa?",
         "it": "Mi può dare un sacchetto?",
         "pt": "Pode me dar uma sacola?",
-        "de": "Kann ich eine Tüte haben?",
-        "ja": "袋をもらえますか?"
+        "de": "Kann ich eine Tüte haben?"
       }
     },
     {
@@ -592,12 +572,10 @@
         "es": "¿Dónde puedo encontrar una librería?",
         "it": "Dove posso trovare una libreria?",
         "pt": "Onde posso encontrar uma livraria?",
-        "de": "Wo finde ich eine Buchhandlung?",
-        "ja": "本屋さんはどこにありますか?"
+        "de": "Wo finde ich eine Buchhandlung?"
       }
     }
   ],
-
   "stay": [
     {
       "text": "I have a reservation.",
@@ -606,8 +584,7 @@
         "es": "Tengo una reserva.",
         "it": "Ho una prenotazione.",
         "pt": "Tenho uma reserva.",
-        "de": "Ich habe eine Reservierung.",
-        "ja": "予約があります。"
+        "de": "Ich habe eine Reservierung."
       }
     },
     {
@@ -617,8 +594,7 @@
         "es": "¿A qué hora es el check-in?",
         "it": "A che ora è il check-in?",
         "pt": "A que horas é o check-in?",
-        "de": "Wann ist Check-in?",
-        "ja": "チェックインは何時ですか?"
+        "de": "Wann ist Check-in?"
       }
     },
     {
@@ -628,8 +604,7 @@
         "es": "¿Dónde puedo dejar las maletas?",
         "it": "Dove posso lasciare le valigie?",
         "pt": "Onde posso deixar minhas malas?",
-        "de": "Wo kann ich mein Gepäck lassen?",
-        "ja": "荷物はどこに置けますか?"
+        "de": "Wo kann ich mein Gepäck lassen?"
       }
     },
     {
@@ -639,8 +614,7 @@
         "es": "La contraseña del wifi, por favor.",
         "it": "La password del wifi, per favore.",
         "pt": "A senha do wifi, por favor.",
-        "de": "Das WLAN-Passwort, bitte.",
-        "ja": "Wi-Fiのパスワードを教えてください。"
+        "de": "Das WLAN-Passwort, bitte."
       }
     },
     {
@@ -650,8 +624,7 @@
         "es": "¿Cómo funciona la calefacción?",
         "it": "Come funziona il riscaldamento?",
         "pt": "Como funciona o aquecimento?",
-        "de": "Wie funktioniert die Heizung?",
-        "ja": "暖房はどうやって使うんですか?"
+        "de": "Wie funktioniert die Heizung?"
       }
     },
     {
@@ -661,8 +634,7 @@
         "es": "¿Me puede dar una toalla extra?",
         "it": "Posso avere un asciugamano in più?",
         "pt": "Pode me dar uma toalha extra?",
-        "de": "Kann ich ein extra Handtuch haben?",
-        "ja": "タオルをもう一枚もらえますか?"
+        "de": "Kann ich ein extra Handtuch haben?"
       }
     },
     {
@@ -672,8 +644,7 @@
         "es": "No hay agua caliente.",
         "it": "Non c'è acqua calda.",
         "pt": "Não tem água quente.",
-        "de": "Es gibt kein heißes Wasser.",
-        "ja": "お湯が出ません。"
+        "de": "Es gibt kein heißes Wasser."
       }
     },
     {
@@ -683,8 +654,7 @@
         "es": "¿A qué hora es el check-out?",
         "it": "A che ora è il check-out?",
         "pt": "A que horas é o check-out?",
-        "de": "Wann ist Check-out?",
-        "ja": "チェックアウトは何時ですか?"
+        "de": "Wann ist Check-out?"
       }
     },
     {
@@ -694,8 +664,7 @@
         "es": "¿Podemos tener un check-out tardío?",
         "it": "Possiamo fare il check-out più tardi?",
         "pt": "Podemos fazer um late check-out?",
-        "de": "Können wir später auschecken?",
-        "ja": "レイトチェックアウトはできますか?"
+        "de": "Können wir später auschecken?"
       }
     },
     {
@@ -705,12 +674,10 @@
         "es": "¿Pueden guardar nuestras maletas después del check-out?",
         "it": "Potete tenere le nostre valigie dopo il check-out?",
         "pt": "Podem guardar nossas malas depois do check-out?",
-        "de": "Können Sie unser Gepäck nach dem Check-out aufbewahren?",
-        "ja": "チェックアウト後に荷物を預かってもらえますか?"
+        "de": "Können Sie unser Gepäck nach dem Check-out aufbewahren?"
       }
     }
   ],
-
   "going_out": [
     {
       "text": "What's a good bar nearby?",
@@ -719,8 +686,7 @@
         "es": "¿Cuál es un buen bar por aquí?",
         "it": "Qual è un buon bar qui vicino?",
         "pt": "Qual é um bom bar por aqui?",
-        "de": "Welche gute Bar ist in der Nähe?",
-        "ja": "近くで良いバーはありますか?"
+        "de": "Welche gute Bar ist in der Nähe?"
       }
     },
     {
@@ -730,8 +696,7 @@
         "es": "¿A dónde van los locales?",
         "it": "Dove vanno i locali?",
         "pt": "Onde vão os locais?",
-        "de": "Wo gehen die Einheimischen hin?",
-        "ja": "地元の人はどこに行きますか?"
+        "de": "Wo gehen die Einheimischen hin?"
       }
     },
     {
@@ -741,8 +706,7 @@
         "es": "¿Hay que pagar entrada?",
         "it": "C'è il coperto?",
         "pt": "Tem couvert?",
-        "de": "Gibt es einen Eintritt?",
-        "ja": "入場料はありますか?"
+        "de": "Gibt es einen Eintritt?"
       }
     },
     {
@@ -752,8 +716,7 @@
         "es": "Dos de esos, por favor.",
         "it": "Due di quelli, per favore.",
         "pt": "Dois desses, por favor.",
-        "de": "Zwei davon, bitte.",
-        "ja": "それを二つください。"
+        "de": "Zwei davon, bitte."
       }
     },
     {
@@ -763,8 +726,7 @@
         "es": "¿Qué tienen de barril?",
         "it": "Che birra avete alla spina?",
         "pt": "O que tem de chope?",
-        "de": "Was haben Sie vom Fass?",
-        "ja": "生ビールは何がありますか?"
+        "de": "Was haben Sie vom Fass?"
       }
     },
     {
@@ -774,8 +736,7 @@
         "es": "Una copa de vino tinto.",
         "it": "Un bicchiere di vino rosso.",
         "pt": "Uma taça de vinho tinto.",
-        "de": "Ein Glas Rotwein.",
-        "ja": "赤ワインを一杯ください。"
+        "de": "Ein Glas Rotwein."
       }
     },
     {
@@ -785,8 +746,7 @@
         "es": "Yo invito.",
         "it": "Offro io.",
         "pt": "Eu pago.",
-        "de": "Das geht auf mich.",
-        "ja": "私のおごりです。"
+        "de": "Das geht auf mich."
       }
     },
     {
@@ -796,8 +756,7 @@
         "es": "¡Salud!",
         "it": "Salute!",
         "pt": "Saúde!",
-        "de": "Prost!",
-        "ja": "乾杯!"
+        "de": "Prost!"
       }
     },
     {
@@ -807,8 +766,7 @@
         "es": "¿A qué hora cierran?",
         "it": "A che ora chiudete?",
         "pt": "A que horas fecham?",
-        "de": "Wann schließen Sie?",
-        "ja": "何時に閉まりますか?"
+        "de": "Wann schließen Sie?"
       }
     },
     {
@@ -818,12 +776,10 @@
         "es": "¿Dónde están los baños?",
         "it": "Dov'è il bagno?",
         "pt": "Onde fica o banheiro?",
-        "de": "Wo ist die Toilette?",
-        "ja": "お手洗いはどこですか?"
+        "de": "Wo ist die Toilette?"
       }
     }
   ],
-
   "trouble": [
     {
       "text": "I don't feel well.",
@@ -832,8 +788,7 @@
         "es": "No me siento bien.",
         "it": "Non mi sento bene.",
         "pt": "Não me sinto bem.",
-        "de": "Mir geht es nicht gut.",
-        "ja": "気分が悪いです。"
+        "de": "Mir geht es nicht gut."
       }
     },
     {
@@ -843,8 +798,7 @@
         "es": "¿Dónde está la farmacia más cercana?",
         "it": "Dov'è la farmacia più vicina?",
         "pt": "Onde fica a farmácia mais próxima?",
-        "de": "Wo ist die nächste Apotheke?",
-        "ja": "一番近い薬局はどこですか?"
+        "de": "Wo ist die nächste Apotheke?"
       }
     },
     {
@@ -854,8 +808,7 @@
         "es": "Necesito un médico.",
         "it": "Ho bisogno di un medico.",
         "pt": "Preciso de um médico.",
-        "de": "Ich brauche einen Arzt.",
-        "ja": "医者が必要です。"
+        "de": "Ich brauche einen Arzt."
       }
     },
     {
@@ -865,8 +818,7 @@
         "es": "¿Tienen algo para el dolor de cabeza?",
         "it": "Avete qualcosa per il mal di testa?",
         "pt": "Tem algo para dor de cabeça?",
-        "de": "Haben Sie etwas gegen Kopfschmerzen?",
-        "ja": "頭痛に効くものはありますか?"
+        "de": "Haben Sie etwas gegen Kopfschmerzen?"
       }
     },
     {
@@ -876,8 +828,7 @@
         "es": "Soy alérgico a los frutos secos.",
         "it": "Sono allergico alla frutta secca.",
         "pt": "Sou alérgico a nozes.",
-        "de": "Ich bin allergisch gegen Nüsse.",
-        "ja": "ナッツアレルギーです。"
+        "de": "Ich bin allergisch gegen Nüsse."
       }
     },
     {
@@ -887,8 +838,7 @@
         "es": "Perdí mi pasaporte.",
         "it": "Ho perso il passaporto.",
         "pt": "Perdi meu passaporte.",
-        "de": "Ich habe meinen Reisepass verloren.",
-        "ja": "パスポートをなくしました。"
+        "de": "Ich habe meinen Reisepass verloren."
       }
     },
     {
@@ -898,8 +848,7 @@
         "es": "¡Ayuda, por favor!",
         "it": "Aiuto, per favore!",
         "pt": "Socorro, por favor!",
-        "de": "Hilfe, bitte!",
-        "ja": "助けてください!"
+        "de": "Hilfe, bitte!"
       }
     },
     {
@@ -909,8 +858,7 @@
         "es": "Llame a la policía.",
         "it": "Chiami la polizia.",
         "pt": "Chame a polícia.",
-        "de": "Rufen Sie die Polizei.",
-        "ja": "警察を呼んでください。"
+        "de": "Rufen Sie die Polizei."
       }
     },
     {
@@ -920,8 +868,7 @@
         "es": "Necesito ver a un dentista.",
         "it": "Ho bisogno di un dentista.",
         "pt": "Preciso ver um dentista.",
-        "de": "Ich muss zum Zahnarzt.",
-        "ja": "歯医者に行く必要があります。"
+        "de": "Ich muss zum Zahnarzt."
       }
     },
     {
@@ -931,12 +878,10 @@
         "es": "¿Lo puede escribir?",
         "it": "Lo può scrivere?",
         "pt": "Pode escrever isso?",
-        "de": "Können Sie das aufschreiben?",
-        "ja": "書いてもらえますか?"
+        "de": "Können Sie das aufschreiben?"
       }
     }
   ],
-
   "mood": [
     {
       "text": "It's beautiful.",
@@ -945,8 +890,7 @@
         "es": "Es hermoso.",
         "it": "È bellissimo.",
         "pt": "É lindo.",
-        "de": "Es ist wunderschön.",
-        "ja": "とても綺麗です。"
+        "de": "Es ist wunderschön."
       }
     },
     {
@@ -956,8 +900,7 @@
         "es": "Me encanta este lugar.",
         "it": "Adoro questo posto.",
         "pt": "Adoro este lugar.",
-        "de": "Ich liebe diesen Ort.",
-        "ja": "この場所が大好きです。"
+        "de": "Ich liebe diesen Ort."
       }
     },
     {
@@ -967,8 +910,7 @@
         "es": "Estoy cansado.",
         "it": "Sono stanco.",
         "pt": "Estou cansado.",
-        "de": "Ich bin müde.",
-        "ja": "疲れました。"
+        "de": "Ich bin müde."
       }
     },
     {
@@ -978,8 +920,7 @@
         "es": "Tengo hambre.",
         "it": "Ho fame.",
         "pt": "Estou com fome.",
-        "de": "Ich habe Hunger.",
-        "ja": "お腹が空きました。"
+        "de": "Ich habe Hunger."
       }
     },
     {
@@ -989,8 +930,7 @@
         "es": "Hay demasiado ruido.",
         "it": "C'è troppo rumore.",
         "pt": "Está muito alto.",
-        "de": "Es ist zu laut.",
-        "ja": "うるさすぎます。"
+        "de": "Es ist zu laut."
       }
     },
     {
@@ -1000,8 +940,7 @@
         "es": "Qué ambiente.",
         "it": "Che atmosfera.",
         "pt": "Que vibe.",
-        "de": "Was für eine Stimmung.",
-        "ja": "良い雰囲気ですね。"
+        "de": "Was für eine Stimmung."
       }
     },
     {
@@ -1011,8 +950,7 @@
         "es": "Estoy muy feliz ahora mismo.",
         "it": "Sono così felice in questo momento.",
         "pt": "Estou tão feliz agora.",
-        "de": "Ich bin gerade so glücklich.",
-        "ja": "今とても幸せです。"
+        "de": "Ich bin gerade so glücklich."
       }
     },
     {
@@ -1022,8 +960,7 @@
         "es": "Necesitaba esto.",
         "it": "Ne avevo bisogno.",
         "pt": "Eu precisava disso.",
-        "de": "Das hatte ich gebraucht.",
-        "ja": "これが必要でした。"
+        "de": "Das hatte ich gebraucht."
       }
     },
     {
@@ -1033,8 +970,7 @@
         "es": "Hace un frío que pela.",
         "it": "Fa un freddo cane.",
         "pt": "Está congelante.",
-        "de": "Es ist eiskalt.",
-        "ja": "凍えそうです。"
+        "de": "Es ist eiskalt."
       }
     },
     {
@@ -1044,12 +980,10 @@
         "es": "Me quedaría aquí para siempre.",
         "it": "Potrei restare qui per sempre.",
         "pt": "Eu poderia ficar aqui para sempre.",
-        "de": "Ich könnte für immer hier bleiben.",
-        "ja": "ずっとここにいたいです。"
+        "de": "Ich könnte für immer hier bleiben."
       }
     }
   ],
-
   "wifi": [
     {
       "text": "Is there wifi?",
@@ -1058,8 +992,7 @@
         "es": "¿Hay wifi?",
         "it": "C'è il wifi?",
         "pt": "Tem wifi?",
-        "de": "Gibt es WLAN?",
-        "ja": "Wi-Fiはありますか?"
+        "de": "Gibt es WLAN?"
       }
     },
     {
@@ -1069,8 +1002,7 @@
         "es": "¿Cuál es la contraseña?",
         "it": "Qual è la password?",
         "pt": "Qual é a senha?",
-        "de": "Wie lautet das Passwort?",
-        "ja": "パスワードは何ですか?"
+        "de": "Wie lautet das Passwort?"
       }
     },
     {
@@ -1080,8 +1012,7 @@
         "es": "El wifi no funciona.",
         "it": "Il wifi non funziona.",
         "pt": "O wifi não está funcionando.",
-        "de": "Das WLAN funktioniert nicht.",
-        "ja": "Wi-Fiが繋がりません。"
+        "de": "Das WLAN funktioniert nicht."
       }
     },
     {
@@ -1091,8 +1022,7 @@
         "es": "¿Dónde puedo comprar una tarjeta sim?",
         "it": "Dove posso comprare una sim?",
         "pt": "Onde posso comprar um chip?",
-        "de": "Wo kann ich eine SIM-Karte kaufen?",
-        "ja": "SIMカードはどこで買えますか?"
+        "de": "Wo kann ich eine SIM-Karte kaufen?"
       }
     },
     {
@@ -1102,8 +1032,7 @@
         "es": "¿Tienen un cargador?",
         "it": "Avete un caricatore?",
         "pt": "Tem um carregador?",
-        "de": "Haben Sie ein Ladegerät?",
-        "ja": "充電器はありますか?"
+        "de": "Haben Sie ein Ladegerät?"
       }
     },
     {
@@ -1113,8 +1042,7 @@
         "es": "¿Puedo pagar con tarjeta?",
         "it": "Posso pagare con la carta?",
         "pt": "Posso pagar com cartão?",
-        "de": "Kann ich mit Karte zahlen?",
-        "ja": "カードで払えますか?"
+        "de": "Kann ich mit Karte zahlen?"
       }
     },
     {
@@ -1124,8 +1052,7 @@
         "es": "Apple Pay, por favor.",
         "it": "Apple Pay, per favore.",
         "pt": "Apple Pay, por favor.",
-        "de": "Apple Pay, bitte.",
-        "ja": "Apple Payでお願いします。"
+        "de": "Apple Pay, bitte."
       }
     },
     {
@@ -1135,8 +1062,7 @@
         "es": "¿Solo efectivo?",
         "it": "Solo contanti?",
         "pt": "Só dinheiro?",
-        "de": "Nur Bargeld?",
-        "ja": "現金のみですか?"
+        "de": "Nur Bargeld?"
       }
     },
     {
@@ -1146,8 +1072,7 @@
         "es": "¿Dónde hay un cajero?",
         "it": "Dove c'è un bancomat?",
         "pt": "Onde tem um caixa eletrônico?",
-        "de": "Wo ist ein Geldautomat?",
-        "ja": "ATMはどこにありますか?"
+        "de": "Wo ist ein Geldautomat?"
       }
     },
     {
@@ -1157,8 +1082,7 @@
         "es": "Necesito enviar un correo rápido.",
         "it": "Devo mandare una mail veloce.",
         "pt": "Preciso mandar um e-mail rápido.",
-        "de": "Ich muss schnell eine E-Mail schicken.",
-        "ja": "メールを一通送りたいんですが。"
+        "de": "Ich muss schnell eine E-Mail schicken."
       }
     }
   ]

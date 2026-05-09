@@ -519,7 +519,15 @@ input, textarea, select { font: inherit; }
                      Use when paired with primary: side by side, equal weight
    .btn--danger      Destructive variant (red on hover)
    .btn-close-circle Outlined circle close button — top-left of any overlay
-                     38px diameter, × glyph centered. Universal "dismiss" affordance.
+                     32×32 (mobile-locked), × glyph centered. Universal
+                     "dismiss" affordance for FULLSCREEN overlays/modals.
+
+   CLOSE-AFFORDANCE STANDARDS:
+   - Overlay/modal dismiss:  top-left, .btn-close-circle (32×32)
+   - Inline list-row remove: 28×28 circle, transparent bg, --rule border,
+                             color --ink-3 → red on hover. See .time-card__remove
+                             and .ph-pill__delete for examples. ALWAYS perfectly
+                             round (uses border-radius: 50% + locked square dims).
 
    OVERLAY ACTION CONTRACT:
    - Close button (×):      top-left, .btn-close-circle

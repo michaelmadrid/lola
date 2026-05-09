@@ -193,6 +193,15 @@
       <div class="todos__add-zone" id="add-todo-zone" aria-label="Add todo"></div>
     </div>
 
+    <!-- TEMP — Juice (phrases) link above trip launch.
+         Reuses .trip-launch shape so visual is consistent. Shows on mobile only
+         (same media-query gate as .trip-launch). Always visible (no hidden gate)
+         since /phrases/ has content even when no trip is upcoming. -->
+    <a href="/phrases/" class="trip-launch trip-launch--juice">
+      <span class="trip-launch__label">Open Juice</span>
+      <span class="trip-launch__caret" aria-hidden="true">↗</span>
+    </a>
+
     <!-- Mobile-only affordance to open trip overlay.
          On desktop the trip-strip in the left column does this job;
          on mobile that column is hidden, so we surface this button instead. -->

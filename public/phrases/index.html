@@ -24,7 +24,7 @@
     <a href="/" data-auth="in">Home</a>
     <a href="/travel/" data-auth="in">Travel</a>
     <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/phrases/" class="is-active" data-auth="in">Phrases</a>
+    <a href="/guides/" data-auth="in">Guides</a>
     <a href="/login.html" data-auth="out">Sign in</a>
   </nav>
   <div class="head__right">
@@ -48,14 +48,22 @@
 
 <main class="page page-phrases">
 
-  <!-- Top row: language picker (left) + add phrase button (right) -->
-  <div class="ph-topbar">
-    <div class="ph-langs" id="ph-langs"></div>
+  <!-- Top row: just the add-phrase pill, right-aligned. Language picker moved
+       below category chips since categories are used more frequently. -->
+  <div class="ph-topbar ph-topbar--add-only">
     <a href="/phrases/capture/" class="ph-add-inline" aria-label="Add a phrase">+ Add phrase</a>
   </div>
 
   <!-- Category chips: All + per-category -->
   <div class="ph-cats" id="ph-cats"></div>
+
+  <!-- Language picker — quieter than chips, dropdown below category row -->
+  <div class="ph-lang-row">
+    <label class="ph-lang-row__label" for="ph-lang-select">Translate to</label>
+    <select class="ph-lang-select" id="ph-lang-select">
+      <option value="">Original (English)</option>
+    </select>
+  </div>
 
   <!-- Phrase groups -->
   <div id="ph-groups">

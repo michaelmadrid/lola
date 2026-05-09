@@ -6,28 +6,26 @@
      - GET /api/phrases (custom user phrases)
 
    Render flow:
-     - Language picker tabs at top: "" (no translation) / fr / es / it / pt / de / ja
-     - Category chips: "all" + per-category
+     - Category chips at top — primary filter, used most
+     - Language picker BELOW chips — quieter dropdown, used less often
      - Below: pills, custom on top, curated below.
      - When a non-empty language is selected, each pill shows a 2nd row
-       with the translation. Curated phrases have all 6 languages baked
-       into the JSON. Custom phrases are translated lazily — on first
-       view of a language we hit POST /api/phrases/translate which
-       fills in the JSONB column.
+       with the translation. Curated phrases have translations baked into
+       the JSON. Custom phrases are translated lazily — on first view of
+       a language we hit POST /api/phrases/translate which fills in the
+       JSONB column.
      - Tap × on a custom pill to delete.
 
-   State:
-     - activeLang: '' | 'fr' | 'es' | 'it' | 'pt' | 'de' | 'ja'
+   State (persisted in localStorage):
+     - activeLang: '' (English) | 'fr' | 'es' | 'it' | 'pt' | 'de'
      - activeCat: 'all' | category-key
-     - curated: { coffee: [...], food: [...], ... }
-     - custom: array of { id, category, text, translations, created_at }
    ===================================================================== */
 
 (function () {
-  const langsEl = document.getElementById('ph-langs');
-  const catsEl  = document.getElementById('ph-cats');
-  const groupsEl = document.getElementById('ph-groups');
-  const loadingEl = document.getElementById('ph-loading');
+  const langSelectEl  = document.getElementById('ph-lang-select');
+  const catsEl        = document.getElementById('ph-cats');
+  const groupsEl      = document.getElementById('ph-groups');
+  const loadingEl     = document.getElementById('ph-loading');
   const translatingEl = document.getElementById('ph-translating');
 
   // State
@@ -57,8 +55,8 @@
       renderCatPicker();
       renderGroups();
 
-      // If we have a saved language preference and any custom phrases,
-      // ensure their translations are filled in (background fill, no UI block).
+      // If a saved lang preference exists and there are custom phrases,
+      // ensure their translations are filled in (background fill).
       if (activeLang && custom.length) {
         ensureCustomTranslations(activeLang);
       }
@@ -68,32 +66,40 @@
     }
   }
 
-  // --------------- Language picker ---------------
+  // --------------- Language picker (native select dropdown) ---------------
   function renderLangPicker() {
     const langs = curated._meta.languages;
-    const flags = curated._meta.language_flags;
+    const names = curated._meta.language_names;
 
-    const buttons = [
-      `<button class="ph-lang ${activeLang === '' ? 'is-active' : ''}" data-lang="">EN</button>`,
-      ...langs.map(l => `<button class="ph-lang ${activeLang === l ? 'is-active' : ''}" data-lang="${l}">${flags[l]}</button>`),
-    ];
-    langsEl.innerHTML = buttons.join('');
-    langsEl.querySelectorAll('.ph-lang').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const lang = btn.dataset.lang;
-        if (lang === activeLang) return;
-        activeLang = lang;
+    // First option is "Original (English)" — already in HTML, keep it.
+    // Append one option per language with full name.
+    // Clear existing dynamically-added options first to avoid dupes on re-render.
+    [...langSelectEl.querySelectorAll('option[data-dynamic]')].forEach(o => o.remove());
+
+    for (const code of langs) {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = names[code] || code.toUpperCase();
+      opt.dataset.dynamic = '1';
+      langSelectEl.appendChild(opt);
+    }
+    langSelectEl.value = activeLang;
+
+    // Wire change handler once
+    if (!langSelectEl.dataset.wired) {
+      langSelectEl.addEventListener('change', () => {
+        activeLang = langSelectEl.value;
         localStorage.setItem('kit.phrases.lang', activeLang);
-        renderLangPicker();
         renderGroups();
         if (activeLang && custom.length) {
           ensureCustomTranslations(activeLang);
         }
       });
-    });
+      langSelectEl.dataset.wired = '1';
+    }
   }
 
-  // --------------- Category picker ---------------
+  // --------------- Category picker (chip row) ---------------
   function renderCatPicker() {
     const cats = curated._meta.categories;
     const buttons = [
@@ -123,13 +129,13 @@
       const userPhrases = custom.filter(p => p.category === c.key);
       const curatedPhrases = (curated[c.key] || []);
 
-      // Skip rendering empty categories ONLY when filter is 'all' AND there's nothing in any list.
-      // If user clicks a specific category, show it even if empty (clearer UX).
+      // When filter is 'all', skip empty categories. When a specific category
+      // is filtered, always show the section (even if empty — clearer UX).
       const total = userPhrases.length + curatedPhrases.length;
       if (activeCat === 'all' && total === 0) return '';
 
       const customHtml = userPhrases.map(p => renderPhrasePill(p, true)).join('');
-      const curatedHtml = curatedPhrases.map(p => renderCuratedPill(p, c.key)).join('');
+      const curatedHtml = curatedPhrases.map(p => renderPhrasePill(p, false)).join('');
 
       return `
         <section class="ph-group" data-cat="${c.key}">
@@ -193,21 +199,16 @@
     `;
   }
 
-  function renderCuratedPill(p, catKey) {
-    return renderPhrasePill(p, false);
-  }
-
   // --------------- Translation fill for custom phrases ---------------
   async function ensureCustomTranslations(lang) {
     if (!lang) return;
-    // Skip if all custom phrases already have this lang
     const missing = custom.filter(p => !(p.translations && p.translations[lang]));
     if (!missing.length) return;
-    if (translatingLangs.has(lang)) return; // already in flight
+    if (translatingLangs.has(lang)) return;
 
     translatingLangs.add(lang);
-    translatingEl.classList.add('is-visible');
-    renderGroups(); // shows "translating…" state on pending pills
+    if (translatingEl) translatingEl.classList.add('is-visible');
+    renderGroups();
 
     try {
       const data = await api.post('/api/phrases/translate', { target_lang: lang });
@@ -216,7 +217,7 @@
       console.error('ensureCustomTranslations', err);
     } finally {
       translatingLangs.delete(lang);
-      translatingEl.classList.remove('is-visible');
+      if (translatingEl) translatingEl.classList.remove('is-visible');
       renderGroups();
     }
   }
