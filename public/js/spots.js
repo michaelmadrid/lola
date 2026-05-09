@@ -10,9 +10,31 @@
   let searchTerm = '';
 
   const listEl = document.getElementById('spots-list');
-  const citiesBar = document.getElementById('spots-cities');
   const searchInput = document.getElementById('search-input');
-  const catSelMobile = document.getElementById('cat-select-mobile');
+
+  // Picker controls
+  const cityBtn   = document.getElementById('city-picker-btn');
+  const cityLabel = document.getElementById('city-picker-label');
+  const cityPop   = document.getElementById('city-picker-popover');
+  const citySearch = document.getElementById('city-picker-search');
+  const cityList  = document.getElementById('city-picker-list');
+
+  const typeBtn   = document.getElementById('type-picker-btn');
+  const typeLabel = document.getElementById('type-picker-label');
+  const typePop   = document.getElementById('type-picker-popover');
+  const typeList  = document.getElementById('type-picker-list');
+
+  // Type options — keep in sync with edit drawer Category select
+  const TYPES = [
+    { value: 'all',    label: 'All types' },
+    { value: 'eat',    label: 'Eat' },
+    { value: 'drink',  label: 'Drink' },
+    { value: 'coffee', label: 'Coffee' },
+    { value: 'stay',   label: 'Stay' },
+    { value: 'shop',   label: 'Shop' },
+    { value: 'see',    label: 'See' },
+    { value: 'other',  label: 'Other' },
+  ];
 
   // -------- Load --------
   async function loadSpots() {
@@ -20,7 +42,8 @@
       const data = await api.get('/api/saves?limit=500');
       // Spots = saves where AI extracted a place_name
       allSaves = (data.saves || []).filter(s => s.place_name && s.place_name.trim());
-      buildCityPills();
+      buildCityPickerOptions();
+      buildTypePickerOptions();
       render();
     } catch (err) {
       console.error('loadSpots', err);
@@ -28,8 +51,8 @@
     }
   }
 
-  // -------- City pills (derived from current spots) --------
-  function buildCityPills() {
+  // -------- City picker --------
+  function getCities() {
     // Aggregate cities from attached_cities, by name
     const cityMap = new Map();
     for (const s of allSaves) {
@@ -40,26 +63,95 @@
         cityMap.get(c.name).count += 1;
       }
     }
-    const cities = [...cityMap.values()]
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+    return [...cityMap.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }
 
+  function buildCityPickerOptions(filter) {
+    const f = (filter || '').toLowerCase().trim();
+    const all = getCities();
+    const cities = f ? all.filter(c => c.name.toLowerCase().includes(f)) : all;
     const allCount = allSaves.length;
-    const pillsHtml = [
-      `<button class="city-pill ${activeCity === 'all' ? 'is-active' : ''}" data-city="all">all <span class="city-pill__count">${allCount}</span></button>`,
+    const items = [
+      `<button class="picker-item ${activeCity === 'all' ? 'is-current' : ''}" data-value="all">
+         <span>All cities</span>
+         <span class="picker-item__count">${allCount}</span>
+       </button>`,
       ...cities.map(c =>
-        `<button class="city-pill ${activeCity === c.name ? 'is-active' : ''}" data-city="${util.escapeHtml(c.name)}">${util.escapeHtml(c.name.toLowerCase())} <span class="city-pill__count">${c.count}</span></button>`
-      )
-    ].join('');
-    citiesBar.innerHTML = pillsHtml;
-
-    citiesBar.querySelectorAll('.city-pill').forEach(btn => {
+        `<button class="picker-item ${activeCity === c.name ? 'is-current' : ''}" data-value="${util.escapeHtml(c.name)}">
+           <span>${util.escapeHtml(c.name)}</span>
+           <span class="picker-item__count">${c.count}</span>
+         </button>`
+      ),
+    ];
+    if (cities.length === 0 && f) {
+      items.push('<div class="picker-empty">No matches.</div>');
+    }
+    cityList.innerHTML = items.join('');
+    cityList.querySelectorAll('.picker-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        activeCity = btn.dataset.city;
-        citiesBar.querySelectorAll('.city-pill').forEach(c => c.classList.remove('is-active'));
-        btn.classList.add('is-active');
+        activeCity = btn.dataset.value;
+        cityLabel.textContent = activeCity === 'all'
+          ? 'All cities'
+          : activeCity;
+        closePopover(cityPop);
+        if (citySearch) { citySearch.value = ''; }
+        buildCityPickerOptions(); // refresh active state
         render();
       });
     });
+  }
+
+  function buildTypePickerOptions() {
+    typeList.innerHTML = TYPES.map(t =>
+      `<button class="picker-item ${activeCat === t.value ? 'is-current' : ''}" data-value="${t.value}">
+         <span>${t.label}</span>
+       </button>`
+    ).join('');
+    typeList.querySelectorAll('.picker-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeCat = btn.dataset.value;
+        const found = TYPES.find(t => t.value === activeCat);
+        typeLabel.textContent = found ? found.label : 'All types';
+        closePopover(typePop);
+        buildTypePickerOptions(); // refresh active state
+        render();
+      });
+    });
+  }
+
+  // -------- Generic popover open/close --------
+  function openPopover(pop) {
+    closeAllPopovers();
+    pop.hidden = false;
+    pop.classList.add('is-open');
+  }
+  function closePopover(pop) {
+    pop.classList.remove('is-open');
+    pop.hidden = true;
+  }
+  function closeAllPopovers() {
+    [cityPop, typePop].forEach(p => p && closePopover(p));
+  }
+  document.addEventListener('click', (e) => {
+    // Close on outside click
+    if (cityPop && !cityPop.hidden && !cityPop.contains(e.target) && !cityBtn.contains(e.target)) closePopover(cityPop);
+    if (typePop && !typePop.hidden && !typePop.contains(e.target) && !typeBtn.contains(e.target)) closePopover(typePop);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeAllPopovers();
+  });
+  cityBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (cityPop.classList.contains('is-open')) closePopover(cityPop);
+    else { openPopover(cityPop); citySearch && citySearch.focus(); }
+  });
+  typeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (typePop.classList.contains('is-open')) closePopover(typePop);
+    else openPopover(typePop);
+  });
+  if (citySearch) {
+    citySearch.addEventListener('input', () => buildCityPickerOptions(citySearch.value));
   }
 
   // -------- Render the list --------
@@ -108,25 +200,7 @@
     }).join('');
   }
 
-  // -------- Filters --------
-  document.querySelectorAll('#cat-filters .filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      activeCat = chip.dataset.cat;
-      document.querySelectorAll('#cat-filters .filter-chip').forEach(c => c.classList.remove('is-active'));
-      chip.classList.add('is-active');
-      if (catSelMobile) catSelMobile.value = activeCat;
-      render();
-    });
-  });
-  if (catSelMobile) {
-    catSelMobile.addEventListener('change', () => {
-      activeCat = catSelMobile.value;
-      document.querySelectorAll('#cat-filters .filter-chip').forEach(c => {
-        c.classList.toggle('is-active', c.dataset.cat === activeCat);
-      });
-      render();
-    });
-  }
+  // -------- Search --------
   if (searchInput) {
     let t = null;
     searchInput.addEventListener('input', () => {
@@ -147,25 +221,17 @@
 
   // -------- Save editor (self-contained) --------
   const saveEditor = document.getElementById('save-editor');
-  const saveFsCaptured = document.getElementById('save-fs-captured');
   const saveFsPlace    = document.getElementById('save-fs-place');
   const saveFsTip      = document.getElementById('save-fs-tip');
   const saveFsCat      = document.getElementById('save-fs-category');
-  const saveFsCity     = document.getElementById('save-fs-city');
-  const saveFsCitySuggest = document.getElementById('save-fs-city-suggest');
-  const saveFsCountry  = document.getElementById('save-fs-country');
   const saveFsClose    = document.getElementById('save-editor-close');
   const saveFsSave     = document.getElementById('save-fs-save');
-  const saveFsArchive  = document.getElementById('save-fs-archive');
-  const saveFsReparse  = document.getElementById('save-fs-reparse');
+  const saveFsDelete   = document.getElementById('save-fs-delete');
   const saveFsBeenYes  = document.getElementById('save-fs-been-yes');
   const saveFsBeenNo   = document.getElementById('save-fs-been-no');
 
   let editingSaveId = null;
-  let editingPickedCityId = null;
-  let editingOriginalCityName = '';
   let editingBeen = true;
-  let allCitiesCache = null;
 
   function applyEditingBeen(val) {
     editingBeen = !!val;
@@ -176,24 +242,12 @@
   if (saveFsBeenNo)  saveFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
   function toast(msg) {
-    // Lightweight toast — match shell.css patterns
     const t = document.createElement('div');
     t.className = 'toast';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(() => t.classList.add('is-visible'), 10);
     setTimeout(() => { t.classList.remove('is-visible'); setTimeout(() => t.remove(), 300); }, 2400);
-  }
-
-  async function ensureCitiesCache() {
-    if (allCitiesCache) return allCitiesCache;
-    try {
-      const data = await api.get('/api/cities');
-      allCitiesCache = (data.cities || []).filter(c => c.status !== 0);
-    } catch {
-      allCitiesCache = [];
-    }
-    return allCitiesCache;
   }
 
   function openSaveEditor(saveId) {
@@ -203,16 +257,9 @@
       return;
     }
     editingSaveId = save.id;
-    editingPickedCityId = (save.attached_cities && save.attached_cities[0]) ? save.attached_cities[0].id : null;
-    editingOriginalCityName = (save.attached_cities && save.attached_cities[0]) ? save.attached_cities[0].name : '';
-
-    saveFsCaptured.textContent = save.text || '—';
     saveFsPlace.value = save.place_name || '';
     saveFsTip.value = save.tip || '';
     saveFsCat.value = save.category || '';
-    saveFsCity.value = editingOriginalCityName;
-    saveFsCountry.textContent = save.country || '—';
-    saveFsCitySuggest.innerHTML = '';
     applyEditingBeen(typeof save.been === 'boolean' ? save.been : true);
 
     saveEditor.classList.add('is-open');
@@ -224,8 +271,6 @@
     saveEditor.classList.remove('is-open');
     document.body.style.overflow = '';
     editingSaveId = null;
-    editingPickedCityId = null;
-    saveFsCitySuggest.innerHTML = '';
   }
   saveFsClose.addEventListener('click', closeSaveEditor);
 
@@ -237,80 +282,16 @@
     if (id) openSaveEditor(id);
   });
 
-  async function renderCitySuggestions(query) {
-    const cities = await ensureCitiesCache();
-    const q = (query || '').trim().toLowerCase();
-    if (!q) { saveFsCitySuggest.innerHTML = ''; return; }
-    if (editingPickedCityId) {
-      const picked = cities.find(c => c.id === editingPickedCityId);
-      if (picked && picked.name.toLowerCase() === q) {
-        saveFsCitySuggest.innerHTML = '';
-        return;
-      }
-    }
-    const matches = cities.filter(c => c.name.toLowerCase().includes(q)).slice(0, 6);
-    const exact = matches.find(c => c.name.toLowerCase() === q);
-    let html = matches.map(c =>
-      `<button class="save-fs__suggest-item" data-city-id="${c.id}" data-city-name="${util.escapeHtml(c.name)}">
-        ${util.escapeHtml(c.name)}${c.country ? ` <span class="save-fs__suggest-meta">${util.escapeHtml(c.country)}</span>` : ''}
-      </button>`
-    ).join('');
-    if (!exact) {
-      html += `<button class="save-fs__suggest-item save-fs__suggest-item--create" data-city-name="${util.escapeHtml(query.trim())}">
-        + create "${util.escapeHtml(query.trim())}"
-      </button>`;
-    }
-    saveFsCitySuggest.innerHTML = html;
-    saveFsCitySuggest.querySelectorAll('.save-fs__suggest-item').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const cid = btn.dataset.cityId;
-        const cname = btn.dataset.cityName;
-        if (cid) {
-          editingPickedCityId = parseInt(cid, 10);
-          saveFsCity.value = cname;
-        } else {
-          try {
-            const result = await api.post('/api/cities', { name: cname });
-            const newCity = result.city || result;
-            editingPickedCityId = newCity.id;
-            saveFsCity.value = newCity.name;
-            allCitiesCache = null;
-          } catch (err) {
-            toast(err.message || 'Could not create city');
-            return;
-          }
-        }
-        saveFsCitySuggest.innerHTML = '';
-      });
-    });
-  }
-  let cityDebounce = null;
-  saveFsCity.addEventListener('input', () => {
-    if (saveFsCity.value !== editingOriginalCityName) {
-      editingPickedCityId = null;
-    }
-    clearTimeout(cityDebounce);
-    cityDebounce = setTimeout(() => renderCitySuggestions(saveFsCity.value), 80);
-  });
-  saveFsCity.addEventListener('blur', () => {
-    setTimeout(() => { saveFsCitySuggest.innerHTML = ''; }, 200);
-  });
-
   async function commitSaveEdit() {
     if (!editingSaveId) return;
     const body = {
-      place_name:   saveFsPlace.value.trim() || null,
-      tip:          saveFsTip.value.trim() || null,
-      category:     saveFsCat.value || null,
-      been:         editingBeen,
+      place_name: saveFsPlace.value.trim() || null,
+      tip:        saveFsTip.value.trim() || null,
+      category:   saveFsCat.value || null,
+      been:       editingBeen,
     };
     try {
       await api.patch('/api/saves/' + editingSaveId, body);
-      const targetCityName = saveFsCity.value.trim();
-      if (targetCityName !== editingOriginalCityName && editingPickedCityId) {
-        await api.post(`/api/saves/${editingSaveId}/cities`, { city_id: editingPickedCityId });
-      }
       closeSaveEditor();
       await loadSpots();
     } catch (err) {
@@ -319,31 +300,19 @@
   }
   saveFsSave.addEventListener('click', commitSaveEdit);
 
-  saveFsArchive.addEventListener('click', async () => {
-    if (!editingSaveId) return;
-    if (!confirm('Archive this save?')) return;
-    try {
-      await api.patch('/api/saves/' + editingSaveId, { archived_at: new Date().toISOString() });
-      closeSaveEditor();
-      await loadSpots();
-    } catch (err) {
-      toast(err.message || 'Archive failed');
-    }
-  });
-
-  saveFsReparse.addEventListener('click', async () => {
-    if (!editingSaveId) return;
-    try {
-      await api.post('/api/saves/' + editingSaveId + '/reparse', {});
-      toast('Re-parsing…');
-      setTimeout(async () => {
+  if (saveFsDelete) {
+    saveFsDelete.addEventListener('click', async () => {
+      if (!editingSaveId) return;
+      if (!confirm('Delete this spot? This cannot be undone.')) return;
+      try {
+        await api.delete('/api/saves/' + editingSaveId);
         closeSaveEditor();
         await loadSpots();
-      }, 2000);
-    } catch (err) {
-      toast(err.message || 'Re-parse failed');
-    }
-  });
+      } catch (err) {
+        toast(err.message || 'Delete failed');
+      }
+    });
+  }
 
   document.addEventListener('keydown', (e) => {
     if (!saveEditor.classList.contains('is-open')) return;

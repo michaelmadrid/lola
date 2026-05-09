@@ -119,33 +119,23 @@
     >
   </div>
 
-  <!-- City pills (single-select) -->
-  <div class="spots-cities" id="spots-cities">
-    <button class="city-pill is-active" data-city="all">all</button>
-  </div>
-
-  <!-- Type filter -->
-  <div class="filters">
-    <div class="filter-group" id="cat-filters">
-      <span class="filter-group__label">Type:</span>
-      <button class="filter-chip is-active" data-cat="all">All</button>
-      <button class="filter-chip" data-cat="eat">Eat</button>
-      <button class="filter-chip" data-cat="drink">Drink</button>
-      <button class="filter-chip" data-cat="coffee">Coffee</button>
-      <button class="filter-chip" data-cat="stay">Stay</button>
-      <button class="filter-chip" data-cat="shop">Shop</button>
-      <button class="filter-chip" data-cat="see">See</button>
+  <!-- Single filter row: city picker + type picker. Both default to "All". -->
+  <div class="spots-filters">
+    <button class="picker-btn" id="city-picker-btn" type="button" aria-haspopup="true">
+      <span class="picker-btn__label" id="city-picker-label">All cities</span>
+      <span class="picker-btn__caret" aria-hidden="true">▾</span>
+    </button>
+    <div class="picker-popover" id="city-picker-popover" hidden>
+      <input type="text" class="picker-search" id="city-picker-search" placeholder="Search cities…" autocomplete="off">
+      <div class="picker-list" id="city-picker-list"></div>
     </div>
-    <div class="filter-group filter-group--type-mobile">
-      <select class="filter-select" id="cat-select-mobile">
-        <option value="all">All types</option>
-        <option value="eat">Eat</option>
-        <option value="drink">Drink</option>
-        <option value="coffee">Coffee</option>
-        <option value="stay">Stay</option>
-        <option value="shop">Shop</option>
-        <option value="see">See</option>
-      </select>
+
+    <button class="picker-btn" id="type-picker-btn" type="button" aria-haspopup="true">
+      <span class="picker-btn__label" id="type-picker-label">All types</span>
+      <span class="picker-btn__caret" aria-hidden="true">▾</span>
+    </button>
+    <div class="picker-popover" id="type-picker-popover" hidden>
+      <div class="picker-list" id="type-picker-list"></div>
     </div>
   </div>
 
@@ -158,24 +148,25 @@
 
 <!-- Save editor modal (same markup as home) -->
 <div class="modal save-fs" id="save-editor">
-  <div class="modal__head">
+  <div class="modal__head save-fs__head">
+    <button class="btn-close-circle" id="save-editor-close" aria-label="Close" type="button">×</button>
     <h3 class="save-fs__title">Edit</h3>
-    <button class="modal__close" id="save-editor-close">close</button>
   </div>
   <div class="modal__body">
     <div class="modal__body__inner save-fs__inner">
-      <div class="save-fs__field">
-        <label class="save-fs__label">Captured</label>
-        <div class="save-fs__captured" id="save-fs-captured">—</div>
-      </div>
+      <!-- Place name -->
       <div class="save-fs__field">
         <label class="save-fs__label" for="save-fs-place">Place</label>
         <input type="text" class="save-fs__input" id="save-fs-place" placeholder="Place name">
       </div>
+
+      <!-- Tip -->
       <div class="save-fs__field">
         <label class="save-fs__label" for="save-fs-tip">Tip</label>
-        <textarea class="save-fs__textarea" id="save-fs-tip" rows="2" placeholder="Note, advice…"></textarea>
+        <input type="text" class="save-fs__input" id="save-fs-tip" placeholder="Note, advice…">
       </div>
+
+      <!-- Category -->
       <div class="save-fs__field">
         <label class="save-fs__label" for="save-fs-category">Category</label>
         <select class="save-fs__select" id="save-fs-category">
@@ -189,6 +180,8 @@
           <option value="other">Other</option>
         </select>
       </div>
+
+      <!-- Been / Want to go -->
       <div class="save-fs__field">
         <label class="save-fs__label">Status</label>
         <div class="save-fs__been-row">
@@ -196,23 +189,11 @@
           <button type="button" class="save-fs__been-pill" id="save-fs-been-no" data-active="false">I want to go</button>
         </div>
       </div>
-      <div class="save-fs__field">
-        <label class="save-fs__label" for="save-fs-city">City</label>
-        <input type="text" class="save-fs__input" id="save-fs-city" placeholder="City" autocomplete="off">
-        <div class="save-fs__suggest" id="save-fs-city-suggest"></div>
-      </div>
-      <div class="save-fs__field">
-        <label class="save-fs__label">Country</label>
-        <div class="save-fs__readonly" id="save-fs-country">—</div>
-      </div>
     </div>
   </div>
   <div class="modal__foot save-fs__foot">
-    <div class="save-fs__foot-left">
-      <button class="save-fs__danger" id="save-fs-archive">Archive</button>
-      <button class="save-fs__reparse" id="save-fs-reparse">Re-parse with AI</button>
-    </div>
-    <button class="save-btn" id="save-fs-save">Save<span class="kbd">⌘ ↵</span></button>
+    <button class="save-fs__danger" id="save-fs-delete">Delete</button>
+    <button class="btn" id="save-fs-save">Save<span class="kbd">⌘ ↵</span></button>
   </div>
 </div>
 

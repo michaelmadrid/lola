@@ -59,104 +59,109 @@
 .page-spots .search-input::placeholder { color: var(--ink-3); }
 .page-spots .search-input:focus { background: var(--field-focus); }
 
-/* City pills row */
-.spots-cities {
+/* =====================================================================
+   FILTER ROW — city picker + type picker on one line
+   Pattern: same shape as capture overlay's city button.
+   ===================================================================== */
+.spots-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 18px 0 6px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--rule);
+  position: relative;
 }
-.city-pill {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--ink-3);
-  background: transparent;
-  border: 1px solid var(--rule);
-  border-radius: 999px;
-  padding: 5px 11px;
-  cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background 140ms ease;
+
+.picker-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-}
-.city-pill:hover { color: var(--ink); border-color: var(--ink-3); }
-.city-pill.is-active {
-  color: var(--bg);
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.city-pill.is-active .city-pill__count { color: var(--bg); opacity: 0.7; }
-.city-pill__count {
-  font-size: 10px;
-  color: var(--ink-4);
-  letter-spacing: 0.06em;
-}
-
-/* Filter row (type filter — same pattern as index.css) */
-.page-spots .filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 24px;
-  align-items: baseline;
-  padding: 8px 0 16px;
-  font-size: 13px;
-  border-bottom: 1px solid var(--rule);
-}
-.page-spots .filter-group {
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-}
-.page-spots .filter-group__label {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-right: 4px;
-}
-.page-spots .filter-chip {
+  background: var(--field);
+  border: 0;
   font-family: var(--sans);
   font-size: 13px;
-  font-weight: 400;
-  color: var(--ink-3);
-  background: transparent;
-  border: 0;
-  padding: 4px 10px;
+  color: var(--ink);
+  font-weight: 500;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
   cursor: pointer;
+  transition: background 140ms ease;
   letter-spacing: -0.005em;
-  transition: color 140ms ease;
   position: relative;
 }
-.page-spots .filter-chip:hover { color: var(--ink); }
-.page-spots .filter-chip.is-active { color: var(--ink); font-weight: 500; }
-.page-spots .filter-chip.is-active::after {
-  content: '';
-  position: absolute;
-  left: 10px; right: 10px; bottom: -1px;
-  height: 1px;
-  background: var(--ink);
+.picker-btn:hover { background: var(--field-focus); }
+.picker-btn__caret {
+  font-size: 10px;
+  color: var(--ink-3);
 }
-.page-spots .filter-select {
+
+.picker-popover {
+  position: absolute;
+  top: calc(100% - 12px);
+  left: 0;
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  z-index: 30;
+  width: 280px;
+  max-width: calc(100vw - 32px);
+}
+.picker-popover[hidden] { display: none; }
+/* Popover positioning: relative to the parent .spots-filters; use data hooks per button */
+#city-picker-popover { left: 0; }
+#type-picker-popover { right: 0; left: auto; }
+
+.picker-search {
+  width: 100%;
+  background: var(--field);
+  border: 0;
+  border-radius: var(--r-input);
+  padding: 10px 12px;
   font-family: var(--sans);
-  font-size: 13px;
-  color: var(--ink-2);
+  font-size: 14px;
+  outline: none;
+  color: var(--ink);
+  margin-bottom: 6px;
+  box-sizing: border-box;
+}
+.picker-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
   background: transparent;
   border: 0;
-  padding: 4px 18px 4px 6px;
+  padding: 8px 12px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
   cursor: pointer;
-  appearance: none;
+  border-radius: var(--r-input);
   letter-spacing: -0.005em;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='6' viewBox='0 0 8 6'%3E%3Cpath fill='%23999' d='M4 6L0 0h8z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 4px center;
+  gap: 12px;
 }
-.page-spots .filter-select:hover { color: var(--ink); }
-
-.filter-group--type-mobile { display: none; }
+.picker-item:hover { background: var(--field); }
+.picker-item.is-current { color: var(--blue); }
+.picker-item__count {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0;
+}
+.picker-empty {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+  text-align: center;
+}
 
 /* Stream list — uses home.css .stream__item rules */
 .page-spots .stream {
@@ -164,10 +169,9 @@
 }
 
 @media (max-width: 720px) {
-  .page-spots .filters { gap: 8px 16px; padding: 10px 0; }
-  #cat-filters { display: none; }
-  .filter-group--type-mobile { display: inline-flex; }
   .page-spots .search-input { font-size: 16px; padding: 11px 12px; }
-  .city-pill { font-size: 11px; padding: 4px 9px; }
   .page-spots .mast__title { font-size: 24px; }
+  .picker-popover { width: calc(100vw - 32px); }
+  /* Both popovers anchor left on mobile to avoid going off-screen */
+  #type-picker-popover { left: 0; right: auto; }
 }

@@ -878,24 +878,17 @@
   loadTodos();
 
   // ============ SAVE EDITOR ============
-  const saveEditor = document.getElementById('save-editor');
-  const saveFsCaptured = document.getElementById('save-fs-captured');
+  const saveEditor     = document.getElementById('save-editor');
   const saveFsPlace    = document.getElementById('save-fs-place');
   const saveFsTip      = document.getElementById('save-fs-tip');
   const saveFsCat      = document.getElementById('save-fs-category');
-  const saveFsCity     = document.getElementById('save-fs-city');
-  const saveFsCitySuggest = document.getElementById('save-fs-city-suggest');
-  const saveFsCountry  = document.getElementById('save-fs-country');
   const saveFsClose    = document.getElementById('save-editor-close');
   const saveFsSave     = document.getElementById('save-fs-save');
-  const saveFsArchive  = document.getElementById('save-fs-archive');
-  const saveFsReparse  = document.getElementById('save-fs-reparse');
+  const saveFsDelete   = document.getElementById('save-fs-delete');
   const saveFsBeenYes  = document.getElementById('save-fs-been-yes');
   const saveFsBeenNo   = document.getElementById('save-fs-been-no');
 
   let editingSaveId = null;
-  let editingPickedCityId = null; // city id the user picked from suggestions
-  let editingOriginalCityName = '';
   let editingBeen = true;
 
   function applyEditingBeen(val) {
@@ -906,22 +899,7 @@
   if (saveFsBeenYes) saveFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
   if (saveFsBeenNo)  saveFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
-  // Cache cities for autocomplete — refresh once on first open
-  let allCitiesCache = null;
-  async function ensureCitiesCache() {
-    if (allCitiesCache) return allCitiesCache;
-    try {
-      const data = await api.get('/api/cities');
-      allCitiesCache = (data.cities || []).filter(c => c.status !== 0);
-    } catch (err) {
-      console.error('ensureCitiesCache', err);
-      allCitiesCache = [];
-    }
-    return allCitiesCache;
-  }
-
   function openSaveEditor(saveId) {
-    // Find the save row data — fetch the latest from server to be safe
     api.get('/api/saves?limit=200').then(data => {
       const save = (data.saves || []).find(s => s.id === parseInt(saveId, 10));
       if (!save) {
@@ -929,17 +907,9 @@
         return;
       }
       editingSaveId = save.id;
-      editingPickedCityId = (save.attached_cities && save.attached_cities[0]) ? save.attached_cities[0].id : null;
-      editingOriginalCityName = (save.attached_cities && save.attached_cities[0]) ? save.attached_cities[0].name : '';
-
-      saveFsCaptured.textContent = save.text || '—';
       saveFsPlace.value = save.place_name || '';
       saveFsTip.value = save.tip || '';
       saveFsCat.value = save.category || '';
-      saveFsCity.value = editingOriginalCityName;
-      saveFsCountry.textContent = save.country || '—';
-      saveFsCitySuggest.innerHTML = '';
-      // Default to true if missing (legacy rows before migration)
       applyEditingBeen(typeof save.been === 'boolean' ? save.been : true);
 
       saveEditor.classList.add('is-open');
@@ -955,8 +925,6 @@
     saveEditor.classList.remove('is-open');
     document.body.style.overflow = '';
     editingSaveId = null;
-    editingPickedCityId = null;
-    saveFsCitySuggest.innerHTML = '';
   }
 
   if (saveFsClose) saveFsClose.addEventListener('click', closeSaveEditor);
@@ -970,102 +938,16 @@
     if (id) openSaveEditor(id);
   });
 
-  // City autocomplete in editor
-  async function renderCitySuggestions(query) {
-    const cities = await ensureCitiesCache();
-    const q = (query || '').trim().toLowerCase();
-    if (!q) { saveFsCitySuggest.innerHTML = ''; return; }
-
-    // Don't show suggestions if input matches the picked city's name
-    if (editingPickedCityId) {
-      const picked = cities.find(c => c.id === editingPickedCityId);
-      if (picked && picked.name.toLowerCase() === q) {
-        saveFsCitySuggest.innerHTML = '';
-        return;
-      }
-    }
-
-    const matches = cities
-      .filter(c => c.name.toLowerCase().includes(q))
-      .slice(0, 6);
-    const exact = matches.find(c => c.name.toLowerCase() === q);
-
-    let html = matches.map(c =>
-      `<button class="save-fs__suggest-item" data-city-id="${c.id}" data-city-name="${util.escapeHtml(c.name)}">
-        ${util.escapeHtml(c.name)}${c.country ? ` <span class="save-fs__suggest-meta">${util.escapeHtml(c.country)}</span>` : ''}
-      </button>`
-    ).join('');
-    if (!exact) {
-      html += `<button class="save-fs__suggest-item save-fs__suggest-item--create" data-city-name="${util.escapeHtml(query.trim())}">
-        + create "${util.escapeHtml(query.trim())}"
-      </button>`;
-    }
-    saveFsCitySuggest.innerHTML = html;
-
-    saveFsCitySuggest.querySelectorAll('.save-fs__suggest-item').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        const cid = btn.dataset.cityId;
-        const cname = btn.dataset.cityName;
-        if (cid) {
-          editingPickedCityId = parseInt(cid, 10);
-          saveFsCity.value = cname;
-        } else {
-          // Create new city
-          try {
-            const result = await api.post('/api/cities', { name: cname });
-            const newCity = result.city || result;
-            editingPickedCityId = newCity.id;
-            saveFsCity.value = newCity.name;
-            // Bust cache so future opens see it
-            allCitiesCache = null;
-          } catch (err) {
-            console.error('create city', err);
-            toast(err.message || 'Could not create city');
-            return;
-          }
-        }
-        saveFsCitySuggest.innerHTML = '';
-      });
-    });
-  }
-  let cityDebounce = null;
-  saveFsCity.addEventListener('input', () => {
-    // If user is typing freely, clear the picked id so we don't re-attach the wrong city
-    if (saveFsCity.value !== editingOriginalCityName) {
-      editingPickedCityId = null;
-    }
-    clearTimeout(cityDebounce);
-    cityDebounce = setTimeout(() => renderCitySuggestions(saveFsCity.value), 80);
-  });
-  saveFsCity.addEventListener('blur', () => {
-    // Hide suggestions on blur after a tick (allow click to fire first)
-    setTimeout(() => { saveFsCitySuggest.innerHTML = ''; }, 200);
-  });
-
   async function commitSaveEdit() {
     if (!editingSaveId) return;
     const body = {
-      place_name:   saveFsPlace.value.trim() || null,
-      tip:          saveFsTip.value.trim() || null,
-      category:     saveFsCat.value || null,
-      been:         editingBeen,
+      place_name: saveFsPlace.value.trim() || null,
+      tip:        saveFsTip.value.trim() || null,
+      category:   saveFsCat.value || null,
+      been:       editingBeen,
     };
     try {
       await api.patch('/api/saves/' + editingSaveId, body);
-
-      // Update city attachment if it changed
-      const targetCityName = saveFsCity.value.trim();
-      if (targetCityName !== editingOriginalCityName) {
-        // Clear all current attachments, then attach the picked one if any
-        // Cheapest path: delete prior attachments for this save+city, then add fresh
-        if (editingPickedCityId) {
-          await api.post(`/api/saves/${editingSaveId}/cities`, { city_id: editingPickedCityId });
-        }
-        // Note: removing the OLD city attachment isn't yet wired here.
-        // For V1, we let the new attachment be added; orphaned old ones can be cleaned in admin.
-        // (In practice, we'll add a proper detach in C-3 or here as a follow-up.)
-      }
       closeSaveEditor();
       await loadStream();
     } catch (err) {
@@ -1075,37 +957,17 @@
   }
   if (saveFsSave) saveFsSave.addEventListener('click', commitSaveEdit);
 
-  // Archive
-  if (saveFsArchive) {
-    saveFsArchive.addEventListener('click', async () => {
+  // Delete (replaces archive + reparse for V0.6)
+  if (saveFsDelete) {
+    saveFsDelete.addEventListener('click', async () => {
       if (!editingSaveId) return;
-      if (!confirm('Archive this save?')) return;
+      if (!confirm('Delete this save? This cannot be undone.')) return;
       try {
-        await api.patch('/api/saves/' + editingSaveId, { archived_at: new Date().toISOString() });
+        await api.delete('/api/saves/' + editingSaveId);
         closeSaveEditor();
         await loadStream();
       } catch (err) {
-        toast(err.message || 'Archive failed');
-      }
-    });
-  }
-
-  // Re-parse with AI
-  if (saveFsReparse) {
-    saveFsReparse.addEventListener('click', async () => {
-      if (!editingSaveId) return;
-      try {
-        // Endpoint we'll add server-side: POST /api/saves/:id/reparse
-        await api.post('/api/saves/' + editingSaveId + '/reparse', {});
-        // Wait a moment for parse to complete, then reload
-        toast('Re-parsing…');
-        setTimeout(async () => {
-          closeSaveEditor();
-          await loadStream();
-        }, 2000);
-      } catch (err) {
-        console.error('reparse', err);
-        toast(err.message || 'Re-parse failed');
+        toast(err.message || 'Delete failed');
       }
     });
   }

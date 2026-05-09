@@ -695,12 +695,18 @@
   letter-spacing: -0.005em;
 }
 
-/* Want-to-go saves — quiet inline arrow before the name, blue tint */
-.stream__item.is-want .stream__name::before {
-  content: "↗ ";
-  color: var(--blue);
-  font-weight: 400;
-  margin-right: 2px;
+/* Want-to-go saves — quiet blue dot AFTER the name */
+.stream__item.is-want .stream__name::after {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+  margin-left: 8px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
 }
 .stream__tip {
   font-size: 14px;
@@ -1034,7 +1040,7 @@
   font-weight: 500;
 }
 
-/* ## Heading — small uppercase eyebrow, no rule.
+/* ## Heading — small uppercase eyebrow, no rule, no border, tight spacing.
    Magazine-style section break. Used inside trip + segment notes. */
 .itin-fs__trip-notes .md-h,
 .itin-fs__seg-notes .md-h {
@@ -1044,23 +1050,28 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-2);
-  margin: 22px 0 10px;
-  padding: 0;
-  border: 0;
+  margin: 18px 0 6px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none;
   display: block;
+  line-height: 1.4;
 }
 .itin-fs__trip-notes .md-h:first-child,
 .itin-fs__seg-notes .md-h:first-child {
   margin-top: 0;
 }
 
-/* --- Horizontal rule — thin block separator inside notes */
+/* --- Horizontal rule — thin block separator inside notes (use sparingly) */
 .itin-fs__trip-notes .md-hr,
 .itin-fs__seg-notes .md-hr {
   border: 0;
   border-top: 1px solid var(--rule);
-  margin: 18px 0;
+  margin: 14px 0;
   width: 100%;
+  height: 0;
+  padding: 0;
+  background: transparent;
 }
 
 /* Segments — single column, no date rail */
@@ -1183,6 +1194,11 @@
 /* =========================================================
    SAVE EDITOR (fullscreen modal for editing a save)
    ========================================================= */
+.save-fs__head {
+  /* Close button + title in head bar. Close on the left, title beside it. */
+  justify-content: flex-start;
+  gap: 14px;
+}
 .save-fs__title {
   font-family: var(--sans);
   font-size: 14px;
@@ -1311,20 +1327,14 @@
   margin-left: 6px;
 }
 
-/* Footer actions */
+/* Footer actions — Delete (left, ghost destructive) + Save (right, primary btn) */
 .save-fs__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
-.save-fs__foot-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.save-fs__danger,
-.save-fs__reparse {
+.save-fs__danger {
   font-family: var(--sans);
   font-size: 13px;
   color: var(--ink-3);
@@ -1336,7 +1346,6 @@
   transition: color 140ms ease;
 }
 .save-fs__danger:hover { color: #c33; }
-.save-fs__reparse:hover { color: var(--blue); }
 
 /* ===== Mini-month under trip strip (CdG-inspired, days only) ===== */
 .mm {
