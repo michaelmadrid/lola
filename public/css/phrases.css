@@ -13,25 +13,50 @@
    VIEW PAGE — full-bleed gradient
    --------------------------------------------------------------------- */
 
+/* Butter-yellow bloom with film grain.
+   Stack from top to bottom in CSS = stack from front to back visually:
+     1. noise.png — tiled film grain on top of everything
+     2. hotspot — saturated butter yellow, off-center upper-left
+     3. mid-bloom — soft warm peach, opposite corner
+     4. base — cream → soft mauve at edges (radial ellipse)
+   Note: background-attachment: fixed makes the gradient stay put as you
+   scroll, like the reference image — feels more atmospheric. */
 body.body-phrases {
-  background: linear-gradient(155deg,
-    #fff8e7 0%,
-    #ffe9d2 28%,
-    #fcd2c8 52%,
-    #d8c4e8 78%,
-    #b9c8e8 100%
-  );
+  background-color: #fff8e7;
+  background-image:
+    url('/img/noise.png'),
+    radial-gradient(circle at 28% 22%,
+      rgba(245, 232, 74, 0.85) 0%,
+      rgba(245, 232, 74, 0.5) 12%,
+      rgba(245, 232, 74, 0) 45%),
+    radial-gradient(circle at 78% 70%,
+      rgba(255, 200, 160, 0.55) 0%,
+      rgba(255, 200, 160, 0) 55%),
+    radial-gradient(ellipse at 50% 50%,
+      #fff8e7 0%,
+      #f5ecd6 45%,
+      #d6c8d0 100%);
+  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+  background-size: 128px 128px, auto, auto, auto;
+  background-attachment: fixed, fixed, fixed, fixed;
   min-height: 100vh;
 }
 @media (prefers-color-scheme: dark) {
   body.body-phrases.dark,
   body.dark.body-phrases {
-    background: linear-gradient(155deg,
-      #2a2438 0%,
-      #2c2230 30%,
-      #2c2333 60%,
-      #1d2436 100%
-    );
+    background-color: #1f1a26;
+    background-image:
+      url('/img/noise.png'),
+      radial-gradient(circle at 28% 22%,
+        rgba(180, 150, 60, 0.4) 0%,
+        rgba(180, 150, 60, 0) 50%),
+      radial-gradient(ellipse at 50% 50%,
+        #2a2030 0%,
+        #1d1a28 60%,
+        #15131c 100%);
+    background-repeat: repeat, no-repeat, no-repeat;
+    background-size: 128px 128px, auto, auto;
+    background-attachment: fixed, fixed, fixed;
   }
 }
 
