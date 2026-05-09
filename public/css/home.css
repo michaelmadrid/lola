@@ -1005,9 +1005,7 @@
   word-wrap: break-word;
   max-width: 540px;
   margin: 0 0 32px;
-  padding: 18px 0;
-  border-top: 1px dashed var(--rule);
-  border-bottom: 1px dashed var(--rule);
+  padding: 0;
 }
 .itin-fs__trip-notes:empty { display: none; }
 .itin-fs__trip-notes code,
@@ -1050,7 +1048,7 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-2);
-  margin: 18px 0 6px;
+  margin: 28px 0 0;
   padding: 0 !important;
   border: 0 !important;
   background: none;
