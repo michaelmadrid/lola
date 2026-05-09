@@ -190,7 +190,8 @@
       const tipLine = s.tip ? `<span class="stream__tip">${util.escapeHtml(s.tip)}</span>` : '';
 
       const catAttr = s.category ? ` data-category="${util.escapeHtml(s.category)}"` : '';
-      return `<div class="stream__item is-structured${s.been === false ? ' is-want' : ''}" data-id="${s.id}"${catAttr}>
+      const treatment = (parseInt(s.id, 10) % 7);
+      return `<div class="stream__item is-structured${s.been === false ? ' is-want' : ''}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}>
         <div class="stream__body">
           <span class="stream__name">${util.escapeHtml(s.place_name)}</span>
           ${tipLine}
