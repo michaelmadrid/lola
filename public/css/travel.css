@@ -576,13 +576,36 @@
 
 @media (max-width: 720px) {
   .time-card__main {
-    grid-template-columns: 1fr auto;
-    gap: 8px;
+    /* On mobile: 3 columns. Time + offset stack on the right;
+       X gets its own narrow column. Saves horizontal space and
+       keeps X aligned to the time baseline. */
+    grid-template-columns: minmax(0, 1fr) auto 28px;
+    column-gap: 12px;
     padding: 12px 8px;
   }
-  .time-card__rhs { grid-column: 2; }
-  .time-card__time { font-size: 18px; }
-  .time-card__remove { right: 0; opacity: 1; }
+  /* Time + offset stack vertically together in one cell on mobile */
+  .time-card__time {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 18px;
+  }
+  .time-card__offset {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: right;
+    margin-top: 2px;
+  }
+  /* X spans both rows so it stays vertically centered */
+  .time-card__remove,
+  .time-card__remove-slot {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+  /* LHS spans both rows so its content fills the height */
+  .time-card__lhs {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
 
   .time-tl__axis { margin-left: 80px; }
   .time-tl__row { grid-template-columns: 80px 1fr; }
