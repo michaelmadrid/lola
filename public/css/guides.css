@@ -1,0 +1,158 @@
+/* =====================================================================
+   guides.css
+
+   Both the index (/guides/) and editor (/guides/edit.html) pull from this.
+   Index-specific styles: .guides-list, .guide-card.
+   Editor-specific styles will be added in a later phase under .guide-edit.
+   ===================================================================== */
+
+.page-guides {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 32px 80px;
+}
+@media (max-width: 720px) {
+  .page-guides { padding: 32px 20px 100px; }
+}
+
+/* ---------- Mast (matches spots/index.html pattern) ---------- */
+.page-guides .mast {
+  margin-bottom: 24px;
+}
+.page-guides .mast__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-guides .mast__title {
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: var(--ink);
+}
+.page-guides .mast__intro {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+  margin: 4px 0 0;
+  letter-spacing: -0.005em;
+}
+@media (max-width: 720px) {
+  .page-guides .mast__title { font-size: 24px; }
+}
+
+/* ---------- List ---------- */
+.guides-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guides-list__loading,
+.guides-list__empty {
+  padding: 48px 0;
+  text-align: center;
+}
+.guides-list__loading {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.guides-list__empty-line {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: var(--ink);
+  margin: 0 0 8px;
+  letter-spacing: -0.005em;
+}
+.guides-list__empty-sub {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  max-width: 420px;
+  margin: 0 auto 24px;
+  line-height: 1.5;
+}
+
+/* ---------- Card ---------- */
+.guide-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 20px 22px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--bg);
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 200ms ease;
+}
+.guide-card:hover {
+  border-color: var(--ink-3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+
+.guide-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.guide-card__title {
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--ink);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.guide-card__untitled {
+  color: var(--ink-3);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.guide-card__subtitle {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.guide-card__meta {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+/* ---------- Status pill ---------- */
+.guide-card__status {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
+}
+.guide-card__status--draft {
+  color: var(--ink-3);
+  background: var(--field);
+}
+.guide-card__status--published {
+  color: var(--bg);
+  background: var(--blue);
+}

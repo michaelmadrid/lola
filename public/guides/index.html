@@ -6,6 +6,7 @@
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
   <title>Guides — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/guides.css">
 </head>
 <body>
 
@@ -45,22 +46,27 @@
   </div>
 </div>
 
-<main class="page" style="max-width: 760px; margin: 0 auto; padding: 80px 32px;">
-  <div style="text-align: center;">
-    <h1 style="font-family: var(--sans); font-size: 32px; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 24px; color: var(--ink);">
-      Guides
-    </h1>
-    <p style="font-family: var(--sans); font-size: 16px; line-height: 1.5; color: var(--ink-2); max-width: 480px; margin: 0 auto 8px;">
-      Curate your saves into editorial city guides. Drag, arrange, publish.
-    </p>
-    <p style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-top: 32px;">
-      coming soon
-    </p>
+<main class="page page-guides">
+
+  <header class="mast">
+    <div class="mast__head">
+      <div>
+        <h1 class="mast__title">Guides</h1>
+        <p class="mast__intro">Curated city stories from your spots.</p>
+      </div>
+      <button class="btn" id="new-guide-btn" type="button">+ New guide</button>
+    </div>
+  </header>
+
+  <div class="guides-list" id="guides-list">
+    <div class="guides-list__loading">Loading…</div>
   </div>
+
 </main>
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
+<script src="/js/guides-index.js"></script>
 </body>
 </html>
