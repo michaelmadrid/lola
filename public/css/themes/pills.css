@@ -17,9 +17,11 @@ body.theme-pills .stream {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 10px;
+  /* justify-content distributes pills across full row width — fills
+     horizontal gaps that flex-start would leave, gives a poster feel. */
+  justify-content: flex-start;
+  gap: 6px 8px;
   padding: 8px 0 0;
-  /* Drop the column flex from default */
   flex-direction: row;
 }
 
@@ -36,23 +38,22 @@ body.theme-pills .stream__item {
   align-items: center;
   flex-direction: row;
   gap: 0;
-  /* Pill shape */
   border-radius: 999px;
-  padding: 8px 18px;
-  /* Override default block-like behavior */
+  padding: 7px 14px;
   border-bottom: 0 !important;
   border-top: 0 !important;
   background: var(--pill-bg, #e8e6df);
   color: var(--pill-fg, var(--ink));
   cursor: pointer;
   transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
-  /* Single-line behavior */
   max-width: 100%;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
-  /* Prevent flex children from breaking layout */
   flex: 0 0 auto;
+  /* Outline-ready: reserve border space so swap to outlined doesn't shift layout */
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 body.theme-pills .stream__item:hover {
   transform: translateY(-1px);
@@ -60,7 +61,7 @@ body.theme-pills .stream__item:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* The body wrapper inside each item: row layout, ellipsis-aware */
+/* Body wrapper inside each item */
 body.theme-pills .stream__body {
   display: inline-flex;
   flex-direction: row;
@@ -96,7 +97,6 @@ body.theme-pills .stream__tip {
   text-overflow: ellipsis;
   flex-shrink: 1;
   min-width: 0;
-  /* Bullet separator before the tip */
   margin-top: 0;
 }
 body.theme-pills .stream__tip::before {
@@ -106,25 +106,17 @@ body.theme-pills .stream__tip::before {
   margin-right: 8px;
   font-weight: 400;
 }
-/* If there's no tip, no bullet shows since the element doesn't render */
 
-/* Want-to-go indicator: small ring/outline around the dot, since the
-   default blue dot would clash with category colors. Use opacity instead. */
+/* Want-to-go: outlined pill instead of filled. Reads as "wishlist" — open
+   shape vs closed. No opacity dim, no trailing dot — the outline IS the cue. */
 body.theme-pills .stream__item.is-want {
-  opacity: 0.65;
+  background: transparent;
+  border-color: var(--pill-bg);
+  color: var(--pill-fg);
 }
-body.theme-pills .stream__item.is-want .stream__name::after {
-  content: "";
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.7;
-  margin-left: 6px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
+body.theme-pills .stream__item.is-want:hover {
+  background: var(--pill-bg);
+  filter: none;
 }
 
 /* ---------- Category color palette ----------
