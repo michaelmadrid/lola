@@ -107,22 +107,14 @@ body.theme-pills .stream__tip::before {
   font-weight: 400;
 }
 
-/* Want-to-go: outlined pill instead of filled. Reads as "wishlist" — open
-   shape vs closed. No opacity dim, no trailing dot — the outline IS the cue.
+/* Want-to-go: NO visual distinction in pills theme.
+   The pills view is editorial / wall-style — want vs been is operational
+   metadata that lives in the default theme + edit drawer, not here.
    Explicitly suppress the default home.css blue-dot ::after that fires
    on .stream__item.is-want .stream__name across all themes. */
-body.theme-pills .stream__item.is-want {
-  background: transparent;
-  border-color: var(--pill-bg);
-  color: var(--pill-fg);
-}
 body.theme-pills .stream__item.is-want .stream__name::after {
   content: none !important;
   display: none !important;
-}
-body.theme-pills .stream__item.is-want:hover {
-  background: var(--pill-bg);
-  filter: none;
 }
 
 /* ---------- Category color palette ----------
