@@ -181,21 +181,127 @@
     const header = document.querySelector('header.head');
     if (!header) return;
 
-    // Inject the mobile avatar circle into header__right (row-1 element).
-    // This is the only piece of "slim header" that survives — on mobile
-    // the home page is intentionally minimal: header → capture → stream.
-    // Date/moon and trip/todo affordances are accessible via the hamburger
-    // menu shortcuts (see buildMenuShortcuts).
+    // ===== Avatar: tap → opens user panel =====
+    // Two surfaces:
+    //   Desktop: lives in header__right next to time
+    //   Mobile:  ALSO inject a floating bottom-right copy into <body> so the
+    //            avatar is in thumb reach. The header version is hidden on
+    //            mobile via CSS; the floating one is shown on mobile only.
     const right = header.querySelector('.head__right');
     if (right && !document.getElementById('slim-avatar')) {
-      const a = document.createElement('a');
-      a.id = 'slim-avatar';
-      a.className = 'slim-avatar';
-      a.href = '/settings.html';
-      a.setAttribute('aria-label', 'Settings');
-      a.textContent = '—';
-      right.appendChild(a);
+      const btn = document.createElement('button');
+      btn.id = 'slim-avatar';
+      btn.className = 'slim-avatar';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Account');
+      btn.setAttribute('aria-haspopup', 'true');
+      btn.textContent = '—';
+      btn.addEventListener('click', toggleUserPanel);
+      right.appendChild(btn);
     }
+
+    // Floating mobile avatar — fixed bottom-right, only visible <720px
+    if (!document.getElementById('floating-avatar')) {
+      const float = document.createElement('button');
+      float.id = 'floating-avatar';
+      float.className = 'floating-avatar';
+      float.type = 'button';
+      float.setAttribute('aria-label', 'Account');
+      float.setAttribute('aria-haspopup', 'true');
+      float.textContent = '—';
+      float.addEventListener('click', toggleUserPanel);
+      document.body.appendChild(float);
+    }
+
+    // Build the user panel (hidden by default)
+    if (!document.getElementById('user-panel')) {
+      buildUserPanel();
+    }
+  }
+
+  // ===== USER PANEL =====
+  // Desktop: popover anchored top-right under the header avatar.
+  // Mobile:  bottom sheet, slides up from below, drag handle at top.
+  // Same content, same data.
+  function buildUserPanel() {
+    const user = (window.api && window.api.user.get()) || {};
+    const isAdmin = !!(user && user.role === 'admin');
+    const name = user.name || user.display_name || user.email || 'kit user';
+
+    // Panel container — appended to body for stacking simplicity
+    const panel = document.createElement('div');
+    panel.id = 'user-panel';
+    panel.className = 'user-panel';
+    panel.setAttribute('aria-hidden', 'true');
+    panel.hidden = true;
+    panel.innerHTML = `
+      <div class="user-panel__sheet" role="dialog" aria-label="Account">
+        <div class="user-panel__handle" aria-hidden="true"></div>
+        <div class="user-panel__head">
+          <div class="user-panel__avatar">${escapeHtml((name || '?').charAt(0).toUpperCase())}</div>
+          <div class="user-panel__name">${escapeHtml(name)}</div>
+        </div>
+        <nav class="user-panel__nav">
+          <a href="/settings.html" class="user-panel__link">Settings</a>
+          ${isAdmin ? '<a href="/admin/" class="user-panel__link">Admin</a>' : ''}
+          <a href="/idle/" class="user-panel__link">Idle</a>
+          <button type="button" class="user-panel__signout" id="user-panel-signout">Sign out</button>
+        </nav>
+        <div class="user-panel__foot">
+          <span class="user-panel__ver">kit v0.5.2</span>
+        </div>
+      </div>
+      <div class="user-panel__scrim" aria-hidden="true"></div>
+    `;
+    document.body.appendChild(panel);
+
+    // Close on scrim tap
+    const scrim = panel.querySelector('.user-panel__scrim');
+    if (scrim) scrim.addEventListener('click', closeUserPanel);
+
+    // Sign out
+    const signoutBtn = document.getElementById('user-panel-signout');
+    if (signoutBtn) {
+      signoutBtn.addEventListener('click', () => {
+        closeUserPanel();
+        if (window.api && window.api.signOut) window.api.signOut();
+      });
+    }
+
+    // Esc closes
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) closeUserPanel();
+    });
+  }
+
+  function toggleUserPanel(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const panel = document.getElementById('user-panel');
+    if (!panel) return;
+    if (panel.classList.contains('is-open')) closeUserPanel();
+    else openUserPanel();
+  }
+
+  function openUserPanel() {
+    const panel = document.getElementById('user-panel');
+    if (!panel) return;
+    panel.hidden = false;
+    void panel.offsetHeight; // reflow for transition
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeUserPanel() {
+    const panel = document.getElementById('user-panel');
+    if (!panel) return;
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    // Hide after animation
+    setTimeout(() => {
+      if (!panel.classList.contains('is-open')) panel.hidden = true;
+    }, 260);
   }
 
   function renderSlimMoon() {
@@ -239,16 +345,16 @@
   }
 
   function renderSlimAvatar() {
-    const av = document.getElementById('slim-avatar');
-    if (!av) return;
+    let initial = '?';
     try {
       const user = window.api && window.api.user.get();
       const name = (user && user.name) ? user.name.trim() : '';
-      // First letter of first name, fallback to "?"
-      av.textContent = name ? name.charAt(0).toUpperCase() : '?';
-    } catch (e) {
-      av.textContent = '?';
-    }
+      if (name) initial = name.charAt(0).toUpperCase();
+    } catch (e) {}
+    const av = document.getElementById('slim-avatar');
+    const float = document.getElementById('floating-avatar');
+    if (av) av.textContent = initial;
+    if (float) float.textContent = initial;
   }
 
   // ----- Row 3 context items -----

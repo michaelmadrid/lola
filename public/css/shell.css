@@ -608,7 +608,43 @@ input, textarea, select { font: inherit; }
    - Hidden on desktop (where Bali / time take its place)
    - Shown on mobile via @media block below
    ===================================================================== */
-.slim-avatar { display: none; }
+/* =====================================================================
+   AVATAR — two surfaces
+
+   Desktop: lives in header__right (next to time). Outlined circle button.
+   Mobile:  hidden in header; .floating-avatar takes over, fixed bottom-right.
+
+   Both surfaces invoke the same #user-panel when tapped.
+   ===================================================================== */
+
+/* Desktop avatar: shown in header */
+.slim-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 12px;
+  transition: border-color 140ms ease, color 140ms ease;
+  flex-shrink: 0;
+}
+.slim-avatar:hover {
+  border-color: var(--ink-2);
+  color: var(--blue);
+}
+
+/* Floating avatar: mobile only, fixed bottom-right */
+.floating-avatar { display: none; }
 
 @media (max-width: 720px) {
   /* Allow header to grow vertically */
@@ -616,36 +652,204 @@ input, textarea, select { font: inherit; }
   .head__left, .head__right { flex: 0 0 auto; }
   /* Hide the existing top-nav links on mobile (replaced by hamburger overlay) */
   .head .nav { display: none; }
-  /* Hide the desktop where/time on mobile in favor of the slim avatar */
+  /* Hide desktop where/time/avatar on mobile */
   .head__right .where, .head__right #hdr-time { display: none; }
+  .slim-avatar { display: none; }
 
-  /* Avatar circle (mobile only) */
-  .slim-avatar {
+  /* Floating avatar — bottom-right, thumb-reach, safe-area aware */
+  .floating-avatar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 999px;
-    text-decoration: none;
+    position: fixed;
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 90;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--rule);
     font-family: var(--sans);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: var(--ink);
-    transition: background 140ms ease, color 140ms ease;
-    /* Inner visible disc via pseudo-element so the touch target stays 44px */
-    position: relative;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    transition: border-color 140ms ease, transform 140ms ease;
+    /* Override the global mobile button min-height: avatar is 48 not 44 */
+    min-height: 48px !important;
+    min-width: 48px !important;
   }
-  .slim-avatar::before {
-    content: '';
-    position: absolute;
-    inset: 6px;
+  .floating-avatar:hover,
+  .floating-avatar:active {
+    border-color: var(--ink-2);
+    transform: scale(0.96);
+  }
+}
+
+/* =====================================================================
+   USER PANEL — popover (desktop) + bottom sheet (mobile)
+   ===================================================================== */
+.user-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  pointer-events: none;
+}
+.user-panel[hidden] { display: none; }
+.user-panel.is-open { pointer-events: auto; }
+
+.user-panel__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+.user-panel.is-open .user-panel__scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.user-panel__sheet {
+  position: absolute;
+  background: var(--bg);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop: popover anchored top-right under the avatar */
+@media (min-width: 721px) {
+  .user-panel__scrim { background: transparent; }
+  .user-panel__sheet {
+    top: 64px;
+    right: calc(var(--gutter) - 4px);
+    width: 280px;
     border: 1px solid var(--rule);
-    border-radius: 999px;
-    pointer-events: none;
+    border-radius: var(--r-card);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    transform: translateY(-6px);
+    opacity: 0;
+    transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms ease;
   }
-  .slim-avatar:hover { color: var(--blue); }
-  .slim-avatar:hover::before { border-color: var(--blue); }
+  .user-panel.is-open .user-panel__sheet {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .user-panel__handle { display: none; }
+}
+
+/* Mobile: bottom sheet, slides up, ~70% max height */
+@media (max-width: 720px) {
+  .user-panel__sheet {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    transform: translateY(100%);
+    transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    max-height: 70vh;
+    max-height: 70dvh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.12);
+  }
+  .user-panel.is-open .user-panel__sheet {
+    transform: translateY(0);
+  }
+  .user-panel__handle {
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: var(--ink-4);
+    border-radius: 999px;
+    margin: 12px auto 0;
+    opacity: 0.5;
+  }
+}
+
+/* Sheet content */
+.user-panel__head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 24px 20px;
+  gap: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.user-panel__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.user-panel__name {
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+.user-panel__nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+}
+.user-panel__link,
+.user-panel__signout {
+  display: block;
+  padding: 14px 24px;
+  font-family: var(--sans);
+  font-size: 15px;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: color 140ms ease, background 140ms ease;
+  width: 100%;
+  min-height: 44px;
+}
+.user-panel__link:hover,
+.user-panel__signout:hover {
+  background: var(--field);
+  color: var(--blue);
+}
+.user-panel__signout {
+  color: var(--ink-2);
+  border-top: 1px solid var(--rule);
+  margin-top: 8px;
+}
+.user-panel__signout:hover {
+  color: #c0392b;
+}
+
+.user-panel__foot {
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+}
+.user-panel__ver {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
 }
 
 /* =====================================================================
@@ -667,5 +871,15 @@ input, textarea, select { font: inherit; }
     min-width: 32px !important;
     height: 32px !important;
     width: 32px !important;
+  }
+  /* Floating avatar is its own size (48x48), already meets touch floor */
+  button.floating-avatar {
+    min-height: 48px !important;
+    min-width: 48px !important;
+  }
+  /* Ensure pages have buffer at bottom so floating avatar doesn't overlap
+     the last visible item. ~80px = avatar 48 + safe-area + visual breathing. */
+  body {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 }
