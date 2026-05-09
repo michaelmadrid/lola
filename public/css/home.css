@@ -1007,27 +1007,61 @@
 .itin-fs__trip-notes code,
 .itin-fs__seg-notes code {
   font-family: var(--mono);
-  font-size: 0.9em;
+  font-size: 0.82em;
   background: var(--field);
-  padding: 1px 6px;
-  border-radius: 2px;
+  padding: 2px 8px;
+  border-radius: 3px;
   color: var(--ink);
   letter-spacing: 0;
+  font-weight: 400;
 }
 .itin-fs__trip-notes a,
 .itin-fs__seg-notes a {
-  color: var(--blue);
-  border-bottom: 1px solid var(--rule);
-  transition: border-color 140ms ease;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--blue);
+  padding-bottom: 0.5px;
+  transition: color 140ms ease, border-color 140ms ease;
 }
 .itin-fs__trip-notes a:hover,
 .itin-fs__seg-notes a:hover {
-  border-bottom-color: var(--blue);
+  color: var(--blue);
+  border-bottom-width: 1px;
 }
 .itin-fs__trip-notes strong,
 .itin-fs__seg-notes strong {
   color: var(--ink);
   font-weight: 500;
+}
+
+/* ## Heading — small uppercase eyebrow with thin rule under.
+   Magazine-style section break. Used inside trip + segment notes. */
+.itin-fs__trip-notes .md-h,
+.itin-fs__seg-notes .md-h {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  margin: 22px 0 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule);
+  /* Reset h4 default styling */
+  display: block;
+}
+.itin-fs__trip-notes .md-h:first-child,
+.itin-fs__seg-notes .md-h:first-child {
+  margin-top: 0;
+}
+
+/* --- Horizontal rule — thin block separator inside notes */
+.itin-fs__trip-notes .md-hr,
+.itin-fs__seg-notes .md-hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 18px 0;
+  width: 100%;
 }
 
 /* Segments — single column, no date rail */

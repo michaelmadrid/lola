@@ -29,11 +29,14 @@ window.util = {
       .replace(/'/g, '&#39;');
   },
 
-  // Tiny markdown: **bold**, `code`, [text](url). Safe — escapes HTML first.
-  // Whitelisted URL schemes only (http, https, mailto). Anything else falls back
-  // to plain text. Newlines preserved by parent CSS (white-space: pre-wrap).
+  // Tiny markdown: **bold**, `code`, [text](url), ## heading, --- horizontal rule.
+  // Safe — escapes HTML first. Whitelisted URL schemes only (http, https, mailto,
+  // relative /). Anything else falls back to plain text. Newlines preserved by
+  // parent CSS (white-space: pre-wrap), except inside generated headings/rules
+  // which are full block elements.
   safeMarkdown(s) {
     if (!s) return '';
+    // Escape first
     let out = String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -43,9 +46,8 @@ window.util = {
 
     // [text](url) — links. Apply BEFORE bold/code to avoid * collisions inside text.
     out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text, url) => {
-      // Validate URL scheme — http(s), mailto, or relative path starting with /
       const safe = /^(https?:\/\/|mailto:|\/)/i.test(url);
-      if (!safe) return m; // leave unchanged so user sees the typo
+      if (!safe) return m;
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
     });
 
@@ -55,7 +57,38 @@ window.util = {
     // **bold**
     out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 
-    return out;
+    // ===== Block elements (line-by-line) =====
+    // Process per-line so ## and --- only match at line starts.
+    // Headings and rules become full <h4> / <hr> elements which break out of
+    // the surrounding white-space: pre-wrap line flow naturally.
+    const lines = out.split('\n');
+    const blocks = [];
+    let buf = [];
+    const flush = () => {
+      if (buf.length) {
+        blocks.push(buf.join('\n'));
+        buf = [];
+      }
+    };
+    for (const raw of lines) {
+      const line = raw;
+      // ## Heading (must be at line start, optional trailing space)
+      const hMatch = /^##\s+(.+?)\s*$/.exec(line);
+      if (hMatch) {
+        flush();
+        blocks.push(`<h4 class="md-h">${hMatch[1]}</h4>`);
+        continue;
+      }
+      // --- horizontal rule (3+ dashes on their own line)
+      if (/^---+\s*$/.test(line)) {
+        flush();
+        blocks.push('<hr class="md-hr">');
+        continue;
+      }
+      buf.push(line);
+    }
+    flush();
+    return blocks.join('\n');
   },
 
   // "Tuesday, May 12"
