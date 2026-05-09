@@ -1034,7 +1034,7 @@
   font-weight: 500;
 }
 
-/* ## Heading — small uppercase eyebrow with thin rule under.
+/* ## Heading — small uppercase eyebrow, no rule.
    Magazine-style section break. Used inside trip + segment notes. */
 .itin-fs__trip-notes .md-h,
 .itin-fs__seg-notes .md-h {
@@ -1045,9 +1045,8 @@
   text-transform: uppercase;
   color: var(--ink-2);
   margin: 22px 0 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--rule);
-  /* Reset h4 default styling */
+  padding: 0;
+  border: 0;
   display: block;
 }
 .itin-fs__trip-notes .md-h:first-child,

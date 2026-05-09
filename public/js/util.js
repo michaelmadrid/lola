@@ -61,28 +61,40 @@ window.util = {
     // Process per-line so ## and --- only match at line starts.
     // Headings and rules become full <h4> / <hr> elements which break out of
     // the surrounding white-space: pre-wrap line flow naturally.
+    //
+    // We also strip blank lines IMMEDIATELY ADJACENT to block elements so
+    // pre-wrap doesn't render those empty lines as visible whitespace gaps.
+    // The block element's own margin handles spacing.
     const lines = out.split('\n');
     const blocks = [];
     let buf = [];
+    let lastWasBlock = false;
     const flush = () => {
       if (buf.length) {
-        blocks.push(buf.join('\n'));
+        // Trim leading blank lines if this buffer follows a block element
+        while (lastWasBlock && buf.length && buf[0].trim() === '') buf.shift();
+        if (buf.length) {
+          blocks.push(buf.join('\n'));
+          lastWasBlock = false;
+        }
         buf = [];
       }
     };
-    for (const raw of lines) {
-      const line = raw;
-      // ## Heading (must be at line start, optional trailing space)
+    for (const line of lines) {
       const hMatch = /^##\s+(.+?)\s*$/.exec(line);
       if (hMatch) {
+        // Trim trailing blank lines from buf before emitting block
+        while (buf.length && buf[buf.length - 1].trim() === '') buf.pop();
         flush();
         blocks.push(`<h4 class="md-h">${hMatch[1]}</h4>`);
+        lastWasBlock = true;
         continue;
       }
-      // --- horizontal rule (3+ dashes on their own line)
       if (/^---+\s*$/.test(line)) {
+        while (buf.length && buf[buf.length - 1].trim() === '') buf.pop();
         flush();
         blocks.push('<hr class="md-hr">');
+        lastWasBlock = true;
         continue;
       }
       buf.push(line);
