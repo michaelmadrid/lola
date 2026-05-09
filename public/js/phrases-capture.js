@@ -23,11 +23,11 @@
     { key: 'friends',   label: 'Friends' },
     { key: 'movement',  label: 'Movement' },
     { key: 'shopping',  label: 'Shopping' },
-    { key: 'stay',      label: 'Stay' },
-    { key: 'going_out', label: 'Night' },
-    { key: 'trouble',   label: 'Help' },
-    { key: 'mood',      label: 'Mood' },
-    { key: 'wifi',      label: 'Wifi' },
+    { key: 'stay',      label: 'Hotel' },
+    { key: 'going_out', label: 'Going out' },
+    { key: 'trouble',   label: 'Trouble' },
+    { key: 'mood',      label: 'Mood words' },
+    { key: 'wifi',      label: 'Wifi & Pay' },
   ];
 
   const catBtn      = document.getElementById('pf-cat-btn');

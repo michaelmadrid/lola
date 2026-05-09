@@ -45,23 +45,23 @@
       },
       {
         "key": "stay",
-        "label": "Stay"
+        "label": "Hotel"
       },
       {
         "key": "going_out",
-        "label": "Night"
+        "label": "Going out"
       },
       {
         "key": "trouble",
-        "label": "Help"
+        "label": "Trouble"
       },
       {
         "key": "mood",
-        "label": "Mood"
+        "label": "Mood words"
       },
       {
         "key": "wifi",
-        "label": "Wifi"
+        "label": "Wifi & Pay"
       }
     ],
     "note": "Translations AI-drafted for V1. Refine over time through real use."
