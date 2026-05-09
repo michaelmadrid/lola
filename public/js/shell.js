@@ -14,6 +14,22 @@
     }
   } catch (e) {}
 
+  // ----- Stream theme (separate from dark/light) -----
+  // Stream themes change how saves are rendered (default list, pills, etc).
+  // Storage key: kit.streamTheme. Override with ?theme=NAME for one-off testing.
+  // Recognized values: 'default' (current look, no class), 'pills'.
+  // Body class added: theme-{name} when set to a non-default value.
+  try {
+    const params = new URLSearchParams(location.search);
+    const queryTheme = params.get('theme');
+    let theme = queryTheme || localStorage.getItem('kit.streamTheme') || 'default';
+    // Persist query override so subsequent navigations remember it
+    if (queryTheme) localStorage.setItem('kit.streamTheme', queryTheme);
+    if (theme && theme !== 'default') {
+      document.body.classList.add('theme-' + theme);
+    }
+  } catch (e) {}
+
   // ----- Apply header location label -----
   // The user identity now lives in the avatar (top-right desktop, bottom-right mobile).
   // The .where element is just the location/home city — always.

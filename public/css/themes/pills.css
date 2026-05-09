@@ -1,0 +1,243 @@
+/* =====================================================================
+   THEME: PILLS
+
+   Activated by: <body class="theme-pills">
+   Set via:      localStorage.setItem('kit.streamTheme', 'pills')
+                 or ?theme=pills query param
+
+   Concept: home stream + spots list become a flowing wall of colored
+   pills, magazine-style. Each pill = one save. Color encodes category.
+   No metadata, no dates, no chrome — just title • tip in a pill.
+
+   Inspiration: Mousse / Triple Canopy / Leftloft index pages
+   ===================================================================== */
+
+/* ---------- Stream layout becomes inline-wrap ---------- */
+body.theme-pills .stream {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0 0;
+  /* Drop the column flex from default */
+  flex-direction: row;
+}
+
+/* Hide the date column ("when") and meta entirely in this theme */
+body.theme-pills .stream__when,
+body.theme-pills .stream__meta,
+body.theme-pills .stream__pending {
+  display: none !important;
+}
+
+/* ---------- Each save becomes a pill ---------- */
+body.theme-pills .stream__item {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 0;
+  /* Pill shape */
+  border-radius: 999px;
+  padding: 8px 18px;
+  /* Override default block-like behavior */
+  border-bottom: 0 !important;
+  border-top: 0 !important;
+  background: var(--pill-bg, #e8e6df);
+  color: var(--pill-fg, var(--ink));
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+  /* Single-line behavior */
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  /* Prevent flex children from breaking layout */
+  flex: 0 0 auto;
+}
+body.theme-pills .stream__item:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.96);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* The body wrapper inside each item: row layout, ellipsis-aware */
+body.theme-pills .stream__body {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Name = bold */
+body.theme-pills .stream__name {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+/* Tip = non-bold, separator dot before */
+body.theme-pills .stream__tip {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+  /* Bullet separator before the tip */
+  margin-top: 0;
+}
+body.theme-pills .stream__tip::before {
+  content: "•";
+  color: inherit;
+  opacity: 0.5;
+  margin-right: 8px;
+  font-weight: 400;
+}
+/* If there's no tip, no bullet shows since the element doesn't render */
+
+/* Want-to-go indicator: small ring/outline around the dot, since the
+   default blue dot would clash with category colors. Use opacity instead. */
+body.theme-pills .stream__item.is-want {
+  opacity: 0.65;
+}
+body.theme-pills .stream__item.is-want .stream__name::after {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+  margin-left: 6px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* ---------- Category color palette ----------
+   Each category gets a soft background + readable foreground.
+   Default (no category) uses French blue tinted.
+   Colors picked to feel editorial — warm, dusty, not cartoony. */
+
+/* Default — French blue tint */
+body.theme-pills .stream__item {
+  --pill-bg: #d6def0;
+  --pill-fg: #1f2a4a;
+}
+
+/* Eat — warm peach */
+body.theme-pills .stream__item[data-category="eat"] {
+  --pill-bg: #f4d4c0;
+  --pill-fg: #5a2e1a;
+}
+
+/* Drink — pink */
+body.theme-pills .stream__item[data-category="drink"] {
+  --pill-bg: #f0c8d4;
+  --pill-fg: #5a1f33;
+}
+
+/* Coffee — cream */
+body.theme-pills .stream__item[data-category="coffee"] {
+  --pill-bg: #e8dcc4;
+  --pill-fg: #4a3820;
+}
+
+/* Stay — deep blue (kit French blue family) */
+body.theme-pills .stream__item[data-category="stay"] {
+  --pill-bg: #c4d0ec;
+  --pill-fg: #1a2850;
+}
+
+/* Shop — yellow */
+body.theme-pills .stream__item[data-category="shop"] {
+  --pill-bg: #ecdcb0;
+  --pill-fg: #4a3a10;
+}
+
+/* See — green */
+body.theme-pills .stream__item[data-category="see"] {
+  --pill-bg: #d0e4c8;
+  --pill-fg: #1f3a1c;
+}
+
+/* Other — neutral mauve */
+body.theme-pills .stream__item[data-category="other"] {
+  --pill-bg: #dcd4e0;
+  --pill-fg: #3a2e44;
+}
+
+/* Pending saves (no place_name yet) — muted ghost */
+body.theme-pills .stream__item.stream__pending,
+body.theme-pills .stream__item:not(.is-structured) {
+  --pill-bg: #e8e6df;
+  --pill-fg: #888;
+}
+
+/* ---------- Stream head (the "Recently saved" label) ---------- */
+body.theme-pills .stream__head {
+  margin-bottom: 14px;
+}
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 720px) {
+  body.theme-pills .stream {
+    gap: 6px;
+  }
+  body.theme-pills .stream__item {
+    padding: 6px 14px;
+    border-radius: 999px;
+  }
+  body.theme-pills .stream__name,
+  body.theme-pills .stream__tip {
+    font-size: 13px;
+  }
+}
+
+/* ---------- Dark mode adjustments ----------
+   When dark + pills, soften the pill backgrounds so they don't glow. */
+body.dark.theme-pills .stream__item {
+  --pill-bg: #2c3142;
+  --pill-fg: #c8d2eb;
+}
+body.dark.theme-pills .stream__item[data-category="eat"] {
+  --pill-bg: #3a2820;
+  --pill-fg: #f4d4c0;
+}
+body.dark.theme-pills .stream__item[data-category="drink"] {
+  --pill-bg: #3a1f2c;
+  --pill-fg: #f0c8d4;
+}
+body.dark.theme-pills .stream__item[data-category="coffee"] {
+  --pill-bg: #322a1c;
+  --pill-fg: #e8dcc4;
+}
+body.dark.theme-pills .stream__item[data-category="stay"] {
+  --pill-bg: #1c2440;
+  --pill-fg: #c4d0ec;
+}
+body.dark.theme-pills .stream__item[data-category="shop"] {
+  --pill-bg: #322a14;
+  --pill-fg: #ecdcb0;
+}
+body.dark.theme-pills .stream__item[data-category="see"] {
+  --pill-bg: #1f2c1c;
+  --pill-fg: #d0e4c8;
+}
+body.dark.theme-pills .stream__item[data-category="other"] {
+  --pill-bg: #2c2630;
+  --pill-fg: #dcd4e0;
+}

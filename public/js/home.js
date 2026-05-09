@@ -570,7 +570,8 @@
 
       const variantClass = hasPlace ? ' is-structured' : (isTipOnly ? ' is-tip-only' : '');
       const wantClass = (s.been === false) ? ' is-want' : '';
-      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}">
+      const catAttr = s.category ? ` data-category="${util.escapeHtml(s.category)}"` : '';
+      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}"${catAttr}>
         <div class="stream__body">
           ${bodyHtml}
         </div>
