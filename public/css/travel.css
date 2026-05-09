@@ -2,8 +2,47 @@
    travel.css — Travel section pages (Trips, Time, Phrases, Extras)
    ========================================================= */
 
-.page-travel { padding-top: 56px; }
-@media (max-width: 720px) { .page-travel { padding-top: 32px; } }
+.page-travel,
+.page-clocks { padding-top: 56px; }
+@media (max-width: 720px) {
+  .page-travel,
+  .page-clocks { padding-top: 32px; }
+}
+
+/* ============================================================
+   CLOCKS PAGE — mast (page heading + add city action)
+   Mirror of the spots page header pattern.
+   ============================================================ */
+.page-clocks .mast {
+  padding-bottom: 26px;
+}
+.page-clocks .mast__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-clocks .mast__head .btn {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.page-clocks .mast__title {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.page-clocks .mast__intro {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+@media (max-width: 720px) {
+  .page-clocks .mast__title { font-size: 24px; }
+}
 
 /* ===== Masthead with subnav ===== */
 .travel-mast {
@@ -170,20 +209,20 @@
 }
 .time-section:last-of-type { margin-bottom: 0; }
 .time-section__label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-3);
+  font-family: var(--sans);
+  font-size: 14px;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--ink);
   font-weight: 500;
-  margin: 0 0 14px;
+  margin: 0 0 12px;
 }
 .time-section__hint {
   margin: -4px 0 18px;
   font-size: 13px;
   color: var(--ink-3);
   letter-spacing: -0.005em;
-  font-style: italic;
+  font-style: normal;
 }
 
 /* ----- Cities list ----- */
@@ -260,7 +299,6 @@
   text-transform: uppercase;
   white-space: nowrap;
 }
-.time-card__offset.is-reference { color: var(--blue); }
 
 .time-card__remove {
   position: absolute;
@@ -662,342 +700,3 @@
 }
 
 
-/* ===== Jetlag page (v2: timeline grid) ===== */
-
-.jl-input-section { margin-bottom: 36px; }
-
-.jl-input-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-.jl-input {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.jl-input__label {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.jl-city-btn {
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--ink);
-  background: var(--field);
-  border: 0;
-  padding: 9px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  letter-spacing: -0.005em;
-  transition: background 140ms ease;
-  min-width: 140px;
-}
-.jl-city-btn:hover { background: var(--field-focus); }
-.jl-city-btn__caret { font-size: 10px; color: var(--ink-3); }
-.jl-input-arrow {
-  font-size: 18px;
-  color: var(--ink-3);
-  align-self: flex-end;
-  padding-bottom: 10px;
-}
-.jl-date {
-  font-family: var(--sans);
-  font-size: 14px;
-  color: var(--ink);
-  background: var(--field);
-  border: 0;
-  padding: 9px 14px;
-  border-radius: 4px;
-  letter-spacing: -0.005em;
-  font-variant-numeric: tabular-nums;
-}
-.jl-date:focus { outline: none; background: var(--field-focus); }
-.jl-prefill-hint {
-  font-size: 12px;
-  color: var(--ink-3);
-  font-style: italic;
-  margin: 14px 0 0;
-  letter-spacing: -0.005em;
-}
-.jl-prefill-hint a { color: var(--blue); text-decoration: none; }
-.jl-prefill-hint a:hover { text-decoration: underline; }
-
-/* No-date prompt above timeline */
-.jl-no-date {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--ink-3);
-  font-style: italic;
-  letter-spacing: -0.005em;
-  margin: 0 0 18px;
-  padding: 0;
-}
-.jl-no-date__btn {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--blue);
-  background: none;
-  border: 1px solid var(--rule);
-  padding: 4px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-style: normal;
-  transition: background 140ms ease, border-color 140ms ease;
-}
-.jl-no-date__btn:hover {
-  background: var(--field);
-  border-color: var(--blue);
-}
-
-/* Header strip */
-.jl-header {
-  font-family: var(--sans);
-  font-size: 17px;
-  color: var(--ink-2);
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
-  padding: 0 0 24px;
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 28px;
-}
-.jl-header__route {
-  color: var(--ink);
-  font-weight: 500;
-  font-size: 20px;
-  letter-spacing: -0.01em;
-}
-.jl-header__sep { color: var(--ink-4); }
-.jl-header__diff,
-.jl-header__recover {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.jl-header__sev {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--field);
-  color: var(--ink-3);
-}
-.jl-header__sev--mild        { color: var(--ink-3); }
-.jl-header__sev--moderate    { color: var(--ink); }
-.jl-header__sev--significant { color: var(--blue); background: rgba(42, 78, 212, 0.08); }
-.jl-header__sev--severe      { color: var(--blue); background: rgba(42, 78, 212, 0.12); }
-
-/* Today card */
-.jl-today {
-  margin-bottom: 28px;
-}
-.jl-today__head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-.jl-today__day {
-  font-family: var(--sans);
-  font-size: 22px;
-  font-weight: 500;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-.jl-today__date {
-  font-family: var(--sans);
-  font-size: 16px;
-  color: var(--ink-2);
-  letter-spacing: -0.005em;
-}
-.jl-today__loc {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.jl-today__sub {
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-}
-.jl-today__grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border-top: 1px solid var(--rule);
-}
-.jl-today__row {
-  display: grid;
-  grid-template-columns: 28px 70px 1fr;
-  gap: 14px;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--rule);
-}
-.jl-today__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-2);
-}
-.jl-today__icon .jl-icon { width: 18px; height: 18px; }
-.jl-today__time {
-  font-family: var(--mono);
-  font-size: 14px;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-.jl-today__label {
-  font-size: 16px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-}
-
-/* All days list — compact, click-to-activate */
-.jl-days {
-  margin-bottom: 32px;
-}
-.jl-days__label {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  font-weight: 500;
-  margin: 0 0 14px;
-}
-.jl-days__list {
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--rule);
-}
-.jl-days__row {
-  display: grid;
-  grid-template-columns: 80px minmax(0, 1.2fr) minmax(0, 1fr) auto;
-  gap: 16px;
-  align-items: baseline;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--rule);
-  background: none;
-  border-left: 0;
-  border-right: 0;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: left;
-  transition: background 140ms ease;
-}
-.jl-days__row:hover { background: var(--field); }
-.jl-days__row.is-active {
-  background: var(--field-focus);
-}
-.jl-days__day {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.jl-days__date {
-  font-family: var(--sans);
-  font-size: 14px;
-  color: var(--ink-2);
-  letter-spacing: -0.005em;
-}
-.jl-days__loc {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.jl-days__sub {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* Tips — single line of phrases */
-.jl-tips {
-  font-family: var(--mono);
-  font-size: 13px;
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.7;
-  margin: 0;
-  padding: 22px 0 0;
-  border-top: 1px solid var(--rule);
-}
-
-/* Empty */
-.jl-empty {
-  font-size: 15px;
-  color: var(--ink-3);
-  font-style: italic;
-  letter-spacing: -0.005em;
-  max-width: 540px;
-  margin: 0;
-}
-
-@media (max-width: 720px) {
-  .jl-input-row { gap: 12px; }
-  .jl-input-arrow { display: none; }
-  .jl-city-btn { min-width: 0; padding: 8px 12px; }
-
-  .jl-header { font-size: 15px; gap: 10px; }
-  .jl-header__route { font-size: 17px; }
-  .jl-header__diff,
-  .jl-header__recover { font-size: 11px; }
-  .jl-header__sev { font-size: 11px; }
-
-  .jl-today__day { font-size: 19px; }
-  .jl-today__date { font-size: 15px; }
-  .jl-today__row { grid-template-columns: 24px 60px 1fr; gap: 10px; }
-  .jl-today__time { font-size: 13px; }
-  .jl-today__label { font-size: 15px; }
-  .jl-today__icon .jl-icon { width: 16px; height: 16px; }
-
-  .jl-days__row {
-    grid-template-columns: 56px 1fr auto;
-    grid-template-areas: "day date date" "day loc sub";
-    row-gap: 2px;
-    column-gap: 10px;
-    padding: 12px 0;
-  }
-  .jl-days__day { grid-area: day; align-self: center; }
-  .jl-days__date { grid-area: date; }
-  .jl-days__loc { grid-area: loc; }
-  .jl-days__sub { grid-area: sub; text-align: right; }
-
-  .jl-tips { font-size: 12px; }
-
-  .jl-no-date { flex-wrap: wrap; gap: 8px; }
-}

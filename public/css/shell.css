@@ -609,6 +609,156 @@ input, textarea, select { font: inherit; }
    - Shown on mobile via @media block below
    ===================================================================== */
 /* =====================================================================
+   TIME TRIGGER (header) — clickable container that opens time popover
+   ===================================================================== */
+.time-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: color 140ms ease;
+  font-variant-numeric: tabular-nums;
+}
+.time-trigger:hover { color: var(--blue); }
+.time-trigger:hover .where { color: var(--blue); }
+.time-trigger .where { transition: color 140ms ease; }
+
+/* =====================================================================
+   TIME POPOVER — mini clocks view
+   Desktop: anchored top-right under the time trigger
+   Mobile: not used (mobile users go to /clocks/ via the menu)
+   ===================================================================== */
+.time-popover {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  pointer-events: none;
+}
+.time-popover[hidden] { display: none; }
+.time-popover.is-open { pointer-events: auto; }
+
+.time-popover__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: transparent;
+  pointer-events: none;
+}
+.time-popover.is-open .time-popover__scrim {
+  pointer-events: auto;
+}
+
+.time-popover__sheet {
+  position: absolute;
+  z-index: 2;
+  background: var(--bg);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 721px) {
+  .time-popover__sheet {
+    top: 64px;
+    right: calc(var(--gutter) - 4px + 44px);
+    width: 260px;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-card);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    transform: translateY(-6px);
+    opacity: 0;
+    transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 160ms ease;
+  }
+  .time-popover.is-open .time-popover__sheet {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .time-popover { display: none; }
+}
+
+.time-popover__list {
+  display: flex;
+  flex-direction: column;
+}
+.time-popover__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  gap: 12px;
+}
+.time-popover__row + .time-popover__row {
+  border-top: 1px solid var(--rule);
+}
+.time-popover__row-lhs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.time-popover__city {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.time-popover__off {
+  font-family: var(--sans);
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+}
+.time-popover__time {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.time-popover__loading,
+.time-popover__empty {
+  padding: 16px;
+  font-size: 13px;
+  color: var(--ink-3);
+  text-align: center;
+}
+.time-popover__empty a {
+  color: var(--blue);
+  text-decoration: none;
+}
+.time-popover__open {
+  display: block;
+  padding: 12px 16px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--ink-2);
+  text-decoration: none;
+  text-align: center;
+  transition: color 140ms ease, background 140ms ease;
+}
+.time-popover__open:hover {
+  background: var(--field);
+  color: var(--blue);
+}
+
+/* =====================================================================
    AVATAR — two surfaces
 
    Desktop: lives in header__right (next to time). Outlined circle button.

@@ -137,15 +137,14 @@
       }));
     }
 
-    // Add city button (unless at cap)
-    let addBtn = '';
-    if (tracked.length < MAX_TRACKED) {
-      addBtn = `<button class="time-add-btn" id="time-add-btn">+ add city</button>`;
-    } else {
-      addBtn = `<div class="time-add-cap">Tracking ${MAX_TRACKED} cities — remove one to add another.</div>`;
+    // Show "at cap" message inline if user is maxed out — otherwise no inline button
+    // (the + Add city action lives in the page mast top-right now)
+    let capMsg = '';
+    if (tracked.length >= MAX_TRACKED) {
+      capMsg = `<div class="time-add-cap">Tracking ${MAX_TRACKED} cities — remove one to add another.</div>`;
     }
 
-    citiesEl.innerHTML = rows.join('') + addBtn;
+    citiesEl.innerHTML = rows.join('') + capMsg;
 
     // Wire row interactions
     citiesEl.querySelectorAll('.time-card').forEach(card => {
@@ -207,21 +206,14 @@
         });
       }
     });
-
-    // Add city button
-    const addBtnEl = document.getElementById('time-add-btn');
-    if (addBtnEl) {
-      addBtnEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openAddPopover(addBtnEl);
-      });
-    }
   }
 
   function renderCityRow({ city_id, name, country, timezone, wake_start, wake_end, isHome, offset }) {
     const time = fmtCityTime(timezone);
     const date = fmtCityDate(timezone);
-    const offLabel = isHome ? 'reference' : fmtOffset(offset);
+    // Home city: no offset label (it's the reference, no meaningful offset to itself)
+    // Tracked cities: show their offset from home (e.g., "−6h", "+5h")
+    const offLabel = isHome ? '' : fmtOffset(offset);
     const isExpanded = expandedCityId === city_id;
 
     let expandedHtml = '';
@@ -251,7 +243,7 @@
           </div>
           <div class="time-card__rhs">
             <span class="time-card__time">${time}</span>
-            <span class="time-card__offset${isHome ? ' is-reference' : ''}">${offLabel}</span>
+            <span class="time-card__offset">${offLabel}</span>
           </div>
           ${!isHome ? '<button class="time-card__remove" aria-label="Remove">×</button>' : ''}
         </div>
@@ -541,4 +533,14 @@
   renderTimeline();
   renderWindows();
   setInterval(tick, 30 * 1000);
+
+  // Wire the top-of-page "+ Add city" button (lives in page mast, not in cities list)
+  const topAddBtn = document.getElementById('time-add-btn-top');
+  if (topAddBtn) {
+    topAddBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (tracked.length >= MAX_TRACKED) return; // hard cap; user sees message in list
+      openAddPopover(topAddBtn);
+    });
+  }
 })();

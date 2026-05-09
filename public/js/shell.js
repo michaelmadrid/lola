@@ -38,6 +38,166 @@
   // Allow other pages (like settings) to trigger an immediate re-render
   window.kitUpdateHeaderTime = updateTime;
 
+  // ----- Wrap header right (.where + #hdr-time) into a tappable button on desktop -----
+  // On click → opens a mini Clocks popover. Hover → blue.
+  // Mobile: no popover (clocks live at /clocks/, accessible via menu).
+  // Idempotent — if already wrapped, skip.
+  const headRight = document.querySelector('.head__right');
+  if (headRight && timeEl && !document.getElementById('time-trigger')) {
+    const where = headRight.querySelector('.where');
+    if (where) {
+      const trigger = document.createElement('button');
+      trigger.id = 'time-trigger';
+      trigger.type = 'button';
+      trigger.className = 'time-trigger';
+      trigger.setAttribute('aria-label', 'Clocks');
+      trigger.setAttribute('aria-haspopup', 'true');
+      // Move .where + #hdr-time INSIDE the button
+      where.parentNode.insertBefore(trigger, where);
+      trigger.appendChild(where);
+      trigger.appendChild(timeEl);
+      trigger.addEventListener('click', toggleTimePopover);
+    }
+  }
+
+  // ----- Build time popover (once per page) -----
+  function buildTimePopover() {
+    if (document.getElementById('time-popover')) return;
+    const panel = document.createElement('div');
+    panel.id = 'time-popover';
+    panel.className = 'time-popover';
+    panel.hidden = true;
+    panel.setAttribute('aria-hidden', 'true');
+    panel.innerHTML = `
+      <div class="time-popover__scrim" aria-hidden="true"></div>
+      <div class="time-popover__sheet" role="dialog" aria-label="Clocks">
+        <div class="time-popover__list" id="time-popover-list">
+          <div class="time-popover__loading">Loading…</div>
+        </div>
+        <a href="/clocks/" class="time-popover__open">Open clocks →</a>
+      </div>
+    `;
+    document.body.appendChild(panel);
+
+    // Scrim closes (used on mobile only, transparent on desktop)
+    panel.querySelector('.time-popover__scrim').addEventListener('click', closeTimePopover);
+
+    // Esc closes
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) closeTimePopover();
+    });
+  }
+
+  function toggleTimePopover(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    const panel = document.getElementById('time-popover');
+    if (!panel) {
+      buildTimePopover();
+      // re-find
+      return setTimeout(() => toggleTimePopover(), 10);
+    }
+    if (panel.classList.contains('is-open')) closeTimePopover();
+    else openTimePopover();
+  }
+
+  async function openTimePopover() {
+    const panel = document.getElementById('time-popover');
+    if (!panel) return;
+    panel.hidden = false;
+    void panel.offsetHeight;
+    panel.classList.add('is-open');
+    panel.setAttribute('aria-hidden', 'false');
+    // Refresh content
+    await renderTimePopoverList();
+  }
+
+  function closeTimePopover() {
+    const panel = document.getElementById('time-popover');
+    if (!panel) return;
+    panel.classList.remove('is-open');
+    panel.setAttribute('aria-hidden', 'true');
+    setTimeout(() => {
+      if (!panel.classList.contains('is-open')) panel.hidden = true;
+    }, 200);
+  }
+
+  // Render the city list inside the popover.
+  // Reads from /api/auth/me (home_city + tracked_cities). Shows up to 6 cities.
+  async function renderTimePopoverList() {
+    const list = document.getElementById('time-popover-list');
+    if (!list) return;
+    if (!window.api || !window.api.isSignedIn || !window.api.isSignedIn()) {
+      list.innerHTML = '<div class="time-popover__empty">Sign in to track cities.</div>';
+      return;
+    }
+    try {
+      const meResp = await window.api.get('/api/auth/me');
+      const u = meResp && meResp.user;
+      if (!u) { list.innerHTML = '<div class="time-popover__empty">No data.</div>'; return; }
+      const home = u.home_city;
+      const tracked = Array.isArray(u.tracked_cities) ? u.tracked_cities : [];
+      // Build rows: home first, then tracked, max 6
+      const rows = [];
+      if (home) rows.push({ name: home.name, timezone: home.timezone, isHome: true });
+      for (const t of tracked) {
+        rows.push({ name: t.name, timezone: t.timezone, isHome: false });
+        if (rows.length >= 6) break;
+      }
+      if (!rows.length) {
+        list.innerHTML = '<div class="time-popover__empty">No cities yet — <a href="/clocks/">add one</a>.</div>';
+        return;
+      }
+
+      const homeTz = home ? home.timezone : null;
+      const homeH = homeTz ? hourFloatTz(homeTz) : 0;
+
+      list.innerHTML = rows.map(r => {
+        const time = window.util ? window.util.fmtTime(new Date(), { timeZone: r.timezone })
+          : new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: r.timezone });
+        const offLabel = r.isHome ? '' : fmtOffsetFromHome(r.timezone, homeH);
+        return `
+          <div class="time-popover__row">
+            <div class="time-popover__row-lhs">
+              <div class="time-popover__city">${escapeHtml(r.name)}</div>
+              ${offLabel ? `<div class="time-popover__off">${offLabel}</div>` : ''}
+            </div>
+            <div class="time-popover__time">${time}</div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('renderTimePopoverList', err);
+      list.innerHTML = '<div class="time-popover__empty">Couldn\u2019t load.</div>';
+    }
+  }
+
+  // Helpers (small dupes from time.js — kept inline for shell isolation)
+  function hourFloatTz(tz) {
+    try {
+      const d = new Date();
+      const fmt = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, hour: 'numeric', minute: 'numeric', hour12: false,
+      });
+      const parts = fmt.formatToParts(d);
+      const hh = parseInt((parts.find(p => p.type === 'hour') || {}).value || '0', 10);
+      const mm = parseInt((parts.find(p => p.type === 'minute') || {}).value || '0', 10);
+      return hh + mm / 60;
+    } catch { return 0; }
+  }
+  function fmtOffsetFromHome(tz, homeH) {
+    const otherH = hourFloatTz(tz);
+    let diff = otherH - homeH;
+    if (diff > 14)  diff -= 24;
+    if (diff < -12) diff += 24;
+    diff = Math.round(diff * 2) / 2;
+    if (diff === 0) return 'same';
+    const sign = diff > 0 ? '+' : '−';
+    const v = Math.abs(diff);
+    const whole = Math.floor(v);
+    const frac = v - whole;
+    return frac === 0 ? `${sign}${whole}h` : `${sign}${whole}.${Math.round(frac * 10)}h`;
+  }
+
   // ----- Mobile menu toggle -----
   const menuBtn = document.getElementById('menu-btn');
   const menuOverlay = document.getElementById('menu-overlay');
