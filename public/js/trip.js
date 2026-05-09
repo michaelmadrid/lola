@@ -85,7 +85,11 @@
     }
 
     const actionBtns = isOwner
-      ? `<button class="btn--secondary" id="edit-trip-btn">Edit trip</button>`
+      ? `${trip.status === 'published'
+            ? `<button class="btn btn--published" id="publish-trip-btn" data-status="published">Unpublish</button>`
+            : `<button class="btn" id="publish-trip-btn" data-status="draft">Publish</button>`
+         }
+         <button class="btn--secondary" id="edit-trip-btn">Edit trip</button>`
       : '';
     const addSegBtn = isOwner
       ? `<div class="trip-add-segment"><button class="btn" id="add-seg-btn">+ Add stop</button></div>`
@@ -114,6 +118,36 @@
       if (editBtn) editBtn.addEventListener('click', openEditTrip);
       const addBtn = document.getElementById('add-seg-btn');
       if (addBtn) addBtn.addEventListener('click', () => openSegmentModal(null));
+
+      // Publish / unpublish toggle
+      const pubBtn = document.getElementById('publish-trip-btn');
+      if (pubBtn) {
+        pubBtn.addEventListener('click', async () => {
+          const newStatus = trip.status === 'published' ? 'draft' : 'published';
+          pubBtn.disabled = true;
+          pubBtn.textContent = newStatus === 'published' ? 'Publishing…' : 'Unpublishing…';
+          try {
+            const result = await api.patch(`/api/trips/${tripId}`, { status: newStatus });
+            const updated = result.trip;
+            trip.status = updated.status;
+            trip.slug = updated.slug;
+            trip.published_at = updated.published_at;
+
+            if (newStatus === 'published' && updated.slug) {
+              const url = `${location.origin}/t/${updated.slug}`;
+              const ok = confirm(`Published! Public link:\n\n${url}\n\nCopy to clipboard?`);
+              if (ok && navigator.clipboard) {
+                navigator.clipboard.writeText(url).catch(() => {});
+              }
+            }
+            render(); // re-render with updated state
+          } catch (err) {
+            alert(err.message || 'Could not update publish state');
+            pubBtn.disabled = false;
+            pubBtn.textContent = trip.status === 'published' ? 'Unpublish' : 'Publish';
+          }
+        });
+      }
       pageEl.querySelectorAll('.seg-edit').forEach(btn => {
         btn.addEventListener('click', () => {
           const seg = segments.find(s => String(s.id) === String(btn.dataset.id));

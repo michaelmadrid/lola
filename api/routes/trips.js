@@ -214,13 +214,47 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
+// Slugify trip name for public URL
+function slugifyTripName(text) {
+  if (!text) return 'untitled';
+  return String(text)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'untitled';
+}
+
+// Generate a unique slug for a trip — handles collisions with -2, -3, ...
+async function generateUniqueTripSlug(baseSlug, excludeId) {
+  let candidate = baseSlug;
+  let attempt = 1;
+  while (true) {
+    const r = await pool.query(
+      `SELECT id FROM trips WHERE slug = $1 AND id <> $2`,
+      [candidate, excludeId || 0]
+    );
+    if (!r.rows.length) return candidate;
+    attempt += 1;
+    candidate = `${baseSlug}-${attempt}`;
+    if (attempt > 100) return `${baseSlug}-${Date.now()}`;
+  }
+}
+
 // PATCH /api/trips/:id — edit (anyone in household)
 router.patch('/:id', authenticate, async (req, res) => {
   try {
     if (!(await canEdit(req.params.id, req.user.id))) {
       return res.status(403).json({ error: 'Not authorized' });
     }
-    const allowed = ['name', 'date_start', 'date_end', 'notes', 'slug'];
+
+    // Load current trip — we may need its name/slug for publish logic
+    const cur = await pool.query('SELECT * FROM trips WHERE id = $1', [req.params.id]);
+    if (!cur.rows.length) return res.status(404).json({ error: 'Trip not found' });
+    const trip = cur.rows[0];
+
+    const allowed = ['name', 'date_start', 'date_end', 'notes', 'slug', 'status'];
     const updates = [];
     const params = [];
     for (const key of allowed) {
@@ -229,15 +263,42 @@ router.patch('/:id', authenticate, async (req, res) => {
         updates.push(`${key} = $${params.length}`);
       }
     }
-    if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
+
+    // Status validation
+    if ('status' in req.body) {
+      const valid = ['draft', 'published', 'archived'];
+      if (!valid.includes(req.body.status)) {
+        return res.status(400).json({ error: `Invalid status. Must be one of: ${valid.join(', ')}` });
+      }
+    }
+
+    // Auto-slug + published_at on first publish
+    const extraSet = [];
+    if (req.body.status === 'published' && !trip.slug) {
+      const newName = (req.body.name !== undefined) ? req.body.name : trip.name;
+      const baseSlug = slugifyTripName(newName);
+      const uniqueSlug = await generateUniqueTripSlug(baseSlug, trip.id);
+      params.push(uniqueSlug);
+      updates.push(`slug = $${params.length}`);
+      extraSet.push('published_at = NOW()');
+    } else if (req.body.status === 'published' && trip.slug && !trip.published_at) {
+      extraSet.push('published_at = NOW()');
+    }
+
+    if (!updates.length && !extraSet.length) return res.status(400).json({ error: 'No fields to update' });
+
     params.push(req.params.id);
+    const setClauses = updates.concat(extraSet).concat(['updated_at = NOW()']);
     const result = await pool.query(
-      `UPDATE trips SET ${updates.join(', ')}, updated_at = NOW()
+      `UPDATE trips SET ${setClauses.join(', ')}
         WHERE id = $${params.length} RETURNING *`,
       params
     );
     res.json({ trip: result.rows[0] });
   } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Slug conflict, retry' });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -344,6 +405,59 @@ router.delete('/:tripId/segments/:segmentId', authenticate, async (req, res) => 
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// =====================================================================
+// PUBLIC — accessing published trips by slug (no auth required)
+// =====================================================================
+const { softAuthenticate } = require('../auth');
+
+router.get('/_public/:slug', softAuthenticate, async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    if (!slug) return res.status(400).json({ error: 'Slug required' });
+
+    const tripRes = await pool.query(
+      `SELECT t.*, u.name AS owner_name
+         FROM trips t
+         LEFT JOIN users u ON t.created_by = u.id
+        WHERE t.slug = $1
+          AND t.status = 'published'
+          AND t.deleted_at IS NULL
+        LIMIT 1`,
+      [slug]
+    );
+    if (!tripRes.rows.length) {
+      return res.status(404).json({ error: 'Trip not found' });
+    }
+    const trip = tripRes.rows[0];
+
+    const segmentsRes = await pool.query(
+      `SELECT s.id, s.region_label, s.date_start, s.date_end, s.sort_order, s.notes,
+              c.name AS city_name, c.country AS city_country, c.slug AS city_slug
+         FROM trip_segments s
+         LEFT JOIN cities c ON s.city_id = c.id
+        WHERE s.trip_id = $1
+        ORDER BY s.sort_order ASC, s.date_start ASC NULLS LAST`,
+      [trip.id]
+    );
+
+    // Strip identifying data — only return what's needed for public render
+    const publicTrip = {
+      name: trip.name,
+      date_start: trip.date_start,
+      date_end: trip.date_end,
+      notes: trip.notes,
+      slug: trip.slug,
+      owner_name: trip.owner_name,
+      published_at: trip.published_at,
+    };
+
+    res.json({ trip: publicTrip, segments: segmentsRes.rows });
+  } catch (err) {
+    console.error('GET /api/trips/_public/:slug', err);
+    res.status(500).json({ error: 'Failed to load trip' });
   }
 });
 

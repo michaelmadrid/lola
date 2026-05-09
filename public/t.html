@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Loading trip… — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <!-- home.css carries all .itin-fs__* trip overlay styles. Reused here so
+       the public trip page renders IDENTICALLY to the in-app overlay.
+       Editing .itin-fs__* in home.css automatically updates both surfaces. -->
+  <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/guides.css">
+</head>
+<body>
+
+<header class="head head--public">
+  <div class="head__left">
+    <a href="https://kit.summer-holiday.com" class="logo">kit</a>
+  </div>
+  <div class="head__right">
+    <span class="head__public-tag">A trip on kit</span>
+  </div>
+</header>
+
+<main class="page page-trip-public">
+
+  <div class="g-loading" id="t-loading">Loading…</div>
+  <div class="g-error" id="t-error" hidden></div>
+
+  <!-- Wrapper uses itin-fs__inner so all overlay styling applies as-is.
+       The .itin-fs class itself is skipped (no modal display:none behavior). -->
+  <article class="t-public" id="t-public" hidden>
+    <div class="itin-fs__inner">
+      <header class="itin-fs__head">
+        <h1 class="itin-fs__title" id="t-title">—</h1>
+        <p class="itin-fs__dates" id="t-dates">—</p>
+      </header>
+      <div id="t-meta" class="itin-fs__meta"></div>
+      <div id="t-trip-notes" class="itin-fs__trip-notes"></div>
+      <div id="t-segments" class="itin-fs__segments"></div>
+
+      <footer class="g-public__foot">
+        <p class="g-public__footnote">
+          Made with <a href="https://kit.summer-holiday.com">kit</a>.
+        </p>
+      </footer>
+    </div>
+  </article>
+
+</main>
+
+<script src="/js/util.js"></script>
+<script>
+(function () {
+  const path = location.pathname;
+  const match = path.match(/^\/t\/([^/]+)\/?$/);
+  if (!match) {
+    showError('Invalid trip URL.');
+    return;
+  }
+  const slug = decodeURIComponent(match[1]);
+
+  const loadingEl = document.getElementById('t-loading');
+  const errorEl   = document.getElementById('t-error');
+  const articleEl = document.getElementById('t-public');
+
+  const titleEl    = document.getElementById('t-title');
+  const datesEl    = document.getElementById('t-dates');
+  const metaEl     = document.getElementById('t-meta');
+  const tripNotesEl = document.getElementById('t-trip-notes');
+  const segmentsEl = document.getElementById('t-segments');
+
+  function showError(msg) {
+    loadingEl.hidden = true;
+    errorEl.hidden = false;
+    errorEl.textContent = msg;
+    document.title = 'Trip not found — kit';
+  }
+
+  async function loadPublic() {
+    try {
+      const res = await fetch('/api/trips/_public/' + encodeURIComponent(slug), {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        if (res.status === 404) showError('Trip not found.');
+        else showError('Could not load this trip.');
+        return;
+      }
+      const data = await res.json();
+      render(data);
+    } catch (err) {
+      console.error('loadPublic', err);
+      showError('Could not load this trip.');
+    }
+  }
+
+  function render(data) {
+    const trip = data.trip;
+    const segments = data.segments || [];
+
+    document.title = (trip.name || 'Untitled trip') + ' — kit';
+
+    titleEl.textContent = trip.name || 'Untitled trip';
+
+    // Subtitle: "May 12 — Jun 24 • 2026" (mirrors overlay rendering)
+    if (trip.date_start && trip.date_end) {
+      const ds = new Date(trip.date_start);
+      const de = new Date(trip.date_end);
+      const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const left = `${m[ds.getUTCMonth()]} ${ds.getUTCDate()}`;
+      const right = `${m[de.getUTCMonth()]} ${de.getUTCDate()}`;
+      const yearLabel = ds.getUTCFullYear() === de.getUTCFullYear()
+        ? ds.getUTCFullYear()
+        : `${ds.getUTCFullYear()}–${de.getUTCFullYear()}`;
+      datesEl.textContent = `${left} — ${right} • ${yearLabel}`;
+    } else if (trip.date_start) {
+      datesEl.textContent = util.formatLongDate(trip.date_start);
+    } else {
+      datesEl.textContent = '';
+    }
+
+    // Owner attribution
+    if (trip.owner_name) {
+      metaEl.textContent = `By ${trip.owner_name}`;
+    }
+
+    // Trip-level notes
+    if (trip.notes) {
+      tripNotesEl.innerHTML = util.safeMarkdown(trip.notes);
+    } else {
+      tripNotesEl.innerHTML = '';
+    }
+
+    // Segments — IDENTICAL markup to home.js renderItinerary, minus the
+    // "you are here" indicator (read-only public view, no current-trip context).
+    if (!segments.length) {
+      segmentsEl.innerHTML = '<p class="itin-fs__empty">No stops yet.</p>';
+      return;
+    }
+    const monShort = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const fmtRange = (a, b) => {
+      if (!a) return '';
+      const da = new Date(a);
+      if (!b) return `${monShort[da.getUTCMonth()]} ${da.getUTCDate()}`;
+      const db = new Date(b);
+      const left = `${monShort[da.getUTCMonth()]} ${da.getUTCDate()}`;
+      const right = (da.getUTCMonth() === db.getUTCMonth())
+        ? `${db.getUTCDate()}`
+        : `${monShort[db.getUTCMonth()]} ${db.getUTCDate()}`;
+      return `${left} — ${right}`;
+    };
+
+    segmentsEl.innerHTML = segments.map(s => {
+      const label = s.city_name || s.region_label || '—';
+      const dateRange = fmtRange(s.date_start, s.date_end);
+      const nights = (s.date_start && s.date_end)
+        ? Math.max(0, Math.round((new Date(s.date_end) - new Date(s.date_start)) / 86400000))
+        : null;
+      const nightsLabel = nights !== null
+        ? `${nights} ${nights === 1 ? 'night' : 'nights'}`
+        : '';
+      const notes = s.notes
+        ? `<div class="itin-fs__seg-notes">${util.safeMarkdown(s.notes)}</div>`
+        : '';
+      return `<article class="itin-fs__seg">
+        <div class="itin-fs__seg-row">
+          <h2 class="itin-fs__seg-name">${util.escapeHtml(label)}</h2>
+          ${nightsLabel ? `<span class="itin-fs__seg-pill">${nightsLabel}</span>` : ''}
+        </div>
+        ${dateRange ? `<div class="itin-fs__seg-dates">${dateRange}</div>` : ''}
+        ${notes}
+      </article>`;
+    }).join('');
+
+    loadingEl.hidden = true;
+    articleEl.hidden = false;
+  }
+
+  loadPublic();
+})();
+</script>
+</body>
+</html>

@@ -556,6 +556,16 @@ input, textarea, select { font: inherit; }
   border-color: var(--blue);
   background: transparent;
 }
+.btn--published {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+.btn--published:hover {
+  background: var(--blue);
+  color: white;
+  filter: brightness(0.92);
+}
 .btn--danger:hover { background: #c0392b; border-color: #c0392b; }
 
 /* Outlined circle close button — universal overlay close affordance */
