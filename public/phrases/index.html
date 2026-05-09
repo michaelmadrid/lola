@@ -48,8 +48,11 @@
 
 <main class="page page-phrases">
 
-  <!-- Language picker — None / FR / ES / IT / PT / DE / JA -->
-  <div class="ph-langs" id="ph-langs"></div>
+  <!-- Top row: language picker (left) + add phrase button (right) -->
+  <div class="ph-topbar">
+    <div class="ph-langs" id="ph-langs"></div>
+    <a href="/phrases/capture/" class="ph-add-inline" aria-label="Add a phrase">+ Add phrase</a>
+  </div>
 
   <!-- Category chips: All + per-category -->
   <div class="ph-cats" id="ph-cats"></div>
@@ -60,8 +63,6 @@
   </div>
 
 </main>
-
-<a href="/phrases/capture/" class="ph-add">+ Add phrase</a>
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>

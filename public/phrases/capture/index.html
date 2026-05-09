@@ -6,74 +6,64 @@
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
   <title>Add phrase — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
-  <link rel="stylesheet" href="/css/phrases.css">
+  <link rel="stylesheet" href="/css/home.css"><!-- capture-fs__* overlay styles -->
+  <link rel="stylesheet" href="/css/phrases.css"><!-- small phrase-specific tweaks -->
+  <style>
+    /* Standalone /phrases/capture/ page: chrome-less full-bleed overlay,
+       same approach as /capture/. Mirrors capture-page-host. */
+    body { background: var(--bg); }
+    .capture-page-host {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
 
-<header class="head">
-  <div class="head__left">
-    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
-      <span class="menu-btn__icon" aria-hidden="true">
-        <span class="menu-btn__bar menu-btn__bar--top"></span>
-        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
-      </span>
-    </button>
-    <a href="/" class="logo">kit</a>
+<main class="capture-page-host">
+  <!-- Reuses capture-fs__* class structure for pixel-identical visuals.
+       Differences from /capture/: bind row uses category picker (not city);
+       no been/want toggle; foot has a single Save button instead of two. -->
+  <div class="capture-fs is-open" id="phrase-fs" aria-hidden="false">
+    <div class="capture-fs__inner">
+      <header class="capture-fs__head">
+        <a href="/phrases/" class="btn-close-circle" aria-label="Close">×</a>
+      </header>
+
+      <div class="capture-fs__bind">
+        <div class="capture-fs__bind-row">
+          <span class="capture-fs__bind-label">In</span>
+          <button class="capture-fs__city-btn" id="pf-cat-btn" type="button">
+            <span id="pf-cat-name">Coffee</span>
+            <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
+          </button>
+        </div>
+        <div class="capture-fs__city-popover" id="pf-cat-popover">
+          <div class="capture-fs__city-list" id="pf-cat-list"></div>
+        </div>
+      </div>
+
+      <div class="capture-fs__body">
+        <textarea
+          class="capture-fs__textarea"
+          id="pf-textarea"
+          placeholder="A flat white with oat milk."
+          autocomplete="off"
+          spellcheck="false"
+          rows="1"
+        ></textarea>
+      </div>
+
+      <footer class="capture-fs__foot">
+        <span class="pf-state" id="pf-state"></span>
+        <button class="btn" id="pf-save" type="button">
+          Save phrase <span class="kbd">⌘↵</span>
+        </button>
+      </footer>
+    </div>
   </div>
-  <nav class="nav">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/travel/" data-auth="in">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/phrases/" class="is-active" data-auth="in">Phrases</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
-  </nav>
-</header>
-
-<div class="menu-overlay" id="menu-overlay">
-  <div class="menu-overlay__inner">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/travel/" data-auth="in">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-    <a href="/phrases/" class="is-active" data-auth="in">Phrases</a>
-    <a href="/settings.html" data-auth="in">Settings</a>
-    <a href="/admin/" data-auth="in">Admin</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
-    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
-  </div>
-</div>
-
-<main class="page page-phrase-capture">
-
-  <header class="pc-head">
-    <h1 class="pc-head__title">Add phrase</h1>
-    <a href="/phrases/" class="pc-head__back">← All phrases</a>
-  </header>
-
-  <form class="pc-form" id="pc-form" autocomplete="off">
-
-    <div class="pc-row">
-      <span class="pc-label">Category</span>
-      <div class="pc-cat-row" id="pc-cats"></div>
-    </div>
-
-    <div class="pc-row">
-      <span class="pc-label">Phrase</span>
-      <textarea
-        id="pc-text"
-        class="pc-input"
-        placeholder="A flat white with oat milk."
-        rows="2"
-        required
-      ></textarea>
-    </div>
-
-    <div class="pc-actions">
-      <button type="submit" class="btn" id="pc-save">Save phrase</button>
-      <span class="pc-state" id="pc-state"></span>
-    </div>
-  </form>
-
 </main>
 
 <script src="/js/api.js"></script>

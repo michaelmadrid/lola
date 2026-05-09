@@ -1,16 +1,22 @@
 /* =====================================================================
    phrases-capture.js — /phrases/capture/
 
-   Simple capture form. User picks a hardcoded category and types a phrase.
-   On save, POST /api/phrases. Last-used category is sticky via localStorage.
-   After save: input clears, focus stays on input, status pings "Saved" —
-   so you can rapid-fire add multiple phrases.
+   Overlay-style capture mirroring the main /capture/ page, but with:
+     - a CATEGORY picker (hardcoded list) instead of a city picker
+     - no been/want toggle
+     - a single Save button (no continue/close split — phrases are single-line
+       and rapid-fire by design; after save the input clears and refocuses)
+
+   Behavior:
+   - Last-used category sticks in localStorage
+   - ⌘+Enter / Ctrl+Enter saves
+   - After save: input clears, focus stays on input, status pings "Saved"
+   - Tap × in top-left to return to /phrases/
    ===================================================================== */
 
 (function () {
   // Hardcoded categories — must match phrases-curated.json _meta.categories
-  // and the API's allow-list. Single source of truth ideally lives in the
-  // JSON, but for capture we don't want to fetch it just to render a chip row.
+  // and the API's allow-list. Update all three when adding categories.
   const CATEGORIES = [
     { key: 'coffee',    label: 'Coffee' },
     { key: 'food',      label: 'Food' },
@@ -24,37 +30,77 @@
     { key: 'wifi',      label: 'Internet / Phone / Payment' },
   ];
 
-  const catsEl  = document.getElementById('pc-cats');
-  const textEl  = document.getElementById('pc-text');
-  const formEl  = document.getElementById('pc-form');
-  const saveBtn = document.getElementById('pc-save');
-  const stateEl = document.getElementById('pc-state');
+  const catBtn      = document.getElementById('pf-cat-btn');
+  const catName     = document.getElementById('pf-cat-name');
+  const catPopover  = document.getElementById('pf-cat-popover');
+  const catList     = document.getElementById('pf-cat-list');
+  const textareaEl  = document.getElementById('pf-textarea');
+  const saveBtn     = document.getElementById('pf-save');
+  const stateEl     = document.getElementById('pf-state');
 
-  // Restore last-used category, default to 'coffee' if none
+  // Restore last-used category, default to 'coffee'
   let activeCat = localStorage.getItem('kit.phrases.captureCat') || 'coffee';
   if (!CATEGORIES.find(c => c.key === activeCat)) activeCat = 'coffee';
 
-  renderCats();
-  // Focus the input on load — fastest path to typing
-  setTimeout(() => textEl.focus(), 50);
+  updateCatLabel();
+  renderCatList();
 
-  function renderCats() {
-    catsEl.innerHTML = CATEGORIES.map(c => `
-      <button type="button"
-              class="pc-cat ${activeCat === c.key ? 'is-active' : ''}"
-              data-cat="${c.key}">${c.label}</button>
+  // Focus input on load — fastest path to typing
+  setTimeout(() => textareaEl.focus(), 50);
+
+  function updateCatLabel() {
+    const cat = CATEGORIES.find(c => c.key === activeCat);
+    catName.textContent = cat ? cat.label : 'Pick';
+  }
+
+  function renderCatList() {
+    catList.innerHTML = CATEGORIES.map(c => `
+      <button class="capture-fs__city-item ${activeCat === c.key ? 'is-current' : ''}"
+              data-cat="${c.key}" type="button">
+        ${c.label}
+      </button>
     `).join('');
-    catsEl.querySelectorAll('.pc-cat').forEach(btn => {
+    catList.querySelectorAll('.capture-fs__city-item').forEach(btn => {
       btn.addEventListener('click', () => {
         activeCat = btn.dataset.cat;
         localStorage.setItem('kit.phrases.captureCat', activeCat);
-        renderCats();
-        // Return focus to input after picking a category
-        setTimeout(() => textEl.focus(), 0);
+        updateCatLabel();
+        renderCatList();
+        closePopover();
+        setTimeout(() => textareaEl.focus(), 0);
       });
     });
   }
 
+  function openPopover() {
+    catPopover.classList.add('is-open');
+  }
+  function closePopover() {
+    catPopover.classList.remove('is-open');
+  }
+  function togglePopover() {
+    if (catPopover.classList.contains('is-open')) closePopover();
+    else openPopover();
+  }
+
+  catBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    togglePopover();
+  });
+  document.addEventListener('click', (e) => {
+    if (catPopover.classList.contains('is-open')
+        && !catPopover.contains(e.target)
+        && !catBtn.contains(e.target)) {
+      closePopover();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && catPopover.classList.contains('is-open')) {
+      closePopover();
+    }
+  });
+
+  // ---------- Save ----------
   let stateTimer = null;
   function showState(text, persistent) {
     stateEl.textContent = text;
@@ -65,30 +111,40 @@
     }
   }
 
-  formEl.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const text = textEl.value.trim();
+  async function savePhrase() {
+    const text = textareaEl.value.trim();
     if (!text) return;
     saveBtn.disabled = true;
     showState('Saving…', true);
     try {
       await api.post('/api/phrases', { category: activeCat, text });
       showState('Saved');
-      textEl.value = '';
-      textEl.focus();
+      textareaEl.value = '';
+      // Auto-grow the textarea would shrink back here; with rows=1 + auto behavior
+      // it resets on .value = '' naturally
+      textareaEl.style.height = '';
+      textareaEl.focus();
     } catch (err) {
       console.error('save phrase', err);
       showState(err.message || 'Failed', true);
     } finally {
       saveBtn.disabled = false;
     }
-  });
+  }
 
-  // Cmd/Ctrl + Enter saves (matches behaviour of capture flows elsewhere)
-  textEl.addEventListener('keydown', (e) => {
+  saveBtn.addEventListener('click', savePhrase);
+
+  // ⌘+Enter / Ctrl+Enter to save (matches /capture/ shortcut)
+  textareaEl.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       e.preventDefault();
-      formEl.dispatchEvent(new Event('submit', { cancelable: true }));
+      savePhrase();
     }
+  });
+
+  // Auto-grow the textarea as the user types (matches capture-overlay.js feel)
+  textareaEl.addEventListener('input', () => {
+    textareaEl.style.height = 'auto';
+    textareaEl.style.height = textareaEl.scrollHeight + 'px';
   });
 })();
