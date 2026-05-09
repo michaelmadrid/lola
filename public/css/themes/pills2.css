@@ -1,0 +1,246 @@
+/* =====================================================================
+   THEME: PILLS2
+
+   Activated by: <body class="theme-pills2">
+   Set via:      localStorage.setItem('kit.streamTheme', 'pills2')
+                 or ?theme=pills2 query param
+
+   Concept: monochromatic French blue family + butter yellow accents.
+   Each category gets a different visual TREATMENT (solid / outlined /
+   tinted) so the wall feels like an art-publication index rather than
+   a uniform list. Sans typography (regular + bold).
+
+   Inspiration: contemporary-art-journal index pages — yellow + lavender
+   + grey + bordered pills, mixed weights. Adapted to kit's blue palette.
+   ===================================================================== */
+
+/* ---------- Stream layout ---------- */
+body.theme-pills2 .stream {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px 10px;
+  padding: 8px 0 0;
+  flex-direction: row;
+}
+
+/* Hide the date column ("when") and meta entirely */
+body.theme-pills2 .stream__when,
+body.theme-pills2 .stream__meta,
+body.theme-pills2 .stream__pending {
+  display: none !important;
+}
+
+/* ---------- Each save = a pill ---------- */
+body.theme-pills2 .stream__item {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 0;
+  border-radius: 999px;
+  padding: 10px 20px;
+  /* Override default block borders */
+  border-bottom: 0 !important;
+  border-top: 0 !important;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  /* Default border treatment = transparent (overridden per category) */
+  border: 2px solid transparent;
+  /* Default colors — soft French blue tint */
+  background: #e2e8f5;
+  color: #1f2a4a;
+}
+
+body.theme-pills2 .stream__item:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.97);
+  box-shadow: 0 2px 8px rgba(42, 78, 212, 0.08);
+}
+
+/* Body wrapper inside each item */
+body.theme-pills2 .stream__body {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Name = bold sans */
+body.theme-pills2 .stream__name {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+/* Tip = regular sans, bullet separator before */
+body.theme-pills2 .stream__tip {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+body.theme-pills2 .stream__tip::before {
+  content: "•";
+  color: inherit;
+  opacity: 0.55;
+  margin-right: 8px;
+  font-weight: 400;
+}
+
+/* Want-to-go: NO visual distinction in pills2.
+   Suppress the default home.css blue-dot ::after across themes. */
+body.theme-pills2 .stream__item.is-want .stream__name::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* ---------- Category treatments ----------
+   Palette anchors:
+     French blue  #2a4ed4
+     Deep blue    #1a2850 (text on yellow)
+     Soft blue    #d6def0 (light fill)
+     Pale blue    #e2e8f5 (default fill, lightest)
+     Butter yellow #f5e85a (signature accent)
+     Pale yellow  #faf3a8 (soft yellow tint)
+     Grey-blue    #d8dde6 (neutral)
+*/
+
+/* eat → SOLID BUTTER YELLOW (loud, attention pill) */
+body.theme-pills2 .stream__item[data-category="eat"] {
+  background: #f5e85a;
+  color: #1a2850;
+  border-color: transparent;
+}
+
+/* drink → OUTLINED FRENCH BLUE (transparent fill, 2px border) */
+body.theme-pills2 .stream__item[data-category="drink"] {
+  background: transparent;
+  color: #2a4ed4;
+  border-color: #2a4ed4;
+}
+
+/* coffee → SOFT BLUE TINT (mid-fill, blue text) */
+body.theme-pills2 .stream__item[data-category="coffee"] {
+  background: #d6def0;
+  color: #1f2a4a;
+  border-color: transparent;
+}
+
+/* stay → SOLID FRENCH BLUE (white text, deepest pill) */
+body.theme-pills2 .stream__item[data-category="stay"] {
+  background: #2a4ed4;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* shop → PALE YELLOW + BLUE BORDER (mixed treatment) */
+body.theme-pills2 .stream__item[data-category="shop"] {
+  background: #faf3a8;
+  color: #1a2850;
+  border-color: #2a4ed4;
+}
+
+/* see → SOFT GREY-BLUE (neutral, dark blue text) */
+body.theme-pills2 .stream__item[data-category="see"] {
+  background: #d8dde6;
+  color: #1f2a4a;
+  border-color: transparent;
+}
+
+/* other → OUTLINED NEUTRAL (transparent fill, thin grey border) */
+body.theme-pills2 .stream__item[data-category="other"] {
+  background: transparent;
+  color: #555;
+  border-color: #b8bcc4;
+}
+
+/* uncategorized → PALE BLUE (lightest, quiet) */
+/* Default rule already covers this — pale blue #e2e8f5 */
+
+/* Pending (no place_name yet) — ghost pill */
+body.theme-pills2 .stream__item.stream__pending,
+body.theme-pills2 .stream__item:not(.is-structured) {
+  background: #ececeb;
+  color: #888;
+  border-color: transparent;
+}
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 720px) {
+  body.theme-pills2 .stream {
+    gap: 6px 8px;
+  }
+  body.theme-pills2 .stream__item {
+    padding: 8px 16px;
+    border-width: 2px;
+  }
+  body.theme-pills2 .stream__name,
+  body.theme-pills2 .stream__tip {
+    font-size: 14px;
+  }
+}
+
+/* ---------- Stream head spacing ---------- */
+body.theme-pills2 .stream__head {
+  margin-bottom: 14px;
+}
+
+/* ---------- Dark mode adjustments ---------- */
+body.dark.theme-pills2 .stream__item {
+  background: #1c2230;
+  color: #c8d2eb;
+}
+body.dark.theme-pills2 .stream__item[data-category="eat"] {
+  background: #d4c84a;
+  color: #1a2850;
+}
+body.dark.theme-pills2 .stream__item[data-category="drink"] {
+  background: transparent;
+  color: #6f8aff;
+  border-color: #6f8aff;
+}
+body.dark.theme-pills2 .stream__item[data-category="coffee"] {
+  background: #2a3148;
+  color: #c8d2eb;
+}
+body.dark.theme-pills2 .stream__item[data-category="stay"] {
+  background: #2a4ed4;
+  color: #ffffff;
+}
+body.dark.theme-pills2 .stream__item[data-category="shop"] {
+  background: #3a3415;
+  color: #faf3a8;
+  border-color: #6f8aff;
+}
+body.dark.theme-pills2 .stream__item[data-category="see"] {
+  background: #2a2f3a;
+  color: #c8d2eb;
+}
+body.dark.theme-pills2 .stream__item[data-category="other"] {
+  background: transparent;
+  color: #aab;
+  border-color: #4a4f5c;
+}
