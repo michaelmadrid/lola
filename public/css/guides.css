@@ -873,30 +873,3 @@
 .g-public__item-maps:hover {
   border-bottom-color: var(--blue);
 }
-
-/* =====================================================================
-   PUBLIC TRIP VIEW (/t/:slug)
-   Reuses .itin-fs__* styles from home.css for visual identity with
-   the in-app trip overlay. This file just provides the page wrapper.
-   ===================================================================== */
-.page-trip-public {
-  max-width: 760px;
-  margin: 0 auto;
-  padding: 56px 32px 80px;
-}
-@media (max-width: 720px) {
-  .page-trip-public { padding: 32px 20px 80px; }
-}
-.t-public .itin-fs__inner {
-  /* On the public page the inner block has no parent modal, so reset
-     any modal-derived spacing/positioning here if needed. */
-  padding: 0;
-}
-.t-public .itin-fs__meta {
-  /* Author byline on public view — slightly quieter */
-  font-family: var(--sans);
-  font-size: 13px;
-  color: var(--ink-3);
-  margin-top: 4px;
-  margin-bottom: 32px;
-}

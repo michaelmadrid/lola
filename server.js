@@ -46,13 +46,6 @@ app.get('/g/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'g.html'));
 });
 
-// ============ PUBLIC TRIP VIEW ============
-// /t/:slug serves a static public trip page. Fetches via
-// /api/trips/_public/:slug. No auth required.
-app.get('/t/:slug', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 't.html'));
-});
-
 // ============ FALLBACK ============
 // If a request hits /something but no static file exists,
 // fall through to index.html (so client-side links still work)
