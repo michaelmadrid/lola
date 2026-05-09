@@ -39,7 +39,7 @@ body.theme-pills .stream__item {
   flex-direction: row;
   gap: 0;
   border-radius: 999px;
-  padding: 7px 14px;
+  padding: 9px 18px;
   border-bottom: 0 !important;
   border-top: 0 !important;
   background: var(--pill-bg, #e8e6df);
@@ -75,7 +75,7 @@ body.theme-pills .stream__body {
 body.theme-pills .stream__name {
   font-family: var(--sans);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: -0.005em;
   color: inherit;
   white-space: nowrap;
@@ -89,7 +89,7 @@ body.theme-pills .stream__name {
 body.theme-pills .stream__tip {
   font-family: var(--sans);
   font-weight: 400;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: -0.005em;
   color: inherit;
   white-space: nowrap;
@@ -108,11 +108,17 @@ body.theme-pills .stream__tip::before {
 }
 
 /* Want-to-go: outlined pill instead of filled. Reads as "wishlist" — open
-   shape vs closed. No opacity dim, no trailing dot — the outline IS the cue. */
+   shape vs closed. No opacity dim, no trailing dot — the outline IS the cue.
+   Explicitly suppress the default home.css blue-dot ::after that fires
+   on .stream__item.is-want .stream__name across all themes. */
 body.theme-pills .stream__item.is-want {
   background: transparent;
   border-color: var(--pill-bg);
   color: var(--pill-fg);
+}
+body.theme-pills .stream__item.is-want .stream__name::after {
+  content: none !important;
+  display: none !important;
 }
 body.theme-pills .stream__item.is-want:hover {
   background: var(--pill-bg);
