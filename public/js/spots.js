@@ -184,14 +184,55 @@
   }
 
   // -------- Generic popover open/close --------
+  // Standard popover positioning logic (the "Floating UI / Popper.js" pattern):
+  //   1. Reset to default left-aligned position
+  //   2. Measure where popover actually lands in viewport
+  //   3. If it overflows right edge: flip to right-aligned (anchored to trigger's right edge)
+  //   4. If still overflows left: clamp to viewport edge
+  // No JS positioning library needed — this is enough for our 3 pickers.
+  function positionPopover(pop) {
+    // Reset any inline styles from previous opens
+    pop.style.left = '';
+    pop.style.right = '';
+    pop.style.transform = '';
+
+    // Measure viewport vs popover
+    const margin = 8; // breathing room from viewport edge
+    const rect = pop.getBoundingClientRect();
+    const vw = window.innerWidth;
+
+    // Right overflow → flip to right-anchored (popover extends LEFT from button's right edge)
+    if (rect.right > vw - margin) {
+      pop.style.left = 'auto';
+      pop.style.right = '0';
+      // Re-measure after flip
+      const rect2 = pop.getBoundingClientRect();
+      // If now overflows left edge → clamp by setting fixed-style position via translate
+      if (rect2.left < margin) {
+        // Calculate how much we need to shift right to fit
+        const shift = margin - rect2.left;
+        pop.style.right = '';
+        pop.style.left = '0';
+        // Use transform so we don't disturb the absolute positioning logic
+        pop.style.transform = `translateX(${shift}px)`;
+      }
+    }
+  }
+
   function openPopover(pop) {
     closeAllPopovers();
     pop.hidden = false;
     pop.classList.add('is-open');
+    // Position AFTER showing (popover must be in DOM with dimensions to measure)
+    positionPopover(pop);
   }
   function closePopover(pop) {
     pop.classList.remove('is-open');
     pop.hidden = true;
+    // Clear inline styles so next open starts clean
+    pop.style.left = '';
+    pop.style.right = '';
+    pop.style.transform = '';
   }
   function closeAllPopovers() {
     [cityPop, typePop, beenPop].forEach(p => p && closePopover(p));
