@@ -457,7 +457,7 @@
       showSaveState(newStatus === 'published' ? 'Published' : 'Unpublished');
 
       if (newStatus === 'published' && guide.slug) {
-        const publicUrl = location.origin + '/g/' + guide.slug;
+        const publicUrl = location.origin + '/guide/' + guide.slug;
         const ok = confirm(`Published! Public link:\n\n${publicUrl}\n\nCopy to clipboard?`);
         if (ok && navigator.clipboard) {
           navigator.clipboard.writeText(publicUrl).catch(() => {});

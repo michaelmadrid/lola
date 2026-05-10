@@ -46,9 +46,9 @@
 <script src="/js/util.js"></script>
 <script>
 (function () {
-  // Extract slug from URL — /g/{slug}
+  // Extract slug from URL — /guide/{slug}
   const path = location.pathname;
-  const match = path.match(/^\/g\/([^/]+)\/?$/);
+  const match = path.match(/^\/guide\/([^/]+)\/?$/);
   if (!match) {
     showError('Invalid guide URL.');
     return;

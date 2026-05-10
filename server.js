@@ -40,10 +40,10 @@ app.use('/api/guides',  require('./api/routes/guides'));
 app.use('/api/phrases', require('./api/routes/phrases'));
 
 // ============ PUBLIC GUIDE VIEW ============
-// /g/:slug serves a static public guide page. The page itself fetches
-// the guide data via /api/guides/_public/:slug. No auth required for
-// either the page or the API endpoint.
-app.get('/g/:slug', (req, res) => {
+// /guide/:slug is the canonical public URL — editorial, readable.
+// The page (g.html) fetches the guide data via /api/guides/_public/:slug.
+// No auth required for either the page or the API endpoint.
+app.get('/guide/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'g.html'));
 });
 
