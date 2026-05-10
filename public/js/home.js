@@ -609,16 +609,20 @@
   //  - "↗" at top opens a fullscreen editor with all todos, same behavior, more room.
   //  - Saves debounced ~500ms.
 
+  // Todos UI parked pre-Europe26 — DOM nodes removed from index.html.
+  // The entire todos block below only runs if its anchor element exists.
+  // Restore: re-add #todo-list to index.html.
   const list = document.getElementById('todo-list');
-  const addZone = document.getElementById('add-todo-zone');
-  const expandBtn = document.getElementById('todos-expand');
+  if (list) {
+    const addZone = document.getElementById('add-todo-zone');
+    const expandBtn = document.getElementById('todos-expand');
 
-  // fullscreen editor
-  const fs           = document.getElementById('todo-editor');
-  const fsList       = document.getElementById('todo-fs-list');
-  const fsAddZone    = document.getElementById('todo-fs-addzone');
-  const fsClose      = document.getElementById('todo-editor-close');
-  const fsDate       = document.getElementById('todo-fs-date');
+    // fullscreen editor
+    const fs           = document.getElementById('todo-editor');
+    const fsList       = document.getElementById('todo-fs-list');
+    const fsAddZone    = document.getElementById('todo-fs-addzone');
+    const fsClose      = document.getElementById('todo-editor-close');
+    const fsDate       = document.getElementById('todo-fs-date');
 
   // local cache mirrors server. id → todo object.
   const todos = new Map();
@@ -894,6 +898,7 @@
     }
   }
   loadTodos();
+  } // end if (list) — todos parked pre-Europe26
 
   // ============ SAVE EDITOR ============
   const saveEditor     = document.getElementById('save-editor');

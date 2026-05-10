@@ -598,33 +598,12 @@
     }
 
     // ---- Todos pill ----
+    // Todos UI parked pre-Europe26 — slim-todos pill removed alongside
+    // home widget. To restore: undo this block + restore #todo-list in
+    // index.html.
     glyphsEl.innerHTML = '';
-    if (window.api && window.api.isSignedIn && window.api.isSignedIn()) {
-      try {
-        const data = await window.api.get('/api/todos?view=today');
-        const todos = (data && data.todos) || [];
-        const open = todos.filter(t => !t.completed_at && !t.archived_at).length;
-        if (open > 0) {
-          const a = document.createElement('a');
-          a.className = 'slim-mobile__pill';
-          a.href = '#';
-          a.id = 'slim-todos';
-          a.setAttribute('aria-label', `${open} open todos`);
-          // Glyph-led, no labels: "✓ 3"
-          a.innerHTML = `<span class="slim-mobile__pill-glyph">✓</span><span class="slim-mobile__pill-value">${open}</span>`;
-          glyphsEl.appendChild(a);
-          hasGlyphs = true;
-          a.addEventListener('click', (e) => {
-            e.preventDefault();
-            const fsBtn = document.getElementById('todos-expand');
-            if (fsBtn) { fsBtn.click(); }
-            else { window.location.href = '/'; }
-          });
-        }
-      } catch (e) {}
-    }
 
-    row3.hidden = !(hasTrip || hasGlyphs);
+    row3.hidden = !hasTrip;
 
     if (hasTrip) {
       tripEl.style.cursor = 'pointer';

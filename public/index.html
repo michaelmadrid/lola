@@ -169,16 +169,12 @@
 
   </div>
 
-  <!-- RIGHT — todos -->
+  <!-- RIGHT — mobile launch column.
+       Was: todos widget + mobile launchers. Todos removed pre-Europe26
+       (parked in home.js JS — UI bindings will silently no-op since DOM
+       targets are gone). Will be reintroduced as a dedicated module in
+       Phase 4B home rebuild post-trip if/when wanted. -->
   <aside class="col-right">
-    <div class="todos">
-      <div class="todos__head">
-        <span class="todos__label">Today</span>
-        <button class="todos__expand" id="todos-expand" aria-label="Open fullscreen">↗</button>
-      </div>
-      <div class="todo-list" id="todo-list"></div>
-      <div class="todos__add-zone" id="add-todo-zone" aria-label="Add todo"></div>
-    </div>
 
     <!-- TEMP — Juice (phrases) link above trip launch.
          Reuses .trip-launch shape so visual is consistent. Shows on mobile only
@@ -200,20 +196,12 @@
 
 </main>
 
-<!-- ============ TODO FULLSCREEN EDITOR (all todos) ============ -->
-<div class="modal todo-fs" id="todo-editor">
-  <div class="modal__head">
-    <h3 class="todo-fs__title">TODO</h3>
-    <span class="todo-fs__date" id="todo-fs-date">—</span>
-    <button class="modal__close" id="todo-editor-close">close</button>
-  </div>
-  <div class="modal__body">
-    <div class="modal__body__inner todo-fs__inner">
-      <div class="todo-fs__list" id="todo-fs-list"></div>
-      <div class="todo-fs__addzone" id="todo-fs-addzone"></div>
-    </div>
-  </div>
-</div>
+<!-- ============ TODO FULLSCREEN EDITOR — REMOVED PRE-EUROPE26 ============
+     Was: a fullscreen modal for editing all todos. Removed alongside the
+     home widget. JS in home.js that targets #todo-editor / #todo-fs-list
+     etc. silently no-ops since those DOM nodes no longer exist.
+     Restore: see git history pre-2026-05-10, or wait for 4B home rebuild.
+============================================================== -->
 
 <!-- ============ ITINERARY OVERLAY ============ -->
 <div class="modal itin-fs" id="itin-overlay">
