@@ -21,7 +21,7 @@
   max-width: 380px;
 }
 .login-title {
-  font-size: 32px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.025em;
   margin: 0 0 32px;
@@ -35,7 +35,7 @@
 }
 .login-error {
   margin-top: 16px;
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--danger);
   letter-spacing: -0.005em;
   min-height: 18px;

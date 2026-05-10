@@ -28,7 +28,7 @@
 }
 .page-guides .mast__title {
   font-family: var(--sans);
-  font-size: 28px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   margin: 0;
@@ -36,13 +36,13 @@
 }
 .page-guides .mast__intro {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   margin: 4px 0 0;
   letter-spacing: -0.005em;
 }
 @media (max-width: 720px) {
-  .page-guides .mast__title { font-size: 24px; }
+  .page-guides .mast__title { font-size: var(--text-display); }
 }
 
 /* ---------- List ---------- */
@@ -59,21 +59,21 @@
 }
 .guides-list__loading {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .guides-list__empty-line {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--text-strong);
   color: var(--ink);
   margin: 0 0 8px;
   letter-spacing: -0.005em;
 }
 .guides-list__empty-sub {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   max-width: 420px;
@@ -107,7 +107,7 @@
 }
 .guide-card__title {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   letter-spacing: -0.01em;
   margin: 0;
@@ -123,7 +123,7 @@
 
 .guide-card__subtitle {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   margin: 0 0 8px;
@@ -132,7 +132,7 @@
 
 .guide-card__meta {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   letter-spacing: -0.005em;
   margin: 0;
@@ -141,7 +141,7 @@
 /* ---------- Status pill ---------- */
 .guide-card__status {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 3px 9px;
@@ -194,7 +194,7 @@
 }
 .ge-bar__back {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   text-decoration: none;
   letter-spacing: -0.005em;
@@ -203,7 +203,7 @@
 .ge-bar__back:hover { color: var(--ink); }
 .ge-bar__save-state {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   opacity: 0;
@@ -213,7 +213,7 @@
 
 .ge-bar__btn {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   background: var(--surface);
   border: 0;
@@ -242,7 +242,7 @@
 @media (max-width: 720px) {
   .ge-bar { flex-wrap: wrap; gap: 8px; }
   .ge-bar__center { display: none; } /* save state shown elsewhere on mobile */
-  .ge-bar__btn { font-size: 12px; padding: 6px 10px; }
+  .ge-bar__btn { font-size: var(--text-small); padding: 6px 10px; }
 }
 
 .ge-loading,
@@ -250,7 +250,7 @@
   padding: 60px 0;
   text-align: center;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -266,7 +266,7 @@
 }
 .ge-city-row__label {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -280,7 +280,7 @@
   background: var(--surface);
   border: 0;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink);
   font-weight: 500;
   padding: 7px 14px;
@@ -293,7 +293,7 @@
 .picker-btn:hover { background: var(--surface-2); }
 .picker-btn .picker-btn__label.is-placeholder { color: var(--ink-3); }
 .picker-btn__caret {
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
 }
 
@@ -318,7 +318,7 @@
   border-radius: var(--r-input);
   padding: 9px 12px;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   outline: none;
   color: var(--ink);
   margin-bottom: 6px;
@@ -337,7 +337,7 @@
   border: 0;
   padding: 8px 12px;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   cursor: pointer;
   border-radius: var(--r-input);
@@ -347,7 +347,7 @@
 .picker-item.is-current { color: var(--accent); font-weight: 500; }
 .picker-empty {
   padding: 12px;
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   text-align: center;
 }
@@ -367,7 +367,7 @@
   border: 0;
   outline: 0;
   font-family: var(--sans);
-  font-size: 32px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -377,7 +377,7 @@
 }
 .ge-title::placeholder { color: var(--ink-3); }
 @media (max-width: 720px) {
-  .ge-title { font-size: 26px; }
+  .ge-title { font-size: var(--text-display); }
 }
 
 .ge-subtitle {
@@ -387,7 +387,7 @@
   border: 0;
   outline: 0;
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--text-strong);
   color: var(--ink-2);
   padding: 4px 0;
   margin-bottom: 16px;
@@ -403,7 +403,7 @@
   border: 0;
   outline: 0;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   line-height: 1.55;
   color: var(--ink);
   padding: 12px 14px;
@@ -436,7 +436,7 @@
 }
 .ge-city-btn.is-locked::after {
   content: "🔒";
-  font-size: 10px;
+  font-size: var(--text-tiny);
   margin-left: 4px;
   opacity: 0.6;
 }
@@ -454,14 +454,14 @@
 }
 .ge-picker__count {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .ge-picker__selectall {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   background: transparent;
   border: 0;
@@ -477,7 +477,7 @@
   padding: 24px 0;
   text-align: center;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -488,7 +488,7 @@
 }
 .ge-picker__empty-line {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   margin: 0;
   line-height: 1.55;
@@ -544,7 +544,7 @@
   transition: background var(--ease-quick), border-color var(--ease-quick);
 }
 .ge-pick-row__check-mark {
-  font-size: 12px;
+  font-size: var(--text-small);
   color: white;
   opacity: 0;
   line-height: 1;
@@ -567,7 +567,7 @@
   overflow: hidden;
 }
 .ge-pick-row__name {
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 500;
   color: var(--ink);
   white-space: nowrap;
@@ -577,7 +577,7 @@
   max-width: 60%;
 }
 .ge-pick-row__tip {
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   white-space: nowrap;
   overflow: hidden;
@@ -587,7 +587,7 @@
 }
 .ge-pick-row__cat {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -613,7 +613,7 @@
 }
 .ge-preview__city {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -621,7 +621,7 @@
 }
 .ge-preview__title {
   font-family: var(--sans);
-  font-size: 36px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -630,7 +630,7 @@
 }
 .ge-preview__subtitle {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: var(--text-medium);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   margin: 0;
@@ -640,7 +640,7 @@
 
 .ge-preview__intro {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.6;
   color: var(--ink);
   letter-spacing: -0.005em;
@@ -666,13 +666,13 @@
   left: 0;
   top: 4px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
 }
 .ge-preview__item-name {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--ink);
@@ -681,7 +681,7 @@
 }
 .ge-preview__item-tip {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   margin: 0;
@@ -689,7 +689,7 @@
 }
 .ge-preview__empty {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   text-align: center;
   padding: 40px 0;
@@ -705,7 +705,7 @@
 }
 .head__public-tag {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -725,7 +725,7 @@
   padding: 80px 0;
   text-align: center;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -737,7 +737,7 @@
 }
 .g-public__city {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -745,7 +745,7 @@
 }
 .g-public__title {
   font-family: var(--sans);
-  font-size: 40px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -753,11 +753,11 @@
   line-height: 1.05;
 }
 @media (max-width: 720px) {
-  .g-public__title { font-size: 30px; }
+  .g-public__title { font-size: var(--text-hero); }
 }
 .g-public__subtitle {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: var(--text-medium);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   margin: 0 0 12px;
@@ -766,7 +766,7 @@
 }
 .g-public__author {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   letter-spacing: -0.005em;
   margin: 0;
@@ -775,7 +775,7 @@
 
 .g-public__intro {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.6;
   color: var(--ink);
   letter-spacing: -0.005em;
@@ -805,13 +805,13 @@
   left: 0;
   top: 6px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
 }
 .g-public__item-name {
   font-family: var(--sans);
-  font-size: 19px;
+  font-size: var(--text-medium);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--ink);
@@ -820,7 +820,7 @@
 }
 .g-public__item-tip {
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   margin: 0;
@@ -829,7 +829,7 @@
 
 .g-public__empty {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   text-align: center;
   padding: 60px 0;
@@ -843,7 +843,7 @@
 }
 .g-public__footnote {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -862,7 +862,7 @@
   display: inline-block;
   margin-top: 8px;
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--accent);
   text-decoration: none;
   letter-spacing: -0.005em;

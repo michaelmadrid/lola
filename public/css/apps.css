@@ -21,7 +21,7 @@
 }
 .apps-mast__title {
   font-family: var(--sans);
-  font-size: 28px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -30,7 +30,7 @@
 }
 .apps-mast__sub {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   letter-spacing: -0.005em;
   margin: 0;
@@ -64,7 +64,7 @@
 }
 .app-card__name {
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -75,7 +75,7 @@
 }
 .app-card__desc {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   letter-spacing: -0.005em;
   margin: 0;

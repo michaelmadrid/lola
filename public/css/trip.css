@@ -40,14 +40,14 @@
 .trip-row:hover { color: var(--accent); }
 .trip-row:hover .trip-arrow { transform: translateX(3px); color: var(--accent); }
 .trip-name {
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   letter-spacing: -0.012em;
 }
 .trip-row__by {
   margin-left: 10px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -55,13 +55,13 @@
 }
 .trip-dates {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   letter-spacing: 0.02em;
 }
 .trip-arrow {
   font-family: var(--mono);
-  font-size: 18px;
+  font-size: var(--text-medium);
   color: var(--ink-3);
   text-align: right;
   padding: 4px 0;
@@ -76,7 +76,7 @@
 }
 .graveyard-link {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -85,7 +85,7 @@
 
 /* Graveyard page */
 .graveyard-prose {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   font-style: italic;
   margin: 0 0 24px;
@@ -105,7 +105,7 @@
 .trip-row--deleted .trip-name { color: var(--ink-2); }
 .trip-restore {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -120,7 +120,7 @@
 
 .list-empty {
   padding: 36px 0;
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   font-style: italic;
 }
@@ -140,7 +140,7 @@
 }
 .trip-mast__dates {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   letter-spacing: 0.02em;
   margin-bottom: 16px;
@@ -153,7 +153,7 @@
   font-style: normal;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 11px;
+  font-size: var(--text-tiny);
 }
 .trip-mast__actions {
   display: flex;
@@ -163,7 +163,7 @@
 }
 
 .trip-notes {
-  font-size: 15px;
+  font-size: var(--text-body);
   line-height: 1.55;
   color: var(--ink-2);
   letter-spacing: -0.005em;
@@ -196,7 +196,7 @@
 
 /* ===== Type-to-confirm modal ===== */
 .confirm-prose {
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.55;
   color: var(--ink);
   margin: 0 0 14px;
@@ -207,7 +207,7 @@
 }
 .confirm-prose--soft {
   color: var(--ink-2);
-  font-size: 14px;
+  font-size: var(--text-body);
   margin: 0 0 28px;
 }
 .save-btn--danger {
@@ -234,7 +234,7 @@
 }
 .segment-row:first-child { border-top: 1px solid var(--rule); }
 .segment-name {
-  font-size: 16px;
+  font-size: var(--text-strong);
   font-weight: 500;
   letter-spacing: -0.008em;
   display: inline-flex;
@@ -244,7 +244,7 @@
 }
 .segment-name .region-tag {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -253,7 +253,7 @@
 }
 .segment-notes-hint {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -264,7 +264,7 @@
 }
 .segment-dates {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   letter-spacing: 0.02em;
 }
@@ -276,7 +276,7 @@
 }
 .segment-actions button {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   background: none;
@@ -289,11 +289,11 @@
 }
 .segment-actions button:hover { color: var(--accent); }
 .segment-actions .seg-edit {
-  font-size: 12px;
+  font-size: var(--text-small);
   letter-spacing: 0.04em;
 }
 .segment-actions .seg-delete {
-  font-size: 22px;
+  font-size: var(--text-display);
   font-weight: 300;
   line-height: 1;
 }
@@ -304,7 +304,7 @@
     gap: 8px;
   }
   .segment-name { grid-column: 1; }
-  .segment-dates { grid-column: 1; font-size: 11px; }
+  .segment-dates { grid-column: 1; font-size: var(--text-tiny); }
   .segment-actions { grid-row: 1; grid-column: 2; }
 }
 

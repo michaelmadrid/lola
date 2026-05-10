@@ -26,14 +26,14 @@
   flex-shrink: 0;
 }
 .page-clocks .mast__title {
-  font-size: 28px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--ink);
   margin: 0;
 }
 @media (max-width: 720px) {
-  .page-clocks .mast__title { font-size: 24px; }
+  .page-clocks .mast__title { font-size: var(--text-display); }
 }
 
 /* ===== Masthead with subnav ===== */
@@ -60,7 +60,7 @@
   top: -4px;
 }
 .travel-subnav__item {
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 400;
   letter-spacing: -0.01em;
   color: var(--ink-3);
@@ -83,7 +83,7 @@
     margin-bottom: 24px;
   }
   .travel-subnav { top: 0; gap: 16px; }
-  .travel-subnav__item { font-size: 14px; }
+  .travel-subnav__item { font-size: var(--text-body); }
 }
 
 /* ===== Sticky filter rows (Phrasebook) ===== */
@@ -107,7 +107,7 @@
 .pb-row--tier {}
 .pb-chip {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.04em;
   color: var(--ink-3);
   padding: 4px 10px;
@@ -147,7 +147,7 @@
 
 /* ===== Phrasebook list ===== */
 .pb-tier-sub {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   font-style: italic;
   max-width: 540px;
@@ -167,12 +167,12 @@
 }
 .pb-row-phrase:first-child { border-top: 1px solid var(--rule); }
 .pb-row-phrase__en {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   letter-spacing: -0.005em;
 }
 .pb-row-phrase__tx {
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.012em;
@@ -189,8 +189,8 @@
     gap: 4px;
     padding: 14px 0;
   }
-  .pb-row-phrase__en { font-size: 13px; }
-  .pb-row-phrase__tx { font-size: 16px; }
+  .pb-row-phrase__en { font-size: var(--text-small); }
+  .pb-row-phrase__tx { font-size: var(--text-strong); }
 }
 
 /* ===== Time meeting finder ===== */
@@ -201,7 +201,7 @@
 .time-section:last-of-type { margin-bottom: 0; }
 .time-section__label {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   letter-spacing: -0.005em;
   text-transform: none;
   color: var(--ink);
@@ -210,7 +210,7 @@
 }
 .time-section__hint {
   margin: -4px 0 18px;
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   letter-spacing: -0.005em;
   font-style: normal;
@@ -220,7 +220,7 @@
 .time-cities__empty {
   padding: 20px 0;
   color: var(--ink-3);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-style: italic;
 }
 .time-cities__empty a { color: var(--accent); text-decoration: none; }
@@ -253,7 +253,7 @@
   min-width: 0;
 }
 .time-card__name {
-  font-size: 16px;
+  font-size: var(--text-strong);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.01em;
@@ -262,7 +262,7 @@
 }
 .time-card__date {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   letter-spacing: -0.005em;
   text-transform: none;
@@ -271,7 +271,7 @@
 /* Standalone time cell */
 .time-card__time {
   font-family: var(--sans);
-  font-size: 22px;
+  font-size: var(--text-display);
   font-weight: 400;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -283,7 +283,7 @@
 /* Standalone offset cell — fixed-width slot so all rows align vertically */
 .time-card__offset {
   font-family: var(--sans);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   letter-spacing: -0.005em;
   text-transform: none;
@@ -304,7 +304,7 @@
   background: transparent;
   border: 1px solid var(--rule);
   color: var(--ink-2);
-  font-size: 16px;
+  font-size: var(--text-strong);
   font-weight: 400;
   line-height: 1;
   cursor: pointer;
@@ -326,10 +326,10 @@
     column-gap: 12px;
     padding: 12px 8px;
   }
-  .time-card__time { font-size: 18px; }
-  .time-card__name { font-size: 15px; }
-  .time-card__date { font-size: 11px; }
-  .time-card__offset { font-size: 11px; }
+  .time-card__time { font-size: var(--text-medium); }
+  .time-card__name { font-size: var(--text-body); }
+  .time-card__date { font-size: var(--text-tiny); }
+  .time-card__offset { font-size: var(--text-tiny); }
 }
 /* Reserve 32px slot but don't render anything inside for home city */
 .time-card.is-home .time-card__remove-slot { /* empty placeholder cell */ }
@@ -339,22 +339,22 @@
   align-items: center;
   gap: 12px;
   padding: 0 12px 14px;
-  font-size: 13px;
+  font-size: var(--text-small);
 }
 .time-card__edit-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .time-card__edit-sep {
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink-3);
 }
 .time-card__select {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: var(--text-small);
   color: var(--ink);
   background: var(--bg);
   border: 1px solid var(--rule);
@@ -368,7 +368,7 @@
   display: block;
   margin-top: 14px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -383,7 +383,7 @@
 .time-add-cap {
   margin-top: 14px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -405,7 +405,7 @@
 .time-add-popover.is-open { display: flex; }
 .time-add-search {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -422,7 +422,7 @@
   justify-content: space-between;
   width: 100%;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   background: none;
   border: 0;
@@ -435,21 +435,21 @@
 .time-add-item:hover { background: var(--surface); }
 .time-add-country {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   margin-left: 8px;
 }
 .time-add-tz {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
 .time-add-empty {
   padding: 14px;
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   text-align: center;
 }
@@ -469,7 +469,7 @@
   position: absolute;
   transform: translateX(-50%);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
 }
@@ -483,7 +483,7 @@
 }
 .time-tl__name {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   font-weight: 400;
   color: var(--ink-2);
   letter-spacing: -0.005em;
@@ -535,7 +535,7 @@
   left: 50%;
   transform: translateX(-50%);
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   color: var(--accent);
   background: var(--bg);
@@ -547,7 +547,7 @@
 .time-windows__empty {
   padding: 16px 0;
   color: var(--ink-3);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-style: italic;
 }
 .time-window {
@@ -560,14 +560,14 @@
 }
 .time-window:last-child { border-bottom: 1px solid var(--rule); }
 .time-window__label {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   font-weight: 500;
   letter-spacing: -0.005em;
 }
 .time-window__value {
   font-family: var(--mono);
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
@@ -587,7 +587,7 @@
   .time-card__time {
     grid-column: 2;
     grid-row: 1;
-    font-size: 18px;
+    font-size: var(--text-medium);
   }
   .time-card__offset {
     grid-column: 2;
@@ -609,14 +609,14 @@
 
   .time-tl__axis { margin-left: 80px; }
   .time-tl__row { grid-template-columns: 80px 1fr; }
-  .time-tl__name { font-size: 11px; padding-right: 8px; }
-  .time-tl__tick { font-size: 9px; }
+  .time-tl__name { font-size: var(--text-tiny); padding-right: 8px; }
+  .time-tl__tick { font-size: var(--text-tiny); }
 
   .time-window {
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  .time-window__value { text-align: left; font-size: 12px; }
+  .time-window__value { text-align: left; font-size: var(--text-small); }
 }
 
 /* ===== TL;DR block (used by Power, Driving) ===== */
@@ -628,7 +628,7 @@
 }
 .atlas-tldr p {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.55;
   color: var(--ink-2);
   letter-spacing: -0.005em;
@@ -648,7 +648,7 @@
 .extras-section:last-child { margin-bottom: 0; }
 .extras-section__title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -659,7 +659,7 @@
 }
 .extras-prose {
   margin: 0 0 18px;
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.55;
   color: var(--ink);
   letter-spacing: -0.005em;
@@ -688,7 +688,7 @@
 .extras-acc summary::after {
   content: "+";
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   text-align: center;
   transition: transform var(--ease-medium), color var(--ease-quick);
@@ -699,7 +699,7 @@
 }
 .extras-acc summary:hover .extras-acc__name { color: var(--ink); }
 .extras-acc__name {
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.008em;
@@ -707,7 +707,7 @@
 }
 .extras-acc__spec {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -716,7 +716,7 @@
 .extras-acc p {
   margin: 0;
   padding: 0 0 16px;
-  font-size: 14px;
+  font-size: var(--text-body);
   line-height: 1.55;
   color: var(--ink-2);
   letter-spacing: -0.005em;
@@ -727,10 +727,10 @@
   color: var(--ink-3);
 }
 @media (max-width: 720px) {
-  .extras-prose { font-size: 15px; }
+  .extras-prose { font-size: var(--text-body); }
   .extras-acc summary { padding: 12px 0; gap: 12px; }
-  .extras-acc__name { font-size: 14px; }
-  .extras-acc__spec { font-size: 10px; }
+  .extras-acc__name { font-size: var(--text-body); }
+  .extras-acc__spec { font-size: var(--text-tiny); }
 }
 
 

@@ -22,7 +22,7 @@
   border-bottom: 1px solid transparent;
 }
 .capture-page__logo {
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.02em;
@@ -30,7 +30,7 @@
 }
 .capture-page__close {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   background: none;
   border: 0;
@@ -56,7 +56,7 @@
 
 .capture-page__title {
   font-family: var(--sans);
-  font-size: 28px;
+  font-size: var(--text-hero);
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -73,14 +73,14 @@
 }
 .capture-page__bind-label {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .capture-page__city-btn {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 500;
   color: var(--ink);
   background: var(--surface);
@@ -96,20 +96,20 @@
 }
 .capture-page__city-btn:hover { background: var(--surface-2); }
 .capture-page__city-caret {
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
 }
 
 /* Been / want-to-go toggle */
 .capture-page__bind-sep {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   margin: 0 2px;
 }
 .capture-page__been-btn {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 500;
   color: var(--ink);
   background: var(--surface);
@@ -148,7 +148,7 @@
 
 .capture-page__city-search {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   background: transparent;
   border: 0;
@@ -170,7 +170,7 @@
   justify-content: space-between;
   width: 100%;
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   background: none;
   border: 0;
@@ -187,14 +187,14 @@
 }
 .capture-page__city-country {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   margin-left: 10px;
 }
 .capture-page__city-empty {
   padding: 14px;
-  font-size: 13px;
+  font-size: var(--text-small);
   color: var(--ink-3);
   text-align: center;
 }
@@ -207,7 +207,7 @@
   width: 100%;
   min-height: 280px;
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.55;
   color: var(--ink);
   background: var(--surface);
@@ -228,7 +228,7 @@
 /* ---------- Counter ---------- */
 .capture-page__counter {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -238,7 +238,7 @@
 /* ---------- Status ---------- */
 .capture-page__status {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--accent);
   letter-spacing: 0.04em;
   padding: 0 4px;
@@ -271,7 +271,7 @@
 }
 .capture-page__submit {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 500;
   color: var(--bg);
   background: var(--ink);
@@ -289,7 +289,7 @@
 .capture-page__submit:disabled { opacity: 0.4; cursor: default; }
 .capture-page__submit .kbd {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: rgba(255,255,255,0.6);
   letter-spacing: 0.04em;
   padding: 1px 5px;
@@ -310,10 +310,10 @@
 /* ---------- Mobile ---------- */
 @media (max-width: 720px) {
   .capture-page { padding: 20px var(--gutter) 120px; }
-  .capture-page__title { font-size: 22px; margin-bottom: 20px; }
-  .capture-page__textarea { min-height: 220px; font-size: 16px; padding: 14px 16px; }
+  .capture-page__title { font-size: var(--text-display); margin-bottom: 20px; }
+  .capture-page__textarea { min-height: 220px; font-size: var(--text-strong); padding: 14px 16px; }
   .capture-page__city-popover { left: 0; right: 0; width: auto; }
   .capture-page__foot-inner { gap: 8px; }
-  .capture-page__submit { font-size: 13px; padding: 10px 12px; }
+  .capture-page__submit { font-size: var(--text-small); padding: 10px 12px; }
   .capture-page__submit .kbd { display: none; }
 }

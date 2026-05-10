@@ -88,14 +88,14 @@ body.body-phrases {
 }
 .ph-lang-row__label {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .ph-lang-select {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   letter-spacing: -0.005em;
   color: var(--ink);
   background: rgba(255, 255, 255, 0.7);
@@ -130,7 +130,7 @@ body.body-phrases {
 }
 .ph-cat {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--ink-2);
@@ -157,7 +157,7 @@ body.body-phrases {
 }
 .ph-group__head {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -192,7 +192,7 @@ body.body-phrases {
 }
 .ph-pill__text {
   font-family: var(--sans);
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--ink);
@@ -202,7 +202,7 @@ body.body-phrases {
 }
 .ph-pill__translation {
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 400;
   letter-spacing: -0.005em;
   color: var(--ink-2);
@@ -241,7 +241,7 @@ body.body-phrases {
   border-radius: 50%;
   color: var(--ink-3);
   font-family: var(--sans);
-  font-size: 14px;
+  font-size: var(--text-body);
   font-weight: 400;
   line-height: 1;
   cursor: pointer;
@@ -268,7 +268,7 @@ body.body-phrases {
 /* "Curated" subtle tag on curated pills (optional, very quiet) */
 .ph-pill__source {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -291,7 +291,7 @@ body.body-phrases {
    collides with floating avatar (which is bottom-right on mobile). */
 .ph-add-inline {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: var(--text-small);
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--bg);
@@ -305,7 +305,7 @@ body.body-phrases {
 .ph-add-inline:hover { opacity: 0.85; }
 @media (max-width: 720px) {
   .ph-add-inline {
-    font-size: 12px;
+    font-size: var(--text-small);
     padding: 8px 14px;
   }
 }
@@ -315,7 +315,7 @@ body.body-phrases {
    --------------------------------------------------------------------- */
 .ph-loading {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -324,7 +324,7 @@ body.body-phrases {
 }
 .ph-translating {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -341,7 +341,7 @@ body.body-phrases {
    --------------------------------------------------------------------- */
 .pf-state {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);

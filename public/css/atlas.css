@@ -30,7 +30,7 @@
   top: -4px;
 }
 .atlas-subnav__item {
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 400;
   letter-spacing: -0.01em;
   color: var(--ink-3);
@@ -49,7 +49,7 @@
     margin-bottom: 18px;
   }
   .atlas-subnav { top: 0; gap: 16px; }
-  .atlas-subnav__item { font-size: 14px; }
+  .atlas-subnav__item { font-size: var(--text-body); }
 }
 
 /* ===== Sticky filter rows (Phrasebook) ===== */
@@ -73,7 +73,7 @@
 .pb-row--tier {}
 .pb-chip {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.04em;
   color: var(--ink-3);
   padding: 4px 10px;
@@ -113,7 +113,7 @@
 
 /* ===== Phrasebook list ===== */
 .pb-tier-sub {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   font-style: italic;
   max-width: 540px;
@@ -133,12 +133,12 @@
 }
 .pb-row-phrase:first-child { border-top: 1px solid var(--rule); }
 .pb-row-phrase__en {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   letter-spacing: -0.005em;
 }
 .pb-row-phrase__tx {
-  font-size: 18px;
+  font-size: var(--text-medium);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.012em;
@@ -155,8 +155,8 @@
     gap: 4px;
     padding: 14px 0;
   }
-  .pb-row-phrase__en { font-size: 13px; }
-  .pb-row-phrase__tx { font-size: 16px; }
+  .pb-row-phrase__en { font-size: var(--text-small); }
+  .pb-row-phrase__tx { font-size: var(--text-strong); }
 }
 
 /* ===== Time / world clock — compact ===== */
@@ -173,21 +173,21 @@
 }
 .time-row:first-child { border-top: 1px solid var(--rule); }
 .time-row__name {
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: -0.008em;
   color: var(--ink);
 }
 .time-row__time {
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 .time-row__meta {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -201,14 +201,14 @@
 }
 .time-soon__label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-3);
   margin-bottom: 8px;
 }
 .time-soon__text {
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-2);
   line-height: 1.55;
   letter-spacing: -0.005em;
@@ -220,13 +220,13 @@
     gap: 4px 12px;
     padding: 10px 0;
   }
-  .time-row__name { font-size: 14px; }
-  .time-row__time { font-size: 13px; text-align: right; }
+  .time-row__name { font-size: var(--text-body); }
+  .time-row__time { font-size: var(--text-small); text-align: right; }
   .time-row__meta {
     grid-column: 1 / -1;
     text-align: left;
     margin-top: 1px;
-    font-size: 9px;
+    font-size: var(--text-tiny);
   }
 }
 
@@ -239,7 +239,7 @@
 }
 .atlas-tldr p {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.55;
   color: var(--ink-2);
   letter-spacing: -0.005em;
@@ -259,7 +259,7 @@
 .extras-section:last-child { margin-bottom: 0; }
 .extras-section__title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--text-tiny);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -270,7 +270,7 @@
 }
 .extras-prose {
   margin: 0 0 18px;
-  font-size: 16px;
+  font-size: var(--text-strong);
   line-height: 1.55;
   color: var(--ink);
   letter-spacing: -0.005em;
@@ -299,7 +299,7 @@
 .extras-acc summary::after {
   content: "+";
   font-family: var(--mono);
-  font-size: 14px;
+  font-size: var(--text-body);
   color: var(--ink-3);
   text-align: center;
   transition: transform var(--ease-medium), color var(--ease-quick);
@@ -310,7 +310,7 @@
 }
 .extras-acc summary:hover .extras-acc__name { color: var(--ink); }
 .extras-acc__name {
-  font-size: 15px;
+  font-size: var(--text-body);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.008em;
@@ -318,7 +318,7 @@
 }
 .extras-acc__spec {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -327,7 +327,7 @@
 .extras-acc p {
   margin: 0;
   padding: 0 0 16px;
-  font-size: 14px;
+  font-size: var(--text-body);
   line-height: 1.55;
   color: var(--ink-2);
   letter-spacing: -0.005em;
@@ -338,8 +338,8 @@
   color: var(--ink-3);
 }
 @media (max-width: 720px) {
-  .extras-prose { font-size: 15px; }
+  .extras-prose { font-size: var(--text-body); }
   .extras-acc summary { padding: 12px 0; gap: 12px; }
-  .extras-acc__name { font-size: 14px; }
-  .extras-acc__spec { font-size: 10px; }
+  .extras-acc__name { font-size: var(--text-body); }
+  .extras-acc__spec { font-size: var(--text-tiny); }
 }
