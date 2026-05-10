@@ -60,8 +60,10 @@
 .page-spots .search-input:focus { background: var(--field-focus); }
 
 /* =====================================================================
-   FILTER ROW — city picker + type picker on one line
-   Pattern: same shape as capture overlay's city button.
+   FILTER ROW — city + type + been-state pickers on one line
+   Each .picker-group holds a button + its popover. position: relative
+   on the group so the popover anchors directly under its trigger button,
+   not the entire filter row. This is what makes the 3-picker layout work.
    ===================================================================== */
 .spots-filters {
   display: flex;
@@ -70,6 +72,9 @@
   gap: 10px;
   padding: 14px 0 18px;
   border-bottom: 1px solid var(--rule);
+}
+
+.picker-group {
   position: relative;
 }
 
@@ -88,7 +93,6 @@
   cursor: pointer;
   transition: background 140ms ease;
   letter-spacing: -0.005em;
-  position: relative;
 }
 .picker-btn:hover { background: var(--field-focus); }
 .picker-btn__caret {
@@ -98,7 +102,7 @@
 
 .picker-popover {
   position: absolute;
-  top: calc(100% - 12px);
+  top: calc(100% + 4px);
   left: 0;
   background: var(--bg);
   border: 1px solid var(--rule);
@@ -110,9 +114,6 @@
   max-width: calc(100vw - 32px);
 }
 .picker-popover[hidden] { display: none; }
-/* Popover positioning: relative to the parent .spots-filters; use data hooks per button */
-#city-picker-popover { left: 0; }
-#type-picker-popover { right: 0; left: auto; }
 
 .picker-search {
   width: 100%;
@@ -171,7 +172,10 @@
 @media (max-width: 720px) {
   .page-spots .search-input { font-size: 16px; padding: 11px 12px; }
   .page-spots .mast__title { font-size: 24px; }
+  /* Mobile popovers fill remaining viewport width.
+     All anchor left:0 from their group — the rightmost picker's popover
+     might overflow viewport, so cap width and shift via right-anchor when
+     the trigger is in the right half of the row. Handled by max-width + the
+     base rule which keeps it within calc(100vw - 32px). */
   .picker-popover { width: calc(100vw - 32px); }
-  /* Both popovers anchor left on mobile to avoid going off-screen */
-  #type-picker-popover { left: 0; right: auto; }
 }

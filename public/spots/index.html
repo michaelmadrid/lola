@@ -106,31 +106,39 @@
     >
   </div>
 
-  <!-- Filter row: city + type + been-state. All default to "All". -->
+  <!-- Filter row: city + type + been-state. All default to "All".
+       Each picker is wrapped in .picker-group so its popover anchors to
+       its own trigger button, not the entire row. -->
   <div class="spots-filters">
-    <button class="picker-btn" id="city-picker-btn" type="button" aria-haspopup="true">
-      <span class="picker-btn__label" id="city-picker-label">All cities</span>
-      <span class="picker-btn__caret" aria-hidden="true">▾</span>
-    </button>
-    <div class="picker-popover" id="city-picker-popover" hidden>
-      <input type="text" class="picker-search" id="city-picker-search" placeholder="Search cities…" autocomplete="off">
-      <div class="picker-list" id="city-picker-list"></div>
+    <div class="picker-group">
+      <button class="picker-btn" id="city-picker-btn" type="button" aria-haspopup="true">
+        <span class="picker-btn__label" id="city-picker-label">All cities</span>
+        <span class="picker-btn__caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="picker-popover" id="city-picker-popover" hidden>
+        <input type="text" class="picker-search" id="city-picker-search" placeholder="Search cities…" autocomplete="off">
+        <div class="picker-list" id="city-picker-list"></div>
+      </div>
     </div>
 
-    <button class="picker-btn" id="type-picker-btn" type="button" aria-haspopup="true">
-      <span class="picker-btn__label" id="type-picker-label">All types</span>
-      <span class="picker-btn__caret" aria-hidden="true">▾</span>
-    </button>
-    <div class="picker-popover" id="type-picker-popover" hidden>
-      <div class="picker-list" id="type-picker-list"></div>
+    <div class="picker-group">
+      <button class="picker-btn" id="type-picker-btn" type="button" aria-haspopup="true">
+        <span class="picker-btn__label" id="type-picker-label">All types</span>
+        <span class="picker-btn__caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="picker-popover" id="type-picker-popover" hidden>
+        <div class="picker-list" id="type-picker-list"></div>
+      </div>
     </div>
 
-    <button class="picker-btn" id="been-picker-btn" type="button" aria-haspopup="true">
-      <span class="picker-btn__label" id="been-picker-label">All</span>
-      <span class="picker-btn__caret" aria-hidden="true">▾</span>
-    </button>
-    <div class="picker-popover" id="been-picker-popover" hidden>
-      <div class="picker-list" id="been-picker-list"></div>
+    <div class="picker-group">
+      <button class="picker-btn" id="been-picker-btn" type="button" aria-haspopup="true">
+        <span class="picker-btn__label" id="been-picker-label">All</span>
+        <span class="picker-btn__caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="picker-popover" id="been-picker-popover" hidden>
+        <div class="picker-list" id="been-picker-list"></div>
+      </div>
     </div>
   </div>
 
