@@ -643,7 +643,7 @@
   cursor: pointer;
   transition: opacity 140ms ease;
 }
-.stream__item:hover .stream__name { color: var(--blue); }
+.stream__item:hover .stream__name { color: var(--ink-2); }
 .stream__item.stream__ghost { cursor: default; }
 .stream__item.stream__ghost:hover .stream__name { color: var(--ink); }
 .stream__item:first-child { border-top: 0; padding-top: 4px; }

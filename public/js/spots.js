@@ -4,9 +4,24 @@
    ========================================================= */
 
 (function () {
+  // Filter state (persisted in localStorage). Initial values restored from storage,
+  // saved back on every change. Reset on page is preserved across refresh, browser
+  // close, etc. Survives until cleared explicitly or browser data is wiped.
+  const LS_CITY = 'kit.spots.filterCity';
+  const LS_CAT  = 'kit.spots.filterCat';
+  const LS_BEEN = 'kit.spots.filterBeen';
+
+  function lsGet(k, fallback) {
+    try { return localStorage.getItem(k) || fallback; } catch (_) { return fallback; }
+  }
+  function lsSet(k, v) {
+    try { localStorage.setItem(k, v); } catch (_) {}
+  }
+
   let allSaves = [];
-  let activeCity = 'all';
-  let activeCat  = 'all';
+  let activeCity = lsGet(LS_CITY, 'all');
+  let activeCat  = lsGet(LS_CAT, 'all');
+  let activeBeen = lsGet(LS_BEEN, 'all'); // 'all' | 'want' | 'been'
   let searchTerm = '';
 
   const listEl = document.getElementById('spots-list');
@@ -24,6 +39,11 @@
   const typePop   = document.getElementById('type-picker-popover');
   const typeList  = document.getElementById('type-picker-list');
 
+  const beenBtn   = document.getElementById('been-picker-btn');
+  const beenLabel = document.getElementById('been-picker-label');
+  const beenPop   = document.getElementById('been-picker-popover');
+  const beenList  = document.getElementById('been-picker-list');
+
   // Type options — keep in sync with edit drawer Category select
   const TYPES = [
     { value: 'all',    label: 'All types' },
@@ -36,14 +56,36 @@
     { value: 'other',  label: 'Other' },
   ];
 
+  // Been-state options — three-tier filter
+  const BEEN_STATES = [
+    { value: 'all',  label: 'All' },
+    { value: 'want', label: 'Want to go' },
+    { value: 'been', label: 'Been' },
+  ];
+
+  // Restore labels from saved state on initial render
+  function restoreLabelsFromState() {
+    const t = TYPES.find(t => t.value === activeCat);
+    if (t && typeLabel) typeLabel.textContent = t.label;
+
+    const b = BEEN_STATES.find(b => b.value === activeBeen);
+    if (b && beenLabel) beenLabel.textContent = b.label;
+
+    if (cityLabel) {
+      cityLabel.textContent = activeCity === 'all' ? 'All cities' : activeCity;
+    }
+  }
+
   // -------- Load --------
   async function loadSpots() {
     try {
       const data = await api.get('/api/saves?limit=500');
       // Spots = saves where AI extracted a place_name
       allSaves = (data.saves || []).filter(s => s.place_name && s.place_name.trim());
+      restoreLabelsFromState();
       buildCityPickerOptions();
       buildTypePickerOptions();
+      buildBeenPickerOptions();
       render();
     } catch (err) {
       console.error('loadSpots', err);
@@ -90,6 +132,7 @@
     cityList.querySelectorAll('.picker-item').forEach(btn => {
       btn.addEventListener('click', () => {
         activeCity = btn.dataset.value;
+        lsSet(LS_CITY, activeCity);
         cityLabel.textContent = activeCity === 'all'
           ? 'All cities'
           : activeCity;
@@ -110,10 +153,31 @@
     typeList.querySelectorAll('.picker-item').forEach(btn => {
       btn.addEventListener('click', () => {
         activeCat = btn.dataset.value;
+        lsSet(LS_CAT, activeCat);
         const found = TYPES.find(t => t.value === activeCat);
         typeLabel.textContent = found ? found.label : 'All types';
         closePopover(typePop);
         buildTypePickerOptions(); // refresh active state
+        render();
+      });
+    });
+  }
+
+  // -------- Been picker (Want / Been / All) --------
+  function buildBeenPickerOptions() {
+    beenList.innerHTML = BEEN_STATES.map(b =>
+      `<button class="picker-item ${activeBeen === b.value ? 'is-current' : ''}" data-value="${b.value}">
+         <span>${b.label}</span>
+       </button>`
+    ).join('');
+    beenList.querySelectorAll('.picker-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        activeBeen = btn.dataset.value;
+        lsSet(LS_BEEN, activeBeen);
+        const found = BEEN_STATES.find(b => b.value === activeBeen);
+        beenLabel.textContent = found ? found.label : 'All';
+        closePopover(beenPop);
+        buildBeenPickerOptions();
         render();
       });
     });
@@ -130,12 +194,13 @@
     pop.hidden = true;
   }
   function closeAllPopovers() {
-    [cityPop, typePop].forEach(p => p && closePopover(p));
+    [cityPop, typePop, beenPop].forEach(p => p && closePopover(p));
   }
   document.addEventListener('click', (e) => {
     // Close on outside click
     if (cityPop && !cityPop.hidden && !cityPop.contains(e.target) && !cityBtn.contains(e.target)) closePopover(cityPop);
     if (typePop && !typePop.hidden && !typePop.contains(e.target) && !typeBtn.contains(e.target)) closePopover(typePop);
+    if (beenPop && !beenPop.hidden && !beenPop.contains(e.target) && !beenBtn.contains(e.target)) closePopover(beenPop);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllPopovers();
@@ -150,6 +215,11 @@
     if (typePop.classList.contains('is-open')) closePopover(typePop);
     else openPopover(typePop);
   });
+  beenBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (beenPop.classList.contains('is-open')) closePopover(beenPop);
+    else openPopover(beenPop);
+  });
   if (citySearch) {
     citySearch.addEventListener('input', () => buildCityPickerOptions(citySearch.value));
   }
@@ -163,6 +233,10 @@
         const cities = (s.attached_cities || []).map(c => c.name);
         if (!cities.includes(activeCity)) return false;
       }
+      // Been filter: 'want' = not been (s.been === false), 'been' = visited (s.been === true).
+      // Spots default to been=false on capture, so 'want' is the natural state.
+      if (activeBeen === 'want' && s.been !== false) return false;
+      if (activeBeen === 'been' && s.been !== true)  return false;
       if (term) {
         const haystack = [s.place_name, s.tip, s.neighborhood].filter(Boolean).join(' ').toLowerCase();
         if (!haystack.includes(term)) return false;

@@ -106,7 +106,7 @@
     >
   </div>
 
-  <!-- Single filter row: city picker + type picker. Both default to "All". -->
+  <!-- Filter row: city + type + been-state. All default to "All". -->
   <div class="spots-filters">
     <button class="picker-btn" id="city-picker-btn" type="button" aria-haspopup="true">
       <span class="picker-btn__label" id="city-picker-label">All cities</span>
@@ -123,6 +123,14 @@
     </button>
     <div class="picker-popover" id="type-picker-popover" hidden>
       <div class="picker-list" id="type-picker-list"></div>
+    </div>
+
+    <button class="picker-btn" id="been-picker-btn" type="button" aria-haspopup="true">
+      <span class="picker-btn__label" id="been-picker-label">All</span>
+      <span class="picker-btn__caret" aria-hidden="true">▾</span>
+    </button>
+    <div class="picker-popover" id="been-picker-popover" hidden>
+      <div class="picker-list" id="been-picker-list"></div>
     </div>
   </div>
 
