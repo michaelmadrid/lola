@@ -254,6 +254,7 @@
 
   // Render a CdG-style mini-month grid below the trip strip.
   // Days only, Sunday-first, no headers, blue underline on trip dates within the month.
+  // When trip is null/undefined, renders just the current month with no highlights.
   function renderMiniMonth(trip) {
     const container = document.getElementById('mini-month');
     if (!container) return;
@@ -266,9 +267,9 @@
     const startCol = firstOfMonth.getDay(); // 0 = Sunday
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Parse trip dates as YYYY-MM-DD strings to avoid TZ issues
-    const tripStart = trip.date_start ? trip.date_start.slice(0, 10) : null;
-    const tripEnd   = trip.date_end   ? trip.date_end.slice(0, 10)   : null;
+    // Parse trip dates (or leave null when no trip)
+    const tripStart = (trip && trip.date_start) ? trip.date_start.slice(0, 10) : null;
+    const tripEnd   = (trip && trip.date_end)   ? trip.date_end.slice(0, 10)   : null;
 
     function isInTrip(day) {
       if (!tripStart || !tripEnd) return false;
@@ -282,9 +283,11 @@
     for (let i = 0; i < startCol; i++) {
       html += `<span class="mm__cell mm__cell--empty"></span>`;
     }
+    const todayDay = today.getDate();
     for (let d = 1; d <= daysInMonth; d++) {
       const cls = ['mm__cell'];
       if (isInTrip(d)) cls.push('mm__cell--trip');
+      if (d === todayDay) cls.push('mm__cell--today');
       html += `<span class="${cls.join(' ')}">${d}</span>`;
     }
     container.innerHTML = html;
@@ -312,9 +315,12 @@
     dayActiveEl.style.display = 'none';
     dayIdleEl.style.display = 'flex';
 
-    // Hide mobile trip-launch button when there's no upcoming trip
+    // Hide trip-launch button when there's no upcoming trip
     const launchBtn = document.getElementById('trip-launch');
     if (launchBtn) launchBtn.hidden = true;
+
+    // Render mini-month even without a trip — shows current month, today marker only.
+    renderMiniMonth(null);
 
     // Random per page-load. (Switch to date-deterministic later if we want
     // "one per day" — for now random keeps it fresh on each visit.)

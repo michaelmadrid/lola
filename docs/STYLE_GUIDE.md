@@ -399,6 +399,93 @@ Modifiers:
 
 ---
 
+## Page grid (12-column, opt-in)
+
+Pages can opt into a 12-column grid layout via `class="page-grid"` on `<main>`. Modules within the grid declare their span via `.module--N` classes.
+
+### When to use
+
+- Multi-module dashboards (e.g. home)
+- Pages with mixed-density content where modules should align to a shared grid
+- Pages that benefit from explicit visual rhythm
+
+### When NOT to use
+
+- Single-column lists (spots, travel index, juice phrasebook)
+- Forms (use vertical flow, not grid)
+- Pages where content is one block (settings, login, capture)
+
+### How it works
+
+```html
+<main class="page page-home page-grid">
+  <section class="module module--half module--day">
+    <!-- left half on desktop, full-width on mobile -->
+  </section>
+  <section class="module module--half module--capture-stream">
+    <!-- right half -->
+  </section>
+</main>
+```
+
+### Span classes
+
+Numeric spans (granular):
+
+| Class | Span |
+|---|---|
+| `.module--span-1` through `.module--span-12` | 1-12 columns |
+
+Named spans (semantic shortcuts):
+
+| Class | Span | Visual |
+|---|---|---|
+| `.module--quarter` | 3 cols | 25% |
+| `.module--third` | 4 cols | 33% |
+| `.module--half` | 6 cols | 50% |
+| `.module--two-thirds` | 8 cols | 66% |
+| `.module--three-quarters` | 9 cols | 75% |
+| `.module--full` | 12 cols | 100% |
+
+### Responsive behavior
+
+**Desktop (>=1101px):** full 12-column grid honors all spans.
+
+**Tablet (721-1100px):** column gap reduced to `--space-6` (24px). Spans are still respected by default. Pages can override per-module to collapse certain modules to full-width on tablet.
+
+**Mobile (<=720px):** all spans ignored; every module becomes full-width (`grid-column: 1 / -1`). Use `order` property to reflow modules into a different sequence on mobile if needed.
+
+### Module order on mobile
+
+Source order is the default. Use CSS `order` to reflow:
+
+```css
+@media (max-width: 720px) {
+  .module--capture-stream { order: 1; }   /* show first on mobile */
+  .module--day            { order: 2; }
+}
+```
+
+To hide a module entirely on mobile:
+
+```css
+@media (max-width: 720px) {
+  .module--day { display: none !important; }
+}
+```
+
+### Pages currently using `.page-grid`
+
+- **Home** (`/`) — 6/6 split: day + launchers (left), capture + stream (right). Day hidden on mobile.
+
+### Pages NOT using `.page-grid`
+
+- Spots, Travel, Travel/Trips, Travel/Trip detail (single-column lists)
+- Guides edit, Capture, Settings, Login, Admin (forms / single-block pages)
+- Juice (phrasebook viewer — own layout system)
+
+---
+
 ## Touch targets (mobile, ≤720px)
 
 Mobile minimum touch floor: **44×44**. Enforced globally via:

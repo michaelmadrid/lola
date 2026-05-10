@@ -36,10 +36,19 @@
   </div>
 
 <!-- ============ PAGE ============ -->
-<main class="page page-home">
+<main class="page page-home page-grid">
 
-  <!-- LEFT — day summary -->
-  <aside class="col-left">
+  <!-- ========== MODULE: Day (left half on desktop) ==========
+       Date + moon + DOY at top, then mini-month calendar (always shown,
+       highlights trip days when one exists), then trip-strip (only when
+       on a trip), then the launcher list (Open trip + Open Juice).
+
+       Note: launchers are a SEPARATE module in source order (below) but
+       rendered inside this module's grid cell via CSS grid placement
+       (.module--launchers grid-row: 2). On mobile, day module is hidden
+       and launchers re-flow to bottom via order property. Single source
+       of HTML — CSS handles positioning. -->
+  <section class="module module--half module--day" data-module="day">
     <div class="day-sum" id="day-sum">
 
       <div class="day-sum__head">
@@ -56,7 +65,12 @@
         </div>
       </div>
 
-      <!-- ACTIVE: when on a trip today -->
+      <!-- Mini-month calendar — always renders. JS hydrates current month;
+           if a trip exists, trip days highlight. CdG-style days only. -->
+      <div class="mm" id="mini-month" aria-hidden="true"></div>
+
+      <!-- ACTIVE-only: trip-strip + trip-now panel.
+           Only rendered when activeTrip exists. -->
       <div id="day-active" style="display:none">
         <button class="trip-strip" id="trip-strip" aria-label="Open itinerary">
           <span class="trip-strip__main">
@@ -70,9 +84,6 @@
           <span class="trip-strip__open">↗</span>
         </button>
 
-        <!-- Mini-month calendar — CdG-style days only -->
-        <div class="mm" id="mini-month" aria-hidden="true"></div>
-
         <div class="trip-now" id="trip-now" style="display:none">
           <div class="trip-now__row" id="trip-now-today" style="display:none">
             <span class="trip-now__label">Today</span>
@@ -85,20 +96,22 @@
         </div>
       </div>
 
-      <!-- IDLE: no trip today -->
+      <!-- IDLE-only: oblique strategies quote (no trip). -->
       <div id="day-idle" class="day-sum__idle" style="display:none">
         <p class="day-sum__idle__quote" id="idle-quote">—</p>
         <span class="day-sum__idle__caption">OBLIQUE <span id="idle-num">001</span>/180</span>
       </div>
 
     </div>
-  </aside>
+  </section>
 
-  <!-- MIDDLE — capture + recently saved -->
-  <div class="col-mid">
+  <!-- ========== MODULE: Capture + Stream (right half on desktop) ==========
+       Capture launcher (primary action) + Recently saved stream.
+       Span 6/12 on desktop. ON MOBILE: this is the FIRST module shown
+       (day module is hidden); CSS uses `order` to reflow this above. -->
+  <section class="module module--half module--capture-stream" data-module="capture-stream">
 
-    <!-- Capture launcher — looks like a field, behaves like a button.
-         Tap opens the fullscreen capture overlay. -->
+    <!-- Capture launcher — looks like a field, behaves like a button. -->
     <div class="capture-wrap">
       <button class="capture-launcher" id="capture-launcher" type="button" aria-label="Add a spot">
         <span class="capture-launcher__plus" aria-hidden="true">+</span>
@@ -110,54 +123,6 @@
       </button>
     </div>
 
-    <!-- Capture overlay — fullscreen editor.
-         Same UI as the standalone /capture/ page; opens when the launcher is tapped. -->
-    <div class="capture-fs" id="capture-fs" hidden aria-hidden="true">
-      <div class="capture-fs__inner">
-        <header class="capture-fs__head">
-          <button class="btn-close-circle" id="capture-fs-close" aria-label="Close" type="button">×</button>
-        </header>
-
-        <div class="capture-fs__bind">
-          <div class="capture-fs__bind-row">
-            <span class="capture-fs__bind-label">In</span>
-            <button class="capture-fs__city-btn" id="capture-fs-city-btn" type="button">
-              <span id="capture-fs-city-btn-name">Bali</span>
-              <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
-            </button>
-          </div>
-          <div class="capture-fs__city-popover" id="capture-fs-city-popover">
-            <input type="text" class="capture-fs__city-search" id="capture-fs-city-search" placeholder="Type a city…" autocomplete="off">
-            <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
-          </div>
-
-          <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
-            <span id="capture-fs-been-text">I've been here</span>
-          </button>
-        </div>
-
-        <div class="capture-fs__body">
-          <textarea
-            class="capture-fs__textarea"
-            id="capture-fs-textarea"
-            placeholder="Tampopo - try the ramen"
-            autocomplete="off"
-            spellcheck="false"
-            rows="1"
-          ></textarea>
-        </div>
-
-        <footer class="capture-fs__foot">
-          <button class="btn btn--secondary" id="capture-fs-submit-continue" type="button">
-            Save & continue <span class="kbd">⌘↵</span>
-          </button>
-          <button class="btn" id="capture-fs-submit-close" type="button">
-            Save & close <span class="kbd">⇧⌘↵</span>
-          </button>
-        </footer>
-      </div>
-    </div>
-
     <section class="stream-section">
       <div class="stream__head">
         <span class="stream__label">Recently saved</span>
@@ -167,34 +132,77 @@
       </div>
     </section>
 
-  </div>
+  </section>
 
-  <!-- RIGHT — mobile launch column.
-       Was: todos widget + mobile launchers. Todos removed pre-Europe26
-       (parked in home.js JS — UI bindings will silently no-op since DOM
-       targets are gone). Will be reintroduced as a dedicated module in
-       Phase 4B home rebuild post-trip if/when wanted. -->
-  <aside class="col-right">
+  <!-- ========== MODULE: Launchers (positioned via CSS) ==========
+       Always-rendered launcher links. CSS positioning rules:
+       - Desktop: placed in column 1, row 2 (under day module visually)
+       - Mobile: full-width, below capture+stream (via grid order)
 
-    <!-- TEMP — Juice (phrases) link above trip launch.
-         Reuses .trip-launch shape so visual is consistent. Shows on mobile only
-         (same media-query gate as .trip-launch). Always visible (no hidden gate)
-         since /apps/juice/ has content even when no trip is upcoming. -->
-    <a href="/apps/juice/" class="trip-launch trip-launch--juice">
-      <span class="trip-launch__label">Open Juice</span>
-      <span class="trip-launch__caret" aria-hidden="true">↗</span>
-    </a>
-
-    <!-- Mobile-only affordance to open trip overlay.
-         On desktop the trip-strip in the left column does this job;
-         on mobile that column is hidden, so we surface this button instead. -->
+       Open trip: gated by JS (hidden if no activeTrip).
+       Open Juice: always visible.
+       Future apps: add additional .trip-launch entries here. -->
+  <section class="module module--launchers" data-module="launchers">
     <button class="trip-launch" id="trip-launch" type="button" hidden>
       <span class="trip-launch__label" id="trip-launch-label">Open trip</span>
       <span class="trip-launch__caret" aria-hidden="true">↗</span>
     </button>
-  </aside>
+    <a href="/apps/juice/" class="trip-launch trip-launch--juice">
+      <span class="trip-launch__label">Open Juice</span>
+      <span class="trip-launch__caret" aria-hidden="true">↗</span>
+    </a>
+  </section>
 
 </main>
+
+<!-- ============ CAPTURE OVERLAY (fullscreen, all viewports) ============
+     Lives outside .page-grid because it's an overlay, not a layout module.
+     Same UI as the standalone /capture/ page; opens when launcher is tapped. -->
+<div class="capture-fs" id="capture-fs" hidden aria-hidden="true">
+  <div class="capture-fs__inner">
+    <header class="capture-fs__head">
+      <button class="btn-close-circle" id="capture-fs-close" aria-label="Close" type="button">×</button>
+    </header>
+
+    <div class="capture-fs__bind">
+      <div class="capture-fs__bind-row">
+        <span class="capture-fs__bind-label">In</span>
+        <button class="capture-fs__city-btn" id="capture-fs-city-btn" type="button">
+          <span id="capture-fs-city-btn-name">Bali</span>
+          <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
+        </button>
+      </div>
+      <div class="capture-fs__city-popover" id="capture-fs-city-popover">
+        <input type="text" class="capture-fs__city-search" id="capture-fs-city-search" placeholder="Type a city…" autocomplete="off">
+        <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
+      </div>
+
+      <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
+        <span id="capture-fs-been-text">I've been here</span>
+      </button>
+    </div>
+
+    <div class="capture-fs__body">
+      <textarea
+        class="capture-fs__textarea"
+        id="capture-fs-textarea"
+        placeholder="Tampopo - try the ramen"
+        autocomplete="off"
+        spellcheck="false"
+        rows="1"
+      ></textarea>
+    </div>
+
+    <footer class="capture-fs__foot">
+      <button class="btn btn--secondary" id="capture-fs-submit-continue" type="button">
+        Save & continue <span class="kbd">⌘↵</span>
+      </button>
+      <button class="btn" id="capture-fs-submit-close" type="button">
+        Save & close <span class="kbd">⇧⌘↵</span>
+      </button>
+    </footer>
+  </div>
+</div>
 
 <!-- ============ TODO FULLSCREEN EDITOR — REMOVED PRE-EUROPE26 ============
      Was: a fullscreen modal for editing all todos. Removed alongside the

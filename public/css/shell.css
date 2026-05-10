@@ -101,9 +101,9 @@
   /* ============================================================
      MOTION — canonical timings
      ============================================================ */
-  --ease-quick:  var(--ease-quick);                              /* color, bg, border */
-  --ease-medium: var(--ease-medium);                              /* transform, position */
-  --ease-sheet:  var(--ease-sheet);    /* sheets, modals */
+  --ease-quick:  140ms ease;                              /* color, bg, border */
+  --ease-medium: 200ms ease;                              /* transform, position */
+  --ease-sheet:  180ms cubic-bezier(0.2, 0.8, 0.2, 1);    /* sheets, modals */
 }
 
 /* ----- Dark mode (global) ----- */
@@ -122,6 +122,84 @@ body.dark {
 html.dark { background: var(--bg); }
 
 @media (max-width: 720px) { :root { --gutter: 18px; } }
+
+/* =====================================================================
+   PAGE GRID — opt-in 12-column layout system
+
+   Pages declare they use the grid via class="page-grid" on <main>.
+   Modules opt into spans via .module--N classes (1-12, plus named sizes).
+
+   Mobile (<=720px): grid collapses to single column, all spans ignored.
+
+   Pages NOT using this system stay on flex/their existing layout.
+   This is opt-in, not a global default — single-column lists
+   (spots, travel, juice) shouldn't use it.
+   ===================================================================== */
+.page-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  column-gap: var(--space-7);    /* 32px */
+  row-gap: var(--space-7);
+}
+
+/* Module — generic block within a grid. Pages can extend with named
+   classes (e.g., .module--day, .module--stream) for module-specific
+   styling. By default a module is full-width; spans override. */
+.module {
+  grid-column: span 12;
+  min-width: 0;   /* prevent grid blowout from long content */
+}
+
+/* Numeric spans — explicit, granular */
+.module--span-1  { grid-column: span 1; }
+.module--span-2  { grid-column: span 2; }
+.module--span-3  { grid-column: span 3; }
+.module--span-4  { grid-column: span 4; }
+.module--span-5  { grid-column: span 5; }
+.module--span-6  { grid-column: span 6; }
+.module--span-7  { grid-column: span 7; }
+.module--span-8  { grid-column: span 8; }
+.module--span-9  { grid-column: span 9; }
+.module--span-10 { grid-column: span 10; }
+.module--span-11 { grid-column: span 11; }
+.module--span-12 { grid-column: span 12; }
+
+/* Named spans — semantic shortcuts. These are the most common widths. */
+.module--quarter      { grid-column: span 3; }
+.module--third        { grid-column: span 4; }
+.module--half         { grid-column: span 6; }
+.module--two-thirds   { grid-column: span 8; }
+.module--three-quarters { grid-column: span 9; }
+.module--full         { grid-column: span 12; }
+
+/* Mobile — single column, all spans ignored */
+@media (max-width: 720px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+    row-gap: var(--space-7);
+  }
+  /* All modules full-width on mobile */
+  .module,
+  .module--span-1, .module--span-2, .module--span-3, .module--span-4,
+  .module--span-5, .module--span-6, .module--span-7, .module--span-8,
+  .module--span-9, .module--span-10, .module--span-11, .module--span-12,
+  .module--quarter, .module--third, .module--half,
+  .module--two-thirds, .module--three-quarters, .module--full {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Tablet (721-1100px) — optionally collapse to 2 columns.
+   Modules may opt into 2-col behavior via specific media query overrides
+   in their own CSS. Default: keep 12-col but with reduced gap.
+   This middle range is the trickiest — modules need to declare how they
+   collapse (some span 6 on tablet, others span 12). Per-module decision. */
+@media (max-width: 1100px) and (min-width: 721px) {
+  .page-grid {
+    column-gap: var(--space-6);   /* 24px — slightly tighter */
+  }
+}
 
 /* ----- Reset / base ----- */
 *, *::before, *::after { box-sizing: border-box; }

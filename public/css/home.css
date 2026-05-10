@@ -1,35 +1,75 @@
 /* =========================================================
    home.css — homepage layout
-   3/6/3 grid: day summary | capture + stream | todos
+
+   Home uses .page-grid (12-col, defined in shell.css) with three modules:
+   - .module--day            (span 6, col 1, row 1) — date + mini-month + trip-strip
+   - .module--capture-stream (span 6, col 2, row 1-2) — capture + recently saved
+   - .module--launchers      (span 6, col 1, row 2) — trip-launch + juice link
+
+   Layout:
+              col 1               col 2
+     row 1: [ day module    ] [ capture+stream    ]
+     row 2: [ launchers     ] [ ... continuation  ]
+
+   The capture-stream module spans BOTH rows (grid-row: 1 / 3) so it can
+   grow tall without forcing a row break.
+
+   Tablet (721-1100): single column. Order: day, capture-stream, launchers.
+   Mobile (<=720): single column. Order: capture-stream FIRST, launchers,
+   day module HIDDEN.
    ========================================================= */
 
 .page-home {
-  padding-top: 56px;
-  display: grid;
-  grid-template-columns: 3fr 6fr 3fr;
-  column-gap: 56px;
+  padding-top: var(--space-9);   /* 80px */
 }
 
-/* 2-column intermediate: left = day + capture + stream stacked, right = todos */
-@media (max-width: 1200px) and (min-width: 721px) {
-  .page-home {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    column-gap: 48px;
-    row-gap: 36px;
-    align-items: start;
+/* Desktop layout: 6/6 with launchers in left column row 2. */
+.module--day {
+  grid-column: 1 / span 6;
+  grid-row: 1;
+}
+.module--capture-stream {
+  grid-column: 7 / span 6;
+  grid-row: 1 / span 2;
+}
+.module--launchers {
+  grid-column: 1 / span 6;
+  grid-row: 2;
+}
+
+/* Tablet (721-1100): all modules full-width, stacked.
+   Order: day, capture-stream, launchers. */
+@media (max-width: 1100px) and (min-width: 721px) {
+  .module--day,
+  .module--capture-stream,
+  .module--launchers {
+    grid-column: 1 / -1;
+    grid-row: auto;
   }
-  .col-left { order: 1; }
-  .col-mid  { order: 2; grid-column: 1; }
-  .col-right { order: 3; grid-column: 2; grid-row: 1 / span 2; }
-  .capture-wrap { max-width: none; margin: 0; }
+  .module--day        { order: 1; }
+  .module--capture-stream { order: 2; }
+  .module--launchers  { order: 3; }
 }
 
+/* Mobile (<=720): day module HIDDEN entirely.
+   Order: capture-stream first (primary), launchers below. */
 @media (max-width: 720px) {
   .page-home {
-    grid-template-columns: 1fr;
-    gap: 48px;
-    padding-top: 32px;
+    padding-top: var(--space-7);   /* 32px */
   }
+
+  /* Day module fully hidden on mobile per design decision.
+     Date/moon/DOY context is carried by the slim header. */
+  .module--day,
+  .module--day .day-sum,
+  #day-sum {
+    display: none !important;
+  }
+
+  /* Mobile flow order */
+  .module--capture-stream { order: 1; }
+  .module--launchers      { order: 2; }
+
   .capture-wrap { max-width: none !important; }
   .capture { padding: 14px 16px; }
   /* Mobile capture: bigger font, line-height + min-height scale together
@@ -44,15 +84,6 @@
     font-size: var(--text-medium);
     line-height: 26px;
   }
-  /* Hide the big left-column day summary on mobile.
-     The slim header (date + moon + trip status) now carries this context.
-     !important + multiple selectors to defeat any stacking-order or cached older rules.
-     Also hide #day-sum directly in case col-left class is somehow stripped. */
-  .col-left,
-  .page-home .col-left,
-  aside.col-left,
-  #day-sum,
-  .day-sum { display: none !important; }
 }
 
 /* =========================================================
@@ -269,9 +300,9 @@
 }
 
 /* =========================================================
-   CAPTURE + STREAM (middle)
+   CAPTURE + STREAM module (right half on desktop, top on mobile)
    ========================================================= */
-.col-mid {
+.module--capture-stream {
   display: flex;
   flex-direction: column;
   gap: 36px;
@@ -1363,12 +1394,28 @@
   text-align: center;
   padding: 4px 2px;
   line-height: 1.2;
+  position: relative;
 }
 .mm__cell--empty {
   color: transparent;
 }
 .mm__cell--trip {
   color: var(--accent);
+}
+/* Today indicator — small dot below the number. */
+.mm__cell--today::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 1px;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ink-2);
+}
+.mm__cell--today.mm__cell--trip::after {
+  background: var(--accent);
 }
 
 /* Day-of-year — clickable to open year overlay (easter egg) */
@@ -1504,14 +1551,13 @@
 }
 
 /* =====================================================================
-   Mobile-only trip launch button (under todos)
-   Desktop + tablet have the trip-strip in col-left; mobile hides col-left
-   so this surfaces a path back to the itinerary overlay.
+   Trip launch button — surfaces a path to the trip overlay or apps.
+   Visible on all viewports (desktop in launchers module, mobile in
+   launchers module too — same module, different position via grid).
    ===================================================================== */
 .trip-launch {
-  display: none; /* hidden on desktop/tablet — col-left's trip-strip handles it */
+  display: flex;
   width: 100%;
-  margin-top: 24px;
   padding: 16px 18px;
   background: var(--bg);
   border: 1px solid var(--rule);
@@ -1525,6 +1571,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  text-decoration: none;
   transition: color var(--ease-quick), border-color var(--ease-quick);
 }
 .trip-launch[hidden] { display: none !important; }
@@ -1546,9 +1593,9 @@
   transform: translate(2px, -2px);
 }
 
-/* Show on mobile only — but only if not [hidden] (i.e. activeTrip exists) */
-@media (max-width: 720px) {
-  .trip-launch:not([hidden]) {
-    display: flex;
-  }
+/* Launchers module: stack the buttons vertically with consistent gap. */
+.module--launchers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);   /* 12px */
 }
