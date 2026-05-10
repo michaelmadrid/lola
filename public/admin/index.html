@@ -20,29 +20,16 @@
     </button>
     <a href="/" class="logo">kit</a>
   </div>
-  <nav class="nav">
-    <a href="/">Home</a>
-    <a href="/travel/">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-    <a href="/admin/" class="is-active">Admin</a>
-  </nav>
+  <nav class="nav" data-nav="primary"></nav>
   <div class="head__right">
     <span class="where">Bali</span>
     <span id="hdr-time">—</span>
   </div>
 </header>
 
-<div class="menu-overlay" id="menu-overlay">
-  <div class="menu-overlay__inner">
-    <a href="/">Home</a>
-    <a href="/travel/">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-    <a href="/admin/" class="is-active">Admin</a>
-    <a href="#" id="signout-link" class="menu-overlay__signout">Sign out</a>
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+    <div class="menu-overlay__inner"></div>
   </div>
-</div>
 
 <main class="page page-admin">
 
@@ -78,5 +65,6 @@
   const signOutFoot = document.getElementById('signout-link-foot');
   if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
 </script>
+<script src="/js/nav.js"></script>
 </body>
 </html>

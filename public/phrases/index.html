@@ -20,31 +20,15 @@
     </button>
     <a href="/" class="logo">kit</a>
   </div>
-  <nav class="nav">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/travel/" data-auth="in">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
-  </nav>
+  <nav class="nav" data-nav="primary"></nav>
   <div class="head__right">
     <span class="ph-translating" id="ph-translating">Translating…</span>
   </div>
 </header>
 
-<div class="menu-overlay" id="menu-overlay">
-  <div class="menu-overlay__inner">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/travel/" data-auth="in">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-    <a href="/phrases/" class="is-active" data-auth="in">Phrases</a>
-    <a href="/settings.html" data-auth="in">Settings</a>
-    <a href="/admin/" data-auth="in">Admin</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
-    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+    <div class="menu-overlay__inner"></div>
   </div>
-</div>
 
 <main class="page page-phrases">
 
@@ -75,5 +59,6 @@
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
 <script src="/js/phrases-view.js"></script>
+<script src="/js/nav.js"></script>
 </body>
 </html>

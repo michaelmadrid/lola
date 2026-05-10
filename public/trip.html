@@ -20,29 +20,16 @@
     </button>
     <a href="/" class="logo">kit</a>
   </div>
-  <nav class="nav">
-    <a href="/">Home</a>
-    <a href="/travel/" class="is-active">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-  </nav>
+  <nav class="nav" data-nav="primary"></nav>
   <div class="head__right">
     <span class="where">Bali</span>
     <span id="hdr-time">—</span>
   </div>
 </header>
 
-<div class="menu-overlay" id="menu-overlay">
-  <div class="menu-overlay__inner">
-    <a href="/">Home</a>
-    <a href="/travel/" class="is-active">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" data-auth="in">Guides</a>
-    <a href="/settings.html" data-auth="in">Settings</a>
-      <a href="/admin/" data-auth="in">Admin</a>
-    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+    <div class="menu-overlay__inner"></div>
   </div>
-</div>
 
 <main class="page page-trip" id="trip-page">
   <div class="list-empty" id="trip-loading">Loading…</div>
@@ -188,5 +175,6 @@
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
 <script src="/js/trip.js"></script>
+<script src="/js/nav.js"></script>
 </body>
 </html>
