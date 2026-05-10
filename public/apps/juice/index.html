@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <title>Phrases — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/phrases.css">
+</head>
+<body class="body-phrases">
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav" data-nav="primary"></nav>
+  <div class="head__right">
+    <span class="ph-translating" id="ph-translating">Translating…</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+    <div class="menu-overlay__inner"></div>
+  </div>
+
+<main class="page page-phrases">
+
+  <!-- Top row: just the add-phrase pill, right-aligned. Language picker moved
+       below category chips since categories are used more frequently. -->
+  <div class="ph-topbar ph-topbar--add-only">
+    <a href="/apps/juice/capture/" class="ph-add-inline" aria-label="Add a phrase">+ Add phrase</a>
+  </div>
+
+  <!-- Category chips: All + per-category -->
+  <div class="ph-cats" id="ph-cats"></div>
+
+  <!-- Language picker — quieter than chips, dropdown below category row -->
+  <div class="ph-lang-row">
+    <select class="ph-lang-select" id="ph-lang-select">
+      <option value="">Original (English)</option>
+    </select>
+  </div>
+
+  <!-- Phrase groups -->
+  <div id="ph-groups">
+    <div class="ph-loading" id="ph-loading">Loading phrases…</div>
+  </div>
+
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/phrases-view.js"></script>
+<script src="/js/nav.js"></script>
+</body>
+</html>

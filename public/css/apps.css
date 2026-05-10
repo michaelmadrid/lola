@@ -1,0 +1,83 @@
+/* =====================================================================
+   apps.css — /apps/ index page
+
+   Lightweight card grid showing available apps. Each card is a link.
+   Minimal aesthetic — apps themselves carry their own visual identity.
+   ===================================================================== */
+
+.page-apps {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px var(--gutter) 80px;
+}
+@media (max-width: 720px) {
+  .page-apps {
+    padding: 24px 20px 80px;
+  }
+}
+
+.apps-mast {
+  margin-bottom: 40px;
+}
+.apps-mast__title {
+  font-family: var(--sans);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+.apps-mast__sub {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-3);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+/* Grid: 2 columns on desktop, 1 on mobile */
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .apps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* App card — full block, tappable */
+.app-card {
+  display: block;
+  padding: 22px 20px;
+  background: var(--field);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  text-decoration: none;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+.app-card:hover {
+  border-color: var(--blue);
+  background: var(--field-focus);
+}
+.app-card__name {
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+.app-card:hover .app-card__name {
+  color: var(--blue);
+}
+.app-card__desc {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+  letter-spacing: -0.005em;
+  margin: 0;
+  line-height: 1.4;
+}

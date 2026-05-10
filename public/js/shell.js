@@ -416,7 +416,6 @@
         <nav class="user-panel__nav">
           <a href="/settings.html" class="user-panel__link">Settings</a>
           ${isAdmin ? '<a href="/admin/" class="user-panel__link">Admin</a>' : ''}
-          <a href="/idle/" class="user-panel__link">Idle</a>
           <button type="button" class="user-panel__signout" id="user-panel-signout">Sign out</button>
         </nav>
         <div class="user-panel__foot">
