@@ -110,7 +110,10 @@
   padding: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
   z-index: 30;
-  width: 280px;
+  /* Use min-width so popover never goes wider than its content needs,
+     but never narrower than 200px. On desktop content typically lands
+     around 240–280px; on mobile we override below. */
+  min-width: 200px;
   max-width: calc(100vw - 32px);
 }
 .picker-popover[hidden] { display: none; }
@@ -172,10 +175,24 @@
 @media (max-width: 720px) {
   .page-spots .search-input { font-size: 16px; padding: 11px 12px; }
   .page-spots .mast__title { font-size: 24px; }
-  /* Mobile popovers fill remaining viewport width.
-     All anchor left:0 from their group — the rightmost picker's popover
-     might overflow viewport, so cap width and shift via right-anchor when
-     the trigger is in the right half of the row. Handled by max-width + the
-     base rule which keeps it within calc(100vw - 32px). */
-  .picker-popover { width: calc(100vw - 32px); }
+
+  /* On mobile, popovers should span the available row width regardless
+     of which picker triggered them. We keep the popover anchored to its
+     .picker-group (so it appears just below its trigger button), but
+     constrain the width to fit and allow it to shift LEFT toward the
+     viewport when needed via right-anchor. */
+  .picker-popover {
+    width: calc(100vw - 32px);
+    min-width: 0;
+    max-width: calc(100vw - 32px);
+  }
+
+  /* Pickers that are NOT the leftmost (city) anchor to the right edge of
+     their group instead of the left, so the popover extends back toward
+     the viewport's left side rather than running off the right. */
+  #type-picker-popover,
+  #been-picker-popover {
+    left: auto;
+    right: 0;
+  }
 }
