@@ -87,23 +87,53 @@
     }
   }
 
-  // Cache the JSON across pages in a single tab session
-  const CACHE_KEY = 'kit.navCache.v1';
+  // Cache the JSON across pages in a single tab session.
+  // Cache key includes a version stamp so bumping nav.json's _meta.version
+  // automatically invalidates stale caches in users' browsers.
+  // Also short-circuit cache if URL has ?nav-fresh=1 (debug escape hatch).
+  const CACHE_KEY_PREFIX = 'kit.navCache.v';
   function getCachedNav() {
+    if (location.search.includes('nav-fresh=1')) return null;
     try {
-      const c = sessionStorage.getItem(CACHE_KEY);
-      if (c) return JSON.parse(c);
+      // Find any kit.navCache.v* key and use it
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(CACHE_KEY_PREFIX)) {
+          const c = sessionStorage.getItem(key);
+          if (c) {
+            const data = JSON.parse(c);
+            // Validate version still matches
+            const cachedVersion = data && data._meta && data._meta.version;
+            const expectedVersion = parseInt(key.slice(CACHE_KEY_PREFIX.length), 10);
+            if (cachedVersion === expectedVersion) return data;
+            // Stale — clean it up
+            sessionStorage.removeItem(key);
+          }
+        }
+      }
     } catch (_) {}
     return null;
   }
   function setCachedNav(data) {
-    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(data)); } catch (_) {}
+    try {
+      const v = (data && data._meta && data._meta.version) || 1;
+      // Clear any other kit.navCache.v* keys before writing the new one
+      const toRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith(CACHE_KEY_PREFIX)) toRemove.push(key);
+      }
+      toRemove.forEach(k => sessionStorage.removeItem(k));
+      sessionStorage.setItem(CACHE_KEY_PREFIX + v, JSON.stringify(data));
+    } catch (_) {}
   }
 
   async function loadNavConfig() {
     const cached = getCachedNav();
     if (cached) return cached;
-    const r = await fetch('/data/nav.json', { cache: 'no-cache' });
+    // no-store: never let the browser cache nav.json itself.
+    // We only cache the parsed result in sessionStorage, keyed by version.
+    const r = await fetch('/data/nav.json', { cache: 'no-store' });
     const data = await r.json();
     setCachedNav(data);
     return data;
