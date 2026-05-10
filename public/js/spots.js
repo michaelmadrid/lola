@@ -187,8 +187,8 @@
   // Standard popover positioning logic (the "Floating UI / Popper.js" pattern):
   //   1. Reset to default left-aligned position
   //   2. Measure where popover actually lands in viewport
-  //   3. If it overflows right edge: flip to right-aligned (anchored to trigger's right edge)
-  //   4. If still overflows left: clamp to viewport edge
+  //   3. If it overflows right edge: flip to right-aligned
+  //   4. Clamp to viewport edges if still overflowing
   // No JS positioning library needed — this is enough for our 3 pickers.
   function positionPopover(pop) {
     // Reset any inline styles from previous opens
@@ -196,26 +196,39 @@
     pop.style.right = '';
     pop.style.transform = '';
 
-    // Measure viewport vs popover
-    const margin = 8; // breathing room from viewport edge
-    const rect = pop.getBoundingClientRect();
+    const margin = 8;          // breathing room from viewport edge
     const vw = window.innerWidth;
 
-    // Right overflow → flip to right-anchored (popover extends LEFT from button's right edge)
+    // Force layout — read offsetWidth before measuring rect so the browser
+    // has computed dimensions for the freshly-shown popover. Mobile Safari
+    // in particular needs this nudge.
+    void pop.offsetWidth;
+
+    const rect = pop.getBoundingClientRect();
+
+    // Default position is left:0 from the .picker-group parent.
+    // If the popover's right edge overflows the viewport, flip to right:0
+    // so it extends LEFT from the trigger button's right edge instead.
     if (rect.right > vw - margin) {
       pop.style.left = 'auto';
       pop.style.right = '0';
-      // Re-measure after flip
+
+      // After flipping, check if it now overflows the LEFT edge.
+      // (Common on mobile when popover is wider than the trigger's
+      // horizontal position allows.)
+      void pop.offsetWidth;
       const rect2 = pop.getBoundingClientRect();
-      // If now overflows left edge → clamp by setting fixed-style position via translate
       if (rect2.left < margin) {
-        // Calculate how much we need to shift right to fit
+        // Calculate how much to shift right to fit within viewport.
+        // Use translateX so we don't fight the right:0 anchor.
         const shift = margin - rect2.left;
-        pop.style.right = '';
-        pop.style.left = '0';
-        // Use transform so we don't disturb the absolute positioning logic
         pop.style.transform = `translateX(${shift}px)`;
       }
+    } else if (rect.left < margin) {
+      // Edge case: even with default left:0, popover extends past left edge.
+      // Shift right to fit.
+      const shift = margin - rect.left;
+      pop.style.transform = `translateX(${shift}px)`;
     }
   }
 
@@ -223,8 +236,12 @@
     closeAllPopovers();
     pop.hidden = false;
     pop.classList.add('is-open');
-    // Position AFTER showing (popover must be in DOM with dimensions to measure)
-    positionPopover(pop);
+    // Position AFTER the browser has computed layout for the popover.
+    // requestAnimationFrame ensures the popover is fully laid out before
+    // we measure with getBoundingClientRect — without this, mobile browsers
+    // may return stale or zero values from a popover that just transitioned
+    // from `hidden` to visible.
+    requestAnimationFrame(() => positionPopover(pop));
   }
   function closePopover(pop) {
     pop.classList.remove('is-open');
