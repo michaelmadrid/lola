@@ -39,15 +39,12 @@
 <main class="page page-home page-grid">
 
   <!-- ========== MODULE: Day (left half on desktop) ==========
-       Date + moon + DOY at top, then mini-month calendar (always shown,
-       highlights trip days when one exists), then trip-strip (only when
-       on a trip), then the launcher list (Open trip + Open Juice).
+       Date + moon + DOY at top, then idle quote (oblique strategies).
 
-       Note: launchers are a SEPARATE module in source order (below) but
-       rendered inside this module's grid cell via CSS grid placement
-       (.module--launchers grid-row: 2). On mobile, day module is hidden
-       and launchers re-flow to bottom via order property. Single source
-       of HTML — CSS handles positioning. -->
+       Trip-strip + mini-month removed in C6.5 — trip access is the
+       launcher "Open trip" only. Day module is now date-meta + idle quote.
+
+       HIDDEN on mobile (capture is primary mobile surface). -->
   <section class="module module--half module--day" data-module="day">
     <div class="day-sum" id="day-sum">
 
@@ -65,39 +62,9 @@
         </div>
       </div>
 
-      <!-- Mini-month calendar — always renders. JS hydrates current month;
-           if a trip exists, trip days highlight. CdG-style days only. -->
-      <div class="mm" id="mini-month" aria-hidden="true"></div>
-
-      <!-- ACTIVE-only: trip-strip + trip-now panel.
-           Only rendered when activeTrip exists. -->
-      <div id="day-active" style="display:none">
-        <button class="trip-strip" id="trip-strip" aria-label="Open itinerary">
-          <span class="trip-strip__main">
-            <span class="trip-strip__name" id="trip-strip-name">—</span>
-            <span class="trip-strip__sub">
-              <span class="trip-strip__dates" id="trip-strip-dates">—</span>
-              <span class="trip-strip__sep" id="trip-strip-sep">·</span>
-              <span class="trip-strip__arc" id="trip-strip-arc">—</span>
-            </span>
-          </span>
-          <span class="trip-strip__open">↗</span>
-        </button>
-
-        <div class="trip-now" id="trip-now" style="display:none">
-          <div class="trip-now__row" id="trip-now-today" style="display:none">
-            <span class="trip-now__label">Today</span>
-            <span class="trip-now__value" id="trip-now-today-value">—</span>
-          </div>
-          <div class="trip-now__row" id="trip-now-next" style="display:none">
-            <span class="trip-now__label">Next</span>
-            <span class="trip-now__value" id="trip-now-next-value">—</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- IDLE-only: oblique strategies quote (no trip). -->
-      <div id="day-idle" class="day-sum__idle" style="display:none">
+      <!-- Idle quote (oblique strategies) — always shown now since
+           trip-active UI was removed in C6.5. -->
+      <div id="day-idle" class="day-sum__idle">
         <p class="day-sum__idle__quote" id="idle-quote">—</p>
         <span class="day-sum__idle__caption">OBLIQUE <span id="idle-num">001</span>/180</span>
       </div>

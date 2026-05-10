@@ -609,11 +609,12 @@
       tripEl.style.cursor = 'pointer';
       tripEl.onclick = (e) => {
         e.preventDefault();
-        // On home page: click the existing trip-strip which has the full
+        // On home page: click the launcher button which has the full
         // openItinerary() handler with activeTrip state populated.
-        const tripStrip = document.getElementById('trip-strip');
-        if (tripStrip) {
-          tripStrip.click();
+        // (Trip-strip removed in C6.5; trip-launch is the sole opener.)
+        const tripLaunch = document.getElementById('trip-launch');
+        if (tripLaunch && !tripLaunch.hidden) {
+          tripLaunch.click();
           return;
         }
         // Off home: trip overlay's content is owned by home.js — go home.
@@ -699,11 +700,12 @@
           e.preventDefault();
           // Close the menu
           overlay.classList.remove('is-open');
-          // Then trigger the on-page trip strip click (opens itinerary overlay)
-          const tripStrip = document.getElementById('trip-strip');
-          if (tripStrip) {
+          // Then trigger the on-page launcher click (opens itinerary overlay).
+          // Trip-strip removed in C6.5; trip-launch is the sole opener.
+          const tripLaunch = document.getElementById('trip-launch');
+          if (tripLaunch) {
             // Defer so the menu close animation can settle first
-            setTimeout(() => tripStrip.click(), 50);
+            setTimeout(() => tripLaunch.click(), 50);
           }
         });
         wrap.appendChild(tile);

@@ -12,19 +12,10 @@
   // ============ DAY SUMMARY ============
   const dayDateEl = document.getElementById('day-sum-date');
   const dayDoyEl = document.getElementById('day-sum-doy');
-  const dayActiveEl = document.getElementById('day-active');
   const dayIdleEl = document.getElementById('day-idle');
 
-  // Trip strip (active state)
-  const tripStripEl     = document.getElementById('trip-strip');
-  const tripStripName   = document.getElementById('trip-strip-name');
-  const tripStripArc    = document.getElementById('trip-strip-arc');
-  const tripStripDates  = document.getElementById('trip-strip-dates');
-  const tripNowEl       = document.getElementById('trip-now');
-  const tripNowToday    = document.getElementById('trip-now-today');
-  const tripNowTodayVal = document.getElementById('trip-now-today-value');
-  const tripNowNext     = document.getElementById('trip-now-next');
-  const tripNowNextVal  = document.getElementById('trip-now-next-value');
+  // Trip-strip + trip-now + mini-month removed in C6.5.
+  // Trip access is now the launcher "Open trip" button only.
 
   let activeTrip = null;
   let activeSegments = [];
@@ -135,199 +126,64 @@
     monthsEl.innerHTML = html;
   }
 
+  // ============ TRIP DETECTION ============
+  // Load whether there's an active/upcoming trip. If yes, show the
+  // launcher button "Open <trip name>". If no, hide the launcher.
+  // (Trip-strip + mini-month removed in C6.5 — the launcher button is
+  // the only trip surface on home now.)
   async function loadActiveTrip() {
     try {
       const data = await api.get('/api/trips/next');
       activeTrip = data.trip;
-      if (activeTrip) {
-        renderActiveDay();
-      } else {
-        renderIdleDay();
-      }
     } catch (err) {
       console.error('loadActiveTrip', err);
-      renderIdleDay();
+      activeTrip = null;
     }
-  }
 
-  async function renderActiveDay() {
-    dayActiveEl.style.display = '';
-    dayIdleEl.style.display = 'none';
-
-    // Mobile trip-launch button (under todos): label with trip name, unhide
+    // Update launcher button (visible iff trip exists)
     const launchBtn   = document.getElementById('trip-launch');
     const launchLabel = document.getElementById('trip-launch-label');
     if (launchBtn) {
-      if (launchLabel) launchLabel.textContent = `Open ${activeTrip.name || 'trip'}`;
-      launchBtn.hidden = false;
-    }
-
-    // Strip top line: name
-    tripStripName.textContent = activeTrip.name;
-
-    // Compact date range "5/12 → 6/24" for the strip — fits on one line
-    function shortDate(s) {
-      if (!s) return '';
-      const d = new Date(s);
-      return `${d.getMonth() + 1}/${d.getDate()}`;
-    }
-    const ds = shortDate(activeTrip.date_start);
-    const de = shortDate(activeTrip.date_end);
-    tripStripDates.textContent = (ds && de) ? `${ds} → ${de}` : (ds || '');
-
-    // Load segments and compute today/next
-    try {
-      const data = await api.get('/api/trips/' + activeTrip.id);
-      activeSegments = (data.segments || []).filter(s => s.date_start);
-      activeSegments.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
-
-      const today = new Date().toISOString().split('T')[0];
-      const isUpcoming = activeTrip.phase === 'upcoming';
-
-      // For UPCOMING trips: put "depart in N days" inline next to dates (in the __arc slot)
-      // For ACTIVE trips: keep using the trip-now sub-row for "Today: city · day 3 of 5"
-      if (isUpcoming) {
-        const firstSeg = activeSegments[0];
-        const firstStart = firstSeg ? firstSeg.date_start : activeTrip.date_start;
-        let phrase = '';
-        if (firstStart) {
-          const days = Math.ceil((new Date(firstStart) - new Date(today)) / 86400000);
-          if (days === 0)      phrase = 'depart today';
-          else if (days === 1) phrase = 'depart tomorrow';
-          else                 phrase = `depart in ${days} days`;
-        }
-        if (phrase) {
-          tripStripArc.textContent = phrase;
-          tripStripArc.style.display = '';
-          const sepEl = document.getElementById('trip-strip-sep');
-          if (sepEl) sepEl.style.display = '';
-        } else {
-          tripStripArc.style.display = 'none';
-          const sepEl = document.getElementById('trip-strip-sep');
-          if (sepEl) sepEl.style.display = 'none';
-        }
-        // Hide the old trip-now block — phrase is inline now
-        tripNowEl.style.display = 'none';
+      if (activeTrip) {
+        if (launchLabel) launchLabel.textContent = `Open ${activeTrip.name || 'trip'}`;
+        launchBtn.hidden = false;
       } else {
-        // Active phase: hide the inline arc, use trip-now block
-        tripStripArc.textContent = '';
-        tripStripArc.style.display = 'none';
-        const sepEl = document.getElementById('trip-strip-sep');
-        if (sepEl) sepEl.style.display = 'none';
-
-        const todaySeg = activeSegments.find(s =>
-          s.date_start && s.date_end && today >= s.date_start && today <= s.date_end
-        );
-        const futureSegs = activeSegments.filter(s => s.date_start > today);
-        const nextSeg = futureSegs[0];
-
-        let phrase = '';
-        if (todaySeg) {
-          const label = todaySeg.city_name || todaySeg.region_label || '—';
-          const dayInfo = computeDayInfo(todaySeg, today);
-          phrase = dayInfo ? `${label} · ${dayInfo}` : label;
-        } else if (nextSeg) {
-          const label = nextSeg.city_name || nextSeg.region_label || '—';
-          const arr = nextSeg.date_start ? util.formatNumericDate(nextSeg.date_start) : '';
-          phrase = arr ? `next · ${label} · ${arr}` : `next · ${label}`;
-        }
-
-        if (phrase) {
-          tripNowToday.style.display = '';
-          tripNowTodayVal.textContent = phrase;
-          const lbl = tripNowToday.querySelector('.trip-now__label');
-          if (lbl) lbl.style.display = 'none';
-          tripNowNext.style.display = 'none';
-          tripNowEl.style.display = '';
-        } else {
-          tripNowEl.style.display = 'none';
-        }
+        launchBtn.hidden = true;
       }
+    }
 
-      // Render the mini-month calendar with trip dates highlighted
-      renderMiniMonth(activeTrip);
-    } catch (err) {
-      console.error('load segments', err);
-      tripNowEl.style.display = 'none';
+    // Load segments — needed for the itinerary overlay (clicking the launcher).
+    if (activeTrip) {
+      try {
+        const data = await api.get('/api/trips/' + activeTrip.id);
+        activeSegments = (data.segments || []).filter(s => s.date_start);
+        activeSegments.sort((a, b) => (a.date_start || '').localeCompare(b.date_start || ''));
+      } catch (err) {
+        console.error('load segments', err);
+        activeSegments = [];
+      }
+    } else {
+      activeSegments = [];
     }
   }
 
-  // Render a CdG-style mini-month grid below the trip strip.
-  // Days only, Sunday-first, no headers, blue underline on trip dates within the month.
-  // When trip is null/undefined, renders just the current month with no highlights.
-  function renderMiniMonth(trip) {
-    const container = document.getElementById('mini-month');
-    if (!container) return;
-
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth(); // 0-indexed
-
-    const firstOfMonth = new Date(year, month, 1);
-    const startCol = firstOfMonth.getDay(); // 0 = Sunday
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-    // Parse trip dates (or leave null when no trip)
-    const tripStart = (trip && trip.date_start) ? trip.date_start.slice(0, 10) : null;
-    const tripEnd   = (trip && trip.date_end)   ? trip.date_end.slice(0, 10)   : null;
-
-    function isInTrip(day) {
-      if (!tripStart || !tripEnd) return false;
-      const ymd = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      // Only highlight the start and end dates, not the full range
-      return ymd === tripStart || ymd === tripEnd;
-    }
-
-    let html = '';
-    // Empty cells before the 1st
-    for (let i = 0; i < startCol; i++) {
-      html += `<span class="mm__cell mm__cell--empty"></span>`;
-    }
-    const todayDay = today.getDate();
-    for (let d = 1; d <= daysInMonth; d++) {
-      const cls = ['mm__cell'];
-      if (isInTrip(d)) cls.push('mm__cell--trip');
-      if (d === todayDay) cls.push('mm__cell--today');
-      html += `<span class="${cls.join(' ')}">${d}</span>`;
-    }
-    container.innerHTML = html;
-  }
-
-  // For "day 3 of 5" style hints when in an active segment
-  function computeDayInfo(seg, today) {
-    if (!seg.date_start || !seg.date_end) return null;
-    const start = new Date(seg.date_start);
-    const end   = new Date(seg.date_end);
-    const cur   = new Date(today);
-    const totalDays = Math.round((end - start) / 86400000) + 1;
-    const dayN      = Math.round((cur - start) / 86400000) + 1;
-    if (totalDays < 2) return null;
-    return `day ${dayN} of ${totalDays}`;
-  }
-
-  // ============ IDLE STATE — prompt + SVG ============
+  // ============ IDLE STATE — oblique strategies prompt ============
   // Eno + Schmidt — Oblique Strategies. Loaded from oblique.js as window.OBLIQUE_STRATEGIES.
   const idlePrompts = (window.OBLIQUE_STRATEGIES && window.OBLIQUE_STRATEGIES.length)
     ? window.OBLIQUE_STRATEGIES
     : ['Trust in the you of now'];
 
-  function renderIdleDay() {
-    dayActiveEl.style.display = 'none';
+  function renderIdleQuote() {
+    if (!dayIdleEl) return;
     dayIdleEl.style.display = 'flex';
-
-    // Hide trip-launch button when there's no upcoming trip
-    const launchBtn = document.getElementById('trip-launch');
-    if (launchBtn) launchBtn.hidden = true;
-
-    // Render mini-month even without a trip — shows current month, today marker only.
-    renderMiniMonth(null);
-
-    // Random per page-load. (Switch to date-deterministic later if we want
-    // "one per day" — for now random keeps it fresh on each visit.)
     const idx = Math.floor(Math.random() * idlePrompts.length);
-    document.getElementById('idle-quote').textContent = idlePrompts[idx];
-    document.getElementById('idle-num').textContent = String(idx + 1).padStart(3, '0');
+    const quoteEl = document.getElementById('idle-quote');
+    const numEl   = document.getElementById('idle-num');
+    if (quoteEl) quoteEl.textContent = idlePrompts[idx];
+    if (numEl)   numEl.textContent   = String(idx + 1).padStart(3, '0');
   }
+  // Idle quote always shows now (no longer trip-state-gated).
+  renderIdleQuote();
 
   loadActiveTrip();
 
@@ -437,9 +293,8 @@
     itinOverlay.classList.remove('is-open');
     document.body.style.overflow = '';
   }
-  if (tripStripEl) tripStripEl.addEventListener('click', openItinerary);
   if (itinClose)   itinClose.addEventListener('click', closeItinerary);
-  // Mobile-only trip launch button (under todos) — same handler as trip-strip
+  // Trip-launch button — opens itinerary overlay. Sole trip surface on home.
   const launchBtnEl = document.getElementById('trip-launch');
   if (launchBtnEl) launchBtnEl.addEventListener('click', openItinerary);
   document.addEventListener('keydown', (e) => {

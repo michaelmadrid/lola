@@ -58,6 +58,14 @@
     padding-top: var(--space-7);   /* 32px */
   }
 
+  /* Reset grid placement so `order` reflow can work cleanly */
+  .module--day,
+  .module--capture-stream,
+  .module--launchers {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
   /* Day module fully hidden on mobile per design decision.
      Date/moon/DOY context is carried by the slim header. */
   .module--day,
@@ -128,87 +136,9 @@
   width: 10px; height: 10px;
   vertical-align: -1px;
 }
-/* ===== Active trip strip (2-line) ===== */
-.trip-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 14px 0;
-  margin: 0;
-  background: transparent;
-  border: 0;
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  cursor: pointer;
-  text-align: left;
-  transition: color var(--ease-quick);
-}
-.trip-strip:hover { color: var(--accent); }
-.trip-strip:hover .trip-strip__open { transform: translate(2px, -2px); color: var(--accent); }
-.trip-strip__main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.trip-strip__name {
-  font-size: var(--text-medium);
-  font-weight: 500;
-  color: var(--ink);
-  letter-spacing: -0.012em;
-  line-height: 1.15;
-}
-.trip-strip__sub {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: var(--text-tiny);
-  color: var(--ink-3);
-  letter-spacing: 0.04em;
-}
-.trip-strip__arc { color: var(--ink-2); }
-.trip-strip__sep { color: var(--ink-3); }
-.trip-strip__dates { color: var(--ink-3); }
-.trip-strip__open {
-  font-family: var(--mono);
-  font-size: var(--text-strong);
-  color: var(--ink-3);
-  padding: 6px 8px;
-  margin-right: -8px;
-  flex-shrink: 0;
-  transition: transform var(--ease-medium), color var(--ease-quick);
-}
-
-/* Today/Next sub-rows */
-.trip-now {
-  padding: 12px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.trip-now__row {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  font-size: var(--text-small);
-  letter-spacing: -0.005em;
-}
-.trip-now__label {
-  font-family: var(--mono);
-  font-size: var(--text-tiny);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  width: 48px;
-  flex-shrink: 0;
-}
-.trip-now__value {
-  color: var(--ink);
-}
+/* ===== Active trip strip + trip-now: REMOVED in C6.5.
+   Trip access on home is the launcher button "Open trip" only.
+   These styles are gone — to restore, see git history before C6.5. ===== */
 
 .day-sum__section {
   padding: 14px 0;
@@ -1376,47 +1306,8 @@
 }
 .save-fs__danger:hover { color: var(--danger); }
 
-/* ===== Mini-month under trip strip (CdG-inspired, days only) ===== */
-.mm {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0;
-  padding: 14px 0 12px;
-  border-bottom: 1px solid var(--rule);
-}
-.mm__cell {
-  font-family: var(--sans);
-  font-size: var(--text-small);
-  font-weight: 500;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.005em;
-  text-align: center;
-  padding: 4px 2px;
-  line-height: 1.2;
-  position: relative;
-}
-.mm__cell--empty {
-  color: transparent;
-}
-.mm__cell--trip {
-  color: var(--accent);
-}
-/* Today indicator — small dot below the number. */
-.mm__cell--today::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: 1px;
-  transform: translateX(-50%);
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--ink-2);
-}
-.mm__cell--today.mm__cell--trip::after {
-  background: var(--accent);
-}
+/* ===== Mini-month: REMOVED in C6.5.
+   Calendar removed from home — no calendar in home page UI for now. ===== */
 
 /* Day-of-year — clickable to open year overlay (easter egg) */
 .day-sum__doy--clickable {
