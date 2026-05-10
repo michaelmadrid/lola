@@ -225,45 +225,10 @@ body.body-phrases {
   color: var(--accent);
 }
 
-/* Delete button on custom pills — inline-row close circle, 28x28.
-   Canonical pattern: same shape as .time-card__remove. Always perfectly round. */
-.ph-pill__delete {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
-  flex-shrink: 0;
-  background: transparent;
-  border: 1px solid var(--rule);
-  border-radius: 50%;
-  color: var(--ink-3);
-  font-family: var(--sans);
-  font-size: var(--text-body);
-  font-weight: 400;
-  line-height: 1;
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  transition: color var(--ease-quick), border-color var(--ease-quick);
-  align-self: center;
-}
-.ph-pill__delete:hover {
-  color: var(--danger);
-  border-color: var(--danger);
-}
-@media (max-width: 720px) {
-  /* Force perfect circle even with mobile touch-target overrides */
-  .ph-pill__delete {
-    min-height: 28px !important;
-    min-width: 28px !important;
-    width: 28px !important;
-    height: 28px !important;
-  }
-}
+/* .ph-pill__delete now uses .btn-remove-circle primitive (28×28 inline circle).
+   Legacy class kept on the element for backwards-compat; visual rules live in
+   shell.css. To restore custom styling, re-add ph-pill__delete-specific rules
+   here. */
 
 /* "Curated" subtle tag on curated pills (optional, very quiet) */
 .ph-pill__source {

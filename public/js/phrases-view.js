@@ -1,5 +1,5 @@
 /* =====================================================================
-   phrases-view.js — /phrases/
+   phrases-view.js — /apps/juice/
 
    Loads:
      - /data/phrases-curated.json (shipped, no auth needed)
@@ -186,7 +186,7 @@
       }
     }
     const del = isCustom
-      ? `<button class="ph-pill__delete" data-id="${p.id}" aria-label="Delete">×</button>`
+      ? `<button class="btn-remove-circle ph-pill__delete" data-id="${p.id}" aria-label="Delete">×</button>`
       : '';
     return `
       <div class="ph-pill ${isCustom ? 'ph-pill--custom' : ''}">
