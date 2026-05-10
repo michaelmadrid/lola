@@ -18,11 +18,11 @@
   padding: 22px 0;
   border-top: 1px solid var(--rule);
   cursor: pointer;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .admin-link:first-child { border-top: 1px solid var(--rule); }
-.admin-link:hover { color: var(--blue); }
-.admin-link:hover .admin-link__arrow { transform: translateX(3px); color: var(--blue); }
+.admin-link:hover { color: var(--accent); }
+.admin-link:hover .admin-link__arrow { transform: translateX(3px); color: var(--accent); }
 .admin-link__name {
   font-size: 22px;
   font-weight: 500;
@@ -37,7 +37,7 @@
   font-size: 14px;
   color: var(--ink-3);
   text-align: right;
-  transition: transform 200ms ease, color 140ms ease;
+  transition: transform var(--ease-medium), color var(--ease-quick);
 }
 
 /* admin table — places, cities, saves */
@@ -73,20 +73,20 @@
   text-transform: uppercase;
 }
 .admin-actions button { color: var(--ink-3); }
-.admin-actions button:hover { color: var(--blue); }
-.admin-actions button.is-danger:hover { color: #c0392b; }
+.admin-actions button:hover { color: var(--accent); }
+.admin-actions button.is-danger:hover { color: var(--danger); }
 
 /* Row-level delete X — small, quiet by default, red on hover */
 .admin-actions .row-delete-btn {
   font-size: 16px;
   line-height: 1;
   padding: 0 4px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   background: none;
   border: 0;
   cursor: pointer;
 }
-.admin-actions .row-delete-btn:hover { color: #c0392b; }
+.admin-actions .row-delete-btn:hover { color: var(--danger); }
 
 /* places-specific row layout */
 .places-head, .places-row {
@@ -122,9 +122,9 @@
   line-height: 1;
 }
 .admin-search {
-  background: var(--field);
+  background: var(--surface);
   padding: 10px 16px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   border: 0;
   outline: none;
   font-size: 14px;
@@ -146,7 +146,7 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: var(--blue);
+  accent-color: var(--accent);
 }
 @media (max-width: 720px) {
   .saves-head { display: none !important; }
@@ -167,7 +167,7 @@
   background: var(--ink);
   color: var(--bg);
   padding: 10px 16px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   margin-bottom: 16px;
   font-family: var(--sans);
   font-size: 13px;
@@ -198,16 +198,16 @@
 }
 .bulk-bar__cancel:hover { color: var(--bg); }
 .bulk-bar__delete {
-  background: #c0392b;
+  background: var(--danger);
   border: 0;
   color: #fff;
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 500;
   padding: 8px 16px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   cursor: pointer;
-  transition: background 140ms ease, opacity 140ms ease;
+  transition: background var(--ease-quick), opacity var(--ease-quick);
 }
 .bulk-bar__delete:hover { background: #a83025; }
 .bulk-bar__delete:disabled { opacity: 0.5; cursor: not-allowed; }

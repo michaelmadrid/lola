@@ -65,7 +65,7 @@
   letter-spacing: -0.01em;
   color: var(--ink-3);
   cursor: pointer;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .travel-subnav__item:hover { color: var(--ink); }
 .travel-subnav__item.is-active {
@@ -115,7 +115,7 @@
   cursor: pointer;
   background: transparent;
   border: 0;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .pb-chip:hover { color: var(--ink); }
 .pb-chip.is-active {
@@ -223,17 +223,17 @@
   font-size: 14px;
   font-style: italic;
 }
-.time-cities__empty a { color: var(--blue); text-decoration: none; }
+.time-cities__empty a { color: var(--accent); text-decoration: none; }
 .time-cities__empty a:hover { text-decoration: underline; }
 
 .time-card {
   border-top: 1px solid var(--rule);
   padding: 0;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
 }
 .time-card:last-of-type { border-bottom: 1px solid var(--rule); }
-.time-card:not(.is-home):hover { background: var(--field); }
-.time-card.is-expanded { background: var(--field); }
+.time-card:not(.is-home):hover { background: var(--surface); }
+.time-card.is-expanded { background: var(--surface); }
 
 .time-card__main {
   display: grid;
@@ -310,7 +310,7 @@
   cursor: pointer;
   padding: 0;
   opacity: 0;
-  transition: opacity 140ms ease, color 140ms ease, border-color 140ms ease;
+  transition: opacity var(--ease-quick), color var(--ease-quick), border-color var(--ease-quick);
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -359,7 +359,7 @@
   background: var(--bg);
   border: 1px solid var(--rule);
   padding: 4px 8px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
@@ -376,15 +376,15 @@
   border: 0;
   padding: 6px 0;
   cursor: pointer;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.time-add-btn:hover { color: var(--blue); }
+.time-add-btn:hover { color: var(--accent); }
 
 .time-add-cap {
   margin-top: 14px;
   font-family: var(--mono);
   font-size: 11px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -432,7 +432,7 @@
   letter-spacing: -0.005em;
   gap: 12px;
 }
-.time-add-item:hover { background: var(--field); }
+.time-add-item:hover { background: var(--surface); }
 .time-add-country {
   font-family: var(--mono);
   font-size: 10px;
@@ -470,7 +470,7 @@
   transform: translateX(-50%);
   font-family: var(--mono);
   font-size: 10px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   letter-spacing: 0.04em;
 }
 
@@ -515,7 +515,7 @@
   border-radius: 1px;
 }
 .time-tl__row.is-home .time-tl__awake {
-  background: var(--blue);
+  background: var(--accent);
   opacity: 0.12;
 }
 
@@ -525,7 +525,7 @@
   top: 30px; /* below axis label */
   bottom: 8px;
   width: 1px;
-  background: var(--blue);
+  background: var(--accent);
   z-index: 2;
   pointer-events: none;
 }
@@ -537,7 +537,7 @@
   font-family: var(--mono);
   font-size: 9px;
   letter-spacing: 0.06em;
-  color: var(--blue);
+  color: var(--accent);
   background: var(--bg);
   padding: 0 4px;
   white-space: nowrap;
@@ -691,7 +691,7 @@
   font-size: 14px;
   color: var(--ink-3);
   text-align: center;
-  transition: transform 200ms ease, color 140ms ease;
+  transition: transform var(--ease-medium), color var(--ease-quick);
 }
 .extras-acc[open] summary::after {
   transform: rotate(45deg);
@@ -703,7 +703,7 @@
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.008em;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .extras-acc__spec {
   font-family: var(--mono);

@@ -1,12 +1,12 @@
 /* =====================================================================
    phrases.css — view page + capture page
 
-   The view page (/phrases/) is a full-bleed gradient surface. Pills
+   The view page (/apps/juice/) is a full-bleed gradient surface. Pills
    sit on top with their text + (when a language is active) translation.
    Custom phrases get a French-blue accent so they stand out from the
    curated set.
 
-   The capture page (/phrases/capture/) is a simple form.
+   The capture page (/apps/juice/capture/) is a simple form.
    ===================================================================== */
 
 /* ---------------------------------------------------------------------
@@ -116,7 +116,7 @@ body.body-phrases {
   background-size: 10px 7px;
 }
 .ph-lang-select:focus {
-  border-color: var(--blue);
+  border-color: var(--accent);
 }
 
 /* ---------------------------------------------------------------------
@@ -139,9 +139,9 @@ body.body-phrases {
   -webkit-backdrop-filter: blur(8px);
   border: 0;
   padding: 8px 16px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   cursor: pointer;
-  transition: background 140ms ease, color 140ms ease;
+  transition: background var(--ease-quick), color var(--ease-quick);
 }
 .ph-cat:hover { background: rgba(255, 255, 255, 0.85); }
 .ph-cat.is-active {
@@ -218,11 +218,11 @@ body.body-phrases {
 /* Custom (user-added) pill: French-blue accent, more visually elevated */
 .ph-pill--custom {
   background: rgba(255, 255, 255, 0.92);
-  border-color: var(--blue);
+  border-color: var(--accent);
   border-width: 1.5px;
 }
 .ph-pill--custom .ph-pill__text {
-  color: var(--blue);
+  color: var(--accent);
 }
 
 /* Delete button on custom pills — inline-row close circle, 28x28.
@@ -248,12 +248,12 @@ body.body-phrases {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  transition: color 140ms ease, border-color 140ms ease;
+  transition: color var(--ease-quick), border-color var(--ease-quick);
   align-self: center;
 }
 .ph-pill__delete:hover {
-  color: #c0392b;
-  border-color: #c0392b;
+  color: var(--danger);
+  border-color: var(--danger);
 }
 @media (max-width: 720px) {
   /* Force perfect circle even with mobile touch-target overrides */
@@ -298,9 +298,9 @@ body.body-phrases {
   background: var(--ink);
   text-decoration: none;
   padding: 9px 16px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   white-space: nowrap;
-  transition: opacity 140ms ease;
+  transition: opacity var(--ease-quick);
 }
 .ph-add-inline:hover { opacity: 0.85; }
 @media (max-width: 720px) {
@@ -330,7 +330,7 @@ body.body-phrases {
   color: var(--ink-3);
   margin-left: 12px;
   opacity: 0;
-  transition: opacity 140ms ease;
+  transition: opacity var(--ease-quick);
 }
 .ph-translating.is-visible { opacity: 1; }
 
@@ -347,6 +347,6 @@ body.body-phrases {
   color: var(--ink-3);
   margin-right: auto;       /* pushes itself left, save stays on the right */
   opacity: 0;
-  transition: opacity 140ms ease;
+  transition: opacity var(--ease-quick);
 }
 .pf-state.is-visible { opacity: 1; }

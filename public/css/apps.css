@@ -52,15 +52,15 @@
 .app-card {
   display: block;
   padding: 22px 20px;
-  background: var(--field);
+  background: var(--surface);
   border: 1px solid var(--rule);
   border-radius: var(--r-card);
   text-decoration: none;
-  transition: border-color 140ms ease, background 140ms ease;
+  transition: border-color var(--ease-quick), background var(--ease-quick);
 }
 .app-card:hover {
-  border-color: var(--blue);
-  background: var(--field-focus);
+  border-color: var(--accent);
+  background: var(--surface-2);
 }
 .app-card__name {
   font-family: var(--sans);
@@ -71,7 +71,7 @@
   margin: 0 0 6px;
 }
 .app-card:hover .app-card__name {
-  color: var(--blue);
+  color: var(--accent);
 }
 .app-card__desc {
   font-family: var(--sans);

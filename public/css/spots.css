@@ -49,15 +49,15 @@
   font-family: var(--sans);
   font-size: 15px;
   color: var(--ink);
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   outline: 0;
   padding: 12px 14px;
   letter-spacing: -0.005em;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
 }
 .page-spots .search-input::placeholder { color: var(--ink-3); }
-.page-spots .search-input:focus { background: var(--field-focus); }
+.page-spots .search-input:focus { background: var(--surface-2); }
 
 /* =====================================================================
    FILTER ROW — city + type + been-state pickers on one line
@@ -82,7 +82,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   font-family: var(--sans);
   font-size: 13px;
@@ -91,10 +91,10 @@
   padding: 8px 14px;
   border-radius: var(--r-pill);
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
   letter-spacing: -0.005em;
 }
-.picker-btn:hover { background: var(--field-focus); }
+.picker-btn:hover { background: var(--surface-2); }
 .picker-btn__caret {
   font-size: 10px;
   color: var(--ink-3);
@@ -120,7 +120,7 @@
 
 .picker-search {
   width: 100%;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   border-radius: var(--r-input);
   padding: 10px 12px;
@@ -152,8 +152,8 @@
   letter-spacing: -0.005em;
   gap: 12px;
 }
-.picker-item:hover { background: var(--field); }
-.picker-item.is-current { color: var(--blue); }
+.picker-item:hover { background: var(--surface); }
+.picker-item.is-current { color: var(--accent); }
 .picker-item__count {
   font-family: var(--sans);
   font-size: 11px;

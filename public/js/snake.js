@@ -26,11 +26,11 @@
   // CSS tokens for color (read at boot)
   const css = getComputedStyle(document.documentElement);
   const COLOR = {
-    bg:   (css.getPropertyValue('--field') || '#ebeae5').trim(),
+    bg:   (css.getPropertyValue('--surface') || '#ebeae5').trim(),
     grid: (css.getPropertyValue('--rule')  || '#d8d8d4').trim(),
     body: (css.getPropertyValue('--ink')   || '#111111').trim(),
     head: (css.getPropertyValue('--ink-3') || '#999995').trim(),
-    apple:(css.getPropertyValue('--blue')  || '#2a4ed4').trim(),
+    apple:(css.getPropertyValue('--accent')  || '#2a4ed4').trim(),
   };
 
   // ============ STATE ============

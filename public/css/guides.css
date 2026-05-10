@@ -90,7 +90,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--r-card);
   background: var(--bg);
-  transition: border-color 140ms ease, transform 140ms ease, box-shadow 200ms ease;
+  transition: border-color var(--ease-quick), transform var(--ease-quick), box-shadow var(--ease-medium);
 }
 .guide-card:hover {
   border-color: var(--ink-3);
@@ -150,11 +150,11 @@
 }
 .guide-card__status--draft {
   color: var(--ink-3);
-  background: var(--field);
+  background: var(--surface);
 }
 .guide-card__status--published {
   color: var(--bg);
-  background: var(--blue);
+  background: var(--accent);
 }
 
 
@@ -198,7 +198,7 @@
   color: var(--ink-2);
   text-decoration: none;
   letter-spacing: -0.005em;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .ge-bar__back:hover { color: var(--ink); }
 .ge-bar__save-state {
@@ -207,7 +207,7 @@
   color: var(--ink-3);
   letter-spacing: 0.04em;
   opacity: 0;
-  transition: opacity 200ms ease;
+  transition: opacity var(--ease-medium);
 }
 .ge-bar__save-state.is-visible { opacity: 1; }
 
@@ -215,29 +215,29 @@
   font-family: var(--sans);
   font-size: 13px;
   color: var(--ink-2);
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   padding: 7px 14px;
   border-radius: var(--r-button);
   cursor: pointer;
   letter-spacing: -0.005em;
-  transition: background 140ms ease, color 140ms ease;
+  transition: background var(--ease-quick), color var(--ease-quick);
 }
-.ge-bar__btn:hover { background: var(--field-focus); color: var(--ink); }
+.ge-bar__btn:hover { background: var(--surface-2); color: var(--ink); }
 .ge-bar__btn--primary {
   background: var(--ink);
   color: var(--bg);
 }
 .ge-bar__btn--primary:hover { background: var(--ink-2); color: var(--bg); }
 .ge-bar__btn--primary.is-published {
-  background: var(--blue);
+  background: var(--accent);
   color: white;
 }
 .ge-bar__btn--danger {
   background: transparent;
   color: var(--ink-3);
 }
-.ge-bar__btn--danger:hover { color: #c33; background: transparent; }
+.ge-bar__btn--danger:hover { color: var(--danger); background: transparent; }
 
 @media (max-width: 720px) {
   .ge-bar { flex-wrap: wrap; gap: 8px; }
@@ -255,7 +255,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.ge-error { color: #c33; }
+.ge-error { color: var(--danger); }
 
 /* ---------- Editor fields ---------- */
 .ge-city-row {
@@ -277,7 +277,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   font-family: var(--sans);
   font-size: 13px;
@@ -286,11 +286,11 @@
   padding: 7px 14px;
   border-radius: var(--r-pill);
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
   letter-spacing: -0.005em;
   position: relative;
 }
-.picker-btn:hover { background: var(--field-focus); }
+.picker-btn:hover { background: var(--surface-2); }
 .picker-btn .picker-btn__label.is-placeholder { color: var(--ink-3); }
 .picker-btn__caret {
   font-size: 10px;
@@ -313,7 +313,7 @@
 .picker-popover[hidden] { display: none; }
 .picker-search {
   width: 100%;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   border-radius: var(--r-input);
   padding: 9px 12px;
@@ -343,8 +343,8 @@
   border-radius: var(--r-input);
   letter-spacing: -0.005em;
 }
-.picker-item:hover { background: var(--field); }
-.picker-item.is-current { color: var(--blue); font-weight: 500; }
+.picker-item:hover { background: var(--surface); }
+.picker-item.is-current { color: var(--accent); font-weight: 500; }
 .picker-empty {
   padding: 12px;
   font-size: 13px;
@@ -399,7 +399,7 @@
 .ge-intro {
   display: block;
   width: 100%;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   outline: 0;
   font-family: var(--sans);
@@ -414,7 +414,7 @@
   letter-spacing: -0.005em;
   box-sizing: border-box;
 }
-.ge-intro:focus { background: var(--field-focus); }
+.ge-intro:focus { background: var(--surface-2); }
 .ge-intro::placeholder { color: var(--ink-3); }
 
 /* =====================================================================
@@ -468,7 +468,7 @@
   padding: 4px 0;
   cursor: pointer;
   letter-spacing: -0.005em;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .ge-picker__selectall:hover { color: var(--ink); }
 .ge-picker__selectall:disabled { opacity: 0.5; cursor: wait; }
@@ -498,11 +498,11 @@
   padding: 16px;
 }
 .ge-picker__empty-link {
-  color: var(--blue);
+  color: var(--accent);
   text-decoration: none;
   border-bottom: 1px solid var(--rule);
 }
-.ge-picker__empty-link:hover { border-bottom-color: var(--blue); }
+.ge-picker__empty-link:hover { border-bottom-color: var(--accent); }
 
 .ge-picker__list {
   display: flex;
@@ -524,11 +524,11 @@
   cursor: pointer;
   font-family: var(--sans);
   letter-spacing: -0.005em;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
   min-height: 44px;
   box-sizing: border-box;
 }
-.ge-pick-row:hover { background: var(--field); }
+.ge-pick-row:hover { background: var(--surface); }
 
 /* The check indicator on the left */
 .ge-pick-row__check {
@@ -541,18 +541,18 @@
   border: 1.5px solid var(--ink-3);
   background: transparent;
   flex-shrink: 0;
-  transition: background 140ms ease, border-color 140ms ease;
+  transition: background var(--ease-quick), border-color var(--ease-quick);
 }
 .ge-pick-row__check-mark {
   font-size: 12px;
   color: white;
   opacity: 0;
   line-height: 1;
-  transition: opacity 140ms ease;
+  transition: opacity var(--ease-quick);
 }
 .ge-pick-row.is-selected .ge-pick-row__check {
-  background: var(--blue);
-  border-color: var(--blue);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 .ge-pick-row.is-selected .ge-pick-row__check-mark {
   opacity: 1;
@@ -596,7 +596,7 @@
 
 /* Subtle "in this guide" emphasis on row when selected */
 .ge-pick-row.is-selected {
-  background: var(--field);
+  background: var(--surface);
 }
 .ge-pick-row.is-selected .ge-pick-row__name {
   color: var(--ink);
@@ -855,7 +855,7 @@
   text-decoration: none;
   border-bottom: 1px solid var(--rule);
 }
-.g-public__footnote a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+.g-public__footnote a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
 /* View on Google Maps link — sits below item name + tip */
 .g-public__item-maps {
@@ -863,13 +863,13 @@
   margin-top: 8px;
   font-family: var(--sans);
   font-size: 13px;
-  color: var(--blue);
+  color: var(--accent);
   text-decoration: none;
   letter-spacing: -0.005em;
   border-bottom: 1px solid var(--rule);
   padding-bottom: 1px;
-  transition: border-color 140ms ease;
+  transition: border-color var(--ease-quick);
 }
 .g-public__item-maps:hover {
-  border-bottom-color: var(--blue);
+  border-bottom-color: var(--accent);
 }

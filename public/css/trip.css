@@ -34,11 +34,11 @@
   padding: 18px 0;
   border-top: 1px solid var(--rule);
   cursor: pointer;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .trip-row:first-child { border-top: 1px solid var(--rule); }
-.trip-row:hover { color: var(--blue); }
-.trip-row:hover .trip-arrow { transform: translateX(3px); color: var(--blue); }
+.trip-row:hover { color: var(--accent); }
+.trip-row:hover .trip-arrow { transform: translateX(3px); color: var(--accent); }
 .trip-name {
   font-size: 18px;
   font-weight: 500;
@@ -65,7 +65,7 @@
   color: var(--ink-3);
   text-align: right;
   padding: 4px 0;
-  transition: transform 200ms ease, color 140ms ease;
+  transition: transform var(--ease-medium), color var(--ease-quick);
 }
 
 /* Trips foot — graveyard link */
@@ -81,7 +81,7 @@
   text-transform: uppercase;
   color: var(--ink-3);
 }
-.graveyard-link:hover { color: var(--blue); }
+.graveyard-link:hover { color: var(--accent); }
 
 /* Graveyard page */
 .graveyard-prose {
@@ -113,10 +113,10 @@
   background: none;
   border: 0;
   padding: 4px 0;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.trip-restore:hover { color: var(--blue); }
-.trip-restore:disabled { color: var(--ink-4); cursor: not-allowed; }
+.trip-restore:hover { color: var(--accent); }
+.trip-restore:disabled { color: var(--ink-3); cursor: not-allowed; }
 
 .list-empty {
   padding: 36px 0;
@@ -177,18 +177,18 @@
 .trip-notes code {
   font-family: var(--mono);
   font-size: 0.9em;
-  background: var(--field);
+  background: var(--surface);
   padding: 1px 6px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   color: var(--ink);
   letter-spacing: 0;
 }
 .trip-notes a {
-  color: var(--blue);
+  color: var(--accent);
   border-bottom: 1px solid var(--rule);
-  transition: border-color 140ms ease;
+  transition: border-color var(--ease-quick);
 }
-.trip-notes a:hover { border-bottom-color: var(--blue); }
+.trip-notes a:hover { border-bottom-color: var(--accent); }
 .trip-notes strong {
   color: var(--ink);
   font-weight: 500;
@@ -211,14 +211,14 @@
   margin: 0 0 28px;
 }
 .save-btn--danger {
-  color: #c0392b;
+  color: var(--danger);
 }
 .save-btn--danger:disabled {
-  color: var(--ink-4);
+  color: var(--ink-3);
   cursor: not-allowed;
 }
 .save-btn--danger:not(:disabled):hover {
-  color: #962d22;
+  color: var(--danger);
 }
 
 .segment-list {
@@ -260,7 +260,7 @@
   font-weight: 400;
   padding: 1px 5px;
   border: 1px solid var(--rule);
-  border-radius: 2px;
+  border-radius: var(--r-tight);
 }
 .segment-dates {
   font-family: var(--mono);
@@ -285,9 +285,9 @@
   min-width: 44px;
   min-height: 44px;
   padding: 8px 10px;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.segment-actions button:hover { color: var(--blue); }
+.segment-actions button:hover { color: var(--accent); }
 .segment-actions .seg-edit {
   font-size: 12px;
   letter-spacing: 0.04em;

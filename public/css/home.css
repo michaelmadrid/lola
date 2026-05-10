@@ -84,7 +84,7 @@
   flex-wrap: wrap;
 }
 .day-sum__meta .item { display: inline-flex; align-items: center; gap: 6px; }
-.day-sum__meta .sep { color: var(--ink-4); }
+.day-sum__meta .sep { color: var(--ink-3); }
 @media (max-width: 720px) {
   .day-sum__meta { font-size: 13px; }
 }
@@ -111,10 +111,10 @@
   border-bottom: 1px solid var(--rule);
   cursor: pointer;
   text-align: left;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.trip-strip:hover { color: var(--blue); }
-.trip-strip:hover .trip-strip__open { transform: translate(2px, -2px); color: var(--blue); }
+.trip-strip:hover { color: var(--accent); }
+.trip-strip:hover .trip-strip__open { transform: translate(2px, -2px); color: var(--accent); }
 .trip-strip__main {
   flex: 1;
   display: flex;
@@ -140,7 +140,7 @@
   letter-spacing: 0.04em;
 }
 .trip-strip__arc { color: var(--ink-2); }
-.trip-strip__sep { color: var(--ink-4); }
+.trip-strip__sep { color: var(--ink-3); }
 .trip-strip__dates { color: var(--ink-3); }
 .trip-strip__open {
   font-family: var(--mono);
@@ -149,7 +149,7 @@
   padding: 6px 8px;
   margin-right: -8px;
   flex-shrink: 0;
-  transition: transform 200ms ease, color 140ms ease;
+  transition: transform var(--ease-medium), color var(--ease-quick);
 }
 
 /* Today/Next sub-rows */
@@ -204,10 +204,10 @@
   padding: 8px 0;
   cursor: pointer;
   color: var(--ink);
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.note-btn:hover { color: var(--blue); }
-.note-btn:hover .note-btn__arrow { color: var(--blue); transform: translateX(2px); }
+.note-btn:hover { color: var(--accent); }
+.note-btn:hover .note-btn__arrow { color: var(--accent); transform: translateX(2px); }
 .note-btn__preview {
   font-size: 14px;
   letter-spacing: -0.005em;
@@ -229,7 +229,7 @@
   flex-shrink: 0;
   padding: 4px 6px;
   margin-right: -6px;
-  transition: transform 200ms ease, color 140ms ease;
+  transition: transform var(--ease-medium), color var(--ease-quick);
 }
 
 /* idle empty state */
@@ -295,7 +295,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   border-radius: var(--r-input);
   padding: 14px 16px;
@@ -305,10 +305,10 @@
   letter-spacing: -0.005em;
   color: var(--ink);
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
   min-height: 52px;
 }
-.capture-launcher:hover { background: var(--field-focus); }
+.capture-launcher:hover { background: var(--surface-2); }
 .capture-launcher__plus {
   font-size: 18px;
   color: var(--ink-3);
@@ -374,7 +374,7 @@
   /* Slide-up animation when shown */
   transform: translateY(8px);
   opacity: 0;
-  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 200ms ease;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity var(--ease-medium);
   pointer-events: none;
   /* Honor iOS safe areas (notch + home indicator) */
   padding-top: env(safe-area-inset-top, 0px);
@@ -438,7 +438,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   font-family: var(--sans);
   font-size: 16px;
@@ -447,11 +447,11 @@
   padding: 12px 20px;
   border-radius: var(--r-pill);
   cursor: pointer;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
   letter-spacing: -0.005em;
   min-height: 44px;
 }
-.capture-fs__city-btn:hover { background: var(--field-focus); }
+.capture-fs__city-btn:hover { background: var(--surface-2); }
 .capture-fs__city-caret { font-size: 11px; color: var(--ink-3); }
 
 .capture-fs__city-popover {
@@ -472,7 +472,7 @@
 .capture-fs__city-popover.is-open { display: block; }
 .capture-fs__city-search {
   width: 100%;
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   border-radius: var(--r-input);
   padding: 10px 12px;
@@ -500,8 +500,8 @@
   border-radius: var(--r-input);
   letter-spacing: -0.005em;
 }
-.capture-fs__city-item:hover { background: var(--field); }
-.capture-fs__city-item.is-current { color: var(--blue); }
+.capture-fs__city-item:hover { background: var(--surface); }
+.capture-fs__city-item.is-current { color: var(--accent); }
 .capture-fs__city-item__country { color: var(--ink-3); margin-left: 6px; font-size: 13px; }
 
 /* Been pill — bigger, on its own line under the city */
@@ -510,18 +510,18 @@
   font-size: 16px;
   font-weight: 500;
   color: var(--ink);
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   padding: 12px 20px;
   border-radius: var(--r-pill);
   cursor: pointer;
   letter-spacing: -0.005em;
-  transition: background 140ms ease, color 140ms ease;
+  transition: background var(--ease-quick), color var(--ease-quick);
   min-height: 44px;
   align-self: flex-start;
 }
-.capture-fs__been-btn:hover { background: var(--field-focus); }
-.capture-fs__been-btn[data-been="false"] { color: var(--blue); }
+.capture-fs__been-btn:hover { background: var(--surface-2); }
+.capture-fs__been-btn[data-been="false"] { color: var(--accent); }
 
 /* The actual writing surface — bare. No box. Cursor in air. Big and breathing.
    28px is well above iOS auto-zoom floor (16px), so we keep our chosen size
@@ -547,9 +547,9 @@
   margin: 0;
   resize: none;
   min-height: 240px;
-  caret-color: var(--blue);
+  caret-color: var(--accent);
 }
-.capture-fs__textarea::placeholder { color: var(--ink-4); }
+.capture-fs__textarea::placeholder { color: var(--ink-3); }
 
 /* Foot: two equal-shape buttons, secondary on left, primary on right.
    No more status text, no more text-link styling. Both are real buttons. */
@@ -621,7 +621,7 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.stream__more:hover { color: var(--blue); }
+.stream__more:hover { color: var(--accent); }
 
 .stream {
   display: flex;
@@ -641,7 +641,7 @@
   gap: 16px;
   align-items: baseline;
   cursor: pointer;
-  transition: opacity 140ms ease;
+  transition: opacity var(--ease-quick);
 }
 .stream__item:hover .stream__name { color: var(--ink-2); }
 .stream__item.stream__ghost { cursor: default; }
@@ -668,7 +668,7 @@
   letter-spacing: -0.005em;
   margin-top: 4px;
 }
-.stream__meta .dot { color: var(--ink-4); margin: 0 5px; }
+.stream__meta .dot { color: var(--ink-3); margin: 0 5px; }
 .stream__when {
   font-family: var(--mono);
   font-size: 11px;
@@ -702,7 +702,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--blue);
+  background: var(--accent);
   margin-left: 8px;
   vertical-align: middle;
   position: relative;
@@ -734,7 +734,7 @@
 .stream__ghost-bar {
   display: block;
   background: var(--rule);
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   animation: ghostPulse 1.2s ease-in-out infinite;
 }
 .stream__ghost-bar--name { width: 38%; height: 14px; }
@@ -776,10 +776,10 @@
   border: 0;
   padding: 6px 8px;
   margin: -6px -8px;
-  transition: color 140ms ease, transform 140ms ease;
+  transition: color var(--ease-quick), transform var(--ease-quick);
 }
 .todos__expand:hover {
-  color: var(--blue);
+  color: var(--accent);
   transform: translate(2px, -2px);
 }
 
@@ -833,7 +833,7 @@
 .todo-fs__row.is-ghost {
   cursor: text;
   opacity: 0.6;
-  transition: opacity 140ms ease;
+  transition: opacity var(--ease-quick);
 }
 .todo.is-ghost:hover,
 .todo-fs__row.is-ghost:hover {
@@ -1012,7 +1012,7 @@
 .itin-fs__seg-notes code {
   font-family: var(--mono);
   font-size: 0.82em;
-  background: var(--field);
+  background: var(--surface);
   padding: 2px 8px;
   border-radius: 3px;
   color: var(--ink);
@@ -1023,13 +1023,13 @@
 .itin-fs__seg-notes a {
   color: var(--ink);
   text-decoration: none;
-  border-bottom: 1px solid var(--blue);
+  border-bottom: 1px solid var(--accent);
   padding-bottom: 0.5px;
-  transition: color 140ms ease, border-color 140ms ease;
+  transition: color var(--ease-quick), border-color var(--ease-quick);
 }
 .itin-fs__trip-notes a:hover,
 .itin-fs__seg-notes a:hover {
-  color: var(--blue);
+  color: var(--accent);
   border-bottom-width: 1px;
 }
 .itin-fs__trip-notes strong,
@@ -1122,7 +1122,7 @@
   margin-bottom: 14px;
 }
 .itin-fs__here {
-  color: var(--blue);
+  color: var(--accent);
   font-weight: 500;
 }
 
@@ -1139,7 +1139,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--blue);
+  background: var(--accent);
 }
 .itin-fs__seg-notes {
   font-size: 14px;
@@ -1177,7 +1177,7 @@
   text-transform: uppercase;
   color: var(--ink-2);
 }
-.itin-fs__edit-link:hover { color: var(--blue); }
+.itin-fs__edit-link:hover { color: var(--accent); }
 
 @media (max-width: 720px) {
   .itin-fs__seg {
@@ -1229,8 +1229,8 @@
   color: var(--ink-2);
   line-height: 1.5;
   padding: 10px 12px;
-  background: var(--field);
-  border-radius: 2px;
+  background: var(--surface);
+  border-radius: var(--r-tight);
   letter-spacing: -0.005em;
 }
 .save-fs__readonly {
@@ -1244,26 +1244,26 @@
   font-family: var(--sans);
   font-size: 15px;
   color: var(--ink);
-  background: var(--field);
+  background: var(--surface);
   border: 0;
   outline: 0;
   padding: 11px 12px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   letter-spacing: -0.005em;
   width: 100%;
-  transition: background 140ms ease;
+  transition: background var(--ease-quick);
 }
 .save-fs__input:focus,
 .save-fs__textarea:focus,
-.save-fs__select:focus { background: var(--field-focus); }
+.save-fs__select:focus { background: var(--surface-2); }
 .save-fs__textarea { resize: vertical; min-height: 56px; line-height: 1.45; }
 .save-fs__select { appearance: none; cursor: pointer; }
 
 /* Been / want-to-go segmented toggle */
 .save-fs__been-row {
   display: inline-flex;
-  background: var(--field);
-  border-radius: 999px;
+  background: var(--surface);
+  border-radius: var(--r-pill);
   padding: 3px;
   gap: 0;
 }
@@ -1275,10 +1275,10 @@
   background: transparent;
   border: 0;
   padding: 7px 16px;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   cursor: pointer;
   letter-spacing: -0.005em;
-  transition: background 140ms ease, color 140ms ease;
+  transition: background var(--ease-quick), color var(--ease-quick);
 }
 .save-fs__been-pill[data-active="true"] {
   background: var(--bg);
@@ -1296,7 +1296,7 @@
   margin-top: 2px;
   background: var(--bg);
   border: 1px solid var(--rule);
-  border-radius: 2px;
+  border-radius: var(--r-tight);
   z-index: 5;
   max-height: 260px;
   overflow-y: auto;
@@ -1315,8 +1315,8 @@
   cursor: pointer;
   letter-spacing: -0.005em;
 }
-.save-fs__suggest-item:hover { background: var(--field); }
-.save-fs__suggest-item--create { color: var(--blue); border-top: 1px solid var(--rule); }
+.save-fs__suggest-item:hover { background: var(--surface); }
+.save-fs__suggest-item--create { color: var(--accent); border-top: 1px solid var(--rule); }
 .save-fs__suggest-meta {
   font-family: var(--mono);
   font-size: 10px;
@@ -1341,9 +1341,9 @@
   padding: 6px 0;
   cursor: pointer;
   letter-spacing: -0.005em;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.save-fs__danger:hover { color: #c33; }
+.save-fs__danger:hover { color: var(--danger); }
 
 /* ===== Mini-month under trip strip (CdG-inspired, days only) ===== */
 .mm {
@@ -1368,22 +1368,22 @@
   color: transparent;
 }
 .mm__cell--trip {
-  color: var(--blue);
+  color: var(--accent);
 }
 
 /* Day-of-year — clickable to open year overlay (easter egg) */
 .day-sum__doy--clickable {
   cursor: pointer;
   user-select: none;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
 .day-sum__doy--clickable:hover {
-  color: var(--blue);
+  color: var(--accent);
 }
 .day-sum__doy--clickable:focus-visible {
-  outline: 2px solid var(--blue);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: var(--r-tight);
 }
 
 /* Hide mini-month on mobile — too much vertical real estate */
@@ -1438,9 +1438,9 @@
   cursor: pointer;
   line-height: 1;
   font-weight: 300;
-  transition: color 140ms ease;
+  transition: color var(--ease-quick);
 }
-.year-overlay__close:hover { color: var(--blue); }
+.year-overlay__close:hover { color: var(--accent); }
 .year-overlay__grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -1483,7 +1483,7 @@
   color: transparent;
 }
 .ym__cell--trip {
-  color: var(--blue);
+  color: var(--accent);
 }
 
 /* Responsive: 3 cols on tablet, 2 cols on mobile */
@@ -1525,10 +1525,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  transition: color 140ms ease, border-color 140ms ease;
+  transition: color var(--ease-quick), border-color var(--ease-quick);
 }
 .trip-launch[hidden] { display: none !important; }
-.trip-launch:hover { color: var(--blue); border-color: var(--blue); }
+.trip-launch:hover { color: var(--accent); border-color: var(--accent); }
 .trip-launch__label {
   flex: 1;
   white-space: nowrap;
@@ -1539,10 +1539,10 @@
   font-family: var(--mono);
   font-size: 13px;
   color: var(--ink-3);
-  transition: transform 140ms ease, color 140ms ease;
+  transition: transform var(--ease-quick), color var(--ease-quick);
 }
 .trip-launch:hover .trip-launch__caret {
-  color: var(--blue);
+  color: var(--accent);
   transform: translate(2px, -2px);
 }
 

@@ -36,7 +36,7 @@
 .login-error {
   margin-top: 16px;
   font-size: 13px;
-  color: #c0392b;
+  color: var(--danger);
   letter-spacing: -0.005em;
   min-height: 18px;
 }
