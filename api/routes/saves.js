@@ -13,18 +13,14 @@ function extractFirstUrl(text) {
   return match ? match[0] : null;
 }
 
-function slugifyCity(s) {
-  return String(s)
-    .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 80);
-}
-
-// Find a city by name (case-insensitive whole match), or create it with status=1.
-// Returns the city row.
-async function findOrCreateCity(name, country, timezone) {
+// Find a city by name (case-insensitive whole match). If found, optionally enrich
+// missing timezone/country from the AI parse data. Never creates new cities —
+// kit's cities table is admin-curated. If AI suggests a name that doesn't exist,
+// we log it for visibility and return null. The save still works, it just won't
+// be city-linked unless regex detection or bound-city fallback covers it.
+//
+// Returns the city row, or null if no match.
+async function findOrEnrichCity(name, country, timezone) {
   if (!name || !name.trim()) return null;
   const trimmed = name.trim();
   // Case-insensitive exact name match
@@ -32,54 +28,35 @@ async function findOrCreateCity(name, country, timezone) {
     `SELECT * FROM cities WHERE LOWER(name) = LOWER($1) LIMIT 1`,
     [trimmed]
   );
-  if (existing.rows[0]) {
-    const row = existing.rows[0];
-    // Backfill timezone or country if they're null on the existing row and AI gave us one
-    const updates = [];
-    const params = [];
-    if (!row.timezone && timezone) {
-      params.push(timezone);
-      updates.push(`timezone = $${params.length}`);
-    }
-    if (!row.country && country) {
-      params.push(country);
-      updates.push(`country = $${params.length}`);
-    }
-    if (updates.length) {
-      params.push(row.id);
-      const r = await pool.query(
-        `UPDATE cities SET ${updates.join(', ')} WHERE id = $${params.length} RETURNING *`,
-        params
-      );
-      return r.rows[0];
-    }
-    return row;
+  if (!existing.rows[0]) {
+    // AI suggested a city that doesn't exist in kit's curated list.
+    // Log for visibility; do not create. Bound-city fallback may still attach
+    // a city to this save downstream.
+    console.log(`[city-not-found] AI suggested "${trimmed}" (country=${country || 'null'}, tz=${timezone || 'null'}) — not in cities table, ignoring`);
+    return null;
   }
 
-  // Create new with status=1 (auto-created)
-  const slug = slugifyCity(trimmed);
-  try {
-    const created = await pool.query(
-      `INSERT INTO cities (name, slug, country, timezone, status, created_at)
-       VALUES ($1, $2, $3, $4, 1, NOW())
-       RETURNING *`,
-      [trimmed, slug, country || null, timezone || null]
-    );
-    return created.rows[0];
-  } catch (err) {
-    // Slug conflict — try with random suffix
-    if (/duplicate key/i.test(err.message)) {
-      const altSlug = slug + '-' + Math.floor(Math.random() * 9999);
-      const retry = await pool.query(
-        `INSERT INTO cities (name, slug, country, timezone, status, created_at)
-         VALUES ($1, $2, $3, $4, 1, NOW())
-         RETURNING *`,
-        [trimmed, altSlug, country || null, timezone || null]
-      );
-      return retry.rows[0];
-    }
-    throw err;
+  const row = existing.rows[0];
+  // Enrich existing row: backfill timezone or country if null and AI gave us one
+  const updates = [];
+  const params = [];
+  if (!row.timezone && timezone) {
+    params.push(timezone);
+    updates.push(`timezone = $${params.length}`);
   }
+  if (!row.country && country) {
+    params.push(country);
+    updates.push(`country = $${params.length}`);
+  }
+  if (updates.length) {
+    params.push(row.id);
+    const r = await pool.query(
+      `UPDATE cities SET ${updates.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params
+    );
+    return r.rows[0];
+  }
+  return row;
 }
 
 // Background: parse a save with Claude, update the row + attach city if needed.
@@ -97,13 +74,13 @@ async function parseAndUpdate(saveId, text, opts = {}) {
     return;
   }
 
-  // Find or create city if AI returned one
+  // Find (do not create) city if AI returned one
   let cityRow = null;
   if (parsed.city) {
     try {
-      cityRow = await findOrCreateCity(parsed.city, parsed.country, parsed.timezone);
+      cityRow = await findOrEnrichCity(parsed.city, parsed.country, parsed.timezone);
     } catch (err) {
-      console.error('parseAndUpdate findOrCreateCity', err.message);
+      console.error('parseAndUpdate findOrEnrichCity', err.message);
     }
   }
 
@@ -121,7 +98,7 @@ async function parseAndUpdate(saveId, text, opts = {}) {
     [parsed.place_name, parsed.category, parsed.tip, parsed.country, parsed.neighborhood, saveId]
   );
 
-  // Attach city via save_cities if AI gave us one
+  // Attach city via save_cities if AI gave us one and it matched
   if (cityRow) {
     await pool.query(
       `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
@@ -131,9 +108,11 @@ async function parseAndUpdate(saveId, text, opts = {}) {
     return;
   }
 
-  // FALLBACK: if AI returned no city AND no city is currently attached (regex didn't
-  // find one either), attach the user's bound city as a last resort. This is option D —
-  // the user's binding only "wins" when nothing else can place the save.
+  // FALLBACK: if AI returned no city (or AI's city wasn't in our table) AND no
+  // city is currently attached from regex detection, attach the user's bound
+  // city as a last resort. This is the safety net for "Della Terra, good food"
+  // captured while bound to Bali — nothing in the text names a city, AI may
+  // not have inferred one, but the user told us they're in Bali.
   if (cityIdHint) {
     const existing = await pool.query(
       `SELECT 1 FROM save_cities WHERE save_id = $1 LIMIT 1`,
@@ -261,12 +240,14 @@ router.get('/', authenticate, async (req, res) => {
 // Note: cityIdHint is attached via save_cities (not a column on saves anymore).
 // boundCityName is passed to the AI parser as disambiguation context.
 //
-// City attachment policy (option D):
-// - Regex-based detection runs immediately; if it finds cities in the text, attach them.
-// - AI may add a city later via parseAndUpdate.
-// - cityIdHint (the user's bound city) is ONLY attached if regex + AI both return zero
-//   cities, i.e. as a last-resort fallback. This prevents "Tampopo Marseille — bound to
-//   Bali" from being tagged in BOTH cities — Marseille (the actual venue) wins.
+// City attachment policy (option D, strict cities edition):
+// - Regex-based detection runs immediately; if it finds cities in the text
+//   (case-insensitive match against existing cities), attach them.
+// - AI may add a city later via parseAndUpdate — but ONLY if AI's returned
+//   city name matches an existing city in the table. AI never creates cities.
+// - cityIdHint (the user's bound city) is attached ONLY if regex + AI both
+//   return zero cities. This prevents "Della Terra Marseille" (bound to Bali)
+//   from being tagged in BOTH cities — Marseille wins because text named it.
 async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCityName, place_id, been }) {
   // Default `been` to true if not specified
   const beenValue = (typeof been === 'boolean') ? been : true;

@@ -106,12 +106,17 @@ async function parseCapture(text, opts = {}) {
     return { place_name: null, city: null, neighborhood: null, country: null, timezone: null, category: null, tip: null };
   }
 
-  // If user pre-bound this capture to a city, give AI that context.
-  // Helps with cases like "Copenhagen" being the name of a place IN Bali (a bakery),
-  // not the city Copenhagen.
+  // If user pre-bound this capture to a city, the bound city is authoritative
+  // unless the text clearly and unambiguously names a different city. This handles:
+  //   - "Copenhagen" captured while bound to Bali → place_name "Copenhagen" in Bali
+  //     (a bakery), NOT the city Copenhagen.
+  //   - "Della Terra" captured while bound to Bali → city Bali (the bound city wins
+  //     when the text doesn't specify a city).
+  //   - "Comptoir Paris" captured while bound to Bali → city Paris (the text
+  //     explicitly names Paris, overriding the bound default).
   let userMessage = text.trim();
   if (opts.boundCityName) {
-    userMessage = `[Context: the user has bound this capture to the city "${opts.boundCityName}". When a line begins with a name that is also a city elsewhere, default to interpreting it as a place name in ${opts.boundCityName}, not as a different city. The bound city is the default location.]\n\n${userMessage}`;
+    userMessage = `[Context: the user has bound this capture to "${opts.boundCityName}". Treat "${opts.boundCityName}" as the default city — return it unless the text explicitly and unambiguously names a different city. Names that are ALSO cities elsewhere (like "Copenhagen" or "Mosto") should be treated as place_names in ${opts.boundCityName}, not as different cities, unless the text gives a clear locational signal otherwise.]\n\n${userMessage}`;
   }
 
   try {
