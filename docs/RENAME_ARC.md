@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 5 shipped pre-flight)
-**Current state:** Jobs 0.5, 1, 2, 3, 4, 5 shipped. New captures now resolve to canonical places automatically. Job 6 (backfill existing saves) is next — sit-and-watch script.
+**Last updated:** May 12, 2026 (Job 6 shipped pre-flight)
+**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6 shipped. The Google Places integration is fully wired and existing saves can be backfilled on demand. Job 7a (collapse join table) is next — but a natural pause point since Job 7 work is more invasive.
 
 ---
 
@@ -34,8 +34,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **3** | Places lookup module | ✅ Shipped 2026-05-12 | New file `api/places-lookup.js` + `scripts/test-places-lookup.js` | done |
 | **4** | Places resolver | ✅ Shipped 2026-05-12 | New file `api/places-resolver.js` + new `api/routes/places.js` + server.js mount | done |
 | **5** | Wire capture pipeline + `place_id` column | ✅ Shipped 2026-05-12 | Migration 030, `api/routes/saves.js` updated | done |
-| **6** | Backfill existing saves | **NEXT** | New script `scripts/backfill-place-ids.js` | ~60 min run, more for review |
-| **7a** | Collapse join table | Planned | Migration, route queries that JOIN save_cities | ~45 min |
+| **6** | Backfill existing saves | ✅ Shipped 2026-05-12 | New script `scripts/backfill-place-ids.js` | done |
+| **7a** | Collapse join table | **NEXT** | Migration, route queries that JOIN save_cities | ~45 min |
 | **7b** | `saves` → `spots` rename | Planned | Migration, every route file, every frontend fetch | ~2 hours focused |
 | **8** | Admin city triage UI | Planned | New admin page + endpoint | ~2 hours |
 | **9** | Featured-only audit | Planned | Audit all city pickers, fix any that show non-featured | ~30 min |
@@ -204,23 +204,43 @@ Returns the new `places` row. Re-run with same name+city → returns same id (id
 
 ---
 
-### Job 6 — Backfill existing saves
+### Job 6 — Backfill existing saves ✅ Shipped 2026-05-12
 
-**Goal:** Resolve all pre-existing saves to place_ids. Sit-and-watch script.
+**Goal:** Resolve pre-existing saves to canonical places via the same resolver the live pipeline uses.
 
-**New script `scripts/backfill-place-ids.js`:**
-- Query all saves with null `place_id` and non-null `place_name`
-- For each, get the linked city via `save_cities` (or `city_id` post-7a)
-- Call `resolveOrCreatePlace`, update `saves.place_id`
-- Rate limit: 5 req/sec (be polite to Google, don't trip quotas)
-- Log progress: `[NNN/MMM] Della Terra Bali → ChIJ...`
-- Log failures with reason
+**What shipped:**
+- `scripts/backfill-place-ids.js` — Node script, runs from droplet root, no flags or args needed.
+
+**Selection criteria:**
+- `place_id IS NULL` (not yet resolved)
+- `place_name IS NOT NULL` and non-empty (AI extracted a name)
+- Has a city attached via `save_cities` (strict cities rule — won't gamble on Google without a city anchor)
+
+Saves not meeting these criteria are counted as "skipped" and reported at the end. No Google calls burned on them.
+
+**Rate:** 300ms between calls (~3 req/sec). 200 saves = ~60s elapsed. Well under any Google rate limit.
+
+**Idempotency:** Re-running picks up where it stopped. Live captures during a run are also safe — they write `place_id` directly via the live pipeline, and the backfill won't touch already-resolved rows.
 
 **Run from droplet:** `node scripts/backfill-place-ids.js`
 
-**Sit with output. Spot-check matches. Re-run failures with manual corrections.**
+**Output shape:**
+```
+[1/187] save#12 "Della Terra" (Bali) → places.id=1 ✓
+[2/187] save#13 "Mosto" (Bali) → places.id=2 ✓
+[3/187] save#14 "Some Name" (Paris) → no Google match ✗
+...
 
-**Restart needed:** No
+Done in 56s.
+  Resolved: 178
+  No match: 6
+  Errors:   3
+  Skipped:  12 (no place_name or no attached city)
+```
+
+**Restart needed:** No (script only).
+
+**Watch for:** API quota usage in Google Cloud Console after the run. 200 calls is ~2% of free tier.
 
 ---
 
@@ -457,3 +477,20 @@ Shipped after Job 4. First job in the arc to change real user-visible (well, nea
 4. `sudo -u postgres psql -d lola -c "SELECT * FROM places ORDER BY id DESC LIMIT 1;"` → should show the resolved Google row
 
 **Google billing note:** Every successful capture now spawns one Google Text Search call. Free tier covers 10,000/month. At kit's current scale this is ~negligible cost. Watch the Google Cloud Console billing dashboard for the first few days regardless.
+
+### Job 6 — Backfill existing saves (2026-05-12)
+
+Shipped after Job 5. Sit-and-watch script. No code changes elsewhere.
+
+**Files shipped:**
+- `scripts/backfill-place-ids.js` — iterates eligible saves, calls resolver, updates `place_id`. 300ms delay between calls. Idempotent.
+
+**Decisions baked in:**
+- Skip saves without `place_name` (no useful query)
+- Skip saves without an attached city (strict cities — won't gamble on Google without anchor)
+- Skipped count reported separately at end for visibility
+- Idempotent on `place_id IS NULL` — re-run picks up where stopped
+
+**To run:** `node scripts/backfill-place-ids.js` from droplet root. Coffee-and-watch pace.
+
+**Real flag — natural pause point:** Jobs 7a and 7b are more invasive (collapse join table, then rename `saves` → `spots` across every route file and frontend fetch). Worth deploying Jobs 0.5–6 to production, running the backfill, and *sitting with the data* for a few days before tackling Job 7. Real evidence may surface (bad matches that need admin re-resolves, mismatch patterns) that should inform how Job 7 reshapes things.
