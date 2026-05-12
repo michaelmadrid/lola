@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 3 shipped pre-flight)
-**Current state:** Jobs 0.5, 1, 2, 3 shipped. Job 4 (Places resolver) is next — wraps Job 3's lookup with DB persistence.
+**Last updated:** May 12, 2026 (Job 4 shipped pre-flight)
+**Current state:** Jobs 0.5, 1, 2, 3, 4 shipped. Job 5 (wire capture pipeline + place_id column) is next — the first job that touches saves.js behavior.
 
 ---
 
@@ -32,8 +32,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **1** | Blackbook rename | ✅ Shipped 2026-05-12 | Migration 028, route file rename, server.js, 2 frontend JS files | done |
 | **2** | New `places` table | ✅ Shipped 2026-05-12 | Migration only | done |
 | **3** | Places lookup module | ✅ Shipped 2026-05-12 | New file `api/places-lookup.js` + `scripts/test-places-lookup.js` | done |
-| **4** | Places resolver | **NEXT** | New file `api/places-resolver.js` | ~45 min |
-| **5** | Wire capture pipeline + `place_id` column | Planned | Migration, `saves.js` (currently still saves.js until Job 7b) | ~60 min |
+| **4** | Places resolver | ✅ Shipped 2026-05-12 | New file `api/places-resolver.js` + new `api/routes/places.js` + server.js mount | done |
+| **5** | Wire capture pipeline + `place_id` column | **NEXT** | Migration, `saves.js` (currently still saves.js until Job 7b) | ~60 min |
 | **6** | Backfill existing saves | Planned | New script `scripts/backfill-place-ids.js` | ~60 min run, more for review |
 | **7a** | Collapse join table | Planned | Migration, route queries that JOIN save_cities | ~45 min |
 | **7b** | `saves` → `spots` rename | Planned | Migration, every route file, every frontend fetch | ~2 hours focused |
@@ -156,26 +156,27 @@ DELETE FROM cities WHERE id = $auto_id;
 
 ---
 
-### Job 4 — Places resolver
+### Job 4 — Places resolver ✅ Shipped 2026-05-12
 
 **Goal:** Find-or-create logic for the new `places` table.
 
-**New file `api/places-resolver.js`:**
-- Export `resolveOrCreatePlace({ name, cityId, cityName })`
-- Call `lookupPlace({ name, city: cityName })`
-- If result has `google_place_id`:
-  - Check existing: `SELECT id FROM places WHERE google_place_id = $1`
-  - If found, return that `id` (update `last_synced_at` optionally)
-  - If not found, INSERT new row with `city_id` set from the passed-in `cityId`, return new `id`
-- If lookup returns null: return null (place not created, save just has null place_id)
-- Idempotent — same input returns same `places.id`
+**What shipped:**
+- `api/places-resolver.js` — exports `resolveOrCreatePlace({ name, cityId, cityName })`. Wraps `lookupPlace`, checks for existing row by `google_place_id`, inserts new with `city_id` if missing. Idempotent. `last_synced_at` set only on INSERT (not on existing-match references — see DECISIONS.md).
+- `api/routes/places.js` — new route file for the new places table. Mounted at `/api/places`.
+  - `GET /api/places/:id` — fetch a place row (authenticated)
+  - `POST /api/places/_admin/resolve` — admin-only, body `{ name, city_id }`. Returns `{ place_id, place }` on match, `{ place_id: null }` on no-match. For manual testing and one-off fixes.
+- `server.js` — added mount line for the new `/api/places` route.
 
-**Plus admin endpoint `POST /api/admin/resolve-place`:**
-- Body: `{ name, city_id }`
-- Calls resolver, returns the resolved/created row
-- For manual testing and one-off fixes
+**Restart needed:** Yes (new route, new mount).
 
-**Restart needed:** Yes (new admin endpoint)
+**Test approach:** After deploy, hit the admin endpoint with curl or Postman:
+```bash
+curl -X POST https://kit.summer-holiday.com/api/places/_admin/resolve \
+  -H "Authorization: Bearer YOUR_JWT" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Della Terra","city_id":<your_bali_id>}'
+```
+Returns the new `places` row. Re-run with same name+city → returns same id (idempotent verified).
 
 ---
 
@@ -411,3 +412,21 @@ Shipped after Job 2. Two new files, no migration, no restart.
 **Verification approach:** Run `node scripts/test-places-lookup.js` from the droplet, eyeball the matches. Burns 6 Google calls (free tier is 10,000/month so this is essentially free).
 
 **Nothing imports `places-lookup.js` yet.** Job 4 builds the resolver that wraps it.
+
+### Job 4 — Places resolver (2026-05-12)
+
+Shipped after Job 3. Wraps the lookup with DB persistence in the new `places` table.
+
+**Files shipped:**
+- `api/places-resolver.js` — exports `resolveOrCreatePlace({ name, cityId, cityName })`. Calls `lookupPlace`, finds-or-creates in `places` table. Idempotent. `last_synced_at` set on INSERT only.
+- `api/routes/places.js` — new route file mounted at `/api/places`. Provides `GET /:id` (authenticated single-place read) and `POST /_admin/resolve` (admin-only manual resolver trigger).
+- `server.js` — added `app.use('/api/places', require('./api/routes/places'));` between blackbook and trips mounts.
+
+**Admin endpoint path:** Specifically `/api/places/_admin/resolve` (not `/api/admin/resolve-place` as earlier docs implied). Kept under `/api/places` so all routes for the new table live in one file. The `_admin` prefix is a convention to mark admin-only endpoints inside a regular route file.
+
+**Verification approach:**
+1. Visit `/api/places/_admin/resolve` via curl with a real name + city_id, confirm a match returns 200 with `place` row populated
+2. Re-run same request → should return same `place_id` (idempotent)
+3. `sudo -u postgres psql -d lola -c "SELECT * FROM places"` → see the row landed correctly
+
+**Nothing in the capture pipeline calls the resolver yet.** Job 5 wires it into `saves.js` `parseAndUpdate` as fire-and-forget after AI parse completes, and adds `saves.place_id` column.

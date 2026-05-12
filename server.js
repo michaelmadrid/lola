@@ -32,6 +32,7 @@ app.use('/api/health',    require('./api/routes/health'));
 app.use('/api/auth',      require('./api/routes/auth'));
 app.use('/api/cities',    require('./api/routes/cities'));
 app.use('/api/blackbook', require('./api/routes/blackbook'));
+app.use('/api/places',    require('./api/routes/places'));   // NEW: canonical Google-resolved locations
 app.use('/api/trips',     require('./api/routes/trips'));
 app.use('/api/notes',     require('./api/routes/notes'));
 app.use('/api/saves',     require('./api/routes/saves'));
