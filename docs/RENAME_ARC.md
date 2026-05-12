@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 11, 2026 (planned pre-flight, no jobs shipped yet)
-**Current state:** All jobs planned, no code written. Job 0.75 (manual cleanup) is the next concrete step.
+**Last updated:** May 12, 2026 (Job 0.5 shipped pre-flight)
+**Current state:** Job 0.5 shipped and verified. Job 0.75 (manual cleanup) is next — deferred for trip evidence first. Job 1 can also go next if you'd rather pick at the rename arc.
 
 ---
 
@@ -27,9 +27,9 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 
 | # | Job | Status | Touches | Effort |
 |---|---|---|---|---|
-| **0.5** | Strict cities + AI prompt | Planned | `api/routes/saves.js`, `api/parse-capture.js` | ~30 min |
-| **0.75** | Manual cities cleanup | **NEXT** | SQL only, no code | ~30 min |
-| **1** | Library rename | Planned | Migration, `api/routes/places.js` → `library.js`, frontend fetches | ~60 min |
+| **0.5** | Strict cities + AI prompt | ✅ Shipped 2026-05-12 | `api/routes/saves.js`, `api/parse-capture.js` | done |
+| **0.75** | Manual cities cleanup | Deferred (post-trip with evidence) | SQL only, no code | ~30 min |
+| **1** | Library rename | **NEXT** | Migration, `api/routes/places.js` → `library.js`, frontend fetches | ~60 min |
 | **2** | New `places` table | Planned | Migration only | ~15 min |
 | **3** | Places lookup module | Planned | New file `api/places-lookup.js` | ~60 min |
 | **4** | Places resolver | Planned | New file `api/places-resolver.js` | ~45 min |
@@ -363,3 +363,23 @@ ALTER INDEX saves_pkey RENAME TO spots_pkey;
 - Backfill (Job 6) might surface AI parse quality issues — "best ramen" might resolve to wrong restaurants without good city context. Be ready to manually correct a few percent.
 - The capture flow change in Job 5 means new captures start hitting Google API. Watch the billing dashboard the first few days to make sure quota isn't surprising you.
 - Job 8 and 9 are governance. Without them, the strict cities rule (Job 0.5) becomes invisible. Plan time for them.
+
+---
+
+## Shipped log
+
+### Job 0.5 — Strict cities + AI prompt (2026-05-12)
+
+Shipped pre-flight from Bali. Two file replacements (`api/routes/saves.js`, `api/parse-capture.js`), pm2 restart.
+
+**Test confirmed working:**
+- Captured "Tacos Locos in El Paso" while bound to Berlin
+- AI correctly identified El Paso (returned `city: "El Paso"`, `country: "United States"`, `tz: "America/Chicago"`)
+- `findOrEnrichCity` correctly returned null (El Paso not in cities table)
+- Console logged: `[city-not-found] AI suggested "El Paso" — not in cities table, ignoring`
+- Save attached to Berlin (bound city fallback) ✓
+- No auto-create ✓
+
+**Behavioral note:** AI still returns cities it detects in text even with the tightened prompt — that's correct behavior. The governance layer (strict cities) catches them. The prompt change isn't trying to silence AI's parsing; it's trying to make AI default to bound city for *ambiguous* signals (like "Copenhagen" being a bakery in Bali). Explicit signals like "in El Paso" still override, then get filtered by cities table membership.
+
+**Job 0.75 (manual cleanup) deferred:** Michael's featured cities (Paris, Marseille, Lisbon, Porto, Rome, Berlin, Umbria, Tuscany) are all confirmed status=3. Auto-creation is now dead, so accumulated status=1 rows can be reviewed post-trip with real travel evidence informing the cleanup.
