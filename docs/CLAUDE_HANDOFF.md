@@ -92,6 +92,27 @@ So Michael's full deploy after a code change is:
 **Files that DO need pm2 restart:** `server.js`, anything in `api/`, `.env` changes
 **Files that DON'T need pm2 restart:** anything in `public/` (HTML, CSS, JS, assets)
 
+### Running migrations on the droplet
+
+Postgres on the droplet rejects `root` connections. Always use `sudo -u postgres`:
+
+```bash
+# Run a migration file
+sudo -u postgres psql -d lola -f /var/www/kit.summer-holiday.com/migrations/NNN_name.sql
+
+# Inspect a table
+sudo -u postgres psql -d lola -c "\d table_name"
+
+# Run an ad-hoc query
+sudo -u postgres psql -d lola -c "SELECT count(*) FROM cities WHERE status = 1;"
+
+# Interactive shell
+sudo -u postgres psql -d lola
+# (then use \dt, \d <table>, \q etc.)
+```
+
+**Migration deploy order:** Always run migration BEFORE `pm2 restart kit`. If the code expects a new column/table and you restart first, you'll get 500 errors until migration lands. Order: `deploy` (git pull) → migrate → `pm2 restart kit`.
+
 ---
 
 ## What kit IS (philosophy)

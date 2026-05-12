@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 1 shipped pre-flight)
-**Current state:** Jobs 0.5 and 1 shipped. Job 2 (new `places` table) is next — small migration-only job, can ship anywhere.
+**Last updated:** May 12, 2026 (Job 2 shipped pre-flight)
+**Current state:** Jobs 0.5, 1, 2 shipped. Job 3 (Places lookup module) is next — pure backend, can ship anytime.
 
 ---
 
@@ -30,8 +30,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **0.5** | Strict cities + AI prompt | ✅ Shipped 2026-05-12 | `api/routes/saves.js`, `api/parse-capture.js` | done |
 | **0.75** | Manual cities cleanup | Deferred (post-trip with evidence) | SQL only, no code | ~30 min |
 | **1** | Blackbook rename | ✅ Shipped 2026-05-12 | Migration 028, route file rename, server.js, 2 frontend JS files | done |
-| **2** | New `places` table | **NEXT** | Migration only | ~15 min |
-| **3** | Places lookup module | Planned | New file `api/places-lookup.js` | ~60 min |
+| **2** | New `places` table | ✅ Shipped 2026-05-12 | Migration only | done |
+| **3** | Places lookup module | **NEXT** | New file `api/places-lookup.js` | ~60 min |
 | **4** | Places resolver | Planned | New file `api/places-resolver.js` | ~45 min |
 | **5** | Wire capture pipeline + `place_id` column | Planned | Migration, `saves.js` (currently still saves.js until Job 7b) | ~60 min |
 | **6** | Backfill existing saves | Planned | New script `scripts/backfill-place-ids.js` | ~60 min run, more for review |
@@ -123,30 +123,13 @@ DELETE FROM cities WHERE id = $auto_id;
 
 ---
 
-### Job 2 — New `places` table
+### Job 2 — New `places` table ✅ Shipped 2026-05-12
 
 **Goal:** Empty canonical table for Google-resolved real-world locations.
 
-**Migration (`029_new_places_table.sql`):**
-```sql
-CREATE TABLE IF NOT EXISTS places (
-  id SERIAL PRIMARY KEY,
-  google_place_id TEXT UNIQUE NOT NULL,
-  name TEXT NOT NULL,
-  address TEXT,
-  lat NUMERIC(10, 7),
-  lng NUMERIC(10, 7),
-  primary_type TEXT,
-  primary_type_label TEXT,
-  city_id INT REFERENCES cities(id) ON DELETE SET NULL,
-  last_synced_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-CREATE INDEX places_city_id_idx ON places(city_id);
-CREATE INDEX places_primary_type_idx ON places(primary_type);
-```
+**What shipped:** `migrations/029_new_places_table.sql` — creates the table with `google_place_id` UNIQUE NOT NULL, name/address/lat/lng, primary_type + primary_type_label, city_id FK to cities, last_synced_at, created_at. Three indexes (city_id, primary_type, primary_type_label).
 
-**No code changes. Table exists, nothing reads or writes it yet.**
+**No code changes. Table exists, empty, nothing reads or writes it yet.**
 
 **Restart needed:** No
 
@@ -359,6 +342,15 @@ ALTER INDEX saves_pkey RENAME TO spots_pkey;
 
 ---
 
+## Parked TODOs (noted, not blockers)
+
+Things flagged during the arc that aren't part of the arc itself. Future-Claude reads this so they don't get re-raised.
+
+- **Admin Blackbook UI/UX refresh.** Modal copy still says "Add place" / "Edit place" / "Delete this place permanently" after the rename. Cosmetic only — functionality fully works. Michael wants to do a broader admin UI/UX pass eventually. Don't drive-by patch this; it's part of a larger admin redesign.
+- **Admin Cities triage UI** (Job 8) — formal job, but flagging here too: status=1 rows that accumulated before Job 0.5 will need review. Not urgent because auto-creation is now dead, but the table will benefit from a curated review post-trip.
+
+---
+
 ## Shipped log
 
 ### Job 0.5 — Strict cities + AI prompt (2026-05-12)
@@ -395,3 +387,16 @@ Shipped pre-flight from Bali. One zip drop, one commit, one push, deploy + pm2 r
 - Single endpoint: `{ place: ... }` → `{ entry: ... }`
 
 **Scope confirmation:** Only 2 frontend files touch the old `/api/places` — admin-blackbook.js (5 calls) and index.js (1 call). No HTML files reference it directly. Tight scope, low risk.
+
+**Cosmetic copy not yet updated:** The admin Blackbook modal still uses "Add place", "Edit place", "delete this place permanently" wording. UI strings — not breaking anything. Tracked in parked work: admin UI/UX refresh (see CLAUDE_HANDOFF parked list).
+
+### Job 2 — New `places` table (2026-05-12)
+
+Shipped immediately after Job 1. Single migration, no code changes.
+
+**Files shipped:**
+- `migrations/029_new_places_table.sql` — creates `places` with all the columns we need for Google Places (New) integration
+
+**Verification:** `sudo -u postgres psql -d lola -c "\d places"` shows clean structure with PK on id, UNIQUE constraint on google_place_id, three indexes (city_id, primary_type, primary_type_label).
+
+**No frontend, no routes, no behavior change.** Table is empty, waiting for Jobs 3-4 to populate it via the resolver, and Job 5 to wire saves to it.

@@ -91,6 +91,28 @@ Predates these migrations as `places`. Renamed to `blackbook` in migration 028 (
 
 Route: `/api/blackbook`. List response: `{ blackbook: [...] }`. Single response: `{ entry: ... }`.
 
+### `places` (new, May 12 2026)
+
+Created in migration 029 (Job 2). Empty until Jobs 3-5 wire it up. Canonical real-world locations resolved via Google Places API (New). One row per unique Google `place_id`. Saves point at it via `saves.place_id` (added in Job 5).
+
+Columns:
+- `id` — SERIAL PK
+- `google_place_id` — TEXT UNIQUE NOT NULL, stable Google identifier (e.g. `ChIJ...`)
+- `name` — TEXT NOT NULL, from Google's `displayName.text`
+- `address` — TEXT, from Google's `shortFormattedAddress`
+- `lat`, `lng` — NUMERIC(10, 7), from Google's `location`
+- `primary_type` — TEXT, from Google's `primaryType` (snake_case: `hamburger_restaurant`)
+- `primary_type_label` — TEXT, kit-formatted title case: `Hamburger Restaurant` (for searchability, not display)
+- `city_id` — INT REFERENCES cities(id) ON DELETE SET NULL, set from bound city at resolve time
+- `last_synced_at` — TIMESTAMPTZ, when this row was last refreshed from Google
+- `created_at` — TIMESTAMPTZ, defaults to NOW()
+
+Indexes: `places_city_id_idx`, `places_primary_type_idx`, `places_primary_type_label_idx`. UNIQUE constraint on `google_place_id` doubles as its lookup index.
+
+**Why these specific columns:** the FieldMask passed to Google Places Text Search requests exactly these fields. All Basic SKU (no Advanced or Preferred pricing). See ARCHITECTURE.md once Job 3 lands for the request shape.
+
+**What's NOT stored:** `types[]` (the array of all type tags) — deferred until a use case appears. `photos`, `hours`, `phone`, `website` — Google ToS restricts long-term caching of these. Fetch on-demand if a UI ever needs them.
+
 ### `trips`
 
 Predates these migrations. Soft-delete added by 010, status added by 026.
@@ -379,7 +401,7 @@ ORDER BY gs.position;
 See DECISIONS.md and CLAUDE_HANDOFF.md for full context. Headlines:
 
 1. ~~**Rename `places` → `library` or `blackbook`**~~ ✅ Shipped 2026-05-12 as `blackbook` (Job 1)
-2. **New `places` table** for canonical Google-resolved locations with `place_id`, `lat`, `lng`, etc.
+2. ~~**New `places` table** for canonical Google-resolved locations with `place_id`, `lat`, `lng`, etc.~~ ✅ Shipped 2026-05-12 (Job 2, empty for now, populated via Jobs 3-5)
 3. **Curated `cities` rework** — region/city type flag, editorial governance, geometry-based assignment (not Google's locality field)
 4. **`trip_cities` join table** — explicit ordered cities per trip with date ranges
 5. **`saves` → `spots` rename** — long-deferred, do it together with the places reshape
