@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 4 shipped pre-flight)
-**Current state:** Jobs 0.5, 1, 2, 3, 4 shipped. Job 5 (wire capture pipeline + place_id column) is next — the first job that touches saves.js behavior.
+**Last updated:** May 12, 2026 (Job 5 shipped pre-flight)
+**Current state:** Jobs 0.5, 1, 2, 3, 4, 5 shipped. New captures now resolve to canonical places automatically. Job 6 (backfill existing saves) is next — sit-and-watch script.
 
 ---
 
@@ -33,8 +33,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **2** | New `places` table | ✅ Shipped 2026-05-12 | Migration only | done |
 | **3** | Places lookup module | ✅ Shipped 2026-05-12 | New file `api/places-lookup.js` + `scripts/test-places-lookup.js` | done |
 | **4** | Places resolver | ✅ Shipped 2026-05-12 | New file `api/places-resolver.js` + new `api/routes/places.js` + server.js mount | done |
-| **5** | Wire capture pipeline + `place_id` column | **NEXT** | Migration, `saves.js` (currently still saves.js until Job 7b) | ~60 min |
-| **6** | Backfill existing saves | Planned | New script `scripts/backfill-place-ids.js` | ~60 min run, more for review |
+| **5** | Wire capture pipeline + `place_id` column | ✅ Shipped 2026-05-12 | Migration 030, `api/routes/saves.js` updated | done |
+| **6** | Backfill existing saves | **NEXT** | New script `scripts/backfill-place-ids.js` | ~60 min run, more for review |
 | **7a** | Collapse join table | Planned | Migration, route queries that JOIN save_cities | ~45 min |
 | **7b** | `saves` → `spots` rename | Planned | Migration, every route file, every frontend fetch | ~2 hours focused |
 | **8** | Admin city triage UI | Planned | New admin page + endpoint | ~2 hours |
@@ -180,30 +180,27 @@ Returns the new `places` row. Re-run with same name+city → returns same id (id
 
 ---
 
-### Job 5 — Wire capture pipeline + `place_id` column
+### Job 5 — Wire capture pipeline + `place_id` column ✅ Shipped 2026-05-12
 
-**Goal:** New captures start getting place_ids resolved. First user-visible-ish behavior change.
+**Goal:** New captures start getting place_ids resolved automatically in background.
 
-**Migration (`030_saves_place_id.sql`):**
-```sql
-ALTER TABLE saves
-  ADD COLUMN IF NOT EXISTS place_id INT REFERENCES places(id) ON DELETE SET NULL;
-CREATE INDEX IF NOT EXISTS saves_place_id_idx ON saves(place_id);
-```
+**What shipped:**
+- `migrations/030_saves_place_id.sql` — `saves.place_id INT REFERENCES places(id) ON DELETE SET NULL` + index
+- `api/routes/saves.js` updated `parseAndUpdate`:
+  - Added `cityNameFromId` helper for the fallback path where we have a cityId but need the name string for Google's query
+  - Track `attachedCityId` and `attachedCityName` through all city-attachment paths (AI match, bound fallback, regex-only) so the resolver always knows which city to pass
+  - After AI fields written and city attached, fire-and-forget `resolveOrCreatePlace({ name: parsed.place_name, cityId: attachedCityId, cityName: attachedCityName })`
+  - On resolver success → `UPDATE saves SET place_id = $1 WHERE id = $2`
+  - On resolver failure → `console.error('[place-lookup-error] save N "name": ...')` for visibility
+  - Skipped entirely if AI parse errored (decided: option A, don't gamble on raw text)
+  - Skipped if AI returned no place_name (no useful query to send Google)
 
-**Code change in `api/routes/saves.js` (`parseAndUpdate`):**
-- After AI parse finishes and city is linked, fire-and-forget:
-  ```js
-  resolveOrCreatePlace({ name: parsed.place_name, cityId, cityName })
-    .then(placeId => {
-      if (placeId) pool.query('UPDATE saves SET place_id = $1 WHERE id = $2', [placeId, saveId]);
-    })
-    .catch(err => console.error('resolveOrCreatePlace', err));
-  ```
+**Behavior change after deploy:**
+- Capture latency: unchanged (~15ms). Resolver runs background, after AI parse, fire-and-forget.
+- Every new capture with a successful AI parse + parsed place_name now spawns ONE Google Places call.
+- Failures (Google down, ambiguous match) are silent and recoverable — place_id stays null, save still works.
 
-**Capture still works if Google fails.** `place_id` stays null. UI doesn't change.
-
-**Restart needed:** Yes
+**Restart needed:** Yes (capture code changed).
 
 ---
 
@@ -346,6 +343,7 @@ Things flagged during the arc that aren't part of the arc itself. Future-Claude 
 
 - **Admin Blackbook UI/UX refresh.** Modal copy still says "Add place" / "Edit place" / "Delete this place permanently" after the rename. Cosmetic only — functionality fully works. Michael wants to do a broader admin UI/UX pass eventually. Don't drive-by patch this; it's part of a larger admin redesign.
 - **Admin Cities triage UI** (Job 8) — formal job, but flagging here too: status=1 rows that accumulated before Job 0.5 will need review. Not urgent because auto-creation is now dead, but the table will benefit from a curated review post-trip.
+- **Drop migration-023 columns from `saves`.** `google_place_id`, `google_lookup_status`, `google_lookup_at` were added in migration 023 as schema prep but are now superseded by the `place_id` FK from Job 5. Not actively used by new code. Drop in a future cleanup migration once we're sure no admin tooling references them. Low priority.
 
 ---
 
@@ -430,3 +428,32 @@ Shipped after Job 3. Wraps the lookup with DB persistence in the new `places` ta
 3. `sudo -u postgres psql -d lola -c "SELECT * FROM places"` → see the row landed correctly
 
 **Nothing in the capture pipeline calls the resolver yet.** Job 5 wires it into `saves.js` `parseAndUpdate` as fire-and-forget after AI parse completes, and adds `saves.place_id` column.
+
+### Job 5 — Wire capture pipeline + `place_id` column (2026-05-12)
+
+Shipped after Job 4. First job in the arc to change real user-visible (well, near-user-visible) behavior — new captures now auto-populate `place_id` in the background.
+
+**Files shipped:**
+- `migrations/030_saves_place_id.sql` — adds `saves.place_id` FK column + index
+- `api/routes/saves.js` — `parseAndUpdate` now fires `resolveOrCreatePlace` after AI parse completes and city is attached, then UPDATEs the save row with the returned `place_id`
+
+**Architectural shape:**
+- Capture POST returns at t≈15ms (unchanged)
+- AI parse fires fire-and-forget, completes ~800ms
+- After city attachment, place resolver fires fire-and-forget, completes ~1200ms
+- All three steps decoupled from HTTP response — user can close window safely
+- Failures silent, recoverable (raw text preserved, admin re-resolve endpoint exists)
+
+**Decisions baked in:**
+- Skip resolver if AI parse errored (option A from chat) — no place_name = no useful Google query
+- Skip resolver if AI returned no place_name (descriptive-only captures like "great coffee" stay unresolved)
+- `attachedCityId` + `attachedCityName` tracked through all city-attachment paths (AI match / bound fallback / regex-only) so the resolver always has the right city context
+- Resolver errors logged via `[place-lookup-error]` console line, save still works
+
+**Verify after deploy:**
+1. Capture a new spot ("Della Terra, sit at the bar" while bound to Bali)
+2. Wait ~2 seconds
+3. `sudo -u postgres psql -d lola -c "SELECT id, text, place_id FROM saves ORDER BY id DESC LIMIT 1;"` → should show your new save with `place_id` populated
+4. `sudo -u postgres psql -d lola -c "SELECT * FROM places ORDER BY id DESC LIMIT 1;"` → should show the resolved Google row
+
+**Google billing note:** Every successful capture now spawns one Google Text Search call. Free tier covers 10,000/month. At kit's current scale this is ~negligible cost. Watch the Google Cloud Console billing dashboard for the first few days regardless.

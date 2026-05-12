@@ -93,7 +93,7 @@ Route: `/api/blackbook`. List response: `{ blackbook: [...] }`. Single response:
 
 ### `places` (new, May 12 2026)
 
-Created in migration 029 (Job 2). Empty until Jobs 3-5 wire it up. Canonical real-world locations resolved via Google Places API (New). One row per unique Google `place_id`. Saves point at it via `saves.place_id` (added in Job 5).
+Created in migration 029 (Job 2). Populated via the resolver (Job 4) called from the capture pipeline (Job 5). Canonical real-world locations resolved via Google Places API (New). One row per unique Google `place_id`. Saves point at it via `saves.place_id` (added in Job 5).
 
 Columns:
 - `id` — SERIAL PK
@@ -161,12 +161,13 @@ Neighborhood (migration 018):
 Been flag (migration 022):
 - `been BOOLEAN NOT NULL DEFAULT TRUE` — true = visited, false = want-to-go. Default true since most captures are post-visit.
 
-Google Places enrichment (migration 023, SCHEMA-ONLY):
-- `google_place_id TEXT` — canonical Google identifier
-- `google_lookup_status TEXT` — e.g. 'ok', 'not_found', 'error'
-- `google_lookup_at TIMESTAMP` — when the lookup ran
+Google Places integration (migrations 023 + 030):
+- `google_place_id TEXT` (migration 023) — historical column; now SUPERSEDED by `place_id` FK to `places` table
+- `google_lookup_status TEXT` (migration 023) — historical column; not used by the new resolver flow
+- `google_lookup_at TIMESTAMP` (migration 023) — historical column; not used by the new resolver flow
+- `place_id INT REFERENCES places(id) ON DELETE SET NULL` (migration 030, Job 5) — **THIS is the active column.** Set by the resolver after AI parse. Null when Google has no match, when AI parse failed, or when capture had no parsed place_name.
 
-**No lookup logic ships in migration 023** — it's schema prep. Resolver code is post-trip work. See DECISIONS.md.
+**Note:** the migration-023 columns are still on saves but unused by the new code. They'll be dropped in a future cleanup migration once we're sure no admin tooling references them. Don't write to them.
 
 Columns DROPPED over time:
 - `city_id` (016) — replaced by the `save_cities` join table

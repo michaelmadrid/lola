@@ -2,6 +2,7 @@ const router = require('express').Router();
 const pool = require('../db');
 const { authenticate } = require('../auth');
 const { parseCapture, CATEGORIES } = require('../parse-capture');
+const { resolveOrCreatePlace } = require('../places-resolver');
 
 function extractTags(text) {
   const matches = String(text).match(/#[a-z0-9_-]+/gi) || [];
@@ -59,14 +60,30 @@ async function findOrEnrichCity(name, country, timezone) {
   return row;
 }
 
-// Background: parse a save with Claude, update the row + attach city if needed.
-// Fire and forget — never blocks the user's POST. Errors are stored on the row.
+// Helper to fetch the bound-city name from a city id. Used when the resolver
+// needs cityName (for the Google query) but only has cityId (because the
+// resolution happened via the fallback path).
+async function cityNameFromId(cityId) {
+  if (!cityId) return null;
+  try {
+    const r = await pool.query(`SELECT name FROM cities WHERE id = $1 LIMIT 1`, [cityId]);
+    return r.rows[0] ? r.rows[0].name : null;
+  } catch {
+    return null;
+  }
+}
+
+// Background: parse a save with Claude, update the row + attach city if needed
+// + resolve to a canonical place via Google. Fire and forget — never blocks
+// the user's POST. Errors are stored on the row (AI) or logged (place lookup).
 async function parseAndUpdate(saveId, text, opts = {}) {
   const { boundCityName, cityIdHint } = opts;
   const parsed = await parseCapture(text, { boundCityName });
 
   if (parsed.error) {
-    // Record the error, leave structured fields null
+    // Record the error, leave structured fields null. Skip the place resolver —
+    // without a confident place_name the Google lookup would be a hail mary
+    // (decided in Job 5: option A, skip on AI parse failure).
     await pool.query(
       `UPDATE saves SET ai_parsed_at = NOW(), ai_parse_error = $1 WHERE id = $2`,
       [parsed.error, saveId]
@@ -98,6 +115,12 @@ async function parseAndUpdate(saveId, text, opts = {}) {
     [parsed.place_name, parsed.category, parsed.tip, parsed.country, parsed.neighborhood, saveId]
   );
 
+  // ----- City attachment -----
+  // Track the city id that ends up linked to this save, regardless of which
+  // path provided it. Used below to inform the place resolver.
+  let attachedCityId = null;
+  let attachedCityName = null;
+
   // Attach city via save_cities if AI gave us one and it matched
   if (cityRow) {
     await pool.query(
@@ -105,25 +128,83 @@ async function parseAndUpdate(saveId, text, opts = {}) {
       [saveId, cityRow.id]
     );
     refreshCitiesCache();
-    return;
-  }
-
-  // FALLBACK: if AI returned no city (or AI's city wasn't in our table) AND no
-  // city is currently attached from regex detection, attach the user's bound
-  // city as a last resort. This is the safety net for "Della Terra, good food"
-  // captured while bound to Bali — nothing in the text names a city, AI may
-  // not have inferred one, but the user told us they're in Bali.
-  if (cityIdHint) {
+    attachedCityId = cityRow.id;
+    attachedCityName = cityRow.name;
+  } else if (cityIdHint) {
+    // FALLBACK: if AI returned no city (or AI's city wasn't in our table) AND no
+    // city is currently attached from regex detection, attach the user's bound
+    // city as a last resort. This is the safety net for "Della Terra, good food"
+    // captured while bound to Bali — nothing in the text names a city, AI may
+    // not have inferred one, but the user told us they're in Bali.
     const existing = await pool.query(
       `SELECT 1 FROM save_cities WHERE save_id = $1 LIMIT 1`,
       [saveId]
     );
     if (existing.rowCount === 0) {
+      const cityIdInt = parseInt(cityIdHint, 10);
       await pool.query(
         `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [saveId, parseInt(cityIdHint, 10)]
+        [saveId, cityIdInt]
       );
+      attachedCityId = cityIdInt;
+      attachedCityName = await cityNameFromId(cityIdInt);
+    } else {
+      // Regex detection (in createSingleSave) had already attached a city.
+      // Look up its name + id so the resolver can use them.
+      const existingCity = await pool.query(
+        `SELECT c.id, c.name FROM save_cities sc
+           JOIN cities c ON sc.city_id = c.id
+           WHERE sc.save_id = $1 LIMIT 1`,
+        [saveId]
+      );
+      if (existingCity.rows[0]) {
+        attachedCityId = existingCity.rows[0].id;
+        attachedCityName = existingCity.rows[0].name;
+      }
     }
+  } else {
+    // No AI city, no bound city. Check if regex detection attached one anyway.
+    const existingCity = await pool.query(
+      `SELECT c.id, c.name FROM save_cities sc
+         JOIN cities c ON sc.city_id = c.id
+         WHERE sc.save_id = $1 LIMIT 1`,
+      [saveId]
+    );
+    if (existingCity.rows[0]) {
+      attachedCityId = existingCity.rows[0].id;
+      attachedCityName = existingCity.rows[0].name;
+    }
+  }
+
+  // ----- Place resolver -----
+  // Fire the Google Places resolver IF we have a place_name to look up.
+  // The bound/attached city is passed for query disambiguation AND set as
+  // places.city_id on a new row. Fire-and-forget: if Google fails, log it
+  // and move on — the save is fully written either way, place_id stays null.
+  if (parsed.place_name && parsed.place_name.trim()) {
+    resolveOrCreatePlace({
+      name: parsed.place_name,
+      cityId: attachedCityId,
+      cityName: attachedCityName,
+    })
+      .then(async (placeId) => {
+        if (placeId) {
+          try {
+            await pool.query(
+              `UPDATE saves SET place_id = $1 WHERE id = $2`,
+              [placeId, saveId]
+            );
+          } catch (err) {
+            console.error('parseAndUpdate place_id update', err.message);
+          }
+        }
+        // If placeId is null, Google found no match. The save just lacks a
+        // canonical place link. Admin can manually resolve later via the
+        // /api/places/_admin/resolve endpoint if it matters.
+      })
+      .catch(err => {
+        console.error(`[place-lookup-error] save ${saveId} "${parsed.place_name}": ${err.message}`);
+      });
   }
 }
 
