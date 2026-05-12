@@ -28,16 +28,16 @@ app.get('/atlas/phrasebook.json', (req, res) => res.redirect(301, '/travel/phras
 app.use(express.static('public'));
 
 // ============ ROUTES ============
-app.use('/api/health',  require('./api/routes/health'));
-app.use('/api/auth',    require('./api/routes/auth'));
-app.use('/api/cities',  require('./api/routes/cities'));
-app.use('/api/places',  require('./api/routes/places'));
-app.use('/api/trips',   require('./api/routes/trips'));
-app.use('/api/notes',   require('./api/routes/notes'));
-app.use('/api/saves',   require('./api/routes/saves'));
-app.use('/api/todos',   require('./api/routes/todos'));
-app.use('/api/guides',  require('./api/routes/guides'));
-app.use('/api/phrases', require('./api/routes/phrases'));
+app.use('/api/health',    require('./api/routes/health'));
+app.use('/api/auth',      require('./api/routes/auth'));
+app.use('/api/cities',    require('./api/routes/cities'));
+app.use('/api/blackbook', require('./api/routes/blackbook'));
+app.use('/api/trips',     require('./api/routes/trips'));
+app.use('/api/notes',     require('./api/routes/notes'));
+app.use('/api/saves',     require('./api/routes/saves'));
+app.use('/api/todos',     require('./api/routes/todos'));
+app.use('/api/guides',    require('./api/routes/guides'));
+app.use('/api/phrases',   require('./api/routes/phrases'));
 
 // ============ PUBLIC GUIDE VIEW ============
 // /guide/:slug is the canonical public URL — editorial, readable.

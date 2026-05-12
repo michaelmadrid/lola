@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 0.5 shipped pre-flight)
-**Current state:** Job 0.5 shipped and verified. Job 0.75 (manual cleanup) is next — deferred for trip evidence first. Job 1 can also go next if you'd rather pick at the rename arc.
+**Last updated:** May 12, 2026 (Job 1 shipped pre-flight)
+**Current state:** Jobs 0.5 and 1 shipped. Job 2 (new `places` table) is next — small migration-only job, can ship anywhere.
 
 ---
 
@@ -29,8 +29,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 |---|---|---|---|---|
 | **0.5** | Strict cities + AI prompt | ✅ Shipped 2026-05-12 | `api/routes/saves.js`, `api/parse-capture.js` | done |
 | **0.75** | Manual cities cleanup | Deferred (post-trip with evidence) | SQL only, no code | ~30 min |
-| **1** | Library rename | **NEXT** | Migration, `api/routes/places.js` → `library.js`, frontend fetches | ~60 min |
-| **2** | New `places` table | Planned | Migration only | ~15 min |
+| **1** | Blackbook rename | ✅ Shipped 2026-05-12 | Migration 028, route file rename, server.js, 2 frontend JS files | done |
+| **2** | New `places` table | **NEXT** | Migration only | ~15 min |
 | **3** | Places lookup module | Planned | New file `api/places-lookup.js` | ~60 min |
 | **4** | Places resolver | Planned | New file `api/places-resolver.js` | ~45 min |
 | **5** | Wire capture pipeline + `place_id` column | Planned | Migration, `saves.js` (currently still saves.js until Job 7b) | ~60 min |
@@ -103,28 +103,21 @@ DELETE FROM cities WHERE id = $auto_id;
 
 ---
 
-### Job 1 — Library rename
+### Job 1 — Blackbook rename ✅ Shipped 2026-05-12
 
-**Goal:** Current `places` table → `library`. Clean break, no redirects.
+**Goal:** Current `places` table → `blackbook`. Clean break, no redirects.
 
-**Migration (`028_rename_places_to_library.sql`):**
-```sql
-ALTER TABLE places RENAME TO library;
-ALTER INDEX places_pkey RENAME TO library_pkey;
--- Rename any other indexes (places_city_id_idx etc.) to library_*
-```
+**Naming decision:** During Job 1, the user-facing surface was discovered to already use "Blackbook" (admin/blackbook.html, admin-blackbook.js). The DB and route were the only outliers calling it "places." Renamed to `blackbook` rather than `library` to align all three layers (table / route / UI) on one word, on-brand for the country-club register. (See DECISIONS.md.)
 
-**Code changes:**
-- Rename `api/routes/places.js` → `api/routes/library.js`
-- Update queries from `places` → `library`
-- In `server.js`: mount at `/api/library` instead of `/api/places`
-- Frontend: every `fetch('/api/places...')` → `/api/library`
-- Update STYLE_GUIDE, ARCHITECTURE, SCHEMA docs
+**What shipped:**
+- Migration `028_rename_places_to_blackbook.sql` — table + PK + indexes + FK constraints
+- `api/routes/blackbook.js` (was `places.js`)
+- `server.js` mount: `/api/blackbook`
+- Response shape renamed too: `{ places: [...] }` → `{ blackbook: [...] }` for list, `{ place }` → `{ entry }` for single
+- `public/js/admin-blackbook.js` — URLs + response key updated
+- `public/js/index.js` — URLs + response key + var names updated (this file is currently orphaned — no HTML loads it — but updated for consistency in case re-enabled later)
 
-**Verify after deploy:**
-- Bookshops still load on blackbook/library pages
-- Admin library management still works
-- No 404s on `/api/library` endpoints
+**Old file to delete locally before commit:** `api/routes/places.js` (just delete it; Git diff will show the rename naturally).
 
 **Restart needed:** Yes (backend change)
 
@@ -383,3 +376,22 @@ Shipped pre-flight from Bali. Two file replacements (`api/routes/saves.js`, `api
 **Behavioral note:** AI still returns cities it detects in text even with the tightened prompt — that's correct behavior. The governance layer (strict cities) catches them. The prompt change isn't trying to silence AI's parsing; it's trying to make AI default to bound city for *ambiguous* signals (like "Copenhagen" being a bakery in Bali). Explicit signals like "in El Paso" still override, then get filtered by cities table membership.
 
 **Job 0.75 (manual cleanup) deferred:** Michael's featured cities (Paris, Marseille, Lisbon, Porto, Rome, Berlin, Umbria, Tuscany) are all confirmed status=3. Auto-creation is now dead, so accumulated status=1 rows can be reviewed post-trip with real travel evidence informing the cleanup.
+
+### Job 1 — Blackbook rename (2026-05-12)
+
+Shipped pre-flight from Bali. One zip drop, one commit, one push, deploy + pm2 restart.
+
+**Naming pivot mid-job:** Started as "library rename" per RENAME_ARC. During implementation, the user-facing surface (admin/blackbook.html, admin-blackbook.js) was discovered to already say "Blackbook." Pivoted to `blackbook` instead of `library` to align all three layers (table/route/UI) on one on-brand word. Decision logged in DECISIONS.md.
+
+**Files shipped:**
+- `migrations/028_rename_places_to_blackbook.sql` — idempotent rename of table, PK, indexes, FK constraints
+- `api/routes/blackbook.js` — replaces `api/routes/places.js`
+- `server.js` — mount changed to `/api/blackbook`
+- `public/js/admin-blackbook.js` — URLs + response key updated
+- `public/js/index.js` — same (orphaned file, updated for consistency)
+
+**Response shape changes:**
+- List endpoint: `{ places: [...] }` → `{ blackbook: [...] }`
+- Single endpoint: `{ place: ... }` → `{ entry: ... }`
+
+**Scope confirmation:** Only 2 frontend files touch the old `/api/places` — admin-blackbook.js (5 calls) and index.js (1 call). No HTML files reference it directly. Tight scope, low risk.

@@ -83,11 +83,13 @@ Predates these migrations. Core columns:
 
 **Bali special case:** Migration 018 cleaned up Bali area. Villages like Canggu, Pererenan, Seseh, Berawa, Uluwatu, Seminyak, Kuta, Sanur, Ubud, Jimbaran were demoted from being cities to being `saves.neighborhood` strings. Bali is the canonical city; villages live as neighborhoods on the saves themselves.
 
-**Parked (post-trip):** Bigger schema reshape — rename existing `places` to `library`/`blackbook`, new `places` table with Google `place_id`, curated `cities` with `region|city` type flag, geometry-based spot-to-city resolution. See DECISIONS.md and CLAUDE_HANDOFF.md "Parked design decisions."
+**Parked (post-trip):** Bigger schema reshape — ~~rename existing `places` to `library`/`blackbook`~~ ✅ done as `blackbook` (Job 1, 2026-05-12), new `places` table with Google `place_id` (Job 2), curated `cities` with `region|city` type flag, geometry-based spot-to-city resolution. See DECISIONS.md and CLAUDE_HANDOFF.md "Parked design decisions."
 
-### `places`
+### `blackbook` (formerly `places`)
 
-Predates these migrations. Currently holds blackbook data, NOT canonical real-world locations. Post-trip rename to `library` or `blackbook` is parked. Don't conflate with future `places` table for canonical Google-resolved locations.
+Predates these migrations as `places`. Renamed to `blackbook` in migration 028 (Job 1, May 12, 2026) to align with the user-facing surface name. Holds curated/admin-managed entries (bookshops, galleries, etc) — kit's editorial blackbook of vetted spots. NOT canonical real-world locations. (Job 2 introduces a new `places` table for that.)
+
+Route: `/api/blackbook`. List response: `{ blackbook: [...] }`. Single response: `{ entry: ... }`.
 
 ### `trips`
 
@@ -376,7 +378,7 @@ ORDER BY gs.position;
 
 See DECISIONS.md and CLAUDE_HANDOFF.md for full context. Headlines:
 
-1. **Rename `places` → `library` or `blackbook`** (it currently holds bookshop/blackbook data, not real-world places)
+1. ~~**Rename `places` → `library` or `blackbook`**~~ ✅ Shipped 2026-05-12 as `blackbook` (Job 1)
 2. **New `places` table** for canonical Google-resolved locations with `place_id`, `lat`, `lng`, etc.
 3. **Curated `cities` rework** — region/city type flag, editorial governance, geometry-based assignment (not Google's locality field)
 4. **`trip_cities` join table** — explicit ordered cities per trip with date ranges

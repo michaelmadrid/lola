@@ -1,5 +1,5 @@
 /* =========================================================
-   admin-blackbook.js — manage Blackbook entries (places table)
+   admin-blackbook.js — manage Blackbook entries (blackbook table)
    ========================================================= */
 
 (async function () {
@@ -26,10 +26,10 @@
   async function loadAll() {
     try {
       const [pData, cData] = await Promise.all([
-        api.get('/api/places'),
+        api.get('/api/blackbook'),
         api.get('/api/cities'),
       ]);
-      places = pData.places || [];
+      places = pData.blackbook || [];
       cities = cData.cities || [];
       populateCityDropdown();
       render();
@@ -55,7 +55,7 @@
       );
     }
     if (!filtered.length) {
-      listEl.innerHTML = '<div class="list-empty">No places match.</div>';
+      listEl.innerHTML = '<div class="list-empty">No entries match.</div>';
       return;
     }
     filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -78,12 +78,12 @@
     listEl.querySelectorAll('.row-delete-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = parseInt(btn.dataset.id, 10);
-        const name = btn.dataset.name || 'this place';
+        const name = btn.dataset.name || 'this entry';
         if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
         const row = btn.closest('.admin-table__row');
         if (row) row.style.opacity = '0.4';
         try {
-          await api.delete('/api/places/' + id);
+          await api.delete('/api/blackbook/' + id);
           await loadAll();
         } catch (err) {
           if (row) row.style.opacity = '';
@@ -102,7 +102,7 @@
   // Modal open/close
   function openAdd() {
     editingId = null;
-    modalTitle.textContent = 'Add place';
+    modalTitle.textContent = 'Add entry';
     deleteBtn.style.display = 'none';
     document.getElementById('place-form').reset();
     modal.classList.add('is-open');
@@ -113,7 +113,7 @@
     const p = places.find(x => x.id === id);
     if (!p) return;
     editingId = id;
-    modalTitle.textContent = 'Edit place';
+    modalTitle.textContent = 'Edit entry';
     deleteBtn.style.display = '';
     document.getElementById('p-name').value = p.name || '';
     document.getElementById('p-category').value = p.category || 'bookshop';
@@ -151,10 +151,10 @@
     if (!body.name) return;
     try {
       if (editingId) {
-        await api.patch('/api/places/' + editingId, body);
+        await api.patch('/api/blackbook/' + editingId, body);
         toast('Saved');
       } else {
-        await api.post('/api/places', body);
+        await api.post('/api/blackbook', body);
         toast('Added');
       }
       closeModal();
@@ -171,9 +171,9 @@
   // Delete
   deleteBtn.addEventListener('click', async () => {
     if (!editingId) return;
-    if (!confirm('Delete this place permanently?')) return;
+    if (!confirm('Delete this entry permanently?')) return;
     try {
-      await api.delete('/api/places/' + editingId);
+      await api.delete('/api/blackbook/' + editingId);
       toast('Deleted');
       closeModal();
       await loadAll();

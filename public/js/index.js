@@ -13,7 +13,7 @@
     'restaurant': 'restaurant',
   };
 
-  let places = [];
+  let entries = [];
   let activeCat = 'all';
   let activeCity = 'all';
   let activeSort = 'name';
@@ -25,27 +25,27 @@
   const catSelMobile = document.getElementById('cat-select-mobile');
   const sortSel      = document.getElementById('sort-select');
 
-  async function loadPlaces() {
+  async function loadEntries() {
     try {
-      const data = await api.get('/api/places');
-      places = data.places || [];
+      const data = await api.get('/api/blackbook');
+      entries = data.blackbook || [];
       populateCityDropdown();
       render();
     } catch (err) {
-      console.error('loadPlaces', err);
-      listEl.innerHTML = '<div class="list-empty">Could not load places.</div>';
+      console.error('loadEntries', err);
+      listEl.innerHTML = '<div class="list-empty">Could not load entries.</div>';
     }
   }
 
   function populateCityDropdown() {
-    const cities = [...new Set(places.map(p => p.city_name).filter(Boolean))].sort();
+    const cities = [...new Set(entries.map(p => p.city_name).filter(Boolean))].sort();
     citySel.innerHTML = '<option value="all">All cities</option>' +
       cities.map(c => `<option value="${util.escapeHtml(c)}">${util.escapeHtml(c)}</option>`).join('');
   }
 
   function render() {
     const term = searchTerm.toLowerCase().trim();
-    let filtered = places.filter(p => {
+    let filtered = entries.filter(p => {
       if (activeCat !== 'all' && p.category !== activeCat) return false;
       if (activeCity !== 'all' && p.city_name !== activeCity) return false;
       if (term && !(p.name || '').toLowerCase().includes(term)) return false;
@@ -62,7 +62,7 @@
     });
 
     if (!filtered.length) {
-      const msg = term ? `No matches for "${util.escapeHtml(searchTerm.trim())}"` : 'No places match these filters.';
+      const msg = term ? `No matches for "${util.escapeHtml(searchTerm.trim())}"` : 'No entries match these filters.';
       listEl.innerHTML = `<div class="list-empty">${msg}</div>`;
       return;
     }
@@ -123,5 +123,5 @@
     });
   }
 
-  loadPlaces();
+  loadEntries();
 })();

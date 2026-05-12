@@ -8,6 +8,18 @@ Append-only record of load-bearing decisions. Read before relitigating a settled
 
 ---
 
+## 2026-05-12 · Renamed table to `blackbook` (not `library`) during Job 1
+
+RENAME_ARC.md originally planned to rename the existing `places` table to `library`. Mid-implementation, discovered the user-facing surface had been calling it "Blackbook" all along (`admin/blackbook.html`, `admin-blackbook.js`, copy in the UI). The DB table and route were the only outliers using "places."
+
+Renaming to `blackbook` instead of `library` aligns three layers (table / route / UI) on one word, which removes a mental tax and matches kit's editorial register better. "Library" would have created a new split (UI says Blackbook, code says library).
+
+Implication: `blackbook` is the name forever now. No going back. Route is `/api/blackbook`. Response key is `{ blackbook: [...] }` for the list endpoint.
+
+## 2026-05-12 · Job 0.5 shipped: strict cities
+
+Cities are now strictly admin-curated. `findOrCreateCity` renamed to `findOrEnrichCity` — finds existing, enriches missing timezone/country, never creates. AI prompt tightened to treat bound city as default. Tested with "Tacos Locos in El Paso" bound to Berlin: AI parsed El Paso correctly, governance filtered it out (not in cities table), fell back to Berlin. No auto-creation. Console logs `[city-not-found]` entries when AI suggests an unknown city.
+
 ## 2026-05-11 · Print stylesheet for trip overlay shipped via console paste
 
 Europe 26 itinerary needed to be printable before May 12 flight. The `.modal.itin-fs.is-open` overlay's `position: fixed` + internal scroll clipped print preview to viewport. Console-pasted `@media print` rule hides everything except `.itin-fs`, flattens its overflow, paginates city sections. Worked. Permanent stylesheet to be added to `shell.css` post-trip — anchor is `.modal.itin-fs.is-open`. Console version is in chat history if needed.
