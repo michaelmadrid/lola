@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 2 shipped pre-flight)
-**Current state:** Jobs 0.5, 1, 2 shipped. Job 3 (Places lookup module) is next — pure backend, can ship anytime.
+**Last updated:** May 12, 2026 (Job 3 shipped pre-flight)
+**Current state:** Jobs 0.5, 1, 2, 3 shipped. Job 4 (Places resolver) is next — wraps Job 3's lookup with DB persistence.
 
 ---
 
@@ -31,8 +31,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **0.75** | Manual cities cleanup | Deferred (post-trip with evidence) | SQL only, no code | ~30 min |
 | **1** | Blackbook rename | ✅ Shipped 2026-05-12 | Migration 028, route file rename, server.js, 2 frontend JS files | done |
 | **2** | New `places` table | ✅ Shipped 2026-05-12 | Migration only | done |
-| **3** | Places lookup module | **NEXT** | New file `api/places-lookup.js` | ~60 min |
-| **4** | Places resolver | Planned | New file `api/places-resolver.js` | ~45 min |
+| **3** | Places lookup module | ✅ Shipped 2026-05-12 | New file `api/places-lookup.js` + `scripts/test-places-lookup.js` | done |
+| **4** | Places resolver | **NEXT** | New file `api/places-resolver.js` | ~45 min |
 | **5** | Wire capture pipeline + `place_id` column | Planned | Migration, `saves.js` (currently still saves.js until Job 7b) | ~60 min |
 | **6** | Backfill existing saves | Planned | New script `scripts/backfill-place-ids.js` | ~60 min run, more for review |
 | **7a** | Collapse join table | Planned | Migration, route queries that JOIN save_cities | ~45 min |
@@ -135,27 +135,24 @@ DELETE FROM cities WHERE id = $auto_id;
 
 ---
 
-### Job 3 — Places lookup module
+### Job 3 — Places lookup module ✅ Shipped 2026-05-12
 
 **Goal:** Single function that calls Google Places API (New) and returns structured data. No DB writes.
 
-**New file `api/places-lookup.js`:**
-- Export `lookupPlace({ name, cityHint })`
-- POST to `https://places.googleapis.com/v1/places:searchText`
-- FieldMask header: `places.id,places.displayName,places.shortFormattedAddress,places.location,places.primaryType`
-- Body: `{ textQuery: "{name} {cityHint}", maxResultCount: 1 }`
-- Format `primary_type` to `primary_type_label` (snake_case → Title Case via JS transform)
-- Return `{ google_place_id, name, address, lat, lng, primary_type, primary_type_label }` or `null`
-- Throw on API errors (caller decides what to do)
+**Param renamed mid-job:** Originally documented as `{ name, cityHint }` (carryover from earlier `locationBias` discussion that we cut). Renamed to `{ name, city }` — clearer that it's the bound city string concatenated into the query, not a fancy bias parameter.
 
-**Plus test script `scripts/test-places-lookup.js`:**
-- Hardcoded list of 5–10 real spot names from kit's data
-- Runs lookup, prints results
-- Eyeball check for match quality
+**What shipped:**
+- `api/places-lookup.js` — exports `lookupPlace({ name, city })` and `formatPrimaryTypeLabel(snake)`
+  - POSTs to `https://places.googleapis.com/v1/places:searchText`
+  - FieldMask: `places.id,places.displayName,places.shortFormattedAddress,places.location,places.primaryType` (all Basic SKU)
+  - Body: `{ textQuery: "{name} {city}", maxResultCount: 1 }` (city concatenated when present)
+  - Returns `{ google_place_id, name, address, lat, lng, primary_type, primary_type_label }` or `null`
+  - Throws on network/HTTP/JSON errors (caller decides what to do)
+- `scripts/test-places-lookup.js` — hardcoded array of 5 known places + 1 deliberate non-match. Run as `node scripts/test-places-lookup.js` from droplet, prints results.
 
-**Env needed:** `GOOGLE_PLACES_API_KEY` in `.env` (Michael already created and tested)
+**Env needed:** `GOOGLE_PLACES_API_KEY` in droplet `.env` (Michael confirmed already set up).
 
-**Restart needed:** No (new file, nothing imports it yet)
+**Restart needed:** No (new file, nothing imports it yet).
 
 ---
 
@@ -165,7 +162,7 @@ DELETE FROM cities WHERE id = $auto_id;
 
 **New file `api/places-resolver.js`:**
 - Export `resolveOrCreatePlace({ name, cityId, cityName })`
-- Call `lookupPlace({ name, cityHint: cityName })`
+- Call `lookupPlace({ name, city: cityName })`
 - If result has `google_place_id`:
   - Check existing: `SELECT id FROM places WHERE google_place_id = $1`
   - If found, return that `id` (update `last_synced_at` optionally)
@@ -400,3 +397,17 @@ Shipped immediately after Job 1. Single migration, no code changes.
 **Verification:** `sudo -u postgres psql -d lola -c "\d places"` shows clean structure with PK on id, UNIQUE constraint on google_place_id, three indexes (city_id, primary_type, primary_type_label).
 
 **No frontend, no routes, no behavior change.** Table is empty, waiting for Jobs 3-4 to populate it via the resolver, and Job 5 to wire saves to it.
+
+### Job 3 — Places lookup module (2026-05-12)
+
+Shipped after Job 2. Two new files, no migration, no restart.
+
+**Files shipped:**
+- `api/places-lookup.js` — exports `lookupPlace({ name, city })` and `formatPrimaryTypeLabel(snake)`. Single POST to Google Places (New) Text Search, FieldMask restricted to Basic SKU. Returns structured object or `null` for no-match. Throws on network/HTTP/JSON errors.
+- `scripts/test-places-lookup.js` — hardcoded 6-entry smoke test (5 real names, 1 deliberate non-match). Run as `node scripts/test-places-lookup.js` from droplet.
+
+**Param rename:** Originally specified `{ name, cityHint }`. Renamed to `{ name, city }` because "hint" implied something fancier than what we actually do (string concatenation into `textQuery`). No `locationBias` in v1.
+
+**Verification approach:** Run `node scripts/test-places-lookup.js` from the droplet, eyeball the matches. Burns 6 Google calls (free tier is 10,000/month so this is essentially free).
+
+**Nothing imports `places-lookup.js` yet.** Job 4 builds the resolver that wraps it.
