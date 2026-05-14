@@ -1,0 +1,160 @@
+/* =====================================================================
+   THEME: PILLS3  (outline edition)
+
+   Activated by: <body class="theme-pills3">  via ?theme=pills3
+                 or localStorage.setItem('kit.streamTheme', 'pills3')
+
+   Concept: monochrome outline pills. Black border, black text, transparent
+   background (sits cleanly on whatever bg is behind, including the warm
+   off-white #f0f0ee page bg, dark mode, anywhere). On hover the pill
+   inverts: solid black bg, white text.
+
+   Reference: pill conventions from contemporary e-commerce / editorial
+   sites (Yvon Lambert Editions, basic.space). Pure restraint — the
+   schema work is the brand; the chrome stays out of the way.
+   ===================================================================== */
+
+/* ---------- Stream layout ---------- */
+body.theme-pills3 .stream {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px 10px;
+  padding: 8px 0 0;
+  flex-direction: row;
+}
+
+/* Hide date/meta — pills3 is the wall view */
+body.theme-pills3 .stream__when,
+body.theme-pills3 .stream__meta,
+body.theme-pills3 .stream__pending {
+  display: none !important;
+}
+
+/* ---------- Each spot becomes an outline pill ----------
+   !important on borders because home.css default sets a bottom-border per
+   stream item; we need to override that to draw the full pill outline. */
+body.theme-pills3 .stream__item {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 0;
+  border-radius: 999px;
+  padding: 9px 18px;
+  border: 1px solid var(--ink, #1a1a1a) !important;
+  border-top: 1px solid var(--ink, #1a1a1a) !important;
+  border-bottom: 1px solid var(--ink, #1a1a1a) !important;
+  background: transparent;
+  color: var(--ink, #1a1a1a);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+}
+
+/* Inverted on hover: solid black fill, white text */
+body.theme-pills3 .stream__item:hover {
+  background: var(--ink, #1a1a1a);
+  color: var(--bg, #f0f0ee);
+  transform: translateY(-1px);
+}
+
+/* Body wrapper inside each pill */
+body.theme-pills3 .stream__body {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Name = sans, medium weight */
+body.theme-pills3 .stream__name {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tip = lighter weight + lower-case + a separator dot */
+body.theme-pills3 .stream__tip {
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  color: inherit;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.theme-pills3 .stream__tip::before {
+  content: '·';
+  margin: 0 6px 0 2px;
+  opacity: 0.5;
+}
+
+/* Tip-only spots (no place_name yet) — italic for "not a place yet" hint */
+body.theme-pills3 .stream__name.stream__name--tip {
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+/* Raw / unparsed (no place, no tip — just freeform text) — most muted */
+body.theme-pills3 .stream__name.stream__name--raw {
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+/* ---------- Stream head (the "Recently saved" label) ---------- */
+body.theme-pills3 .stream__head {
+  margin-bottom: 14px;
+}
+
+/* ---------- Pending/ghost saves (parse still running) ----------
+   Slightly dashed outline + lower opacity so they read as "in progress" */
+body.theme-pills3 .stream__item.stream__ghost,
+body.theme-pills3 .stream__item:not(.is-structured):not(:hover) {
+  border-style: dashed !important;
+  opacity: 0.55;
+}
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 720px) {
+  body.theme-pills3 .stream {
+    gap: 6px 8px;
+  }
+  body.theme-pills3 .stream__item {
+    padding: 7px 14px;
+  }
+  body.theme-pills3 .stream__name,
+  body.theme-pills3 .stream__tip {
+    font-size: 12px;
+  }
+}
+
+/* ---------- Dark mode ----------
+   Outline becomes light, hover fills with light + dark text. Inversion logic
+   mirrors light mode — the pill always inverts on hover regardless of theme. */
+body.dark.theme-pills3 .stream__item {
+  border-color: var(--ink, #e8e6df) !important;
+  color: var(--ink, #e8e6df);
+}
+body.dark.theme-pills3 .stream__item:hover {
+  background: var(--ink, #e8e6df);
+  color: var(--bg, #1a1a1a);
+}
