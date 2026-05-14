@@ -64,6 +64,29 @@ body.theme-pills3 .stream__item:hover {
   transform: translateY(-1px);
 }
 
+/* Override home.css default hover dimming on children — pills3 wants pure
+   invert (white text on black), not a half-state dim. The default rule
+   `.stream__item:hover .stream__name { color: var(--ink-2) }` would
+   otherwise win on specificity. */
+body.theme-pills3 .stream__item:hover .stream__name,
+body.theme-pills3 .stream__item:hover .stream__tip,
+body.theme-pills3 .stream__item:hover .stream__when {
+  color: var(--bg, #f0f0ee) !important;
+}
+
+/* "Want to go" dot — the default home.css blue dot (rendered as
+   `.stream__item.is-want .stream__name::after`) needs to be monochromed
+   for pills3. Both pills and pills2 themes suppress it entirely; pills3
+   keeps it as a meaningful "haven't been here yet" signal but flips it
+   black. On hover when the pill inverts, the dot flips white to stay
+   visible against the now-black background. */
+body.theme-pills3 .stream__item.is-want .stream__name::after {
+  background: var(--ink, #1a1a1a) !important;
+}
+body.theme-pills3 .stream__item.is-want:hover .stream__name::after {
+  background: var(--bg, #f0f0ee) !important;
+}
+
 /* Body wrapper inside each pill */
 body.theme-pills3 .stream__body {
   display: inline-flex;
