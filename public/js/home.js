@@ -448,8 +448,13 @@
       const variantClass = hasPlace ? ' is-structured' : (isTipOnly ? ' is-tip-only' : '');
       const wantClass = (s.been === false) ? ' is-want' : '';
       const catAttr = s.category ? ` data-category="${util.escapeHtml(s.category)}"` : '';
+      // data-gpid: Google place_id from the canonical places row, used by the
+      // click handler to open Google Maps. Spots without a resolved place
+      // (place_id null OR Google found no match) have no gpid attribute and
+      // the click handler treats them as no-op.
+      const gpidAttr = s.google_place_id ? ` data-gpid="${util.escapeHtml(s.google_place_id)}"` : '';
       const treatment = (parseInt(s.id, 10) % 7);
-      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}>
+      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}${gpidAttr}>
         <div class="stream__body">
           ${bodyHtml}
         </div>
@@ -814,12 +819,18 @@
   if (spotFsClose) spotFsClose.addEventListener('click', closeSpotEditor);
 
   // Click delegation: any stream row → open editor (skip ghost rows)
+  // Click on a stream item: if the spot has a resolved Google place_id,
+  // open it in Google Maps in a new tab. If not (place_id null — Google
+  // had no match, or AI returned no place_name, or it's a raw note),
+  // do nothing. Editing now lives on /spots/.
   streamEl.addEventListener('click', (e) => {
     const row = e.target.closest('.stream__item');
     if (!row) return;
     if (row.classList.contains('stream__ghost')) return;
-    const id = row.dataset.id;
-    if (id) openSpotEditor(id);
+    const gpid = row.dataset.gpid;
+    if (!gpid) return; // no Google place — silently no-op
+    const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(gpid)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   });
 
   async function commitSaveEdit() {
