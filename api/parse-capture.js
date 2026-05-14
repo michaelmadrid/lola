@@ -33,7 +33,9 @@ Return JSON only, no preamble or commentary. Schema:
 }
 
 Rules:
-- Try hard to extract a place_name. Even unusual or generic-sounding names like "Neighbourhood" can be real businesses.
+- Try hard to extract a place_name. Even unusual or generic-sounding names like "Neighbourhood", "March", "Early June", "Tuesday" can be real businesses. Restaurants and bars often have names that look like months, days, or common words.
+- When the user has bound this capture to a city (provided as context), they have explicitly told you they're saving a venue. Lean toward interpreting the input as a venue, not as a fragment, date, or descriptor. Only return null place_name if the input is clearly NOT a venue at all (pure descriptors like "great coffee", or random text like "tape your mouth").
+- Recognize the dash convention: when a user writes "X - Y" or "X — Y" or "X, Y", they usually mean X is the place name and Y is the tip. This holds even when X looks unusual ("Early June - great wine" → place_name "Early June", tip "great wine").
 - Leave fields null only if truly uncertain. Don't punish weird names.
 - DO NOT fabricate a place_name. If the input is purely descriptors (e.g. "great bakery & coffee" with no business name), set place_name to null and put the descriptors in tip.
 - DO NOT treat a city or country name as a place_name. "Copenhagen" by itself is not a venue.
@@ -71,6 +73,15 @@ Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan
 
 Input: Neighbourhood — best breakfast, Vegemite
 Output: {"place_name": "Neighbourhood", "city": null, "neighborhood": null, "country": null, "timezone": null, "category": "eat", "tip": "best breakfast, Vegemite"}
+
+Input (with bound city Paris): Early June - great natural wine and food
+Output: {"place_name": "Early June", "city": "Paris", "neighborhood": null, "country": "France", "timezone": "Europe/Paris", "category": "drink", "tip": "great natural wine and food"}
+
+Input (with bound city Paris): March, classic bistro
+Output: {"place_name": "March", "city": "Paris", "neighborhood": null, "country": "France", "timezone": "Europe/Paris", "category": "eat", "tip": "classic bistro"}
+
+Input (with bound city Berlin): Tuesday — coffee
+Output: {"place_name": "Tuesday", "city": "Berlin", "neighborhood": null, "country": "Germany", "timezone": "Europe/Berlin", "category": "coffee", "tip": "coffee"}
 
 Input: great bakery & coffee
 Output: {"place_name": null, "city": null, "neighborhood": null, "country": null, "timezone": null, "category": "coffee", "tip": "great bakery & coffee"}
@@ -114,9 +125,11 @@ async function parseCapture(text, opts = {}) {
   //     when the text doesn't specify a city).
   //   - "Comptoir Paris" captured while bound to Bali → city Paris (the text
   //     explicitly names Paris, overriding the bound default).
+  //   - "Early June" captured while bound to Paris → place_name "Early June",
+  //     not interpreted as a date (the bound city signals the user IS saving a venue).
   let userMessage = text.trim();
   if (opts.boundCityName) {
-    userMessage = `[Context: the user has bound this capture to "${opts.boundCityName}". Treat "${opts.boundCityName}" as the default city — return it unless the text explicitly and unambiguously names a different city. Names that are ALSO cities elsewhere (like "Copenhagen" or "Mosto") should be treated as place_names in ${opts.boundCityName}, not as different cities, unless the text gives a clear locational signal otherwise.]\n\n${userMessage}`;
+    userMessage = `[Context: the user has bound this capture to "${opts.boundCityName}". Treat "${opts.boundCityName}" as the default city — return it unless the text explicitly and unambiguously names a different city. Names that are ALSO cities elsewhere (like "Copenhagen" or "Mosto") should be treated as place_names in ${opts.boundCityName}, not as different cities, unless the text gives a clear locational signal otherwise. The user has chosen to bind this capture to a city — they are saving a venue. Treat ambiguous-looking input (date-like names, single common words) as venue names rather than fragments unless the text is clearly NOT about a place.]\n\n${userMessage}`;
   }
 
   try {

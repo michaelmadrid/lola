@@ -8,6 +8,20 @@ Append-only record of load-bearing decisions. Read before relitigating a settled
 
 ---
 
+## 2026-05-14 · AI prompt: bias toward "venue" when bound city present (Job 7c)
+
+Real-world testing in Paris surfaced that "Early June" (a real natural wine bar) failed to parse — AI returned `place_name: null` because the input looked date-like. The bound city (Paris) wasn't enough signal under the old prompt language.
+
+Tightened the prompt with two specific additions:
+1. **Bound-city semantics:** when the user has bound a capture to a city, they have explicitly signaled "I am saving a venue." AI should lean toward interpreting ambiguous input as a venue name, not as a fragment, date, or descriptor.
+2. **Dash convention recognition:** "X - Y" / "X — Y" / "X, Y" patterns should be read as "X is the place name, Y is the tip." Even when X looks unusual ("Early June", "March", "Tuesday").
+
+Added 3 explicit examples in the prompt: "Early June - great natural wine" (Paris), "March, classic bistro" (Paris), "Tuesday — coffee" (Berlin). All show date-like names being correctly parsed as venues when bound city is present.
+
+The conservative "return null when uncertain" guidance is preserved — the change is just bias-shifting in the presence of bound city context, not blanket aggression. "tape your mouth" still returns all null.
+
+Parallel work flagged but not yet built: **a two-field capture path** to POST /api/spots that accepts explicit `{ place_name, tip }` body fields. AI parse is skipped when structured fields are provided (the user already told us what's a place and what's a tip). The single-phrase path (current behavior) stays — it covers Apple Shortcut, browser extension, voice memo, and other "fast jot" surfaces. The two-field path complements rather than replaces. UI for two-field capture hasn't been built yet; the API surface change can land alongside that UI work.
+
 ## 2026-05-14 · `saves` → `spots` rename complete (Job 7b)
 
 The rename arc structural backbone is done. `saves` table renamed to `spots`. Route renamed. Frontend URLs, response keys, variable names, DOM IDs, CSS classes, doc references all aligned on `spot`/`spots` for the entity. Action-verb uses ("Save" button, "Saved" toast, `onSaved` callback) kept intact — they describe the action, not the entity.

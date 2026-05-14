@@ -398,6 +398,7 @@ Things flagged during the arc that aren't part of the arc itself. Future-Claude 
 - **Admin Blackbook UI/UX refresh.** Modal copy still says "Add place" / "Edit place" / "Delete this place permanently" after the rename. Cosmetic only — functionality fully works. Michael wants to do a broader admin UI/UX pass eventually. Don't drive-by patch this; it's part of a larger admin redesign.
 - **Admin Cities triage UI** (Job 8) — formal job, but flagging here too: status=1 rows that accumulated before Job 0.5 will need review. Not urgent because auto-creation is now dead, but the table will benefit from a curated review post-trip.
 - **Drop migration-023 columns from `saves`.** `google_place_id`, `google_lookup_status`, `google_lookup_at` were added in migration 023 as schema prep but are now superseded by the `place_id` FK from Job 5. Not actively used by new code. Drop in a future cleanup migration once we're sure no admin tooling references them. Low priority.
+- **Two-field capture API path.** Accept `{ place_name, tip }` body fields on POST /api/spots and skip AI parse entirely when both are present (user has explicitly told us the structure). The existing `{ text }` single-phrase path stays for Shortcut/extension/voice flows. Backend change is small (~10 lines in spots.js POST handler) but doesn't earn its keep until a UI for two-field capture exists. Defer until that UI work begins.
 
 ---
 
