@@ -15,7 +15,7 @@
   } catch (e) {}
 
   // ----- Stream theme (separate from dark/light) -----
-  // Stream themes change how saves are rendered (default list, pills, etc).
+  // Stream themes change how spots are rendered (default list, pills, etc).
   // Storage key: kit.streamTheme. Override with ?theme=NAME for one-off testing.
   // Recognized values: 'default' (current look, no class), 'pills'.
   // Body class added: theme-{name} when set to a non-default value.

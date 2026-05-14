@@ -311,7 +311,7 @@
       launcher: '#capture-launcher',
       launcherCity: '#capture-launcher-city-name',
       onSaved: ({ thenClose }) => {
-        // After a save: home injects ghost row, polls the stream
+        // After a spot save: home injects ghost row, polls the stream
         if (thenClose) {
           injectGhostRow();
           setTimeout(() => loadStream(), 1500);
@@ -352,9 +352,9 @@
 
   async function loadStream() {
     try {
-      const data = await api.get('/api/saves?limit=30');
-      renderStream(data.saves || []);
-      // If any ghost rows are visible (just-captured saves still being parsed by AI),
+      const data = await api.get('/api/spots?limit=30');
+      renderStream(data.spots || []);
+      // If any ghost rows are visible (just-captured spots still being parsed by AI),
       // schedule retry-fetches to replace them once parsing completes.
       schedulePendingRetries();
     } catch (err) {
@@ -362,7 +362,7 @@
     }
   }
 
-  // If pending/ghost saves exist in the stream, poll a few times to catch the
+  // If pending/ghost spots exist in the stream, poll a few times to catch the
   // AI-parse completion. Idempotent: clears any prior schedule first.
   let pendingRetryTimers = [];
   function schedulePendingRetries() {
@@ -377,19 +377,19 @@
     });
   }
 
-  function renderStream(saves) {
-    if (!saves.length) {
-      streamEl.innerHTML = '<div class="stream__empty">No saves yet. Type something above.</div>';
+  function renderStream(spots) {
+    if (!spots.length) {
+      streamEl.innerHTML = '<div class="stream__empty">No spots yet. Type something above.</div>';
       return;
     }
     const now = Date.now();
-    streamEl.innerHTML = saves.map(s => {
+    streamEl.innerHTML = spots.map(s => {
       const hasPlace = s.place_name && s.place_name.trim();
       const hasParseRun = s.ai_parsed_at || s.ai_parse_error;
       const createdMs = s.created_at ? new Date(s.created_at).getTime() : 0;
       const isRecent = (now - createdMs) < 30000; // 30s window
 
-      // If parse hasn't run yet AND save is fresh → still pending → render as ghost
+      // If parse hasn't run yet AND spot is fresh → still pending → render as ghost
       const isPendingFresh = !hasParseRun && isRecent;
 
       if (isPendingFresh) {
@@ -762,56 +762,56 @@
   } // end if (list) — todos parked pre-Europe26
 
   // ============ SAVE EDITOR ============
-  const saveEditor     = document.getElementById('save-editor');
-  const saveFsPlace    = document.getElementById('save-fs-place');
-  const saveFsTip      = document.getElementById('save-fs-tip');
-  const saveFsCat      = document.getElementById('save-fs-category');
-  const saveFsClose    = document.getElementById('save-editor-close');
-  const saveFsSave     = document.getElementById('save-fs-save');
-  const saveFsDelete   = document.getElementById('save-fs-delete');
-  const saveFsBeenYes  = document.getElementById('save-fs-been-yes');
-  const saveFsBeenNo   = document.getElementById('save-fs-been-no');
+  const spotEditor     = document.getElementById('spot-editor');
+  const spotFsPlace    = document.getElementById('spot-fs-place');
+  const spotFsTip      = document.getElementById('spot-fs-tip');
+  const spotFsCat      = document.getElementById('spot-fs-category');
+  const spotFsClose    = document.getElementById('spot-editor-close');
+  const spotFsSave     = document.getElementById('spot-fs-save');
+  const spotFsDelete   = document.getElementById('spot-fs-delete');
+  const spotFsBeenYes  = document.getElementById('spot-fs-been-yes');
+  const spotFsBeenNo   = document.getElementById('spot-fs-been-no');
 
-  let editingSaveId = null;
+  let editingSpotId = null;
   let editingBeen = true;
 
   function applyEditingBeen(val) {
     editingBeen = !!val;
-    if (saveFsBeenYes) saveFsBeenYes.dataset.active = editingBeen ? 'true' : 'false';
-    if (saveFsBeenNo)  saveFsBeenNo.dataset.active  = editingBeen ? 'false' : 'true';
+    if (spotFsBeenYes) spotFsBeenYes.dataset.active = editingBeen ? 'true' : 'false';
+    if (spotFsBeenNo)  spotFsBeenNo.dataset.active  = editingBeen ? 'false' : 'true';
   }
-  if (saveFsBeenYes) saveFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
-  if (saveFsBeenNo)  saveFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
+  if (spotFsBeenYes) spotFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
+  if (spotFsBeenNo)  spotFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
-  function openSaveEditor(saveId) {
-    api.get('/api/saves?limit=200').then(data => {
-      const save = (data.saves || []).find(s => s.id === parseInt(saveId, 10));
-      if (!save) {
-        toast('Save not found');
+  function openSpotEditor(spotId) {
+    api.get('/api/spots?limit=200').then(data => {
+      const spot = (data.spots || []).find(s => s.id === parseInt(spotId, 10));
+      if (!spot) {
+        toast('Spot not found');
         return;
       }
-      editingSaveId = save.id;
-      saveFsPlace.value = save.place_name || '';
-      saveFsTip.value = save.tip || '';
-      saveFsCat.value = save.category || '';
-      applyEditingBeen(typeof save.been === 'boolean' ? save.been : true);
+      editingSpotId = spot.id;
+      spotFsPlace.value = spot.place_name || '';
+      spotFsTip.value = spot.tip || '';
+      spotFsCat.value = spot.category || '';
+      applyEditingBeen(typeof spot.been === 'boolean' ? spot.been : true);
 
-      saveEditor.classList.add('is-open');
+      spotEditor.classList.add('is-open');
       document.body.style.overflow = 'hidden';
-      setTimeout(() => saveFsPlace.focus(), 50);
+      setTimeout(() => spotFsPlace.focus(), 50);
     }).catch(err => {
-      console.error('openSaveEditor', err);
-      toast('Could not load save');
+      console.error('openSpotEditor', err);
+      toast('Could not load spot');
     });
   }
 
-  function closeSaveEditor() {
-    saveEditor.classList.remove('is-open');
+  function closeSpotEditor() {
+    spotEditor.classList.remove('is-open');
     document.body.style.overflow = '';
-    editingSaveId = null;
+    editingSpotId = null;
   }
 
-  if (saveFsClose) saveFsClose.addEventListener('click', closeSaveEditor);
+  if (spotFsClose) spotFsClose.addEventListener('click', closeSpotEditor);
 
   // Click delegation: any stream row → open editor (skip ghost rows)
   streamEl.addEventListener('click', (e) => {
@@ -819,36 +819,36 @@
     if (!row) return;
     if (row.classList.contains('stream__ghost')) return;
     const id = row.dataset.id;
-    if (id) openSaveEditor(id);
+    if (id) openSpotEditor(id);
   });
 
   async function commitSaveEdit() {
-    if (!editingSaveId) return;
+    if (!editingSpotId) return;
     const body = {
-      place_name: saveFsPlace.value.trim() || null,
-      tip:        saveFsTip.value.trim() || null,
-      category:   saveFsCat.value || null,
+      place_name: spotFsPlace.value.trim() || null,
+      tip:        spotFsTip.value.trim() || null,
+      category:   spotFsCat.value || null,
       been:       editingBeen,
     };
     try {
-      await api.patch('/api/saves/' + editingSaveId, body);
-      closeSaveEditor();
+      await api.patch('/api/spots/' + editingSpotId, body);
+      closeSpotEditor();
       await loadStream();
     } catch (err) {
       console.error('save edit', err);
       toast(err.message || 'Save failed');
     }
   }
-  if (saveFsSave) saveFsSave.addEventListener('click', commitSaveEdit);
+  if (spotFsSave) spotFsSave.addEventListener('click', commitSaveEdit);
 
   // Delete (replaces archive + reparse for V0.6)
-  if (saveFsDelete) {
-    saveFsDelete.addEventListener('click', async () => {
-      if (!editingSaveId) return;
+  if (spotFsDelete) {
+    spotFsDelete.addEventListener('click', async () => {
+      if (!editingSpotId) return;
       if (!confirm('Delete this save? This cannot be undone.')) return;
       try {
-        await api.delete('/api/saves/' + editingSaveId);
-        closeSaveEditor();
+        await api.delete('/api/spots/' + editingSpotId);
+        closeSpotEditor();
         await loadStream();
       } catch (err) {
         toast(err.message || 'Delete failed');
@@ -858,8 +858,8 @@
 
   // Esc + Cmd+Enter
   document.addEventListener('keydown', (e) => {
-    if (!saveEditor.classList.contains('is-open')) return;
-    if (e.key === 'Escape') { e.preventDefault(); closeSaveEditor(); }
+    if (!spotEditor.classList.contains('is-open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeSpotEditor(); }
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); commitSaveEdit(); }
   });
 

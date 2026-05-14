@@ -17,7 +17,7 @@
      PATCH  /api/guides/:id/sections/:sectionId                      update section
      DELETE /api/guides/:id/sections/:sectionId                      delete section
 
-     POST   /api/guides/:id/sections/:sectionId/items                add save to section
+     POST   /api/guides/:id/sections/:sectionId/items                add spot to section
      PATCH  /api/guides/:id/sections/:sectionId/items/:itemId        update item
      DELETE /api/guides/:id/sections/:sectionId/items/:itemId        remove item
 
@@ -185,14 +185,14 @@ router.get('/:id', authenticate, async (req, res) => {
     );
     const sections = sectionsResult.rows;
 
-    // ALL items in the guide, flat. Hydrated with save data.
+    // ALL items in the guide, flat. Hydrated with spot data.
     // Includes attached_cities so the client can display per-spot locality.
     const itemsResult = await pool.query(
-      `SELECT gsi.id, gsi.guide_id, gsi.section_id, gsi.save_id, gsi.note, gsi.position,
+      `SELECT gsi.id, gsi.guide_id, gsi.section_id, gsi.spot_id, gsi.note, gsi.position,
               gsi.created_at,
-              s.place_name, s.tip AS save_tip, s.category, s.been, s.text AS save_text
+              s.place_name, s.tip AS spot_tip, s.category, s.been, s.text AS spot_text
          FROM guide_section_items gsi
-         JOIN saves s ON s.id = gsi.save_id
+         JOIN spots s ON s.id = gsi.spot_id
         WHERE gsi.guide_id = $1
         ORDER BY gsi.position ASC, gsi.created_at ASC`,
       [guide.id]
@@ -412,9 +412,9 @@ router.delete('/:id/sections/:sectionId', authenticate, async (req, res) => {
 // SECTION ITEMS — nested under a section
 // =====================================================================
 
-// POST /api/guides/:id/sections/:sectionId/items — add a save to a section
-// Body: { save_id, note?, position? }
-// Validates save_id belongs to the same user.
+// POST /api/guides/:id/sections/:sectionId/items — add a spot to a section
+// Body: { spot_id, note?, position? }
+// Validates spot_id belongs to the same user.
 router.post('/:id/sections/:sectionId/items', authenticate, async (req, res) => {
   try {
     const guide = await loadOwnedGuide(req, res);
@@ -422,18 +422,18 @@ router.post('/:id/sections/:sectionId/items', authenticate, async (req, res) => 
     const section = await loadSection(res, req.params.sectionId, guide.id);
     if (!section) return;
 
-    const { save_id, note, position } = req.body || {};
-    const saveId = parseInt(save_id, 10);
-    if (!saveId) return res.status(400).json({ error: 'save_id required' });
+    const { spot_id, note, position } = req.body || {};
+    const spotId = parseInt(spot_id, 10);
+    if (!spotId) return res.status(400).json({ error: 'spot_id required' });
 
-    // Verify save belongs to this user
-    const saveCheck = await pool.query(
-      'SELECT id, user_id FROM saves WHERE id = $1',
-      [saveId]
+    // Verify spot belongs to this user
+    const spotCheck = await pool.query(
+      'SELECT id, user_id FROM spots WHERE id = $1',
+      [spotId]
     );
-    if (!saveCheck.rows.length) return res.status(404).json({ error: 'Save not found' });
-    if (saveCheck.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Save belongs to another user' });
+    if (!spotCheck.rows.length) return res.status(404).json({ error: 'Spot not found' });
+    if (spotCheck.rows[0].user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Spot belongs to another user' });
     }
 
     // Default position = end of section
@@ -447,10 +447,10 @@ router.post('/:id/sections/:sectionId/items', authenticate, async (req, res) => 
     }
 
     const result = await pool.query(
-      `INSERT INTO guide_section_items (guide_id, section_id, save_id, note, position)
+      `INSERT INTO guide_section_items (guide_id, section_id, spot_id, note, position)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [guide.id, section.id, saveId, note || null, pos]
+      [guide.id, section.id, spotId, note || null, pos]
     );
     await pool.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
 
@@ -544,8 +544,8 @@ router.delete('/:id/sections/:sectionId/items/:itemId', authenticate, async (req
 // V1.5 — FLAT ITEMS (ungrouped, items belong to guide directly)
 // =====================================================================
 
-// POST /api/guides/:id/items — add a save to the guide WITHOUT a section.
-// V1.5 default flow. Body: { save_id, note?, position? }.
+// POST /api/guides/:id/items — add a spot to the guide WITHOUT a section.
+// V1.5 default flow. Body: { spot_id, note?, position? }.
 // section_id is set to NULL so the item is "ungrouped" until/unless
 // a section is later assigned.
 router.post('/:id/items', authenticate, async (req, res) => {
@@ -553,26 +553,26 @@ router.post('/:id/items', authenticate, async (req, res) => {
     const guide = await loadOwnedGuide(req, res);
     if (!guide) return;
 
-    const { save_id, note, position } = req.body || {};
-    const saveId = parseInt(save_id, 10);
-    if (!saveId) return res.status(400).json({ error: 'save_id required' });
+    const { spot_id, note, position } = req.body || {};
+    const spotId = parseInt(spot_id, 10);
+    if (!spotId) return res.status(400).json({ error: 'spot_id required' });
 
-    // Verify save belongs to this user
-    const saveCheck = await pool.query(
-      'SELECT id, user_id FROM saves WHERE id = $1',
-      [saveId]
+    // Verify spot belongs to this user
+    const spotCheck = await pool.query(
+      'SELECT id, user_id FROM spots WHERE id = $1',
+      [spotId]
     );
-    if (!saveCheck.rows.length) return res.status(404).json({ error: 'Save not found' });
-    if (saveCheck.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Save belongs to another user' });
+    if (!spotCheck.rows.length) return res.status(404).json({ error: 'Spot not found' });
+    if (spotCheck.rows[0].user_id !== req.user.id) {
+      return res.status(403).json({ error: 'Spot belongs to another user' });
     }
 
-    // Prevent duplicate adds — same save in the same guide. The schema
+    // Prevent duplicate adds — same spot in the same guide. The schema
     // doesn't enforce uniqueness (intentional, in case sections later allow
-    // the same save to appear in multiple sections), so we check here.
+    // the same spot to appear in multiple sections), so we check here.
     const dup = await pool.query(
-      'SELECT id FROM guide_section_items WHERE guide_id = $1 AND save_id = $2 LIMIT 1',
-      [guide.id, saveId]
+      'SELECT id FROM guide_section_items WHERE spot_id = $2 LIMIT 1',
+      [guide.id, spotId]
     );
     if (dup.rows.length) {
       return res.status(409).json({ error: 'This spot is already in the guide.', code: 'duplicate' });
@@ -589,10 +589,10 @@ router.post('/:id/items', authenticate, async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO guide_section_items (guide_id, section_id, save_id, note, position)
+      `INSERT INTO guide_section_items (guide_id, section_id, spot_id, note, position)
        VALUES ($1, NULL, $2, $3, $4)
        RETURNING *`,
-      [guide.id, saveId, note || null, pos]
+      [guide.id, spotId, note || null, pos]
     );
     await pool.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
 
@@ -722,12 +722,12 @@ router.get('/_public/:slug', softAuthenticate, async (req, res) => {
       [guide.id]
     );
 
-    // All items, hydrated with save data
+    // All items, hydrated with spot data
     const itemsRes = await pool.query(
       `SELECT gsi.id, gsi.section_id, gsi.note, gsi.position,
-              s.place_name, s.tip AS save_tip, s.category
+              s.place_name, s.tip AS spot_tip, s.category
          FROM guide_section_items gsi
-         JOIN saves s ON s.id = gsi.save_id
+         JOIN spots s ON s.id = gsi.spot_id
         WHERE gsi.guide_id = $1
         ORDER BY gsi.position ASC, gsi.created_at ASC`,
       [guide.id]

@@ -1153,12 +1153,12 @@
 /* =========================================================
    SAVE EDITOR (fullscreen modal for editing a save)
    ========================================================= */
-.save-fs__head {
+.spot-fs__head {
   /* Close button + title in head bar. Close on the left, title beside it. */
   justify-content: flex-start;
   gap: 14px;
 }
-.save-fs__title {
+.spot-fs__title {
   font-family: var(--sans);
   font-size: var(--text-body);
   font-weight: 400;
@@ -1166,26 +1166,26 @@
   letter-spacing: -0.005em;
   margin: 0;
 }
-.save-fs__inner {
+.spot-fs__inner {
   max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 22px;
 }
-.save-fs__field {
+.spot-fs__field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   position: relative;
 }
-.save-fs__label {
+.spot-fs__label {
   font-family: var(--mono);
   font-size: var(--text-tiny);
   color: var(--ink-3);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.save-fs__captured {
+.spot-fs__captured {
   font-size: var(--text-body);
   color: var(--ink-2);
   line-height: 1.5;
@@ -1194,14 +1194,14 @@
   border-radius: var(--r-tight);
   letter-spacing: -0.005em;
 }
-.save-fs__readonly {
+.spot-fs__readonly {
   font-size: var(--text-body);
   color: var(--ink-2);
   padding: 6px 0;
 }
-.save-fs__input,
-.save-fs__textarea,
-.save-fs__select {
+.spot-fs__input,
+.spot-fs__textarea,
+.spot-fs__select {
   font-family: var(--sans);
   font-size: var(--text-body);
   color: var(--ink);
@@ -1214,21 +1214,21 @@
   width: 100%;
   transition: background var(--ease-quick);
 }
-.save-fs__input:focus,
-.save-fs__textarea:focus,
-.save-fs__select:focus { background: var(--surface-2); }
-.save-fs__textarea { resize: vertical; min-height: 56px; line-height: 1.45; }
-.save-fs__select { appearance: none; cursor: pointer; }
+.spot-fs__input:focus,
+.spot-fs__textarea:focus,
+.spot-fs__select:focus { background: var(--surface-2); }
+.spot-fs__textarea { resize: vertical; min-height: 56px; line-height: 1.45; }
+.spot-fs__select { appearance: none; cursor: pointer; }
 
 /* Been / want-to-go segmented toggle */
-.save-fs__been-row {
+.spot-fs__been-row {
   display: inline-flex;
   background: var(--surface);
   border-radius: var(--r-pill);
   padding: 3px;
   gap: 0;
 }
-.save-fs__been-pill {
+.spot-fs__been-pill {
   font-family: var(--sans);
   font-size: var(--text-small);
   font-weight: 500;
@@ -1241,15 +1241,15 @@
   letter-spacing: -0.005em;
   transition: background var(--ease-quick), color var(--ease-quick);
 }
-.save-fs__been-pill[data-active="true"] {
+.spot-fs__been-pill[data-active="true"] {
   background: var(--bg);
   color: var(--ink);
   box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }
-.save-fs__been-pill[data-active="false"]:hover { color: var(--ink); }
+.spot-fs__been-pill[data-active="false"]:hover { color: var(--ink); }
 
 /* City autocomplete suggestions */
-.save-fs__suggest {
+.spot-fs__suggest {
   position: absolute;
   top: 100%;
   left: 0;
@@ -1262,8 +1262,8 @@
   max-height: 260px;
   overflow-y: auto;
 }
-.save-fs__suggest:empty { display: none; }
-.save-fs__suggest-item {
+.spot-fs__suggest:empty { display: none; }
+.spot-fs__suggest-item {
   display: block;
   width: 100%;
   text-align: left;
@@ -1276,9 +1276,9 @@
   cursor: pointer;
   letter-spacing: -0.005em;
 }
-.save-fs__suggest-item:hover { background: var(--surface); }
-.save-fs__suggest-item--create { color: var(--accent); border-top: 1px solid var(--rule); }
-.save-fs__suggest-meta {
+.spot-fs__suggest-item:hover { background: var(--surface); }
+.spot-fs__suggest-item--create { color: var(--accent); border-top: 1px solid var(--rule); }
+.spot-fs__suggest-meta {
   font-family: var(--mono);
   font-size: var(--text-tiny);
   color: var(--ink-3);
@@ -1287,13 +1287,13 @@
 }
 
 /* Footer actions — Delete (left, ghost destructive) + Save (right, primary btn) */
-.save-fs__foot {
+.spot-fs__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
-.save-fs__danger {
+.spot-fs__danger {
   font-family: var(--sans);
   font-size: var(--text-small);
   color: var(--ink-3);
@@ -1304,7 +1304,7 @@
   letter-spacing: -0.005em;
   transition: color var(--ease-quick);
 }
-.save-fs__danger:hover { color: var(--danger); }
+.spot-fs__danger:hover { color: var(--danger); }
 
 /* ===== Mini-month: REMOVED in C6.5.
    Calendar removed from home — no calendar in home page UI for now. ===== */

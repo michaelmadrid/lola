@@ -205,7 +205,7 @@
 
     try {
       const body = { text, city_id: pickedCity.id, city_name: pickedCity.name, been };
-      const result = await api.post('/api/saves', body);
+      const result = await api.post('/api/spots', body);
       const count = result.count || 1;
 
       if (thenClose) {
@@ -213,7 +213,7 @@
         isSubmitting = false;
         submitContinue.disabled = false;
         submitClose.disabled = false;
-        toast(count === 1 ? 'Saved' : `${count} saves added`);
+        toast(count === 1 ? 'Saved' : `${count} spots added`);
         // Redirect after short delay so user sees the toast
         const redirectTimer = setTimeout(() => {
           window.location.href = '/';

@@ -21,7 +21,7 @@ The kit data model in one place. Tables, key columns, relationships, and the "wh
 
 ## Tables
 
-### `users`
+###  (was  pre-Job 7b, May 14 2026)`users`
 
 Predates the migrations in this folder (created earlier). Holds the human accounts.
 
@@ -38,7 +38,7 @@ Columns confirmed by later migrations:
 
 **Note:** kit itself becomes a user row of `kind=org`. Curated content (bookshops in migration 019, etc.) is attributed to that user. This is the affiliation pattern — user content can be "by" Michael personally or "by" the kit org.
 
-### `households`
+###  (was  pre-Job 7b, May 14 2026)`households`
 
 Migration 010.
 
@@ -55,7 +55,7 @@ A group of users who share trip visibility. Michael + Siska are in the same hous
 - `householdMemberIds(userId)` resolves all user IDs in the same household (always includes self)
 - `canRead(tripId, userId)` and `canEdit(tripId, userId)` use household membership
 
-### `user_kinds`
+###  (was  pre-Job 7b, May 14 2026)`user_kinds`
 
 Migration 012. Reference table for kinds of user.
 
@@ -67,7 +67,7 @@ CREATE TABLE user_kinds (
 -- Values: person, curator, org, publication
 ```
 
-### `cities`
+###  (was  pre-Job 7b, May 14 2026)`cities`
 
 Predates these migrations. Core columns:
 - `id` — pk
@@ -79,21 +79,21 @@ Predates these migrations. Core columns:
   - `1` = auto-created (from capture, AI-detected)
   - `2` = pending review (flagged for admin attention)
 
-**Find-or-create pattern:** `api/routes/saves.js` defines `findOrCreateCity(name, country, timezone)`. Case-insensitive name match; on miss, creates with `status=1`, slug derived from name (with random suffix on collision). Backfills `timezone` / `country` on existing rows when AI provides them.
+**Find-or-create pattern:** `api/routes/spots.js` defines `findOrEnrichCity(name, country, timezone)`. Case-insensitive name match; on miss, creates with `status=1`, slug derived from name (with random suffix on collision). Backfills `timezone` / `country` on existing rows when AI provides them.
 
-**Bali special case:** Migration 018 cleaned up Bali area. Villages like Canggu, Pererenan, Seseh, Berawa, Uluwatu, Seminyak, Kuta, Sanur, Ubud, Jimbaran were demoted from being cities to being `saves.neighborhood` strings. Bali is the canonical city; villages live as neighborhoods on the saves themselves.
+**Bali special case:** Migration 018 cleaned up Bali area. Villages like Canggu, Pererenan, Seseh, Berawa, Uluwatu, Seminyak, Kuta, Sanur, Ubud, Jimbaran were demoted from being cities to being `spots.neighborhood` strings. Bali is the canonical city; villages live as neighborhoods on the spots themselves.
 
 **Parked (post-trip):** Bigger schema reshape — ~~rename existing `places` to `library`/`blackbook`~~ ✅ done as `blackbook` (Job 1, 2026-05-12), new `places` table with Google `place_id` (Job 2), curated `cities` with `region|city` type flag, geometry-based spot-to-city resolution. See DECISIONS.md and CLAUDE_HANDOFF.md "Parked design decisions."
 
-### `blackbook` (formerly `places`)
+###  (was  pre-Job 7b, May 14 2026)`blackbook` (formerly `places`)
 
 Predates these migrations as `places`. Renamed to `blackbook` in migration 028 (Job 1, May 12, 2026) to align with the user-facing surface name. Holds curated/admin-managed entries (bookshops, galleries, etc) — kit's editorial blackbook of vetted spots. NOT canonical real-world locations. (Job 2 introduces a new `places` table for that.)
 
 Route: `/api/blackbook`. List response: `{ blackbook: [...] }`. Single response: `{ entry: ... }`.
 
-### `places` (new, May 12 2026)
+###  (was  pre-Job 7b, May 14 2026)`places` (new, May 12 2026)
 
-Created in migration 029 (Job 2). Populated via the resolver (Job 4) called from the capture pipeline (Job 5). Canonical real-world locations resolved via Google Places API (New). One row per unique Google `place_id`. Saves point at it via `saves.place_id` (added in Job 5).
+Created in migration 029 (Job 2). Populated via the resolver (Job 4) called from the capture pipeline (Job 5). Canonical real-world locations resolved via Google Places API (New). One row per unique Google `place_id`. Saves point at it via `spots.place_id` (added in Job 5).
 
 Columns:
 - `id` — SERIAL PK
@@ -113,7 +113,7 @@ Indexes: `places_city_id_idx`, `places_primary_type_idx`, `places_primary_type_l
 
 **What's NOT stored:** `types[]` (the array of all type tags) — deferred until a use case appears. `photos`, `hours`, `phone`, `website` — Google ToS restricts long-term caching of these. Fetch on-demand if a UI ever needs them.
 
-### `trips`
+###  (was  pre-Job 7b, May 14 2026)`trips`
 
 Predates these migrations. Soft-delete added by 010, status added by 026.
 
@@ -135,7 +135,7 @@ Columns:
 
 **Trip segments / itinerary:** Lives in a related table (predates these migrations; not visible in this migration folder). The itinerary structure used by `t.html` / trip.html overlay comes from those segment rows.
 
-### `saves`
+### `spots` (was `saves` pre-Job 7b, May 14 2026)
 
 The main spot/save table. Predates these migrations; significantly extended by 011–023.
 
@@ -167,35 +167,35 @@ Google Places integration (migrations 023 + 030):
 - `google_lookup_at TIMESTAMP` (migration 023) — historical column; not used by the new resolver flow
 - `place_id INT REFERENCES places(id) ON DELETE SET NULL` (migration 030, Job 5) — **THIS is the active column.** Set by the resolver after AI parse. Null when Google has no match, when AI parse failed, or when capture had no parsed place_name.
 
-**Note:** the migration-023 columns are still on saves but unused by the new code. They'll be dropped in a future cleanup migration once we're sure no admin tooling references them. Don't write to them.
+**Note:** the migration-023 columns are still on spots but unused by the new code. They'll be dropped in a future cleanup migration once we're sure no admin tooling references them. Don't write to them.
 
 Columns DROPPED over time:
 - `city_id` (016) — replaced by the `save_cities` join table
-- `trip_id` (016) — saves are no longer attached to a single trip
+- `trip_id` (016) — spots are no longer attached to a single trip
 - `address`, `address_source` (017) — AI was conservatively returning null; no real workflow used them
 
 **Capture flow** (see ARCHITECTURE.md for full detail):
 1. User submits capture text
 2. Save row inserted immediately with `text` filled, other fields null
-3. AI parse fires in background (non-blocking) — `parseAndUpdate(saveId, text, opts)` in saves.js
+3. AI parse fires in background (non-blocking) — `parseAndUpdate(spotId, text, opts)` in spots.js
 4. On success, fills `place_name`, `category`, `tip`, `country`, `neighborhood`, sets `ai_parsed_at`
-5. If a city was detected, `findOrCreateCity` runs and `save_cities` join row is inserted
+5. If a city was detected, `findOrEnrichCity` runs and `save_cities` join row is inserted
 
 ### `save_cities` (DROPPED in migration 032, Job 7a, May 13 2026)
 
 Migration 011 originally created this as a many-to-many between saves and cities. Migration 018 (Bali neighborhood cleanup) made the "many" side empty in practice — every save in current data has exactly 0 or 1 city. The table was architectural dead weight.
 
-Migration 032 (Job 7a) collapsed it: added `saves.city_id` as a direct FK, backfilled from the join table, dropped `save_cities`. See DECISIONS.md 2026-05-13.
+Migration 032 (Job 7a) collapsed it: added `spots.city_id` as a direct FK, backfilled from the join table, dropped `save_cities`. See DECISIONS.md 2026-05-13.
 
-Replacement: **`saves.city_id INT REFERENCES cities(id) ON DELETE SET NULL`**, indexed via `saves_city_id_idx`.
+Replacement: **`spots.city_id INT REFERENCES cities(id) ON DELETE SET NULL`**, indexed via `spots_city_id_idx`.
 
 If a real multi-city use case emerges later, the join table can be reintroduced additively.
 
-### `notes`
+###  (was  pre-Job 7b, May 14 2026)`notes`
 
 Predates these migrations. Day-level or city-level freeform notes (used by `api/routes/notes.js`).
 
-### `todos`
+###  (was  pre-Job 7b, May 14 2026)`todos`
 
 Migration 009. Notes-app style todos.
 
@@ -215,9 +215,9 @@ Indexed on `user_id`, `archived_at`, `completed_at`, and `(user_id, sort_order)`
 
 Completed items stay visible the day they're completed, then auto-archive the next day on first fetch. Removed from the home page in Phase 4 (May 10) — code preserved, UI gone. May return as a module.
 
-### Guides tables (migration 024)
+###  (was  pre-Job 7b, May 14 2026)Guides tables (migration 024)
 
-Four tables. Architecture: a guide is a curated subset of saves, organized into named sections.
+Four tables. Architecture: a guide is a curated subset of spots, organized into named sections.
 
 #### `guides`
 ```sql
@@ -256,7 +256,7 @@ CREATE TABLE guide_sections (
 CREATE TABLE guide_section_items (
   id SERIAL PRIMARY KEY,
   section_id INT NOT NULL REFERENCES guide_sections(id) ON DELETE CASCADE,
-  save_id INT NOT NULL REFERENCES saves(id) ON DELETE CASCADE,
+  spot_id INT NOT NULL REFERENCES spots(id) ON DELETE CASCADE,
   note TEXT,           -- guide-specific override of the save's tip
   position INT NOT NULL DEFAULT 0,
   guide_id INT REFERENCES guides(id) ON DELETE CASCADE,  -- added by 025
@@ -268,7 +268,7 @@ CREATE TABLE guide_section_items (
 
 **Editing a save updates it everywhere** — across all guides. Saves are canonical; guides are views.
 
-**Hard delete cascades:** Deleting a guide removes its sections + items but **never** the underlying saves.
+**Hard delete cascades:** Deleting a guide removes its sections + items but **never** the underlying spots.
 
 **Status semantics:**
 - `'draft'` — private to author, no public access
@@ -277,7 +277,7 @@ CREATE TABLE guide_section_items (
 
 Slug is unique across the table; required when status='published'.
 
-### `phrases`
+###  (was  pre-Job 7b, May 14 2026)`phrases`
 
 Migration 027. The phrasebook ("Juice" app) data.
 
@@ -305,7 +305,7 @@ users
 trips
   └─ created_by ──→ users
 
-saves
+spots
   ├─ user_id ──→ users
   ├─ city_id ──→ cities                     (direct FK since Job 7a, was M:N via save_cities)
   └─ place_id ──→ places                    (canonical Google-resolved location)
@@ -321,7 +321,7 @@ guide_sections
 
 guide_section_items
   ├─ section_id ──→ guide_sections
-  ├─ save_id ──→ saves         (canonical spot reference)
+  ├─ spot_id ──→ spots         (canonical spot reference)
   └─ guide_id ──→ guides       (denormalized for query convenience, added by 025)
 
 todos       ──→ users
@@ -333,7 +333,7 @@ phrases     ──→ users
 
 ## Key query patterns
 
-### List trips visible to me (mine + household)
+###  (was  pre-Job 7b, May 14 2026)List trips visible to me (mine + household)
 ```sql
 SELECT t.*, u.name AS owner_name, (t.created_by = $self) AS is_owner
 FROM trips t
@@ -343,17 +343,17 @@ WHERE t.created_by = ANY($household_ids)
 ORDER BY COALESCE(t.date_start, t.created_at) DESC;
 ```
 
-### My saves with cities resolved
+### My spots with cities resolved
 ```sql
 -- Post Job 7a (May 13 2026): direct FK, no join table
 SELECT s.*, c.name AS city_name, c.slug AS city_slug
-FROM saves s
+FROM spots s
 LEFT JOIN cities c ON s.city_id = c.id
 WHERE s.user_id = $1
 ORDER BY s.created_at DESC;
 ```
 
-### Public guide by slug
+###  (was  pre-Job 7b, May 14 2026)Public guide by slug
 ```sql
 SELECT g.*, u.display_name AS author
 FROM guides g
@@ -361,7 +361,7 @@ JOIN users u ON g.user_id = u.id
 WHERE g.slug = $1 AND g.status = 'published';
 ```
 
-### Guide with all its sections + items
+###  (was  pre-Job 7b, May 14 2026)Guide with all its sections + items
 ```sql
 SELECT gs.*,
        json_agg(json_build_object(
@@ -386,7 +386,7 @@ ORDER BY gs.position;
 - **Always add an index** when introducing a column that will be queried.
 - **Comment migrations heavily.** The top comment block should explain why, not just what.
 - **Soft-delete where it matters.** Trips are soft-deleted (graveyard). Saves and guides hard-delete.
-- **Cascade thoughtfully.** Saves cascade-delete from users. Guide section items cascade from sections and from saves (deleting a save removes it from guides — by design, the canonical reference is gone).
+- **Cascade thoughtfully.** Spots cascade-delete from users. Guide section items cascade from sections and from spots (deleting a spot removes it from guides — by design, the canonical reference is gone).
 
 ---
 
@@ -398,7 +398,7 @@ See DECISIONS.md and CLAUDE_HANDOFF.md for full context. Headlines:
 2. ~~**New `places` table** for canonical Google-resolved locations with `place_id`, `lat`, `lng`, etc.~~ ✅ Shipped 2026-05-12 (Job 2, empty for now, populated via Jobs 3-5)
 3. **Curated `cities` rework** — region/city type flag, editorial governance, geometry-based assignment (not Google's locality field)
 4. **`trip_cities` join table** — explicit ordered cities per trip with date ranges
-5. **`saves` → `spots` rename** — long-deferred, do it together with the places reshape
+5. ~~**`saves` → `spots` rename**~~ ✅ Shipped 2026-05-14 (Job 7b)
 6. **`api_keys` table** for revocable labeled API keys (replaces JWT-in-Shortcut for iOS save flow)
 
 These move together as one focused post-trip session. Don't piecemeal.

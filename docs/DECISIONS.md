@@ -8,6 +8,14 @@ Append-only record of load-bearing decisions. Read before relitigating a settled
 
 ---
 
+## 2026-05-14 · `saves` → `spots` rename complete (Job 7b)
+
+The rename arc structural backbone is done. `saves` table renamed to `spots`. Route renamed. Frontend URLs, response keys, variable names, DOM IDs, CSS classes, doc references all aligned on `spot`/`spots` for the entity. Action-verb uses ("Save" button, "Saved" toast, `onSaved` callback) kept intact — they describe the action, not the entity.
+
+Why this matters: the codebase now reads consistently. Future-Claude (or future-me) reading `editingSpotId` next to `/api/spots` understands immediately. No more "is this old or new naming" mental tax. Half-renamed code rots fast; this prevents that.
+
+Implication for new work: any new feature touching spots uses `spot`/`spots` terminology. Migration files retain their original `saves` references (historical, frozen). The locked decision is consistent terminology going forward.
+
 ## 2026-05-13 · Dropped many-to-many spot↔city join table in favor of single FK (Job 7a)
 
 The `save_cities` join table existed from migration 011 to allow a save to be attached to multiple cities. The original use case was "spot belongs to both Bali and Canggu" — when Bali villages were modeled as cities. That model was retired in migration 018 (Bali neighborhood cleanup, May 9 2026) which demoted villages to a `neighborhood` string column on saves.

@@ -14,7 +14,7 @@ Every modal, full-screen sheet, popover, and drawer in kit. Includes DOM anchor,
 |---|---|---|---|---|
 | Trip itinerary | `.modal.itin-fs.is-open` | `home.css` (`.itin-fs__*`) | `trip.js`, `t.html` inline | Tap a trip card |
 | Capture (new spot) | `.capture-fs.is-open` | `home.css` (`.capture-fs__*`) | `capture-overlay.js`, `capture.js` | Capture button, `+` |
-| Save edit | `.modal.save-fs.is-open` | `home.css` (`.save-fs__*`) | `spots.js`, `home.js` | Tap a saved spot |
+| Spot edit | `.modal.spot-fs.is-open` | `home.css` (`.spot-fs__*`) | `spots.js`, `home.js` | Tap a saved spot |
 | Year picker | `.year-overlay.is-open` | `home.css` (`.year-overlay__*`) | `home.js` | Year link in stream |
 | User panel | `.user-panel.is-open` | `shell.css` (`.user-panel__*`) | `shell.js` | Avatar tap |
 | Time popover | `.time-popover.is-open` | `shell.css` (`.time-popover__*`) | `time.js` | Header time click (desktop only) |
@@ -123,7 +123,7 @@ Defined in STYLE_GUIDE.md. Repeated here because every overlay must respect it:
 
 **Sub-overlay:** `.capture-fs__city-popover.is-open` — pops up when "In [city]" button is tapped. Lets user bind the capture to a city (passed to AI parser as context — see SCHEMA.md / parse-capture.js).
 
-**Been toggle:** `.capture-fs__been-btn[data-been="true|false"]` — `true` (default) for places-visited, `false` for want-to-go. Sets `saves.been` boolean.
+**Been toggle:** `.capture-fs__been-btn[data-been="true|false"]` — `true` (default) for places-visited, `false` for want-to-go. Sets `spots.been` boolean.
 
 **Reuse:** The phrasebook also uses `.capture-fs__*` classes for its capture surface — see `public/phrases/capture/index.html`. Editing these classes in home.css updates both.
 
@@ -131,9 +131,9 @@ Defined in STYLE_GUIDE.md. Repeated here because every overlay must respect it:
 
 ## Save edit overlay
 
-**DOM:** `<div class="modal save-fs is-open">…</div>` — direct child of `<body>`.
+**DOM:** `<div class="modal spot-fs is-open">…</div>` — direct child of `<body>`.
 
-**CSS:** `public/css/home.css`, lines ~1156+ (`.save-fs__*`).
+**CSS:** `public/css/home.css`, lines ~1156+ (`.spot-fs__*`).
 
 **JS:** `public/js/spots.js`, `public/js/home.js`.
 
@@ -141,13 +141,13 @@ Defined in STYLE_GUIDE.md. Repeated here because every overlay must respect it:
 
 **Markup shape:**
 ```html
-<div class="modal save-fs is-open">
-  <header class="save-fs__head">
-    <h1 class="save-fs__title">Della Terra</h1>
+<div class="modal spot-fs is-open">
+  <header class="spot-fs__head">
+    <h1 class="spot-fs__title">Della Terra</h1>
   </header>
-  <div class="save-fs__inner">
-    <div class="save-fs__field">
-      <label class="save-fs__label">Tip</label>
+  <div class="spot-fs__inner">
+    <div class="spot-fs__field">
+      <label class="spot-fs__label">Tip</label>
       <textarea class="textarea">…</textarea>
     </div>
     <!-- more fields -->
@@ -156,13 +156,13 @@ Defined in STYLE_GUIDE.md. Repeated here because every overlay must respect it:
 ```
 
 **Sub-classes:**
-- `.save-fs__head` — title block
-- `.save-fs__title` — spot name (editable)
-- `.save-fs__inner` — body container
-- `.save-fs__field` — single edit field wrapper
-- `.save-fs__label` — uppercase tiny mono label (same pattern as `.field__label`)
+- `.spot-fs__head` — title block
+- `.spot-fs__title` — spot name (editable)
+- `.spot-fs__inner` — body container
+- `.spot-fs__field` — single edit field wrapper
+- `.spot-fs__label` — uppercase tiny mono label (same pattern as `.field__label`)
 
-**Reuse note:** Mentioned in `public/css/spots.css` header comment that spots reuses `.save-fs*` classes from home.css. Don't move these to spots.css without checking all consumers.
+**Reuse note:** Mentioned in `public/css/spots.css` header comment that spots reuses `.spot-fs*` classes from home.css. Don't move these to spots.css without checking all consumers.
 
 ---
 
@@ -308,7 +308,7 @@ These look identical when both fully visible. They are not interchangeable — t
 ### `.modal` vs `.*-fs`
 
 - `.modal` is the generic full-screen overlay class in shell.css. Provides positioning, display toggling, head/body/foot structure.
-- `.modal.*-fs` (`itin-fs`, `save-fs`) are specific overlays that use `.modal` as base and add their own styling.
+- `.modal.*-fs` (`itin-fs`, `spot-fs`) are specific overlays that use `.modal` as base and add their own styling.
 - `.capture-fs` is **standalone** — it does NOT extend `.modal`. It has its own full-screen positioning.
 - `.year-overlay`, `.user-panel`, `.time-popover` are all standalone overlay roots too.
 

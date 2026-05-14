@@ -309,7 +309,7 @@
     if (captFsSubmitContinue) captFsSubmitContinue.disabled = true;
     try {
       const body = { text, city_id: pickedCity.id, city_name: pickedCity.name, been };
-      const result = await api.post('/api/saves', body);
+      const result = await api.post('/api/spots', body);
       const count = result.count || 1;
       isSubmitting = false;
       if (captFsSubmitClose)    captFsSubmitClose.disabled = false;
@@ -319,7 +319,7 @@
       autoGrow();
       // Toast
       if (typeof window.toast === 'function') {
-        window.toast(count === 1 ? 'Saved' : `${count} saves`);
+        window.toast(count === 1 ? 'Saved' : `${count} spots`);
       }
       // Page-specific callback
       if (typeof opts.onSaved === 'function') {

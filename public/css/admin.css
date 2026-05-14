@@ -40,7 +40,7 @@
   transition: transform var(--ease-medium), color var(--ease-quick);
 }
 
-/* admin table — places, cities, saves */
+/* admin table — places, cities, spots */
 .admin-table {
   width: 100%;
 }
@@ -134,7 +134,7 @@
 @media (max-width: 720px) { .admin-search { width: 100%; } }
 
 /* ===== Saves admin: bulk-action bar + checkbox column ===== */
-.saves-head, .saves-row {
+.spots-head, .spots-row {
   grid-template-columns: 36px minmax(0, 4fr) minmax(0, 2fr) 90px 130px;
 }
 .col-check {
@@ -149,14 +149,14 @@
   accent-color: var(--accent);
 }
 @media (max-width: 720px) {
-  .saves-head { display: none !important; }
-  .saves-row {
+  .spots-head { display: none !important; }
+  .spots-row {
     grid-template-columns: 30px 1fr 110px;
     gap: 8px;
   }
   /* Hide tags + when columns on mobile to save space */
-  .saves-row > span:nth-child(3),
-  .saves-row > span:nth-child(4) { display: none; }
+  .spots-row > span:nth-child(3),
+  .spots-row > span:nth-child(4) { display: none; }
 }
 
 .bulk-bar {

@@ -1,5 +1,5 @@
 /* =========================================================
-   admin-spots.js — review captures with bulk delete (saves table)
+   admin-spots.js — review captures with bulk delete (spots table)
    ========================================================= */
 
 (async function () {
@@ -8,15 +8,15 @@
     return;
   }
 
-  const listEl     = document.getElementById('saves-list');
+  const listEl     = document.getElementById('spots-list');
   const checkAll   = document.getElementById('check-all');
   const bulkBar    = document.getElementById('bulk-bar');
   const bulkCount  = document.getElementById('bulk-count');
   const bulkDelete = document.getElementById('bulk-delete');
   const bulkCancel = document.getElementById('bulk-cancel');
 
-  let saves = [];
-  // Set of selected save ids (numbers)
+  let spots = [];
+  // Set of selected spot ids (numbers)
   const selected = new Set();
 
   function toast(msg) {
@@ -30,10 +30,10 @@
 
   async function load() {
     try {
-      const data = await api.get('/api/saves?limit=200');
-      saves = data.saves || [];
+      const data = await api.get('/api/spots?limit=200');
+      spots = data.spots || [];
       // Cleanse selection of any ids that no longer exist
-      const idsNow = new Set(saves.map(s => s.id));
+      const idsNow = new Set(spots.map(s => s.id));
       for (const id of selected) if (!idsNow.has(id)) selected.delete(id);
       render();
       updateBulkBar();
@@ -43,14 +43,14 @@
   }
 
   function render() {
-    if (!saves.length) {
-      listEl.innerHTML = '<div class="list-empty">No saves yet.</div>';
+    if (!spots.length) {
+      listEl.innerHTML = '<div class="list-empty">No spots yet.</div>';
       return;
     }
-    listEl.innerHTML = saves.map(s => `
-      <div class="admin-table__row saves-row" data-id="${s.id}">
+    listEl.innerHTML = spots.map(s => `
+      <div class="admin-table__row spots-row" data-id="${s.id}">
         <span class="col-check">
-          <input type="checkbox" class="row-check" data-id="${s.id}"${selected.has(s.id) ? ' checked' : ''} aria-label="Select save">
+          <input type="checkbox" class="row-check" data-id="${s.id}"${selected.has(s.id) ? ' checked' : ''} aria-label="Select spot">
         </span>
         <span style="word-break:break-word">${util.escapeHtml(s.text)}</span>
         <span style="font-size:13px;color:var(--ink-3)">${(s.tags || []).map(t => '#' + util.escapeHtml(t)).join(' · ')}</span>
@@ -75,9 +75,9 @@
     // Single-row delete (kept for one-off deletes)
     listEl.querySelectorAll('.del-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Delete this save?')) return;
+        if (!confirm('Delete this spot?')) return;
         try {
-          await api.delete('/api/saves/' + btn.dataset.id);
+          await api.delete('/api/spots/' + btn.dataset.id);
           selected.delete(parseInt(btn.dataset.id, 10));
           await load();
         } catch (err) {
@@ -101,7 +101,7 @@
 
   function syncCheckAllState() {
     if (!checkAll) return;
-    const total = saves.length;
+    const total = spots.length;
     const sel = selected.size;
     if (sel === 0) {
       checkAll.checked = false;
@@ -118,7 +118,7 @@
   if (checkAll) {
     checkAll.addEventListener('change', () => {
       if (checkAll.checked) {
-        saves.forEach(s => selected.add(s.id));
+        spots.forEach(s => selected.add(s.id));
       } else {
         selected.clear();
       }
@@ -140,7 +140,7 @@
     bulkDelete.addEventListener('click', async () => {
       const ids = Array.from(selected);
       if (!ids.length) return;
-      const word = ids.length === 1 ? 'save' : 'saves';
+      const word = ids.length === 1 ? 'spot' : 'spots';
       if (!confirm(`Delete ${ids.length} ${word}? This cannot be undone.`)) return;
 
       // Disable button while deleting
@@ -151,7 +151,7 @@
       const failures = [];
       await Promise.all(ids.map(async (id) => {
         try {
-          await api.delete('/api/saves/' + id);
+          await api.delete('/api/spots/' + id);
         } catch (err) {
           failures.push(id);
         }

@@ -53,8 +53,8 @@
   let guide = null;
   let items = [];          // flat list — V1.5 doesn't use sections
   let allCities = [];
-  let allSaves = [];
-  let selectedSet = new Set(); // save_ids in the guide (fast toggle lookup)
+  let allSpots = [];
+  let selectedSet = new Set(); // spot_ids in the guide (fast toggle lookup)
   let isPreview = false;
 
   // ---------- Init ----------
@@ -72,7 +72,7 @@
       const data = await api.get('/api/guides/' + guideId);
       guide = data.guide;
       items = data.items || [];
-      selectedSet = new Set(items.map(it => it.save_id));
+      selectedSet = new Set(items.map(it => it.spot_id));
       hydrateEditor();
       loadingEl.hidden = true;
       editorEl.hidden = false;
@@ -210,7 +210,7 @@
         closePicker(cityPopover);
         const ok = await saveGuideField({ city_id: id });
         if (ok) {
-          allSaves = []; // bust cache
+          allSpots = []; // bust cache
           await loadSavesAndRenderPicker();
         }
       });
@@ -249,10 +249,10 @@
 
   // ---------- Spot picker ----------
   async function ensureSaves() {
-    if (allSaves.length) return;
+    if (allSpots.length) return;
     try {
-      const data = await api.get('/api/saves?limit=500');
-      allSaves = (data.saves || []).filter(s => s.place_name && s.place_name.trim());
+      const data = await api.get('/api/spots?limit=500');
+      allSpots = (data.spots || []).filter(s => s.place_name && s.place_name.trim());
     } catch (err) {
       console.error('ensureSaves', err);
     }
@@ -260,7 +260,7 @@
 
   function getSpotsForCurrentCity() {
     if (!guide.city_id) return [];
-    return allSaves.filter(s => {
+    return allSpots.filter(s => {
       if (!s.attached_cities) return false;
       return s.attached_cities.some(c => c.id === guide.city_id);
     });
@@ -321,8 +321,8 @@
 
     pickerListEl.querySelectorAll('.ge-pick-row').forEach(btn => {
       btn.addEventListener('click', () => {
-        const saveId = parseInt(btn.dataset.saveId, 10);
-        toggleSpot(saveId, btn);
+        const spotId = parseInt(btn.dataset.spotId, 10);
+        toggleSpot(spotId, btn);
       });
     });
   }
@@ -337,12 +337,12 @@
   }
 
   // ---------- Toggle (optimistic) ----------
-  async function toggleSpot(saveId, rowEl) {
-    const wasSelected = selectedSet.has(saveId);
+  async function toggleSpot(spotId, rowEl) {
+    const wasSelected = selectedSet.has(spotId);
     if (wasSelected) {
-      const item = items.find(it => it.save_id === saveId);
+      const item = items.find(it => it.spot_id === spotId);
       if (!item) return;
-      selectedSet.delete(saveId);
+      selectedSet.delete(spotId);
       items = items.filter(it => it.id !== item.id);
       if (rowEl) rowEl.classList.remove('is-selected');
       updatePickerCount();
@@ -352,7 +352,7 @@
         await api.delete('/api/guides/' + guideId + '/items/' + item.id);
         showSaveState('Saved');
       } catch (err) {
-        selectedSet.add(saveId);
+        selectedSet.add(spotId);
         items.push(item);
         if (rowEl) rowEl.classList.add('is-selected');
         updatePickerCount();
@@ -360,27 +360,27 @@
         showSaveState('Failed — try again', true);
       }
     } else {
-      selectedSet.add(saveId);
-      const placeholder = { id: 'pending-' + saveId, save_id: saveId, _pending: true };
+      selectedSet.add(spotId);
+      const placeholder = { id: 'pending-' + spotId, spot_id: spotId, _pending: true };
       items.push(placeholder);
       if (rowEl) rowEl.classList.add('is-selected');
       updatePickerCount();
       updateCityButton();
       showSaveState('Saving…', true);
       try {
-        const data = await api.post('/api/guides/' + guideId + '/items', { save_id: saveId });
-        const sourceSave = allSaves.find(s => s.id === saveId);
+        const data = await api.post('/api/guides/' + guideId + '/items', { spot_id: spotId });
+        const sourceSpot = allSpots.find(s => s.id === spotId);
         const realItem = {
           ...data.item,
-          place_name: sourceSave ? sourceSave.place_name : null,
-          save_tip: sourceSave ? sourceSave.tip : null,
-          category: sourceSave ? sourceSave.category : null,
+          place_name: sourceSpot ? sourceSpot.place_name : null,
+          save_tip: sourceSpot ? sourceSpot.tip : null,
+          category: sourceSpot ? sourceSpot.category : null,
         };
         items = items.filter(it => it.id !== placeholder.id);
         items.push(realItem);
         showSaveState('Saved');
       } catch (err) {
-        selectedSet.delete(saveId);
+        selectedSet.delete(spotId);
         items = items.filter(it => it.id !== placeholder.id);
         if (rowEl) rowEl.classList.remove('is-selected');
         updatePickerCount();
@@ -403,7 +403,7 @@
         const toAdd = spots.filter(s => !selectedSet.has(s.id));
         for (const s of toAdd) {
           try {
-            const data = await api.post('/api/guides/' + guideId + '/items', { save_id: s.id });
+            const data = await api.post('/api/guides/' + guideId + '/items', { spot_id: s.id });
             const realItem = {
               ...data.item,
               place_name: s.place_name,
@@ -417,11 +417,11 @@
           }
         }
       } else {
-        const toRemove = items.filter(it => spots.some(s => s.id === it.save_id));
+        const toRemove = items.filter(it => spots.some(s => s.id === it.spot_id));
         for (const it of toRemove) {
           try {
             await api.delete('/api/guides/' + guideId + '/items/' + it.id);
-            selectedSet.delete(it.save_id);
+            selectedSet.delete(it.spot_id);
             items = items.filter(x => x.id !== it.id);
           } catch (err) {
             console.warn('selectAll remove failed', it.id, err.message);

@@ -2,13 +2,13 @@ const router = require('express').Router();
 const pool = require('../db');
 const { authenticate, softAuthenticate } = require('../auth');
 
-// Refresh saves' city cache after CRUD on cities
-let _savesRefresh = null;
-function refreshSavesCache() {
-  if (_savesRefresh === null) {
-    try { _savesRefresh = require('./saves').refreshCitiesCache; } catch (e) { _savesRefresh = () => {}; }
+// Refresh spots' city cache after CRUD on cities
+let _spotsRefresh = null;
+function refreshSpotsCache() {
+  if (_spotsRefresh === null) {
+    try { _spotsRefresh = require('./spots').refreshCitiesCache; } catch (e) { _spotsRefresh = () => {}; }
   }
-  try { _savesRefresh && _savesRefresh(); } catch (e) {}
+  try { _spotsRefresh && _spotsRefresh(); } catch (e) {}
 }
 
 function slugify(s) {
@@ -89,7 +89,7 @@ router.post('/', authenticate, async (req, res) => {
       [name, slug, country || null, parent_id || null, !!is_region,
        lat || null, lon || null, timezone || null, region || null, language || null]
     );
-    refreshSavesCache();
+    refreshSpotsCache();
     res.json({ city: result.rows[0] });
   } catch (err) {
     if (err.code === '23505') return res.status(400).json({ error: 'City with this name or slug already exists' });
@@ -116,7 +116,7 @@ router.patch('/:id', authenticate, async (req, res) => {
       params
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'City not found' });
-    refreshSavesCache();
+    refreshSpotsCache();
     res.json({ city: result.rows[0] });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -127,7 +127,7 @@ router.patch('/:id', authenticate, async (req, res) => {
 router.delete('/:id', authenticate, async (req, res) => {
   try {
     await pool.query('DELETE FROM cities WHERE id = $1', [req.params.id]);
-    refreshSavesCache();
+    refreshSpotsCache();
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

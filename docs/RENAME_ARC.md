@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 13, 2026 (Job 7a shipped from Paris)
-**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6, 7a shipped. The schema is now `saves.city_id` direct FK; `save_cities` join table dropped. Job 7b (saves → spots rename) is next — most invasive job in the arc.
+**Last updated:** May 14, 2026 (Job 7b shipped from Paris)
+**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6, 7a, 7b shipped. The rename arc is structurally complete — `saves` is now `spots` everywhere, including DB table, route, file, frontend URLs, response keys, variable names, DOM IDs, CSS classes. Remaining: Job 8 (admin city triage UI), Job 9 (featured-only audit). Both are governance, not structural.
 
 ---
 
@@ -36,8 +36,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **5** | Wire capture pipeline + `place_id` column | ✅ Shipped 2026-05-12 | Migration 030, `api/routes/saves.js` updated | done |
 | **6** | Backfill existing saves | ✅ Shipped 2026-05-12 | New script `scripts/backfill-place-ids.js` | done |
 | **7a** | Collapse join table | ✅ Shipped 2026-05-13 | Migration 032, `api/routes/saves.js` updated | done |
-| **7b** | `saves` → `spots` rename | **NEXT** | Migration, every route file, every frontend fetch | ~2 hours focused |
-| **8** | Admin city triage UI | Planned | New admin page + endpoint | ~2 hours |
+| **7b** | `saves` → `spots` rename | ✅ Shipped 2026-05-14 | Migration 033, full rename across backend + frontend + HTML + CSS + docs | done |
+| **8** | Admin city triage UI | **NEXT** | New admin page + endpoint | ~2 hours |
 | **9** | Featured-only audit | Planned | Audit all city pickers, fix any that show non-featured | ~30 min |
 
 ---
@@ -271,35 +271,72 @@ Done in 56s.
 
 ---
 
-### Job 7b — `saves` → `spots` rename
+### Job 7b — `saves` → `spots` rename ✅ Shipped 2026-05-14
 
-**Goal:** The big one. Everything that says `saves` becomes `spots`.
+**Goal:** Everything that says `saves` becomes `spots`. Deep rename across DB, backend, frontend, HTML, CSS, and docs.
 
-**Migration (`032_rename_saves_to_spots.sql`):**
-```sql
-ALTER TABLE saves RENAME TO spots;
-ALTER INDEX saves_pkey RENAME TO spots_pkey;
--- Rename every other index: saves_user_id_idx, saves_city_id_idx, saves_place_id_idx, etc.
--- Rename FK constraints
-```
+**What shipped:**
 
-**Code changes (mechanical, lots of files):**
-- Rename `api/routes/saves.js` → `api/routes/spots.js`
-- Update queries: `FROM saves` → `FROM spots`
-- Update mount in `server.js`: `/api/saves` → `/api/spots`
-- Frontend: every `fetch('/api/saves...')` → `/api/spots`
-- UI strings: "saved spots" → "spots", "Add a save" → "Add a spot" (some already done)
-- Variable names in JS (`save`, `saves`, `saveId` → `spot`, `spots`, `spotId`) — code clarity
-- Update STYLE_GUIDE, ARCHITECTURE, SCHEMA, CLAUDE_HANDOFF
-- Update this file
+*Database (migration 033):*
+- `ALTER TABLE saves RENAME TO spots`
+- Renamed PK (`saves_pkey` → `spots_pkey`)
+- Renamed 8 indexes (`saves_*_idx` → `spots_*_idx`)
+- Renamed 3 FK constraints on spots (user_id, city_id, place_id)
+- `guide_section_items.save_id` → `spot_id` column rename
+- Renamed FK constraint and index on guide_section_items.spot_id
+- Idempotent
+
+*Backend:*
+- `api/routes/saves.js` → `api/routes/spots.js` (file rename, full contents rewritten with `saves` → `spots` throughout)
+- `api/routes/guides.js` — all `FROM saves` / `JOIN saves` → `FROM spots` / `JOIN spots`; all `save_id` columns/body fields → `spot_id`; comments and error messages updated
+- `api/routes/cities.js` — `require('./saves')` → `require('./spots')`; `_savesRefresh`/`refreshSavesCache` → `_spotsRefresh`/`refreshSpotsCache`
+- `server.js` mount: `/api/saves` → `/api/spots`
+
+*Frontend (6 JS files):*
+- `spots.js`, `admin-spots.js`, `capture-overlay.js`, `capture.js`, `home.js`, `guides-edit.js`
+- All URLs `/api/saves` → `/api/spots`
+- All response key reads `data.saves` / `data.save` → `data.spots` / `data.spot`
+- Variable renames: `editingSaveId` → `editingSpotId`, `allSaves` → `allSpots`, `saveEditor` → `spotEditor`, `saveFs*` → `spotFs*`, function names `openSaveEditor` → `openSpotEditor`, etc.
+- Body field `{ save_id }` → `{ spot_id }` in guides-edit.js API calls
+- User-facing strings updated where they referred to the entity ("Save not found" → "Spot not found", "No saves yet" → "No spots yet"). Action verbs ("Saved", "Save failed") kept as-is.
+- One comment in `shell.js`
+
+*HTML (1 file — others didn't reference these):*
+- `index.html` — DOM IDs `save-editor` → `spot-editor`, `save-fs-*` → `spot-fs-*`, class `save-fs` → `spot-fs`
+- `admin/spots.html` — id `saves-list` → `spots-list`, class `saves-head` → `spots-head`
+
+*CSS:*
+- `admin.css` — `.saves-head, .saves-row` → `.spots-head, .spots-row`
+- `home.css` — all `.save-fs__*` → `.spot-fs__*` (28 references)
+
+*Docs:*
+- `OVERLAYS.md` — modal `save-fs` references → `spot-fs`, column `saves.been` → `spots.been`
+- `SCHEMA.md` — updated to reflect spots table
+- `DECISIONS.md` — entry logged
+
+*Files to delete locally before commit:*
+- `api/routes/saves.js` (renamed file — Git won't auto-delete on add)
+- `public/saves.html` (orphaned page, no longer used)
+
+**Naming kept (action verb, not entity):**
+- HTML "Save" button text
+- `onSaved` callback names in capture-overlay
+- "Saved" / "Save failed" toast messages
+- `save-btn` CSS class for form submit buttons
+- `.save-btn--danger` in trip.css
+- localStorage.lola.token (auth, unrelated)
+- Migration file names (historical)
+
+**Restart needed:** Yes. Migration runs first, then `pm2 restart kit`.
 
 **Verify after deploy:**
-- Capture works
-- Stream loads
-- Spot edit overlay works
-- All admin tooling works
-
-**Restart needed:** Yes. Do this with focus. Not on the plane.
+- Browser hard-refresh, watch console for ReferenceErrors
+- Capture a new spot → confirm it lands in `spots` table
+- Open home stream → confirm spots render
+- Open a spot's edit modal → confirm fields populate and save
+- Open spots page → confirm list loads
+- Open admin spots page → confirm list loads
+- Open a guide in edit mode → confirm items render and add/remove works
 
 ---
 
@@ -514,3 +551,42 @@ Shipped from Paris. Backfilled clean, dropped `save_cities` table, rewrote saves
 5. Confirm `\dt save_cities` returns "relation does not exist"
 
 **This sets up 7b as a pure rename.** With save_cities gone and the response shape unchanged, the next job (saves → spots) is just identifier renaming across the codebase. No more compound surgery.
+
+### Job 7b — `saves` → `spots` rename (2026-05-14)
+
+Shipped from Paris. The biggest single job in the arc. Renamed everything that referred to the entity (table, route, file, URLs, response keys, variable names, DOM IDs, CSS classes, doc references) from `save`/`saves` to `spot`/`spots`. Kept action-verb uses ("Save" button, "Saved" toasts) intact.
+
+**Files shipped:**
+- `migrations/033_rename_saves_to_spots.sql` (note: 033, not 032 — 032 was Job 7a)
+- `api/routes/spots.js` (was `saves.js`, renamed and rewritten)
+- `api/routes/guides.js` updated
+- `api/routes/cities.js` updated
+- `server.js` mount
+- 6 frontend JS files
+- 2 HTML files (`index.html`, `admin/spots.html`)
+- 2 CSS files (`admin.css`, `home.css`)
+- 3 docs (`RENAME_ARC.md`, `OVERLAYS.md`, `SCHEMA.md`)
+- 1 decision logged in `DECISIONS.md`
+
+**Manual deletes after applying zip:**
+- `api/routes/saves.js` (renamed away)
+- `public/saves.html` (orphaned page)
+
+**Approach:** Used careful sed patterns with word-boundary anchors, then verified each file with grep before moving on. Kept action-verb uses ("Saved", "Save failed", `onSaved` callback names) intact since those describe the action, not the entity. Hard break — no backwards compat shim since kit has one user (Michael).
+
+**Verification:** Browser hard-refresh after deploy, watch console for ReferenceError. Each major surface tested:
+- Capture flow → new spot lands in `spots` table with city_id + place_id
+- Home stream renders
+- Spot edit modal opens and saves
+- Spots page list + filters
+- Admin spots page list + bulk delete
+- Guides edit page adds/removes items
+
+**Real flag — what we DIDN'T rename:**
+- HTML "Save" button text (action verb, user-facing)
+- `localStorage.lola.token` (auth, unrelated)
+- Migration file names (historical, leave alone)
+- The `.save-btn` and `.save-btn--danger` CSS classes (form submit buttons across the app, action verb)
+- Comments where "save" means the action (e.g. "save to localStorage")
+
+Future cleanup possible (no rush): rename remaining `data.spots[0]` array-shape to a flat `spot` field on responses (eliminate the 0-or-1-item array preserved in 7a). Would require another small frontend pass. Parked.
