@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 14, 2026 (Job 7b shipped from Paris)
-**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6, 7a, 7b shipped. The rename arc is structurally complete — `saves` is now `spots` everywhere, including DB table, route, file, frontend URLs, response keys, variable names, DOM IDs, CSS classes. Remaining: Job 8 (admin city triage UI), Job 9 (featured-only audit). Both are governance, not structural.
+**Last updated:** May 14, 2026 (Job 9 shipped from Paris)
+**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6, 7a, 7b, 7c, 9 shipped. The rename arc structural work is COMPLETE — schema clean, capture pipeline wired, naming consistent end-to-end, user-facing pickers locked to featured cities. Only Job 8 (admin city triage UI) remains, and that's parked to land alongside future admin UI redesign.
 
 ---
 
@@ -37,8 +37,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **6** | Backfill existing saves | ✅ Shipped 2026-05-12 | New script `scripts/backfill-place-ids.js` | done |
 | **7a** | Collapse join table | ✅ Shipped 2026-05-13 | Migration 032, `api/routes/saves.js` updated | done |
 | **7b** | `saves` → `spots` rename | ✅ Shipped 2026-05-14 | Migration 033, full rename across backend + frontend + HTML + CSS + docs | done |
-| **8** | Admin city triage UI | **NEXT** | New admin page + endpoint | ~2 hours |
-| **9** | Featured-only audit | Planned | Audit all city pickers, fix any that show non-featured | ~30 min |
+| **8** | Admin city triage UI | Parked (lands with future admin UI redesign) | New admin page + endpoint | ~2 hours |
+| **9** | Featured-only audit | ✅ Shipped 2026-05-14 | `api/routes/cities.js`, `public/js/admin-cities.js` | done |
 
 ---
 
@@ -340,35 +340,56 @@ Done in 56s.
 
 ---
 
-### Job 8 — Admin city triage UI
+### Job 8 — Admin city triage UI (Parked, lands with future admin UI redesign)
 
-**Goal:** Manage status=1 cities that accumulated before Job 0.5 (or that show up via admin-add for cities that need adding). Admin promotes to status=3 (featured), merges into existing featured city, or rejects.
+**Goal:** Manage status=1 cities that accumulated before Job 0.5 (or via the un-locked-down POST /api/cities). Admin promotes to status=3 (featured), merges into existing featured city, or rejects.
 
-**Components:**
-- New admin page `/admin/cities` listing status=1 cities with: name, country, save count, created date, suggested action
-- Endpoint `PUT /api/admin/cities/:id/status` to promote/demote
-- Endpoint `POST /api/admin/cities/:id/merge` body `{ into_id }` to reassign all saves to the target city and delete the source
+**Why parked:** Admin triage UI pairs naturally with the broader admin UI/UX redesign Michael plans. Building it now would mean throwing it away when that redesign lands. After Job 9, the status=1 cities are invisible to users anyway (the GET /api/cities default filters them out), so they're inert orphans, not active pollution.
+
+**Components for whenever it lands:**
+- New admin page listing status=1 cities with: name, country, spot count, created date, suggested action
+- Use existing `PATCH /api/cities/:id` with `{ status: 3 }` to promote (Job 9 added status to the allowed list)
+- Endpoint `POST /api/admin/cities/:id/merge` body `{ into_id }` to reassign all spots to the target city and delete the source
 - Endpoint to manually add a city at status=3 (so new cities can enter the curated set without auto-creation)
+- Lock down `POST /api/cities` to admin-only at the same time (currently open to any authenticated user)
 
-**Restart needed:** Yes
+**Restart needed when shipped:** Yes
 
 ---
 
-### Job 9 — Featured-only audit
+### Job 9 — Featured-only audit ✅ Shipped 2026-05-14
 
-**Goal:** Every user-facing city picker should filter `WHERE status = 3`. Verify each one.
+**Goal:** Every user-facing city picker should see only featured (status=3) cities.
 
-**Surfaces to audit:**
-- Capture overlay's "In [city]" picker (probably already does this)
-- Spots filter by city
-- Trip city selection
-- Guide city selection
-- Settings home city picker
-- Tracked cities (clocks) picker
+**Approach chosen: reverse the default.** Instead of patching every consumer to add a status filter, made `GET /api/cities` return featured-only BY DEFAULT and require admin pages to explicitly opt in with `?include_all=true`. Safer for any future surface that forgets to filter.
 
-**For each:** check the backing query, confirm `status = 3` is in the WHERE clause. Fix any that aren't.
+**What shipped:**
+- `api/routes/cities.js` — `GET /api/cities` now filters `WHERE c.status = 3` by default
+  - `?include_all=true` lifts the filter (returns all statuses)
+  - `?status=N` explicit filter for a specific status (takes precedence)
+  - `GET /api/cities/:idOrSlug` (single fetch) unchanged — looking up by ID is always intentional
+  - Also added `status` to the PATCH allowed-list, so cities can be promoted/demoted via existing PATCH endpoint without waiting for Job 8 admin UI. Cheap forward-compat win.
+- `public/js/admin-cities.js` — opted in with `?include_all=true` so admin can still see all cities
 
-**Restart needed:** Maybe, depending on what changes
+**Surfaces that benefit automatically (no code touched):**
+- `capture.js`, `capture-overlay.js` — capture city pickers
+- `settings.html` — home city picker
+- `guides-edit.js` — guide city dropdown
+- `trip.js` — trip city picker (one note: it also has a "create new city" affordance that creates at status=1 — see parked TODO below)
+- `jetlag.js` — jetlag city picker
+- `time.js` — tracked cities clocks
+- `admin-blackbook.js` — blackbook entry's city picker (also wants featured-only, which is now the default)
+
+**Parked TODO surfaced during this work:**
+- `POST /api/cities` is authenticated but NOT admin-gated. Users via trip.js and capture.js can create cities at status=1. These won't appear in user-facing pickers anymore (Job 9 default), so they're effectively invisible orphans rather than active pollution — but they still accumulate in the DB. Proper fix is to lock down POST/PATCH/DELETE to admin-only and replace user-facing "create city" UI with a "request a city" flow. Bundle with Job 8 (admin triage UI) when that work begins.
+
+**Restart needed:** Yes (backend changed).
+
+**Verify after deploy:**
+- Open `/admin/cities` — should still show all cities including status=1
+- Open `/settings` → home city picker — should show only featured cities
+- Open capture overlay → "In [city]" — should show only featured cities
+- Test API directly: `curl https://kit.summer-holiday.com/api/cities` should return featured only; `curl https://kit.summer-holiday.com/api/cities?include_all=true` should return everything
 
 ---
 

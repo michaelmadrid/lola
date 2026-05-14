@@ -24,7 +24,7 @@
 
   async function load() {
     try {
-      const data = await api.get('/api/cities');
+      const data = await api.get('/api/cities?include_all=true');
       cities = data.cities || [];
       render();
     } catch (err) {

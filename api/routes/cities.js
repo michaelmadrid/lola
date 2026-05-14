@@ -20,14 +20,25 @@ function slugify(s) {
     .substring(0, 80);
 }
 
-// GET /api/cities — list all cities
+// GET /api/cities — list cities
+//
+// DEFAULT BEHAVIOR (Job 9, May 14 2026): returns ONLY featured (status=3) cities.
+// This is the safe default for user-facing pickers (capture, settings, trip,
+// guides, jetlag, time). Per the strict cities policy (Job 0.5), only admin-
+// curated cities should appear in user-facing surfaces.
+//
+// Admin pages MUST opt in to see all cities by passing ?include_all=true.
+// Currently only public/js/admin-cities.js uses this.
+//
 // Optional query params:
 //   ?country=France
 //   ?parent_id=89  (for neighborhoods)
 //   ?search=par   (name LIKE)
+//   ?include_all=true  (admin-only: bypass the featured filter; returns all statuses)
+//   ?status=1|2|3      (admin-only: explicit status filter; takes precedence over include_all default)
 router.get('/', softAuthenticate, async (req, res) => {
   try {
-    const { country, parent_id, search } = req.query;
+    const { country, parent_id, search, include_all, status } = req.query;
     let sql = `
       SELECT c.*,
              p.name as parent_name
@@ -36,6 +47,18 @@ router.get('/', softAuthenticate, async (req, res) => {
       WHERE 1=1
     `;
     const params = [];
+
+    // Status filter logic:
+    //   - explicit ?status=N → filter to that status only
+    //   - ?include_all=true → no status filter (admin)
+    //   - default → status = 3 (featured only — the safe default for users)
+    if (status !== undefined && status !== '') {
+      params.push(parseInt(status, 10));
+      sql += ` AND c.status = $${params.length}`;
+    } else if (include_all !== 'true') {
+      sql += ` AND c.status = 3`;
+    }
+
     if (country) {
       params.push(country);
       sql += ` AND c.country = $${params.length}`;
@@ -61,6 +84,9 @@ router.get('/', softAuthenticate, async (req, res) => {
 });
 
 // GET /api/cities/:idOrSlug — single city by id or slug
+// No status filter: looking up a specific city by ID (or slug) is intentional.
+// If a user has a saved reference to a city that later gets demoted from featured,
+// they should still be able to read its name/details.
 router.get('/:idOrSlug', softAuthenticate, async (req, res) => {
   const { idOrSlug } = req.params;
   try {
@@ -77,6 +103,13 @@ router.get('/:idOrSlug', softAuthenticate, async (req, res) => {
 });
 
 // POST /api/cities — create
+//
+// PARKED TODO: this endpoint is currently authenticated but not admin-gated, which
+// means user-facing flows (trip.js, capture.js) can create cities at the default
+// status=1, contradicting the strict cities policy from Job 0.5. Lock down to
+// admin-only when admin city triage UI lands (Job 8). Until then, the new
+// status=1 cities will at least not appear in user-facing pickers (Job 9), so
+// they're effectively invisible orphans rather than active pollution.
 router.post('/', authenticate, async (req, res) => {
   const { name, country, parent_id, is_region, lat, lon, timezone, region, language } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
@@ -97,9 +130,9 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
-// PATCH /api/cities/:id — edit
+// PATCH /api/cities/:id — edit (admin tooling currently uses this for status promotion too)
 router.patch('/:id', authenticate, async (req, res) => {
-  const allowed = ['name', 'country', 'parent_id', 'is_region', 'lat', 'lon', 'timezone', 'region', 'language', 'slug'];
+  const allowed = ['name', 'country', 'parent_id', 'is_region', 'lat', 'lon', 'timezone', 'region', 'language', 'slug', 'status'];
   const updates = [];
   const params = [];
   for (const key of allowed) {
