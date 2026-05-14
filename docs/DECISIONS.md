@@ -8,6 +8,37 @@ Append-only record of load-bearing decisions. Read before relitigating a settled
 
 ---
 
+## 2026-05-13 · Dropped many-to-many spot↔city join table in favor of single FK (Job 7a)
+
+The `save_cities` join table existed from migration 011 to allow a save to be attached to multiple cities. The original use case was "spot belongs to both Bali and Canggu" — when Bali villages were modeled as cities. That model was retired in migration 018 (Bali neighborhood cleanup, May 9 2026) which demoted villages to a `neighborhood` string column on saves.
+
+After migration 018, every save in practice had exactly 0 or 1 row in `save_cities`. The join table was architectural dead weight maintaining a "many" relationship that no longer existed.
+
+Migration 032 collapsed it: added `saves.city_id INT REFERENCES cities(id) ON DELETE SET NULL`, backfilled from join (one row per save = one city, easy), dropped the table.
+
+Implications:
+- Simpler queries everywhere (`LEFT JOIN cities ON saves.city_id = c.id` instead of join-through join table)
+- Simpler write path in `parseAndUpdate` (UPDATE column vs INSERT join row)
+- If a real "spot in multiple cities" use case ever emerges, re-adding a join table is additive — no data loss
+- Chain places (Della Terra in two cities) are still modeled correctly as two distinct spots, not one spot with two cities
+
+Response shape preserved: API still returns `attached_cities: [...]` as a 0-or-1-item array so frontend code didn't have to change. Could be flattened to `city: {...}` later if cleanup is desired.
+
+## 2026-05-12 · Accept Google ambiguity at capture time; disambiguation is a view-time UX problem
+
+Initial real-world testing during Bali captures surfaced expected behavior: when a user's capture text is ambiguous (e.g. "Neighbourhood - get crumpets" against a city with multiple branches of the same restaurant name), Google's top-result pick will sometimes be wrong. Save #99 in Bali resolved to the Seseh branch when the user meant Berawa.
+
+Decision: this is not a bug. The system worked as designed against ambiguous input. Trying to engineer perfect resolution at capture time (multi-candidate disambiguation, confidence thresholds, neighborhood injection into queries, etc.) would:
+- Slow down the capture experience (more API calls, latency)
+- Add complexity for edge cases
+- Still not solve the fundamental ambiguity ("Neighbourhood Bali" with no other signal is genuinely ambiguous to ANY resolver)
+
+Instead, the right fix is **view-time**: when Browse mode lands post-trip, surface a "wrong place? change it" affordance on the spot detail view. User taps, sees nearby candidates with the same name, picks the right one. Three taps. This solves both existing wrong matches AND future wrong matches with one piece of UX, instead of solving the problem twice (once at capture, once in retrospect).
+
+Until Browse mode ships: bad matches just stay. The underlying data (text, AI parse, city link) is still useful. No automated cleanup, no manual SQL fixes for non-critical mismatches.
+
+Philosophical alignment: "capture beats perfection — note-taking, not essay-delivering" (handoff convention #4). Applied consistently here.
+
 ## 2026-05-12 · Renamed table to `blackbook` (not `library`) during Job 1
 
 RENAME_ARC.md originally planned to rename the existing `places` table to `library`. Mid-implementation, discovered the user-facing surface had been calling it "Blackbook" all along (`admin/blackbook.html`, `admin-blackbook.js`, copy in the UI). The DB table and route were the only outliers using "places."

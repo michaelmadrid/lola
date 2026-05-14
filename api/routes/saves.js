@@ -115,65 +115,43 @@ async function parseAndUpdate(saveId, text, opts = {}) {
     [parsed.place_name, parsed.category, parsed.tip, parsed.country, parsed.neighborhood, saveId]
   );
 
-  // ----- City attachment -----
-  // Track the city id that ends up linked to this save, regardless of which
-  // path provided it. Used below to inform the place resolver.
+  // ----- City attachment (now direct via saves.city_id) -----
+  // Track which city ends up linked, regardless of path. Resolver uses this.
   let attachedCityId = null;
   let attachedCityName = null;
 
-  // Attach city via save_cities if AI gave us one and it matched
+  // Read the current city_id (may have been set by regex detection in createSingleSave)
+  const currentRow = await pool.query(
+    `SELECT s.city_id, c.name AS city_name
+       FROM saves s
+       LEFT JOIN cities c ON s.city_id = c.id
+       WHERE s.id = $1`,
+    [saveId]
+  );
+  const currentCityId = currentRow.rows[0] ? currentRow.rows[0].city_id : null;
+  const currentCityName = currentRow.rows[0] ? currentRow.rows[0].city_name : null;
+
   if (cityRow) {
-    await pool.query(
-      `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [saveId, cityRow.id]
-    );
+    // AI returned a city that matched our table. AI's city wins.
+    // (Per Option 3 strict-cities policy: AI overrides bound only when AI's
+    // city actually exists in kit's curated list.)
+    if (currentCityId !== cityRow.id) {
+      await pool.query(`UPDATE saves SET city_id = $1 WHERE id = $2`, [cityRow.id, saveId]);
+    }
     refreshCitiesCache();
     attachedCityId = cityRow.id;
     attachedCityName = cityRow.name;
+  } else if (currentCityId) {
+    // Regex already attached a city — keep it. Use its name for the resolver.
+    attachedCityId = currentCityId;
+    attachedCityName = currentCityName;
   } else if (cityIdHint) {
-    // FALLBACK: if AI returned no city (or AI's city wasn't in our table) AND no
-    // city is currently attached from regex detection, attach the user's bound
-    // city as a last resort. This is the safety net for "Della Terra, good food"
-    // captured while bound to Bali — nothing in the text names a city, AI may
-    // not have inferred one, but the user told us they're in Bali.
-    const existing = await pool.query(
-      `SELECT 1 FROM save_cities WHERE save_id = $1 LIMIT 1`,
-      [saveId]
-    );
-    if (existing.rowCount === 0) {
-      const cityIdInt = parseInt(cityIdHint, 10);
-      await pool.query(
-        `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [saveId, cityIdInt]
-      );
-      attachedCityId = cityIdInt;
-      attachedCityName = await cityNameFromId(cityIdInt);
-    } else {
-      // Regex detection (in createSingleSave) had already attached a city.
-      // Look up its name + id so the resolver can use them.
-      const existingCity = await pool.query(
-        `SELECT c.id, c.name FROM save_cities sc
-           JOIN cities c ON sc.city_id = c.id
-           WHERE sc.save_id = $1 LIMIT 1`,
-        [saveId]
-      );
-      if (existingCity.rows[0]) {
-        attachedCityId = existingCity.rows[0].id;
-        attachedCityName = existingCity.rows[0].name;
-      }
-    }
-  } else {
-    // No AI city, no bound city. Check if regex detection attached one anyway.
-    const existingCity = await pool.query(
-      `SELECT c.id, c.name FROM save_cities sc
-         JOIN cities c ON sc.city_id = c.id
-         WHERE sc.save_id = $1 LIMIT 1`,
-      [saveId]
-    );
-    if (existingCity.rows[0]) {
-      attachedCityId = existingCity.rows[0].id;
-      attachedCityName = existingCity.rows[0].name;
-    }
+    // FALLBACK: AI returned no city (or wasn't in our table) and regex found nothing.
+    // Attach the user's bound city as a last resort.
+    const cityIdInt = parseInt(cityIdHint, 10);
+    await pool.query(`UPDATE saves SET city_id = $1 WHERE id = $2`, [cityIdInt, saveId]);
+    attachedCityId = cityIdInt;
+    attachedCityName = await cityNameFromId(cityIdInt);
   }
 
   // ----- Place resolver -----
@@ -231,54 +209,46 @@ refreshCitiesCache();
 // Refresh every 10 minutes as a safety net even if no admin trigger
 setInterval(refreshCitiesCache, 10 * 60 * 1000);
 
-// Detect cities in arbitrary text. Returns array of city ids.
-// Whole-word, case-insensitive. Multi-word match-once: once matched,
-// strip the matched span so a subset doesn't double-match.
+// Detect cities in arbitrary text. Returns array of city ids (whole-word match).
 function detectCities(text) {
   if (!text || !citiesCache.length) return [];
   let scratch = ' ' + text + ' ';
   const matched = [];
   for (const c of citiesCache) {
-    // Build a whole-word, case-insensitive regex for this name
     const escaped = c.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const re = new RegExp(`(?:^|[^a-zA-Z])(${escaped})(?=$|[^a-zA-Z])`, 'i');
     if (re.test(scratch)) {
       matched.push(c.id);
-      // remove this match (and any further occurrences) so shorter
-      // names don't double-match within the matched span
       scratch = scratch.replace(new RegExp(`(?:^|[^a-zA-Z])(${escaped})(?=$|[^a-zA-Z])`, 'gi'), ' ');
     }
   }
   return matched;
 }
 
-async function attachedCitiesFor(saveIds) {
-  if (!saveIds.length) return {};
-  const r = await pool.query(
-    `SELECT sc.save_id, c.id, c.name, c.slug
-       FROM save_cities sc
-       JOIN cities c ON sc.city_id = c.id
-      WHERE sc.save_id = ANY($1::int[])`,
-    [saveIds]
-  );
-  const map = {};
-  for (const row of r.rows) {
-    if (!map[row.save_id]) map[row.save_id] = [];
-    map[row.save_id].push({ id: row.id, name: row.name, slug: row.slug });
-  }
-  return map;
-}
-
 // =============================================================
 // ROUTES
 // =============================================================
 
+// Helper: shape a save row from a JOIN-with-cities query into the API response
+// shape. We preserve attached_cities as a 0-or-1 item array so existing
+// frontend code (spots.js, home.js, guides-edit.js) doesn't need to change.
+function shapeSaveRow(row) {
+  const { city_id, city_name, city_slug, ...save } = row;
+  save.attached_cities = city_id
+    ? [{ id: city_id, name: city_name, slug: city_slug }]
+    : [];
+  return save;
+}
+
 // GET /api/saves — user's saves, newest first
-// Adds attached_cities array per save
 router.get('/', authenticate, async (req, res) => {
   try {
-    let sql = `SELECT s.*
+    let sql = `SELECT s.*,
+                      c.id   AS city_id,
+                      c.name AS city_name,
+                      c.slug AS city_slug
                FROM saves s
+               LEFT JOIN cities c ON s.city_id = c.id
                WHERE s.user_id = $1`;
     const params = [req.user.id];
 
@@ -290,9 +260,9 @@ router.get('/', authenticate, async (req, res) => {
       sql += ` AND $${params.length} = ANY(s.tags)`;
     }
     if (req.query.city_id) {
-      // Filter saves that have this city attached (via save_cities)
+      // Filter saves with this city as their direct FK
       params.push(req.query.city_id);
-      sql += ` AND s.id IN (SELECT save_id FROM save_cities WHERE city_id = $${params.length})`;
+      sql += ` AND s.city_id = $${params.length}`;
     }
     if (req.query.category) {
       params.push(req.query.category);
@@ -305,64 +275,48 @@ router.get('/', authenticate, async (req, res) => {
     sql += ` LIMIT $${params.length}`;
 
     const result = await pool.query(sql, params);
-    const saves = result.rows;
-    const attachedMap = await attachedCitiesFor(saves.map(s => s.id));
-    for (const s of saves) {
-      s.attached_cities = attachedMap[s.id] || [];
-    }
-    res.json({ saves });
+    res.json({ saves: result.rows.map(shapeSaveRow) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 // Create a single save row + run regex city detection. Async AI parse fires after.
-// Used by POST in both single-line and multi-line modes.
-// Note: cityIdHint is attached via save_cities (not a column on saves anymore).
-// boundCityName is passed to the AI parser as disambiguation context.
 //
-// City attachment policy (option D, strict cities edition):
-// - Regex-based detection runs immediately; if it finds cities in the text
-//   (case-insensitive match against existing cities), attach them.
-// - AI may add a city later via parseAndUpdate — but ONLY if AI's returned
-//   city name matches an existing city in the table. AI never creates cities.
-// - cityIdHint (the user's bound city) is attached ONLY if regex + AI both
-//   return zero cities. This prevents "Della Terra Marseille" (bound to Bali)
-//   from being tagged in BOTH cities — Marseille wins because text named it.
+// City attachment policy (strict cities edition, post-7a):
+// - Regex-based detection runs immediately; if it finds cities in the text,
+//   the FIRST match wins (one city per save now). Sets saves.city_id directly.
+// - AI may later overwrite via parseAndUpdate — but ONLY if AI's returned
+//   city name matches an existing city in the table.
+// - cityIdHint (the user's bound city) is attached ONLY as a last resort.
 async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCityName, place_id, been }) {
-  // Default `been` to true if not specified
   const beenValue = (typeof been === 'boolean') ? been : true;
+
+  // Regex-based detection: first match wins (one city per save).
+  const detectedIds = detectCities(text);
+  const initialCityId = detectedIds.length ? detectedIds[0] : null;
+
   const result = await pool.query(
-    `INSERT INTO saves (user_id, text, tags, url, place_id, been)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO saves (user_id, text, tags, url, place_id, been, city_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [userId, text.trim(), tags, url, place_id || null, beenValue]
+    [userId, text.trim(), tags, url, place_id || null, beenValue, initialCityId]
   );
   const save = result.rows[0];
 
-  // Regex-based city tagging (fast, deterministic) — attaches whatever cities are
-  // explicitly named in the text. NOTE: we no longer auto-attach the bound city here.
-  const detectedIds = detectCities(text);
-  for (const cid of detectedIds) {
-    try {
-      await pool.query(
-        `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-        [save.id, cid]
-      );
-    } catch (e) {}
-  }
+  // Build attached_cities for response (0 or 1 item)
   let attached = [];
-  if (detectedIds.length) {
+  if (initialCityId) {
     const r = await pool.query(
-      `SELECT id, name, slug FROM cities WHERE id = ANY($1::int[])`,
-      [detectedIds]
+      `SELECT id, name, slug FROM cities WHERE id = $1 LIMIT 1`,
+      [initialCityId]
     );
-    attached = r.rows;
+    if (r.rows[0]) attached = [r.rows[0]];
   }
   save.attached_cities = attached;
 
   // Fire async AI parse — don't await. Bound city flows through as disambiguation
-  // hint AND as the cityIdHint fallback (used only if AI also finds no city).
+  // hint AND as the cityIdHint fallback (used only if regex + AI both find no city).
   parseAndUpdate(save.id, save.text, { boundCityName, cityIdHint }).catch(err => {
     console.error('parseAndUpdate failed for save', save.id, err);
   });
@@ -372,13 +326,11 @@ async function createSingleSave({ userId, text, tags, url, cityIdHint, boundCity
 
 // POST /api/saves
 // Supports single-line input (one save) OR multi-line input (one save per line).
-// Multi-line: each non-empty line becomes its own save with its own AI parse.
 router.post('/', authenticate, async (req, res) => {
   const { text, tags: explicitTags, url: explicitUrl, city_id, city_name, place_id, been } = req.body;
   if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
 
   try {
-    // If client sent city_id but not city_name, resolve it for AI context
     let resolvedBoundCityName = city_name || null;
     if (city_id && !resolvedBoundCityName) {
       try {
@@ -387,13 +339,11 @@ router.post('/', authenticate, async (req, res) => {
       } catch {}
     }
 
-    // Split on newlines, drop empty lines after trimming
     const lines = String(text)
       .split(/\r?\n/)
       .map(l => l.trim())
       .filter(Boolean);
 
-    // Single line: create one save, return {save}
     if (lines.length <= 1) {
       const single = lines[0] || text.trim();
       const tags = explicitTags || extractTags(single);
@@ -411,7 +361,6 @@ router.post('/', authenticate, async (req, res) => {
       return res.json({ save });
     }
 
-    // Multi-line: one save per line, return {saves: [...]}
     const created = [];
     for (const line of lines) {
       const tags = extractTags(line);
@@ -479,27 +428,31 @@ router.delete('/:id', authenticate, async (req, res) => {
   }
 });
 
-// DELETE /api/saves/:id/cities/:cityId — remove an auto-tag chip
+// DELETE /api/saves/:id/cities/:cityId — remove the attached city chip
+// (Pre-7a this removed a row from save_cities. Now it clears saves.city_id
+// if it matches the requested cityId. URL kept for frontend compatibility.)
 router.delete('/:id/cities/:cityId', authenticate, async (req, res) => {
   try {
-    // Verify the save belongs to this user
     const own = await pool.query(
-      `SELECT 1 FROM saves WHERE id = $1 AND user_id = $2`,
+      `SELECT city_id FROM saves WHERE id = $1 AND user_id = $2`,
       [req.params.id, req.user.id]
     );
     if (!own.rows[0]) return res.status(404).json({ error: 'Save not found' });
-    await pool.query(
-      `DELETE FROM save_cities WHERE save_id = $1 AND city_id = $2`,
-      [req.params.id, req.params.cityId]
-    );
+
+    const currentCityId = own.rows[0].city_id;
+    const requestedCityId = parseInt(req.params.cityId, 10);
+    // Only clear if the current city matches what the client asked to remove
+    if (currentCityId === requestedCityId) {
+      await pool.query(`UPDATE saves SET city_id = NULL WHERE id = $1`, [req.params.id]);
+    }
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/saves/:id/cities — attach a city to a save, REPLACING any existing attachments.
-// Used by the save editor when user picks a different city.
+// POST /api/saves/:id/cities — set the attached city.
+// (Pre-7a this replaced rows in save_cities. Now it just updates saves.city_id.)
 router.post('/:id/cities', authenticate, async (req, res) => {
   const { city_id } = req.body;
   if (!city_id) return res.status(400).json({ error: 'city_id required' });
@@ -510,19 +463,14 @@ router.post('/:id/cities', authenticate, async (req, res) => {
     );
     if (!own.rows[0]) return res.status(404).json({ error: 'Save not found' });
 
-    // Replace: clear existing attachments, then add the picked one
-    await pool.query(`DELETE FROM save_cities WHERE save_id = $1`, [req.params.id]);
-    await pool.query(
-      `INSERT INTO save_cities (save_id, city_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [req.params.id, city_id]
-    );
+    await pool.query(`UPDATE saves SET city_id = $1 WHERE id = $2`, [city_id, req.params.id]);
     res.json({ success: true, save_id: parseInt(req.params.id, 10), city_id: parseInt(city_id, 10) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST /api/saves/:id/reparse — re-run AI parser on the original text, overwriting structured fields
+// POST /api/saves/:id/reparse — re-run AI parser on original text
 router.post('/:id/reparse', authenticate, async (req, res) => {
   try {
     const own = await pool.query(
@@ -532,12 +480,13 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
     if (!own.rows[0]) return res.status(404).json({ error: 'Save not found' });
     const save = own.rows[0];
 
-    // Use first attached city (if any) as disambiguation context
+    // Use attached city (if any) as disambiguation context
     let boundCityName = null;
     try {
       const cityRes = await pool.query(
-        `SELECT c.name FROM save_cities sc JOIN cities c ON sc.city_id = c.id
-         WHERE sc.save_id = $1 LIMIT 1`,
+        `SELECT c.name FROM saves s
+           JOIN cities c ON s.city_id = c.id
+           WHERE s.id = $1 LIMIT 1`,
         [save.id]
       );
       if (cityRes.rows[0]) boundCityName = cityRes.rows[0].name;

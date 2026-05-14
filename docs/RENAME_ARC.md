@@ -4,8 +4,8 @@ Single source of truth for the post-trip schema reshape: collapse the join table
 
 This doc supersedes scattered notes across CLAUDE_HANDOFF, SCHEMA, and chat history for this work. When a job ships, update its row and add a note in DECISIONS.md if anything shifted.
 
-**Last updated:** May 12, 2026 (Job 6 shipped pre-flight)
-**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6 shipped. The Google Places integration is fully wired and existing saves can be backfilled on demand. Job 7a (collapse join table) is next — but a natural pause point since Job 7 work is more invasive.
+**Last updated:** May 13, 2026 (Job 7a shipped from Paris)
+**Current state:** Jobs 0.5, 1, 2, 3, 4, 5, 6, 7a shipped. The schema is now `saves.city_id` direct FK; `save_cities` join table dropped. Job 7b (saves → spots rename) is next — most invasive job in the arc.
 
 ---
 
@@ -35,8 +35,8 @@ Each job is independently shippable. Each leaves the app working. Sequence matte
 | **4** | Places resolver | ✅ Shipped 2026-05-12 | New file `api/places-resolver.js` + new `api/routes/places.js` + server.js mount | done |
 | **5** | Wire capture pipeline + `place_id` column | ✅ Shipped 2026-05-12 | Migration 030, `api/routes/saves.js` updated | done |
 | **6** | Backfill existing saves | ✅ Shipped 2026-05-12 | New script `scripts/backfill-place-ids.js` | done |
-| **7a** | Collapse join table | **NEXT** | Migration, route queries that JOIN save_cities | ~45 min |
-| **7b** | `saves` → `spots` rename | Planned | Migration, every route file, every frontend fetch | ~2 hours focused |
+| **7a** | Collapse join table | ✅ Shipped 2026-05-13 | Migration 032, `api/routes/saves.js` updated | done |
+| **7b** | `saves` → `spots` rename | **NEXT** | Migration, every route file, every frontend fetch | ~2 hours focused |
 | **8** | Admin city triage UI | Planned | New admin page + endpoint | ~2 hours |
 | **9** | Featured-only audit | Planned | Audit all city pickers, fix any that show non-featured | ~30 min |
 
@@ -244,33 +244,30 @@ Done in 56s.
 
 ---
 
-### Job 7a — Collapse join table
+### Job 7a — Collapse join table ✅ Shipped 2026-05-13
 
 **Goal:** Replace `save_cities` many-to-many with `saves.city_id` direct FK.
 
-**Migration (`031_saves_city_id.sql`):**
-```sql
-ALTER TABLE saves ADD COLUMN IF NOT EXISTS city_id INT REFERENCES cities(id) ON DELETE SET NULL;
+**What shipped:**
+- `migrations/032_saves_city_id.sql` (note: file numbered 032, not 031 as originally drafted — 031 was already used for the FK patch). Adds `saves.city_id` FK, backfills from `save_cities` (first row per save), adds index, drops `save_cities` table. Idempotent.
+- `api/routes/saves.js` rewritten:
+  - All `save_cities` INSERT/SELECT/DELETE replaced with direct UPDATEs on `saves.city_id`
+  - GET routes use `LEFT JOIN cities ON saves.city_id = cities.id`
+  - Removed the `attachedCitiesFor()` helper (multi-row map builder no longer needed)
+  - Added `shapeSaveRow()` helper that converts the flat JOIN result to the `attached_cities: [...]` array shape the frontend expects
+  - `parseAndUpdate` now reads current `city_id` from saves directly, decides whether to overwrite based on AI's findings
+  - Endpoints `POST /:id/cities` and `DELETE /:id/cities/:cityId` kept for frontend compatibility — they now manipulate `saves.city_id` instead of the join table
 
--- Backfill from join table (every save has 0 or 1 row in save_cities in practice)
-UPDATE saves s
-SET city_id = (SELECT city_id FROM save_cities WHERE save_id = s.id LIMIT 1)
-WHERE s.city_id IS NULL;
+**Response shape preserved:** Every save in API responses still has `attached_cities: [...]` as an array (0 or 1 items). Frontend (`spots.js`, `home.js`, `guides-edit.js`, `admin-spots.js`) unchanged.
 
-CREATE INDEX IF NOT EXISTS saves_city_id_idx ON saves(city_id);
+**Restart needed:** Yes (backend changed).
 
--- Verify no data loss before dropping (manual check via query):
--- SELECT COUNT(*) FROM save_cities WHERE save_id NOT IN (SELECT id FROM saves WHERE city_id IS NOT NULL);
--- Should be 0. Then:
-DROP TABLE save_cities;
-```
+**Verify after deploy:**
+- Capture a new spot bound to Bali → `pm2 logs kit` shows no errors → `SELECT id, city_id FROM saves ORDER BY id DESC LIMIT 1;` shows the new save with `city_id` set
+- Open home page, spots page — list loads, city filter works
+- `SELECT * FROM save_cities;` errors with "relation does not exist" — table is gone
 
-**Code changes:**
-- Every `JOIN save_cities` query in `api/routes/saves.js` etc. → simple `LEFT JOIN cities ON saves.city_id = cities.id`
-- INSERT logic in `parseAndUpdate` writes `saves.city_id` directly instead of inserting into `save_cities`
-- Cleanup any `save_cities` references in admin tooling
-
-**Restart needed:** Yes
+**Real flag for 7b sequencing:** With save_cities gone and the response shape preserved, 7b is now purely a rename — table name, route name, file names, frontend fetch URLs. No more compound surgery.
 
 ---
 
@@ -496,3 +493,24 @@ Shipped after Job 5. Sit-and-watch script. No code changes elsewhere.
 **Real flag — natural pause point:** Jobs 7a and 7b are more invasive (collapse join table, then rename `saves` → `spots` across every route file and frontend fetch). Worth deploying Jobs 0.5–6 to production, running the backfill, and *sitting with the data* for a few days before tackling Job 7. Real evidence may surface (bad matches that need admin re-resolves, mismatch patterns) that should inform how Job 7 reshapes things.
 
 **Post-deploy patch (2026-05-12, migration 031):** First backfill run surfaced a leftover FK. `saves.place_id` existed BEFORE migration 030 — it was the original pre-rename FK pointing at the old `places` table, which got auto-rewritten to point at `blackbook` during migration 028. Then migration 030's `ADD COLUMN IF NOT EXISTS place_id INT REFERENCES places(id)` silently no-op'd on the column add but Postgres still created a SECOND FK (`saves_place_id_fkey1`) pointing at the new places table. Result: two FKs on the same column, requiring values to satisfy BOTH (impossible going forward). Migration 031 drops the leftover blackbook FK and renames the surviving one to canonical `saves_place_id_fkey`. Idempotent.
+
+### Job 7a — Collapse join table (2026-05-13)
+
+Shipped from Paris. Backfilled clean, dropped `save_cities` table, rewrote saves.js to use direct FK.
+
+**Files shipped:**
+- `migrations/032_saves_city_id.sql` — adds column, backfills, indexes, drops `save_cities` table. Idempotent.
+- `api/routes/saves.js` — full rewrite of city-attachment paths. INSERTs/SELECTs/DELETEs against the join table all replaced with UPDATEs on `saves.city_id`. Added `shapeSaveRow()` helper to preserve the `attached_cities: [...]` array shape for frontend compatibility (no frontend changes needed).
+
+**Design decision: response shape preserved as 0-or-1 array.** Frontend code reads `attached_cities` as an array; flattening to a single `city` object would have required touching 4+ frontend files. Defer that flattening to a future cleanup if at all — the array shape is honest about the (now-trivial) possibility of zero matches and is cheap to maintain.
+
+**Decision logged in DECISIONS.md:** dropped many-to-many spot↔city in favor of single FK. Original intent (multi-city per save) was retired in migration 018 (Bali neighborhood cleanup). Join table became architectural dead weight after that.
+
+**Verification approach:**
+1. Run migration: `sudo -u postgres psql -d lola -f /var/www/kit.summer-holiday.com/migrations/032_saves_city_id.sql`
+2. Restart kit: `pm2 restart kit`
+3. Capture a new spot — confirm `city_id` is set on the row directly
+4. Open spots / home pages — verify list renders correctly
+5. Confirm `\dt save_cities` returns "relation does not exist"
+
+**This sets up 7b as a pure rename.** With save_cities gone and the response shape unchanged, the next job (saves → spots) is just identifier renaming across the codebase. No more compound surgery.

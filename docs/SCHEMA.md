@@ -181,21 +181,15 @@ Columns DROPPED over time:
 4. On success, fills `place_name`, `category`, `tip`, `country`, `neighborhood`, sets `ai_parsed_at`
 5. If a city was detected, `findOrCreateCity` runs and `save_cities` join row is inserted
 
-### `save_cities`
+### `save_cities` (DROPPED in migration 032, Job 7a, May 13 2026)
 
-Migration 011. Many-to-many between saves and cities.
+Migration 011 originally created this as a many-to-many between saves and cities. Migration 018 (Bali neighborhood cleanup) made the "many" side empty in practice — every save in current data has exactly 0 or 1 city. The table was architectural dead weight.
 
-```sql
-CREATE TABLE save_cities (
-  save_id INT REFERENCES saves(id),
-  city_id INT REFERENCES cities(id),
-  PRIMARY KEY (save_id, city_id)
-);
-CREATE INDEX save_cities_city_idx ON save_cities(city_id);
-CREATE INDEX save_cities_save_idx ON save_cities(save_id);
-```
+Migration 032 (Job 7a) collapsed it: added `saves.city_id` as a direct FK, backfilled from the join table, dropped `save_cities`. See DECISIONS.md 2026-05-13.
 
-**Why a join table:** A single save can reference multiple cities ("Lisbon and Porto bookshops both great"). A city accumulates many saves. The earlier `saves.city_id` single-FK pattern was dropped in migration 016.
+Replacement: **`saves.city_id INT REFERENCES cities(id) ON DELETE SET NULL`**, indexed via `saves_city_id_idx`.
+
+If a real multi-city use case emerges later, the join table can be reintroduced additively.
 
 ### `notes`
 
@@ -313,7 +307,8 @@ trips
 
 saves
   ├─ user_id ──→ users
-  └─ M:N via save_cities ──→ cities
+  ├─ city_id ──→ cities                     (direct FK since Job 7a, was M:N via save_cities)
+  └─ place_id ──→ places                    (canonical Google-resolved location)
                               └─ parent_id ──→ cities (self, for neighborhoods)
 
 guides
@@ -350,13 +345,11 @@ ORDER BY COALESCE(t.date_start, t.created_at) DESC;
 
 ### My saves with cities resolved
 ```sql
-SELECT s.*,
-       array_agg(c.name) FILTER (WHERE c.id IS NOT NULL) AS city_names
+-- Post Job 7a (May 13 2026): direct FK, no join table
+SELECT s.*, c.name AS city_name, c.slug AS city_slug
 FROM saves s
-LEFT JOIN save_cities sc ON s.id = sc.save_id
-LEFT JOIN cities c ON sc.city_id = c.id
+LEFT JOIN cities c ON s.city_id = c.id
 WHERE s.user_id = $1
-GROUP BY s.id
 ORDER BY s.created_at DESC;
 ```
 
