@@ -297,17 +297,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   height: 44px;
-  padding: 0 28px;
+  padding: 0 22px;
   border-radius: var(--r-button);  /* 4px globally now */
   background: var(--ink);
   color: var(--bg);
   border: 1px solid var(--ink);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: -0.005em;
   cursor: pointer;
   transition: transform 120ms ease, opacity 120ms ease;
 }
@@ -320,6 +320,24 @@
   border-color: var(--rule);
   cursor: not-allowed;
   transform: none;
+}
+/* kbd shortcut hint inside the save button — hidden on mobile via the
+   global rule in shell.css @ ≤720px */
+.capture-fs__submit .kbd {
+  font-family: var(--mono, var(--sans));
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--bg);
+  opacity: 0.65;
+  padding: 2px 6px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  line-height: 1;
+}
+.capture-fs__submit:disabled .kbd {
+  color: var(--ink-3);
+  opacity: 0.5;
 }
 
 /* ============ Mobile ============ */
@@ -334,6 +352,20 @@
     margin-bottom: 24px;
     gap: 8px;
   }
+  /* Mobile keeps the bigger type — the whole point of the capture surface
+     is the field, it should dominate. Reduced sizes felt too cramped. */
+  .capture-fs__place {
+    font-size: 30px;
+  }
+  .capture-fs__tip {
+    font-size: 18px;
+  }
+}
+
+/* Very narrow viewports (e.g. iPhone SE landscape, ~360px) — only here
+   do we step the type down slightly to avoid wrapping the placeholder
+   "What's the place?" awkwardly. */
+@media (max-width: 380px) {
   .capture-fs__place {
     font-size: 26px;
   }
