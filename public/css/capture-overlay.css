@@ -35,17 +35,25 @@
   max-width: 720px;
   display: flex;
   flex-direction: column;
-  padding: 20px var(--gutter, 24px) 24px;
+  padding: 100px var(--gutter, 24px) calc(96px + env(safe-area-inset-bottom, 0));
   position: relative;
   min-height: 100vh;
 }
 
-/* ============ Head ============ */
+/* ============ Head ============
+   Positioned absolutely so X and "..." sit at the actual viewport edges,
+   not pushed down by the inner padding. Stays at top regardless of
+   how much breathing room the field area has. */
 .capture-fs--v2 .capture-fs__head {
+  position: absolute;
+  top: 20px;
+  left: var(--gutter, 24px);
+  right: var(--gutter, 24px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin: 0;
+  z-index: 2;
 }
 
 .capture-fs__close,
@@ -236,7 +244,7 @@
   display: block;
   width: 100%;
   font-family: var(--sans);
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 500;
   line-height: 1.25;
   color: var(--ink);
@@ -296,15 +304,22 @@
 }
 
 /* ============ Foot — save button ============
-   Desktop: in-flow at the end of the modal, right-aligned.
-   Mobile: fixed to viewport bottom with safe-area padding so it sits
-   above the iOS home indicator and never gets clipped by the URL bar. */
+   Always fixed to viewport bottom, both desktop and mobile. Sits above
+   the iOS home indicator on mobile via safe-area-inset-bottom. No
+   hairline — the button stands on its own, the field area scrolls
+   underneath. */
 .capture-fs--v2 .capture-fs__foot {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   justify-content: flex-end;
-  border-top: 0; /* override v1 hairline */
-  padding: 0;
-  margin-top: auto;
+  padding: 16px var(--gutter, 24px) calc(16px + env(safe-area-inset-bottom, 0));
+  background: var(--bg);
+  border-top: 0;
+  z-index: 5;
+  margin: 0;
 }
 
 .capture-fs__submit {
@@ -357,12 +372,15 @@
 /* ============ Mobile ============ */
 @media (max-width: 720px) {
   .capture-fs--v2 .capture-fs__inner {
-    /* Extra bottom padding so the content above the fixed footer
-       doesn't get hidden behind it when scrolled to the end */
-    padding: 16px var(--gutter, 20px) calc(80px + env(safe-area-inset-bottom, 0));
+    /* Top breathing room (80px) — slightly less than desktop (100px) since
+       phone real estate is tighter. Bottom reserves room for the fixed
+       footer so content can scroll past it. */
+    padding: 80px var(--gutter, 20px) calc(90px + env(safe-area-inset-bottom, 0));
   }
   .capture-fs--v2 .capture-fs__head {
-    margin-bottom: 16px;
+    top: 16px;
+    left: var(--gutter, 20px);
+    right: var(--gutter, 20px);
   }
   .capture-fs--v2 .capture-fs__bind {
     margin-bottom: 20px;
@@ -370,29 +388,18 @@
   }
   /* Type sizes need !important to beat shell.css iOS-zoom-prevention rule:
        @media (max-width: 720px) { input, textarea { font-size: 16px !important } }
-     Our 28px / 20px values are well above the 16px iOS zoom threshold, so
-     no autozoom risk. */
+     Our values are well above the 16px iOS zoom threshold — no risk. */
   .capture-fs__place {
-    font-size: 28px !important;
+    font-size: 30px !important;
   }
   .capture-fs__tip {
     font-size: 20px !important;
   }
 
-  /* Fixed footer on mobile: sits above iOS home indicator, never clipped
-     by URL bar. Subtle top border + bg-tint so content scrolling underneath
-     doesn't ghost through. */
+  /* Footer is already position: fixed from the base rule. Just bump the
+     button size on mobile for thumb comfort. */
   .capture-fs--v2 .capture-fs__foot {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     padding: 12px var(--gutter, 20px) calc(12px + env(safe-area-inset-bottom, 0));
-    background: var(--bg);
-    border-top: 1px solid var(--rule);
-    z-index: 5;
-    justify-content: flex-end;
-    margin-top: 0;
   }
   .capture-fs__submit {
     height: 52px;
@@ -401,11 +408,11 @@
   }
 }
 
-/* Very narrow viewports (e.g. iPhone SE landscape, ~360px) — only here
-   do we step the type down slightly. Still !important to beat shell.css. */
+/* Very narrow viewports (e.g. iPhone SE landscape, ~360px) — step down
+   slightly. Still !important to beat shell.css. */
 @media (max-width: 380px) {
   .capture-fs__place {
-    font-size: 24px !important;
+    font-size: 26px !important;
   }
   .capture-fs__tip {
     font-size: 17px !important;
