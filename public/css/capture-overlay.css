@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .capture-fs__close,
@@ -76,7 +76,7 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   position: relative;
 }
 
@@ -214,7 +214,11 @@
   margin-left: 6px;
 }
 
-/* ============ Body — place + tip fields ============ */
+/* ============ Body — place + tip fields ============
+   Both fields are <textarea> so they wrap on long content. autoGrow JS
+   resizes height to fit content. The dotted underline uses
+   text-decoration on the typed content, not a field-width border —
+   so the line follows the words editorially. */
 .capture-fs--v2 .capture-fs__body {
   display: flex;
   flex-direction: column;
@@ -232,41 +236,49 @@
   display: block;
   width: 100%;
   font-family: var(--sans);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.25;
   color: var(--ink);
   background: transparent;
   border: 0;
   outline: none;
   padding: 6px 0;
   letter-spacing: -0.02em;
-  border-bottom: 1.5px dotted transparent;
-  transition: border-color 140ms ease;
+  resize: none;
+  overflow: hidden;     /* autoGrow handles height; no scrollbar */
+  min-height: 38px;     /* one-line minimum */
+  text-decoration: underline dotted transparent;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+  transition: text-decoration-color 140ms ease;
 }
 .capture-fs__place::placeholder {
   color: var(--ink-3);
   font-weight: 400;
 }
-/* Dotted underline appears on focus, persists when value is set */
-.capture-fs__place:focus,
+/* Dotted underline appears when there's typed content. Placeholder state
+   stays clean. */
 .capture-fs__place:not(:placeholder-shown) {
-  border-bottom-color: var(--ink-3);
+  text-decoration-color: var(--ink-3);
 }
 
 .capture-fs__tip {
   display: block;
   width: 100%;
   font-family: var(--sans);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.45;
   color: var(--ink);
   background: transparent;
   border: 0;
   outline: none;
   padding: 6px 0;
   letter-spacing: -0.005em;
+  resize: none;
+  overflow: hidden;
+  min-height: 32px;
   opacity: 0;
   transform: translateY(-4px);
   transition: opacity 220ms ease, transform 220ms ease;
@@ -283,7 +295,10 @@
   transform: translateY(0);
 }
 
-/* ============ Foot — save button ============ */
+/* ============ Foot — save button ============
+   Desktop: in-flow at the end of the modal, right-aligned.
+   Mobile: fixed to viewport bottom with safe-area padding so it sits
+   above the iOS home indicator and never gets clipped by the URL bar. */
 .capture-fs--v2 .capture-fs__foot {
   display: flex;
   justify-content: flex-end;
@@ -342,38 +357,57 @@
 /* ============ Mobile ============ */
 @media (max-width: 720px) {
   .capture-fs--v2 .capture-fs__inner {
-    padding: 16px var(--gutter, 20px) 24px;
+    /* Extra bottom padding so the content above the fixed footer
+       doesn't get hidden behind it when scrolled to the end */
+    padding: 16px var(--gutter, 20px) calc(80px + env(safe-area-inset-bottom, 0));
   }
   .capture-fs--v2 .capture-fs__head {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
   .capture-fs--v2 .capture-fs__bind {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     gap: 8px;
   }
-  /* Mobile keeps the bigger type — the whole point of the capture surface
-     is the field, it should dominate. !important needed because shell.css
-     has a global iOS-zoom-prevention rule:
-       @media (max-width: 720px) { input { font-size: var(--text-strong) !important } }
-     which forces 16px on all inputs to stop iOS Safari from auto-zooming.
-     We're explicitly opting these two fields out — 30px and 18px are
-     already well above the 16px iOS threshold, so no zoom risk. */
+  /* Type sizes need !important to beat shell.css iOS-zoom-prevention rule:
+       @media (max-width: 720px) { input, textarea { font-size: 16px !important } }
+     Our 28px / 20px values are well above the 16px iOS zoom threshold, so
+     no autozoom risk. */
   .capture-fs__place {
-    font-size: 30px !important;
+    font-size: 28px !important;
   }
   .capture-fs__tip {
-    font-size: 18px !important;
+    font-size: 20px !important;
+  }
+
+  /* Fixed footer on mobile: sits above iOS home indicator, never clipped
+     by URL bar. Subtle top border + bg-tint so content scrolling underneath
+     doesn't ghost through. */
+  .capture-fs--v2 .capture-fs__foot {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px var(--gutter, 20px) calc(12px + env(safe-area-inset-bottom, 0));
+    background: var(--bg);
+    border-top: 1px solid var(--rule);
+    z-index: 5;
+    justify-content: flex-end;
+    margin-top: 0;
+  }
+  .capture-fs__submit {
+    height: 52px;
+    padding: 0 26px;
+    font-size: 15px;
   }
 }
 
 /* Very narrow viewports (e.g. iPhone SE landscape, ~360px) — only here
-   do we step the type down slightly to avoid wrapping the placeholder
-   "What's the place?" awkwardly. Still !important to beat shell.css. */
+   do we step the type down slightly. Still !important to beat shell.css. */
 @media (max-width: 380px) {
   .capture-fs__place {
-    font-size: 26px !important;
+    font-size: 24px !important;
   }
   .capture-fs__tip {
-    font-size: 16px !important;
+    font-size: 17px !important;
   }
 }

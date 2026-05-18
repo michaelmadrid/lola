@@ -127,6 +127,7 @@
     //   - Updates submit button enabled state on input
     if (captFsPlace) {
       captFsPlace.addEventListener('input', () => {
+        autoGrow(captFsPlace);
         updateSubmitEnabled();
       });
       captFsPlace.addEventListener('keydown', (e) => {
@@ -136,7 +137,9 @@
           doSubmit({ thenClose: true });
           return;
         }
-        // Plain Enter: reveal tip and advance focus
+        // Plain Enter in PLACE: advance to tip (never insert newline — place
+        // names should never be multi-line, but the field is a textarea so
+        // it would wrap on width if the typed name is long).
         if (e.key === 'Enter' && !e.shiftKey) {
           e.preventDefault();
           const value = captFsPlace.value.trim();
@@ -153,20 +156,18 @@
       });
     }
 
-    // Tip field:
-    //   - Cmd+Enter or plain Enter submits
-    //   - Esc returns focus to place (handled by Escape close above instead)
+    // Tip field — multi-line. Enter inserts a newline (default textarea
+    // behavior). Cmd/Ctrl+Enter submits. The Save button is always reachable.
     if (captFsTip) {
+      captFsTip.addEventListener('input', () => {
+        autoGrow(captFsTip);
+      });
       captFsTip.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           doSubmit({ thenClose: true });
-          return;
         }
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          doSubmit({ thenClose: true });
-        }
+        // Plain Enter falls through — textarea inserts newline naturally
       });
     }
 
@@ -306,9 +307,13 @@
     captFs.classList.add('is-open');
     captFs.setAttribute('aria-hidden', 'false');
     // Reset fields
-    if (captFsPlace) captFsPlace.value = '';
+    if (captFsPlace) {
+      captFsPlace.value = '';
+      autoGrow(captFsPlace);
+    }
     if (captFsTip) {
       captFsTip.value = '';
+      autoGrow(captFsTip);
       hideTip();
     }
     updateSubmitEnabled();
@@ -330,6 +335,14 @@
   // ------------------------------------------------------------------
   // Two-field UX helpers
   // ------------------------------------------------------------------
+  // autoGrow: resize textarea height to fit its content. Called on input
+  // and after any programmatic value change. Reset height to 'auto' first
+  // so the scrollHeight calculation works when shrinking too.
+  function autoGrow(el) {
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
   function revealTip() {
     if (!captFsTip) return;
     if (!captFsTip.hidden && captFsTip.classList.contains('is-visible')) return;
@@ -338,6 +351,8 @@
     // Force reflow so the transition runs from the freshly-shown state
     void captFsTip.offsetHeight;
     captFsTip.classList.add('is-visible');
+    // Initial height sizing for the newly-revealed textarea
+    autoGrow(captFsTip);
   }
   function hideTip() {
     if (!captFsTip) return;
@@ -379,8 +394,10 @@
       isSubmitting = false;
       // Reset fields
       captFsPlace.value = '';
+      autoGrow(captFsPlace);
       if (captFsTip) {
         captFsTip.value = '';
+        autoGrow(captFsTip);
         hideTip();
       }
       updateSubmitEnabled();
