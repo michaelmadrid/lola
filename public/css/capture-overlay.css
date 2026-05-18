@@ -86,11 +86,12 @@
   display: none !important;
 }
 
-/* City pill: outline + ink text. Not filled — pills3 register. */
+/* City pill: outline + ink text. Not filled — pills3 register.
+   No caret — the affordance is "tap the city name to change," same
+   as how the been pill works. Caret was barely legible anyway. */
 .capture-fs--v2 .capture-fs__city-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
   padding: 9px 18px;
   border: 1px solid var(--ink);
   background: transparent;
@@ -110,9 +111,7 @@
   background: transparent; /* override v1 surface hover */
 }
 .capture-fs--v2 .capture-fs__city-caret {
-  font-size: 10px;
-  color: var(--ink-3);
-  margin-left: 2px;
+  display: none;
 }
 
 /* Been/want-to-go pill — soft signal. Active state gets a small dot. */
@@ -353,23 +352,28 @@
     gap: 8px;
   }
   /* Mobile keeps the bigger type — the whole point of the capture surface
-     is the field, it should dominate. Reduced sizes felt too cramped. */
+     is the field, it should dominate. !important needed because shell.css
+     has a global iOS-zoom-prevention rule:
+       @media (max-width: 720px) { input { font-size: var(--text-strong) !important } }
+     which forces 16px on all inputs to stop iOS Safari from auto-zooming.
+     We're explicitly opting these two fields out — 30px and 18px are
+     already well above the 16px iOS threshold, so no zoom risk. */
   .capture-fs__place {
-    font-size: 30px;
+    font-size: 30px !important;
   }
   .capture-fs__tip {
-    font-size: 18px;
+    font-size: 18px !important;
   }
 }
 
 /* Very narrow viewports (e.g. iPhone SE landscape, ~360px) — only here
    do we step the type down slightly to avoid wrapping the placeholder
-   "What's the place?" awkwardly. */
+   "What's the place?" awkwardly. Still !important to beat shell.css. */
 @media (max-width: 380px) {
   .capture-fs__place {
-    font-size: 26px;
+    font-size: 26px !important;
   }
   .capture-fs__tip {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 }
