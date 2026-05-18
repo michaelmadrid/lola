@@ -1,0 +1,343 @@
+/* =====================================================================
+   capture-overlay.css — v0.6 two-field capture redesign
+
+   Loaded AFTER home.css so it overrides the v1 capture-fs styles without
+   requiring surgical removal. When the redesign is locked in and the
+   default theme adopts these styles fully, the older capture-fs rules
+   in home.css can be removed.
+
+   System rules applied:
+   - 1px border on all interactive elements (the locked global rule)
+   - Capsule pills (state) vs rectangle buttons (action) — shape categorization
+   - Monochrome (ink + bg only), no accent hover states
+   - 4px corner radius on action buttons (per --r-button: 4px global)
+   - Hover lift, no color shift
+   ===================================================================== */
+
+.capture-fs--v2 {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+  overflow-y: auto;
+  display: none;
+  -webkit-overflow-scrolling: touch;
+}
+.capture-fs--v2[hidden] { display: none; }
+.capture-fs--v2.is-open {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.capture-fs--v2 .capture-fs__inner {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px var(--gutter, 24px) 24px;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* ============ Head ============ */
+.capture-fs--v2 .capture-fs__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.capture-fs__close,
+.capture-fs__more {
+  background: none;
+  border: 0;
+  padding: 8px;
+  margin: -8px;
+  cursor: pointer;
+  color: var(--ink);
+  line-height: 0;
+  border-radius: 4px;
+  transition: opacity 120ms ease;
+}
+.capture-fs__close:hover { opacity: 0.65; }
+.capture-fs__more {
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+.capture-fs__more:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ============ Context pills (city + been) ============ */
+.capture-fs--v2 .capture-fs__bind {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+/* Reset all the existing v1 specifics that piggyback on capture-fs__bind-row etc. */
+.capture-fs--v2 .capture-fs__bind-row,
+.capture-fs--v2 .capture-fs__bind-label {
+  display: none !important;
+}
+
+/* City pill: outline + ink text. Not filled — pills3 register. */
+.capture-fs--v2 .capture-fs__city-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 120ms ease;
+  line-height: 1;
+  margin: 0;
+}
+.capture-fs--v2 .capture-fs__city-btn:hover {
+  transform: translateY(-1px);
+  background: transparent; /* override v1 surface hover */
+}
+.capture-fs--v2 .capture-fs__city-caret {
+  font-size: 10px;
+  color: var(--ink-3);
+  margin-left: 2px;
+}
+
+/* Been/want-to-go pill — soft signal. Active state gets a small dot. */
+.capture-fs--v2 .capture-fs__been-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 120ms ease;
+  line-height: 1;
+}
+.capture-fs--v2 .capture-fs__been-btn:hover {
+  transform: translateY(-1px);
+  background: transparent;
+  color: var(--ink);   /* override v1 accent hover */
+}
+/* Active state signal: small filled dot after the label */
+.capture-fs--v2 .capture-fs__been-btn::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink);
+  margin-left: 4px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+/* When in "want to go" state, dim the pill text + dot — quieter unselected look */
+.capture-fs--v2 .capture-fs__been-btn[data-been="false"] {
+  color: var(--ink-3);
+  border-color: var(--ink-3);
+}
+.capture-fs--v2 .capture-fs__been-btn[data-been="false"]::after {
+  background: var(--ink-3);
+}
+
+/* ============ City popover ============ */
+.capture-fs--v2 .capture-fs__city-popover {
+  display: none;
+  position: absolute;
+  top: 50px;
+  left: 0;
+  z-index: 10;
+  background: var(--bg);
+  border: 1px solid var(--ink);
+  border-radius: 4px;
+  width: 280px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px;
+}
+.capture-fs--v2 .capture-fs__city-popover.is-open { display: block; }
+.capture-fs--v2 .capture-fs__city-search {
+  width: 100%;
+  padding: 8px 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.capture-fs--v2 .capture-fs__city-search:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+.capture-fs--v2 .capture-fs__city-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.capture-fs--v2 .capture-fs__city-item {
+  padding: 8px 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.capture-fs--v2 .capture-fs__city-item:hover { background: var(--surface); }
+.capture-fs--v2 .capture-fs__city-item.is-current {
+  color: var(--ink);
+  font-weight: 500;
+}
+.capture-fs--v2 .capture-fs__city-item__country {
+  color: var(--ink-3);
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+/* ============ Body — place + tip fields ============ */
+.capture-fs--v2 .capture-fs__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  margin-bottom: 24px;
+}
+
+/* Hide the v1 textarea entirely on v2 */
+.capture-fs--v2 .capture-fs__textarea {
+  display: none !important;
+}
+
+.capture-fs__place {
+  display: block;
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 6px 0;
+  letter-spacing: -0.02em;
+  border-bottom: 1.5px dotted transparent;
+  transition: border-color 140ms ease;
+}
+.capture-fs__place::placeholder {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+/* Dotted underline appears on focus, persists when value is set */
+.capture-fs__place:focus,
+.capture-fs__place:not(:placeholder-shown) {
+  border-bottom-color: var(--ink-3);
+}
+
+.capture-fs__tip {
+  display: block;
+  width: 100%;
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 6px 0;
+  letter-spacing: -0.005em;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.capture-fs__tip::placeholder {
+  color: var(--ink-3);
+}
+.capture-fs__tip[hidden] {
+  display: none;
+}
+.capture-fs__tip.is-visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============ Foot — save button ============ */
+.capture-fs--v2 .capture-fs__foot {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 0; /* override v1 hairline */
+  padding: 0;
+  margin-top: auto;
+}
+
+.capture-fs__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 28px;
+  border-radius: var(--r-button);  /* 4px globally now */
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+.capture-fs__submit:hover {
+  transform: translateY(-1px);
+}
+.capture-fs__submit:disabled {
+  background: transparent;
+  color: var(--ink-3);
+  border-color: var(--rule);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============ Mobile ============ */
+@media (max-width: 720px) {
+  .capture-fs--v2 .capture-fs__inner {
+    padding: 16px var(--gutter, 20px) 24px;
+  }
+  .capture-fs--v2 .capture-fs__head {
+    margin-bottom: 20px;
+  }
+  .capture-fs--v2 .capture-fs__bind {
+    margin-bottom: 24px;
+    gap: 8px;
+  }
+  .capture-fs__place {
+    font-size: 26px;
+  }
+  .capture-fs__tip {
+    font-size: 16px;
+  }
+}

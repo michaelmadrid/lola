@@ -7,6 +7,7 @@
   <title>kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/capture-overlay.css">
   <link rel="stylesheet" href="/css/themes/pills.css">
   <link rel="stylesheet" href="/css/themes/pills2.css">
   <link rel="stylesheet" href="/css/themes/pills3.css">
@@ -126,47 +127,70 @@
 <!-- ============ CAPTURE OVERLAY (fullscreen, all viewports) ============
      Lives outside .page-grid because it's an overlay, not a layout module.
      Same UI as the standalone /capture/ page; opens when launcher is tapped. -->
-<div class="capture-fs" id="capture-fs" hidden aria-hidden="true">
+<!-- ================== CAPTURE OVERLAY (v0.6 — two-field) ==================
+     Replaces the single-textarea capture overlay with a structured two-field
+     UX: Place (required) + Tip (optional, fades in after Place is set).
+     Backend POSTs to /api/spots with {place_name, tip} body fields when both
+     are provided; falls back to single-phrase {text} path otherwise (kept
+     for backwards compatibility with Shortcut/voice/extension).
+========================================================================== -->
+<div class="capture-fs capture-fs--v2" id="capture-fs" hidden aria-hidden="true">
   <div class="capture-fs__inner">
+
     <header class="capture-fs__head">
-      <button class="btn-close-circle" id="capture-fs-close" aria-label="Close" type="button">×</button>
+      <button class="capture-fs__close" id="capture-fs-close" aria-label="Close" type="button">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="capture-fs__more" id="capture-fs-more" aria-label="More options (coming soon)" type="button" disabled>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <circle cx="4" cy="10" r="1.2" fill="currentColor"/>
+          <circle cx="10" cy="10" r="1.2" fill="currentColor"/>
+          <circle cx="16" cy="10" r="1.2" fill="currentColor"/>
+        </svg>
+      </button>
     </header>
 
     <div class="capture-fs__bind">
-      <div class="capture-fs__bind-row">
-        <span class="capture-fs__bind-label">In</span>
-        <button class="capture-fs__city-btn" id="capture-fs-city-btn" type="button">
-          <span id="capture-fs-city-btn-name">Bali</span>
-          <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
-        </button>
-      </div>
+      <button class="capture-fs__city-btn" id="capture-fs-city-btn" type="button">
+        <span id="capture-fs-city-btn-name">Bali</span>
+        <span class="capture-fs__city-caret" aria-hidden="true">▾</span>
+      </button>
       <div class="capture-fs__city-popover" id="capture-fs-city-popover">
         <input type="text" class="capture-fs__city-search" id="capture-fs-city-search" placeholder="Type a city…" autocomplete="off">
         <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
       </div>
 
       <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
-        <span id="capture-fs-been-text">I've been here</span>
+        <span id="capture-fs-been-text">Been</span>
       </button>
     </div>
 
     <div class="capture-fs__body">
-      <textarea
-        class="capture-fs__textarea"
-        id="capture-fs-textarea"
-        placeholder="Tampopo - try the ramen"
+      <input
+        type="text"
+        class="capture-fs__place"
+        id="capture-fs-place"
+        placeholder="What's the place?"
         autocomplete="off"
         spellcheck="false"
-        rows="1"
-      ></textarea>
+      >
+      <input
+        type="text"
+        class="capture-fs__tip"
+        id="capture-fs-tip"
+        placeholder="Leave a tip…"
+        autocomplete="off"
+        spellcheck="false"
+        hidden
+        tabindex="-1"
+      >
     </div>
 
     <footer class="capture-fs__foot">
-      <button class="btn btn--secondary" id="capture-fs-submit-continue" type="button">
-        Save & continue <span class="kbd">⌘↵</span>
-      </button>
-      <button class="btn" id="capture-fs-submit-close" type="button">
-        Save & close <span class="kbd">⇧⌘↵</span>
+      <button class="capture-fs__submit" id="capture-fs-submit" type="button" disabled>
+        Save spot
       </button>
     </footer>
   </div>

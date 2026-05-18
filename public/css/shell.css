@@ -94,7 +94,7 @@
   --r-tight:    2px;   /* sharp print-feel — overlay corners, tight inputs */
   --r-input:    4px;   /* standard inputs, textareas, search fields */
   --r-card:     6px;   /* cards, panels, modals, popovers */
-  --r-button:   8px;   /* primary + secondary action buttons */
+  --r-button:   4px;   /* primary + secondary action buttons */
   --r-pill:   999px;   /* inline tappable pills (city, been, batch link) */
   --r-circle:   50%;   /* perfect circles — paired with locked square dims */
 

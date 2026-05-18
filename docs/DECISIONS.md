@@ -8,6 +8,30 @@ Append-only record of load-bearing decisions. Read before relitigating a settled
 
 ---
 
+## 2026-05-18 · Two-field capture UX shipped (v0.6 capture redesign)
+
+First v0.6 surface to land. Capture overlay rebuilt around explicit place_name + tip fields instead of a single phrase that AI has to parse.
+
+Architectural shape:
+- **Single-phrase path stays** (POST /api/spots with `{text}`) — for Shortcut, voice memo, browser extension, future external API consumers.
+- **Two-field path added** (POST /api/spots with `{place_name, tip}`) — used by the in-app capture overlay. User already drew the boundary, so AI's text-parse work is skipped. A smaller `parseCaptureStructured` prompt runs to derive only category + neighborhood. Country/timezone come from the bound city row.
+
+Why this matters:
+- Eliminates the "SHWI canal" / "Saint Sulpice - sunday afternoon organ recital" class of parse failures. User explicitly typed the place name; AI doesn't have to guess where it ends.
+- Cheaper AI call (smaller prompt, smaller response). Faster average parse time.
+- Better data quality on first capture — the boundary is provided, not inferred.
+- The "capture is for speed, curation is for thought" principle holds: tip is optional, place is required, no tag UI at capture.
+
+Design system rules locked alongside this build:
+- 1px borders globally on interactive elements (was nominally 2px before, never enforced)
+- Capsule pills = state (city, been/want)
+- Rectangle buttons (4px corner, `--r-button` global) = action
+- Square = anchor/identity (avatar — pending v0.6 home redesign)
+- No accent color on hover anywhere — restraint, monochrome, hover lifts or fades
+- "Save spot" — one button. "Save & continue" parked until batch import UI exists.
+
+The capture redesign was built in a single session as the first v0.6 surface. Subsequent surfaces (home stream, spots landing page, spot detail) will follow the same register.
+
 ## 2026-05-14 · AI prompt: bias toward "venue" when bound city present (Job 7c)
 
 Real-world testing in Paris surfaced that "Early June" (a real natural wine bar) failed to parse — AI returned `place_name: null` because the input looked date-like. The bound city (Paris) wasn't enough signal under the old prompt language.

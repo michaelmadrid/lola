@@ -181,4 +181,107 @@ async function parseCapture(text, opts = {}) {
   }
 }
 
-module.exports = { parseCapture, CATEGORIES };
+// =============================================================
+// parseCaptureStructured — for the two-field UX (v0.6).
+// The user has already drawn the boundary between place_name and tip,
+// so AI doesn't need to infer it. AI only needs to:
+//   - Pick a category (eat/drink/coffee/stay/shop/see/other)
+//   - Detect if place_name contains a neighborhood (e.g. "Della Terra Pererenan")
+//
+// Country and timezone are derived from the bound city by the caller,
+// not by AI — AI never sees them in this path.
+//
+// Smaller prompt = cheaper API call + more reliable output. Place_name
+// and tip are passed through unchanged.
+//
+// Returns: { place_name, tip, category, neighborhood, error? }
+// =============================================================
+const STRUCTURED_SYSTEM_PROMPT = `You analyze a structured travel-spot capture and return ONLY two fields: category and an optional neighborhood.
+
+Input format: the user has already separated the place name from the tip text. You receive both fields plus the bound city. Your only job:
+1. Pick the best category from: eat, drink, coffee, stay, shop, see, other
+2. If the place_name contains a known neighborhood for the bound city (e.g. "Della Terra Pererenan" in Bali → neighborhood is "Pererenan"), extract it. Otherwise null.
+
+Return JSON only, no preamble:
+{
+  "category": string | null,
+  "neighborhood": string | null
+}
+
+Rules:
+- category whitelist: eat, drink, coffee, stay, shop, see, other. Use null only if truly uncertain.
+- For Bali: known neighborhoods include Canggu, Pererenan, Seseh, Berawa, Ubud, Seminyak, Kuta, Sanur, Uluwatu, Jimbaran.
+- For Paris: Marais, Belleville, Pigalle, Montmartre, etc.
+- Other cities: only extract a neighborhood if it's clearly part of the place_name and matches a recognized area in the bound city.
+- Don't infer category from the place name alone — use the tip if it gives a stronger signal. Example: place_name "Standing Room" + tip "best espresso" → category "coffee".
+- If no tip and place_name is ambiguous → return your best guess based on the name (e.g. "Galerie Sultana" → "see"), or null if truly unclear.
+
+Examples:
+
+Input: {place_name: "Della Terra Pererenan", tip: "sit at the bar", bound_city: "Bali"}
+Output: {"category": "eat", "neighborhood": "Pererenan"}
+
+Input: {place_name: "Mosto", tip: "natural wine, Italian", bound_city: "Bali"}
+Output: {"category": "drink", "neighborhood": null}
+
+Input: {place_name: "Early June", tip: "great natural wine and food", bound_city: "Paris"}
+Output: {"category": "drink", "neighborhood": null}
+
+Input: {place_name: "Bonjour Jacob", tip: "coffee and magazines", bound_city: "Paris"}
+Output: {"category": "shop", "neighborhood": null}
+
+Input: {place_name: "Hatchards", tip: null, bound_city: "London"}
+Output: {"category": "shop", "neighborhood": null}
+
+Input: {place_name: "Saint Sulpice", tip: "sunday afternoon organ recital", bound_city: "Paris"}
+Output: {"category": "see", "neighborhood": null}`;
+
+async function parseCaptureStructured({ place_name, tip, boundCityName }) {
+  if (!place_name || !place_name.trim()) {
+    return { error: 'place_name required' };
+  }
+  const userInput = JSON.stringify({
+    place_name: place_name.trim(),
+    tip: tip ? tip.trim() : null,
+    bound_city: boundCityName || null,
+  });
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 150,
+      system: STRUCTURED_SYSTEM_PROMPT,
+      messages: [
+        { role: 'user', content: userInput }
+      ],
+    });
+
+    const block = (response.content || []).find(b => b.type === 'text');
+    if (!block) return { error: 'no text content in response' };
+    const raw = block.text.trim();
+    const stripped = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(stripped);
+    } catch (e) {
+      return { error: 'invalid JSON: ' + e.message };
+    }
+
+    // Validate category
+    if (parsed.category && !CATEGORIES.includes(parsed.category.toLowerCase())) {
+      parsed.category = null;
+    } else if (parsed.category) {
+      parsed.category = parsed.category.toLowerCase();
+    }
+    // Normalize empty strings to null
+    for (const k of ['category', 'neighborhood']) {
+      if (parsed[k] === '' || parsed[k] === undefined) parsed[k] = null;
+      if (typeof parsed[k] === 'string') parsed[k] = parsed[k].trim() || null;
+    }
+    return parsed;
+  } catch (err) {
+    return { error: (err.message || String(err)).slice(0, 500) };
+  }
+}
+
+module.exports = { parseCapture, parseCaptureStructured, CATEGORIES };

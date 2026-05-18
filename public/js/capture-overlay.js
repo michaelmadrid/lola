@@ -32,8 +32,7 @@
   let initialized = false;
 
   let launcher, launcherCityName;
-  let captFs, captFsClose, captFsTextarea;
-  let captFsSubmitContinue, captFsSubmitClose;
+  let captFs, captFsClose, captFsPlace, captFsTip, captFsSubmit;
   let captFsCityBtn, captFsCityBtnName, captFsCityPopover, captFsCitySearch, captFsCityList;
   let captFsBeenBtn, captFsBeenText;
 
@@ -56,9 +55,9 @@
 
     captFs                = document.getElementById('capture-fs');
     captFsClose           = document.getElementById('capture-fs-close');
-    captFsTextarea        = document.getElementById('capture-fs-textarea');
-    captFsSubmitContinue  = document.getElementById('capture-fs-submit-continue');
-    captFsSubmitClose     = document.getElementById('capture-fs-submit-close');
+    captFsPlace           = document.getElementById('capture-fs-place');
+    captFsTip             = document.getElementById('capture-fs-tip');
+    captFsSubmit          = document.getElementById('capture-fs-submit');
 
     captFsCityBtn         = document.getElementById('capture-fs-city-btn');
     captFsCityBtnName     = document.getElementById('capture-fs-city-btn-name');
@@ -120,26 +119,61 @@
       if (e.key === 'Escape' && captFs.classList.contains('is-open')) close();
     });
 
-    // Textarea grow + status + keyboard shortcuts
-    if (captFsTextarea) {
-      captFsTextarea.addEventListener('input', () => { autoGrow(); });
-      captFsTextarea.addEventListener('keydown', (e) => {
-        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          doSubmit({ thenClose: false });
-          return;
-        }
-        if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'Enter') {
+    // ============ Two-field flow ============
+    // Place field:
+    //   - Enter advances focus to tip field (if not already revealed, reveals it first)
+    //   - Blur (focus out) with a non-empty value reveals the tip field
+    //   - Cmd+Enter submits regardless of focus
+    //   - Updates submit button enabled state on input
+    if (captFsPlace) {
+      captFsPlace.addEventListener('input', () => {
+        updateSubmitEnabled();
+      });
+      captFsPlace.addEventListener('keydown', (e) => {
+        // Cmd/Ctrl+Enter submits from place field
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
           e.preventDefault();
           doSubmit({ thenClose: true });
           return;
         }
+        // Plain Enter: reveal tip and advance focus
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          const value = captFsPlace.value.trim();
+          if (!value) return; // do nothing on empty
+          revealTip();
+          if (captFsTip) {
+            captFsTip.focus();
+          }
+        }
+      });
+      captFsPlace.addEventListener('blur', () => {
+        const value = captFsPlace.value.trim();
+        if (value) revealTip();
       });
     }
 
-    // Wire submit buttons
-    if (captFsSubmitClose)    captFsSubmitClose.addEventListener('click', () => doSubmit({ thenClose: true }));
-    if (captFsSubmitContinue) captFsSubmitContinue.addEventListener('click', () => doSubmit({ thenClose: false }));
+    // Tip field:
+    //   - Cmd+Enter or plain Enter submits
+    //   - Esc returns focus to place (handled by Escape close above instead)
+    if (captFsTip) {
+      captFsTip.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault();
+          doSubmit({ thenClose: true });
+          return;
+        }
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          doSubmit({ thenClose: true });
+        }
+      });
+    }
+
+    // Wire submit button
+    if (captFsSubmit) {
+      captFsSubmit.addEventListener('click', () => doSubmit({ thenClose: true }));
+    }
 
     // Auto-open mode (for /capture/ standalone)
     if (opts.autoOpen) {
@@ -157,7 +191,7 @@
   function applyBeen(val) {
     been = !!val;
     if (captFsBeenBtn)  captFsBeenBtn.dataset.been = been ? 'true' : 'false';
-    if (captFsBeenText) captFsBeenText.textContent = been ? "I've been here" : "I want to go";
+    if (captFsBeenText) captFsBeenText.textContent = been ? "Been" : "Want to go";
     try { localStorage.setItem(BEEN_STORAGE_KEY, been ? '1' : '0'); } catch {}
   }
 
@@ -173,6 +207,8 @@
         localStorage.setItem(CITY_STORAGE_KEY, JSON.stringify({ id: city.id, name: city.name, country: city.country }));
       } catch {}
     }
+    // Submit button enables only when both place and city are set
+    if (typeof updateSubmitEnabled === 'function') updateSubmitEnabled();
   }
 
   async function loadCitiesIfNeeded() {
@@ -269,11 +305,16 @@
     void captFs.offsetHeight; // reflow so transition runs
     captFs.classList.add('is-open');
     captFs.setAttribute('aria-hidden', 'false');
-    refreshPlaceholder();
+    // Reset fields
+    if (captFsPlace) captFsPlace.value = '';
+    if (captFsTip) {
+      captFsTip.value = '';
+      hideTip();
+    }
+    updateSubmitEnabled();
     loadCitiesIfNeeded();
     setTimeout(() => {
-      if (captFsTextarea) captFsTextarea.focus();
-      autoGrow();
+      if (captFsPlace) captFsPlace.focus();
     }, 80);
   }
   function close() {
@@ -287,39 +328,65 @@
   }
 
   // ------------------------------------------------------------------
-  // Textarea + status
+  // Two-field UX helpers
   // ------------------------------------------------------------------
-  function autoGrow() {
-    if (!captFsTextarea) return;
-    captFsTextarea.style.height = 'auto';
-    captFsTextarea.style.height = captFsTextarea.scrollHeight + 'px';
+  function revealTip() {
+    if (!captFsTip) return;
+    if (!captFsTip.hidden && captFsTip.classList.contains('is-visible')) return;
+    captFsTip.hidden = false;
+    captFsTip.removeAttribute('tabindex');
+    // Force reflow so the transition runs from the freshly-shown state
+    void captFsTip.offsetHeight;
+    captFsTip.classList.add('is-visible');
+  }
+  function hideTip() {
+    if (!captFsTip) return;
+    captFsTip.classList.remove('is-visible');
+    captFsTip.hidden = true;
+    captFsTip.setAttribute('tabindex', '-1');
+  }
+  function updateSubmitEnabled() {
+    if (!captFsSubmit) return;
+    const hasPlace = captFsPlace && captFsPlace.value.trim().length > 0;
+    const hasCity = !!pickedCity;
+    captFsSubmit.disabled = !(hasPlace && hasCity);
   }
 
   // ------------------------------------------------------------------
-  // Submit
+  // Submit — two-field path. Sends {place_name, tip?} body to /api/spots.
+  // Backend detects these fields and skips the v1 single-phrase AI parse;
+  // runs a structured parse instead (category + neighborhood inference only).
   // ------------------------------------------------------------------
   async function doSubmit({ thenClose }) {
     if (isSubmitting) return;
-    if (!captFsTextarea) return;
-    const text = captFsTextarea.value.trim();
-    if (!text) return;
+    if (!captFsPlace) return;
+    const placeName = captFsPlace.value.trim();
+    const tipValue = captFsTip ? captFsTip.value.trim() : '';
+    if (!placeName) return;
     if (!pickedCity) return;
     isSubmitting = true;
-    if (captFsSubmitClose)    captFsSubmitClose.disabled = true;
-    if (captFsSubmitContinue) captFsSubmitContinue.disabled = true;
+    if (captFsSubmit) captFsSubmit.disabled = true;
     try {
-      const body = { text, city_id: pickedCity.id, city_name: pickedCity.name, been };
+      const body = {
+        place_name: placeName,
+        tip: tipValue || null,
+        city_id: pickedCity.id,
+        city_name: pickedCity.name,
+        been,
+      };
       const result = await api.post('/api/spots', body);
       const count = result.count || 1;
       isSubmitting = false;
-      if (captFsSubmitClose)    captFsSubmitClose.disabled = false;
-      if (captFsSubmitContinue) captFsSubmitContinue.disabled = false;
-      // Reset field
-      captFsTextarea.value = '';
-      autoGrow();
+      // Reset fields
+      captFsPlace.value = '';
+      if (captFsTip) {
+        captFsTip.value = '';
+        hideTip();
+      }
+      updateSubmitEnabled();
       // Toast
       if (typeof window.toast === 'function') {
-        window.toast(count === 1 ? 'Saved' : `${count} spots`);
+        window.toast('Saved');
       }
       // Page-specific callback
       if (typeof opts.onSaved === 'function') {
@@ -328,13 +395,12 @@
       if (thenClose) {
         close();
       } else {
-        captFsTextarea.focus();
+        captFsPlace.focus();
       }
     } catch (err) {
       console.error('CaptureOverlay save', err);
       isSubmitting = false;
-      if (captFsSubmitClose)    captFsSubmitClose.disabled = false;
-      if (captFsSubmitContinue) captFsSubmitContinue.disabled = false;
+      updateSubmitEnabled();
       if (typeof window.toast === 'function') window.toast(err.message || 'Save failed');
     }
   }

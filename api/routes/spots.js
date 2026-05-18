@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const { authenticate } = require('../auth');
-const { parseCapture, CATEGORIES } = require('../parse-capture');
+const { parseCapture, parseCaptureStructured, CATEGORIES } = require('../parse-capture');
 const { resolveOrCreatePlace } = require('../places-resolver');
 
 function extractTags(text) {
@@ -277,19 +277,181 @@ async function createSingleSpot({ userId, text, tags, url, cityIdHint, boundCity
   return spot;
 }
 
+// =============================================================
+// Structured create path (v0.6 two-field UX).
+// User provides explicit place_name + optional tip + bound city.
+// We:
+//   1. Insert the spot with place_name/tip already set (no AI text parse)
+//   2. Attach the bound city directly (no regex scan, no AI city resolution)
+//   3. Derive country/timezone from the bound city row
+//   4. Fire parseCaptureStructured to derive category + neighborhood
+//   5. Fire Google resolver to attach place_id
+// Steps 4 and 5 run fire-and-forget after the row is created. The save
+// row exists with full structured fields immediately; AI/Google touches
+// only auxiliary fields in background.
+// =============================================================
+async function createSpotStructured({ userId, placeName, tip, cityId, cityName, been }) {
+  const beenValue = (typeof been === 'boolean') ? been : true;
+
+  // Fetch city for country/timezone (no AI needed for these — they're derivable)
+  let country = null;
+  let timezone = null;
+  if (cityId) {
+    try {
+      const r = await pool.query(
+        `SELECT country, timezone FROM cities WHERE id = $1 LIMIT 1`,
+        [cityId]
+      );
+      if (r.rows[0]) {
+        country = r.rows[0].country || null;
+        timezone = r.rows[0].timezone || null;
+      }
+    } catch {}
+  }
+
+  // Reconstruct a text representation for storage (so v1 surfaces that
+  // display the raw text still work). Format: "place - tip" if both exist,
+  // just "place" otherwise. This is purely cosmetic for legacy display.
+  const reconstructedText = tip
+    ? `${placeName} - ${tip}`
+    : placeName;
+
+  // Insert with structured fields populated immediately. AI parse markers
+  // also set: ai_parsed_at = NOW so the row doesn't render as a "ghost"
+  // waiting state — the user already provided the parse.
+  const result = await pool.query(
+    `INSERT INTO spots (user_id, text, place_name, tip, country, city_id, been, ai_parsed_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+     RETURNING *`,
+    [userId, reconstructedText, placeName, tip || null, country, cityId || null, beenValue]
+  );
+  const spot = result.rows[0];
+
+  // Build attached_cities shape so the response matches the v1 contract
+  let attached = [];
+  if (cityId && cityName) {
+    attached = [{ id: cityId, name: cityName, slug: null }];
+  } else if (cityId) {
+    try {
+      const r = await pool.query(`SELECT id, name, slug FROM cities WHERE id = $1`, [cityId]);
+      if (r.rows[0]) attached = [r.rows[0]];
+    } catch {}
+  }
+  spot.attached_cities = attached;
+
+  // Fire structured AI parse for category + neighborhood. Fire-and-forget.
+  // If AI fails, the spot is still fully usable — just no category/neighborhood.
+  parseCaptureStructured({
+    place_name: placeName,
+    tip: tip || null,
+    boundCityName: cityName,
+  })
+    .then(async (parsed) => {
+      if (parsed.error) {
+        try {
+          await pool.query(
+            `UPDATE spots SET ai_parse_error = $1 WHERE id = $2`,
+            [parsed.error, spot.id]
+          );
+        } catch {}
+        return;
+      }
+      try {
+        await pool.query(
+          `UPDATE spots
+             SET category = $1,
+                 neighborhood = $2,
+                 ai_parsed_at = NOW(),
+                 ai_parse_error = NULL
+           WHERE id = $3`,
+          [parsed.category, parsed.neighborhood, spot.id]
+        );
+      } catch (err) {
+        console.error('createSpotStructured AI update', err.message);
+      }
+    })
+    .catch(err => {
+      console.error(`[structured-parse-error] spot ${spot.id}: ${err.message}`);
+    });
+
+  // Fire Google resolver. Clean inputs (no AI inference needed) — pass placeName
+  // and the bound city directly.
+  resolveOrCreatePlace({
+    name: placeName,
+    cityId: cityId,
+    cityName: cityName,
+  })
+    .then(async (placeId) => {
+      if (placeId) {
+        try {
+          await pool.query(
+            `UPDATE spots SET place_id = $1 WHERE id = $2`,
+            [placeId, spot.id]
+          );
+        } catch (err) {
+          console.error('createSpotStructured place_id update', err.message);
+        }
+      }
+    })
+    .catch(err => {
+      console.error(`[place-lookup-error] spot ${spot.id} "${placeName}": ${err.message}`);
+    });
+
+  return spot;
+}
+
 // POST /api/spots
-// Supports single-line input (one spot) OR multi-line input (one spot per line).
+// TWO PATHS:
+// 1. Structured (v0.6 two-field UX): body has `place_name` (required) and
+//    optional `tip`. AI parse skipped — user already provided the boundary.
+//    Backend runs `parseCaptureStructured` for category + neighborhood only.
+// 2. Single-phrase (legacy / Shortcut / voice / extension): body has `text`.
+//    Full AI parse runs as before.
+//
+// Multi-line single-phrase input (one save per newline) still supported in
+// the legacy path.
 router.post('/', authenticate, async (req, res) => {
-  const { text, tags: explicitTags, url: explicitUrl, city_id, city_name, place_id, been } = req.body;
-  if (!text || !text.trim()) return res.status(400).json({ error: 'Text required' });
+  const {
+    text,
+    place_name,
+    tip,
+    tags: explicitTags,
+    url: explicitUrl,
+    city_id,
+    city_name,
+    place_id,
+    been,
+  } = req.body;
 
   try {
+    // Resolve bound city name (used by both paths for context)
     let resolvedBoundCityName = city_name || null;
     if (city_id && !resolvedBoundCityName) {
       try {
         const r = await pool.query(`SELECT name FROM cities WHERE id = $1 LIMIT 1`, [city_id]);
         if (r.rows[0]) resolvedBoundCityName = r.rows[0].name;
       } catch {}
+    }
+
+    // ----- Structured path (two-field) -----
+    if (place_name && place_name.trim()) {
+      if (!city_id) {
+        return res.status(400).json({ error: 'city_id required for structured capture' });
+      }
+      const spot = await createSpotStructured({
+        userId: req.user.id,
+        placeName: place_name.trim(),
+        tip: tip ? tip.trim() : null,
+        cityId: city_id,
+        cityName: resolvedBoundCityName,
+        been,
+      });
+      return res.json({ spot });
+    }
+
+    // ----- Legacy single-phrase path -----
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'Text or place_name required' });
     }
 
     const lines = String(text)
