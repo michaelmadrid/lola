@@ -35,25 +35,22 @@
   max-width: 720px;
   display: flex;
   flex-direction: column;
-  padding: 100px var(--gutter, 24px) calc(96px + env(safe-area-inset-bottom, 0));
+  padding: 24px var(--gutter, 24px) calc(48px + env(safe-area-inset-bottom, 0));
   position: relative;
   min-height: 100vh;
 }
 
 /* ============ Head ============
-   Positioned absolutely so X and "..." sit at the actual viewport edges,
-   not pushed down by the inner padding. Stays at top regardless of
-   how much breathing room the field area has. */
+   In normal flow at the top of the scrollable inner. X close sits with
+   modest breathing room from viewport edge (inner padding-top: 24px).
+   Larger gap below the head pushes the bind pills + place field down
+   into a more editorial composition. Scrolls with the content
+   (intentional — modal is a document, not a fixed shell). */
 .capture-fs--v2 .capture-fs__head {
-  position: absolute;
-  top: 20px;
-  left: var(--gutter, 24px);
-  right: var(--gutter, 24px);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 0;
-  z-index: 2;
+  margin-bottom: 80px;
 }
 
 .capture-fs__close,
@@ -304,22 +301,16 @@
 }
 
 /* ============ Foot — save button ============
-   Always fixed to viewport bottom, both desktop and mobile. Sits above
-   the iOS home indicator on mobile via safe-area-inset-bottom. No
-   hairline — the button stands on its own, the field area scrolls
-   underneath. */
+   Natural flow at the end of the scrollable inner. No position:fixed —
+   that caused iOS Safari clipping issues with the URL bar and virtual
+   keyboard. The whole modal scrolls together; the save button is at
+   the end of the document, reached by scrolling. */
 .capture-fs--v2 .capture-fs__foot {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
   justify-content: flex-end;
-  padding: 16px var(--gutter, 24px) calc(16px + env(safe-area-inset-bottom, 0));
-  background: var(--bg);
+  padding: 0;
+  margin-top: 32px;
   border-top: 0;
-  z-index: 5;
-  margin: 0;
 }
 
 .capture-fs__submit {
@@ -372,15 +363,10 @@
 /* ============ Mobile ============ */
 @media (max-width: 720px) {
   .capture-fs--v2 .capture-fs__inner {
-    /* Top breathing room (80px) — slightly less than desktop (100px) since
-       phone real estate is tighter. Bottom reserves room for the fixed
-       footer so content can scroll past it. */
-    padding: 80px var(--gutter, 20px) calc(90px + env(safe-area-inset-bottom, 0));
+    padding: 20px var(--gutter, 20px) calc(40px + env(safe-area-inset-bottom, 0));
   }
   .capture-fs--v2 .capture-fs__head {
-    top: 16px;
-    left: var(--gutter, 20px);
-    right: var(--gutter, 20px);
+    margin-bottom: 60px;
   }
   .capture-fs--v2 .capture-fs__bind {
     margin-bottom: 20px;
@@ -395,11 +381,8 @@
   .capture-fs__tip {
     font-size: 20px !important;
   }
-
-  /* Footer is already position: fixed from the base rule. Just bump the
-     button size on mobile for thumb comfort. */
   .capture-fs--v2 .capture-fs__foot {
-    padding: 12px var(--gutter, 20px) calc(12px + env(safe-area-inset-bottom, 0));
+    margin-top: 28px;
   }
   .capture-fs__submit {
     height: 52px;
