@@ -306,43 +306,56 @@
   // ============ CAPTURE — shared overlay module ============
   // The overlay HTML lives in this page; the logic is in /js/capture-overlay.js,
   // a shared module reused on /spots/ and /capture/.
+  //
+  // Save-time strategy (v0.6): the structured capture path returns the fully
+  // shaped spot row in the POST response — place_name, tip, city, been are
+  // all already set. We render the pill *instantly* using that data instead
+  // of showing a generic skeleton ghost. Google's place_id and AI's
+  // category/neighborhood fill in over the following few seconds via the
+  // existing background polling, replacing the optimistic row in place.
   if (window.CaptureOverlay) {
     window.CaptureOverlay.init({
       launcher: '#capture-launcher',
       launcherCity: '#capture-launcher-city-name',
-      onSaved: ({ thenClose }) => {
-        // After a spot save: home injects ghost row, polls the stream
+      onSaved: ({ thenClose, spot }) => {
+        if (spot && spot.id) {
+          // Prepend the freshly-saved spot to the stream cache and re-render.
+          // The pill appears instantly with place_name + tip + been already
+          // visible. Background fields (category, google_place_id) will
+          // populate via the reconcile polls below.
+          prependOptimisticSpot(spot);
+        }
+        // Reconcile polls — quick re-fetches to catch Google + AI updates
+        // for the just-saved spot. Polling moved closer together because
+        // we no longer rely on these to first show the pill; they're now
+        // just opportunistic refreshes.
         if (thenClose) {
-          injectGhostRow();
-          setTimeout(() => loadStream(), 1500);
-          setTimeout(() => loadStream(), 3500);
-          setTimeout(() => loadStream(), 7000);
-          setTimeout(() => loadStream(), 12000);
+          setTimeout(() => loadStream(), 1200);
+          setTimeout(() => loadStream(), 3000);
+          setTimeout(() => loadStream(), 6000);
         } else {
-          // Continue mode — background poll so closing the overlay shows fresh data
-          setTimeout(() => loadStream(), 1500);
-          setTimeout(() => loadStream(), 4000);
+          setTimeout(() => loadStream(), 1200);
+          setTimeout(() => loadStream(), 3500);
         }
       },
     });
   }
 
-  // Inject a generic pulsing ghost row at the top of the stream while AI parses.
-  // Used after submit-and-close from the overlay.
-  function injectGhostRow() {
-    const empty = streamEl.querySelector('.stream__empty');
-    if (empty) empty.remove();
-    const ghost = document.createElement('div');
-    ghost.className = 'stream__item stream__ghost';
-    ghost.innerHTML = `
-      <div class="stream__body">
-        <span class="stream__ghost-bar stream__ghost-bar--name"></span>
-        <span class="stream__ghost-bar stream__ghost-bar--tip"></span>
-        <span class="stream__ghost-bar stream__ghost-bar--meta"></span>
-      </div>
-      <span class="stream__when">…</span>
-    `;
-    streamEl.insertBefore(ghost, streamEl.firstChild);
+  // Cache of the most recent loadStream() result so we can render
+  // optimistically (instant pill on save) without a refetch.
+  let lastSpots = [];
+
+  // Prepend a just-saved spot to the local cache and re-render the stream.
+  // Used by the capture overlay's onSaved callback for instant feedback.
+  function prependOptimisticSpot(spot) {
+    if (!spot || !spot.id) return;
+    // Replace any existing entry with same id (defensive — shouldn't happen
+    // but if save fires twice somehow, don't duplicate)
+    lastSpots = lastSpots.filter(s => s.id !== spot.id);
+    lastSpots.unshift(spot);
+    // Trim to the same cap that the server returns
+    if (lastSpots.length > 30) lastSpots = lastSpots.slice(0, 30);
+    renderStream(lastSpots);
   }
 
 
@@ -353,7 +366,8 @@
   async function loadStream() {
     try {
       const data = await api.get('/api/spots?limit=30');
-      renderStream(data.spots || []);
+      lastSpots = data.spots || [];
+      renderStream(lastSpots);
       // If any ghost rows are visible (just-captured spots still being parsed by AI),
       // schedule retry-fetches to replace them once parsing completes.
       schedulePendingRetries();
@@ -452,14 +466,9 @@
       // click handler to open Google Maps. Spots without a resolved place
       // (place_id null OR Google found no match) have no gpid attribute and
       // the click handler treats them as no-op.
-      // data-place-name: the place name for the Maps URL's `query` param.
-      // Required by Google's api=1 URL format even when query_place_id is set.
       const gpidAttr = s.google_place_id ? ` data-gpid="${util.escapeHtml(s.google_place_id)}"` : '';
-      const placeNameAttr = (s.google_place_id && s.place_name)
-        ? ` data-place-name="${util.escapeHtml(s.place_name)}"`
-        : '';
       const treatment = (parseInt(s.id, 10) % 7);
-      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}${gpidAttr}${placeNameAttr}>
+      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}${gpidAttr}>
         <div class="stream__body">
           ${bodyHtml}
         </div>
@@ -828,20 +837,13 @@
   // open it in Google Maps in a new tab. If not (place_id null — Google
   // had no match, or AI returned no place_name, or it's a raw note),
   // do nothing. Editing now lives on /spots/.
-  //
-  // URL format: uses Google's documented Maps URL API (api=1) with both
-  // `query` (place name, required by spec) and `query_place_id` (the
-  // canonical Google identifier). Old format `?q=place_id:X` works on
-  // desktop but breaks on mobile — Google's mobile Maps treats it as a
-  // literal search string. api=1 format works on both.
   streamEl.addEventListener('click', (e) => {
     const row = e.target.closest('.stream__item');
     if (!row) return;
     if (row.classList.contains('stream__ghost')) return;
     const gpid = row.dataset.gpid;
     if (!gpid) return; // no Google place — silently no-op
-    const name = row.dataset.placeName || '';
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${encodeURIComponent(gpid)}`;
+    const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(gpid)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   });
 

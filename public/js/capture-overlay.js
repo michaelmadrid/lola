@@ -391,6 +391,7 @@
       };
       const result = await api.post('/api/spots', body);
       const count = result.count || 1;
+      const savedSpot = result.spot || (result.spots && result.spots[0]) || null;
       isSubmitting = false;
       // Reset fields
       captFsPlace.value = '';
@@ -405,9 +406,10 @@
       if (typeof window.toast === 'function') {
         window.toast('Saved');
       }
-      // Page-specific callback
+      // Page-specific callback — pass the saved spot so the home stream can
+      // render it instantly without waiting for a refetch.
       if (typeof opts.onSaved === 'function') {
-        try { opts.onSaved({ count, thenClose }); } catch (e) { console.error('onSaved', e); }
+        try { opts.onSaved({ count, thenClose, spot: savedSpot }); } catch (e) { console.error('onSaved', e); }
       }
       if (thenClose) {
         close();
