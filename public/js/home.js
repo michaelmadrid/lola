@@ -466,9 +466,14 @@
       // click handler to open Google Maps. Spots without a resolved place
       // (place_id null OR Google found no match) have no gpid attribute and
       // the click handler treats them as no-op.
+      // data-place-name: the place name for the Maps URL's `query` param.
+      // Required by Google's api=1 URL format even when query_place_id is set.
       const gpidAttr = s.google_place_id ? ` data-gpid="${util.escapeHtml(s.google_place_id)}"` : '';
+      const placeNameAttr = (s.google_place_id && s.place_name)
+        ? ` data-place-name="${util.escapeHtml(s.place_name)}"`
+        : '';
       const treatment = (parseInt(s.id, 10) % 7);
-      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}${gpidAttr}>
+      return `<div class="stream__item${variantClass}${wantClass}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}${gpidAttr}${placeNameAttr}>
         <div class="stream__body">
           ${bodyHtml}
         </div>
@@ -832,18 +837,25 @@
 
   if (spotFsClose) spotFsClose.addEventListener('click', closeSpotEditor);
 
-  // Click delegation: any stream row → open editor (skip ghost rows)
+  // Click delegation: any stream row → open in Google Maps (skip ghost rows)
   // Click on a stream item: if the spot has a resolved Google place_id,
   // open it in Google Maps in a new tab. If not (place_id null — Google
   // had no match, or AI returned no place_name, or it's a raw note),
-  // do nothing. Editing now lives on /spots/.
+  // do nothing. Editing lives on /spots/.
+  //
+  // URL format: uses Google's documented Maps URL API (api=1) with both
+  // `query` (place name, required by spec) and `query_place_id` (the
+  // canonical Google identifier). Old format `?q=place_id:X` works on
+  // desktop but breaks on mobile — Google's mobile Maps treats it as a
+  // literal search string. api=1 format works on both.
   streamEl.addEventListener('click', (e) => {
     const row = e.target.closest('.stream__item');
     if (!row) return;
     if (row.classList.contains('stream__ghost')) return;
     const gpid = row.dataset.gpid;
     if (!gpid) return; // no Google place — silently no-op
-    const url = `https://www.google.com/maps/place/?q=place_id:${encodeURIComponent(gpid)}`;
+    const name = row.dataset.placeName || '';
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${encodeURIComponent(gpid)}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   });
 
