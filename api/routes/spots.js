@@ -641,11 +641,15 @@ router.get('/index', async (req, res) => {
         s.website,
         s.image_url,
         s.been,
-        s.google_place_id,
+        p.google_place_id,
+        p.lat,
+        p.lng,
+        p.address,
         c.name  AS city,
         c.slug  AS city_slug
       FROM spots s
       LEFT JOIN cities c ON s.city_id = c.id
+      LEFT JOIN places p ON s.place_id = p.id
       WHERE s.curated = true
         AND s.place_name IS NOT NULL
       ORDER BY s.country, c.name, s.place_name
