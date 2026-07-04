@@ -7,6 +7,11 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log('hostname:', req.hostname, 'path:', req.path);
+  next();
+});
+
 // ============ LEGACY URL REDIRECTS ============
 app.get('/trips.html', (req, res) => res.redirect(301, '/travel/trips/'));
 app.get('/trips-graveyard.html', (req, res) => res.redirect(301, '/travel/graveyard/'));
