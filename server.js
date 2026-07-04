@@ -47,6 +47,11 @@ app.get('/guide/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'g.html'));
 });
 
+// Summer Holiday public index
+app.get('/index-sh', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
+});
+
 // ============ FALLBACK ============
 // If a request hits /something but no static file exists,
 // fall through to index.html (so client-side links still work)
