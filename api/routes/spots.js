@@ -623,5 +623,38 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
   }
 });
 
+// =============================================================
+// Public index endpoint — no auth required.
+// Powers index.summer-holiday.com
+// Returns all curated spots ordered by country, city, place_name.
+// =============================================================
+router.get('/index', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        s.id,
+        s.place_name,
+        s.tip,
+        s.neighborhood,
+        s.country,
+        s.curated_category,
+        s.website,
+        s.image_url,
+        s.been,
+        s.google_place_id,
+        c.name  AS city,
+        c.slug  AS city_slug
+      FROM spots s
+      LEFT JOIN cities c ON s.city_id = c.id
+      WHERE s.curated = true
+        AND s.place_name IS NOT NULL
+      ORDER BY s.country, c.name, s.place_name
+    `);
+    res.json({ spots: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 module.exports.refreshCitiesCache = refreshCitiesCache;
