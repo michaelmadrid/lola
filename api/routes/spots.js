@@ -247,16 +247,17 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // Create a single spot row + run regex city detection. Async AI parse fires after.
-async function createSingleSpot({ userId, text, tags, url, cityIdHint, boundCityName, place_id, been }) {
+async function createSingleSpot({ userId, text, tags, url, cityIdHint, boundCityName, place_id, been, isAdmin }) {
   const beenValue = (typeof been === 'boolean') ? been : true;
   const detectedIds = detectCities(text);
   const initialCityId = detectedIds.length ? detectedIds[0] : null;
+  const curatedBy = isAdmin ? userId : null;
 
   const result = await pool.query(
-    `INSERT INTO spots (user_id, text, tags, url, place_id, been, city_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO spots (user_id, text, tags, url, place_id, been, city_id, curated, curated_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      RETURNING *`,
-    [userId, text.trim(), tags, url, place_id || null, beenValue, initialCityId]
+    [userId, text.trim(), tags, url, place_id || null, beenValue, initialCityId, !!isAdmin, curatedBy]
   );
   const spot = result.rows[0];
 
@@ -290,8 +291,9 @@ async function createSingleSpot({ userId, text, tags, url, cityIdHint, boundCity
 // row exists with full structured fields immediately; AI/Google touches
 // only auxiliary fields in background.
 // =============================================================
-async function createSpotStructured({ userId, placeName, tip, cityId, cityName, been }) {
+async function createSpotStructured({ userId, placeName, tip, cityId, cityName, been, isAdmin }) {
   const beenValue = (typeof been === 'boolean') ? been : true;
+  const curatedBy = isAdmin ? userId : null;
 
   // Fetch city for country/timezone (no AI needed for these — they're derivable)
   let country = null;
@@ -320,10 +322,10 @@ async function createSpotStructured({ userId, placeName, tip, cityId, cityName, 
   // also set: ai_parsed_at = NOW so the row doesn't render as a "ghost"
   // waiting state — the user already provided the parse.
   const result = await pool.query(
-    `INSERT INTO spots (user_id, text, place_name, tip, country, city_id, been, ai_parsed_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+    `INSERT INTO spots (user_id, text, place_name, tip, country, city_id, been, ai_parsed_at, curated, curated_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9)
      RETURNING *`,
-    [userId, reconstructedText, placeName, tip || null, country, cityId || null, beenValue]
+    [userId, reconstructedText, placeName, tip || null, country, cityId || null, beenValue, !!isAdmin, curatedBy]
   );
   const spot = result.rows[0];
 
@@ -445,6 +447,7 @@ router.post('/', authenticate, async (req, res) => {
         cityId: city_id,
         cityName: resolvedBoundCityName,
         been,
+        isAdmin: req.user.role === 'admin',
       });
       return res.json({ spot });
     }
@@ -472,6 +475,7 @@ router.post('/', authenticate, async (req, res) => {
         boundCityName: resolvedBoundCityName,
         place_id,
         been,
+        isAdmin: req.user.role === 'admin',
       });
       return res.json({ spot });
     }
@@ -489,6 +493,7 @@ router.post('/', authenticate, async (req, res) => {
         boundCityName: resolvedBoundCityName,
         place_id: null,
         been,
+        isAdmin: req.user.role === 'admin',
       });
       created.push(spot);
     }
