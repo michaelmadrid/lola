@@ -8,8 +8,6 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // ============ LEGACY URL REDIRECTS ============
-// Run BEFORE static so old paths redirect even if files still exist.
-// 301 (permanent) so browsers update bookmarks.
 app.get('/trips.html', (req, res) => res.redirect(301, '/travel/trips/'));
 app.get('/trips-graveyard.html', (req, res) => res.redirect(301, '/travel/graveyard/'));
 app.get('/atlas', (req, res) => res.redirect(301, '/travel/'));
@@ -22,7 +20,6 @@ app.get('/atlas/phrasebook', (req, res) => res.redirect(301, '/travel/phrasebook
 app.get('/atlas/phrasebook/', (req, res) => res.redirect(301, '/travel/phrasebook/'));
 app.get('/atlas/extras', (req, res) => res.redirect(301, '/travel/extras/'));
 app.get('/atlas/extras/', (req, res) => res.redirect(301, '/travel/extras/'));
-// Old phrasebook JSON path (cached old pages may still hit it)
 app.get('/atlas/phrasebook.json', (req, res) => res.redirect(301, '/travel/phrasebook.json'));
 
 app.use(express.static('public'));
@@ -40,21 +37,23 @@ app.use('/api/guides',  require('./api/routes/guides'));
 app.use('/api/phrases', require('./api/routes/phrases'));
 
 // ============ PUBLIC GUIDE VIEW ============
-// /guide/:slug is the canonical public URL — editorial, readable.
-// The page (g.html) fetches the guide data via /api/guides/_public/:slug.
-// No auth required for either the page or the API endpoint.
 app.get('/guide/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'g.html'));
 });
 
-// Summer Holiday public index
+// ============ SUMMER HOLIDAY INDEX ============
+// Serves on index.summer-holiday.com subdomain OR /index-sh path
+app.use((req, res, next) => {
+  if (req.hostname === 'index.summer-holiday.com') {
+    return res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
+  }
+  next();
+});
 app.get('/index-sh', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
 });
 
 // ============ FALLBACK ============
-// If a request hits /something but no static file exists,
-// fall through to index.html (so client-side links still work)
 app.get(/^\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
