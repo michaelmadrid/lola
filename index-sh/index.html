@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index — Summer Holiday</title>
+  <style>
+    @font-face {
+      font-family: "ABC Diatype";
+      src: url("/fonts/ABCDiatypeTrial-Regular.woff2") format("woff2");
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: "ABC Diatype";
+      src: url("/fonts/ABCDiatypeTrial-Medium.woff2") format("woff2");
+      font-weight: 500; font-style: normal; font-display: swap;
+    }
+    @font-face {
+      font-family: "ABC Diatype Mono";
+      src: url("/fonts/ABCDiatypeMonoTrial-Regular.woff2") format("woff2");
+      font-weight: 400; font-style: normal; font-display: swap;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f5f5f2;
+      --surface:   #ebeae5;
+      --surface-2: #e3e2dc;
+      --ink:       #111111;
+      --ink-2:     #555551;
+      --ink-3:     #777773;
+      --rule:      #d8d8d4;
+      --accent:    #2a4ed4;
+      --sans:      "ABC Diatype", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      --mono:      "ABC Diatype Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      --gutter:    32px;
+      --r-card:    6px;
+      --r-pill:    999px;
+    }
+
+    html { background: var(--bg); color: var(--ink); font-family: var(--sans); }
+
+    body {
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+      letter-spacing: -0.005em;
+    }
+
+    /* Header */
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 26px var(--gutter) 22px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .head__logo {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: lowercase;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .head__sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px var(--gutter);
+      border-bottom: 1px solid var(--rule);
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: var(--r-pill);
+      border: 1px solid var(--rule);
+      background: transparent;
+      color: var(--ink-2);
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .filter-pill:hover { color: var(--ink); border-color: var(--ink); }
+    .filter-pill.is-active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+    /* Grid */
+    .main {
+      padding: 32px var(--gutter);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      border: 1px solid var(--rule);
+      border-radius: var(--r-card);
+      overflow: hidden;
+    }
+
+    /* Card */
+    .card {
+      background: var(--bg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: background 140ms ease;
+    }
+    .card:hover { background: var(--surface); }
+    .card__category {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .card__name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .card__city {
+      font-size: 13px;
+      color: var(--ink-2);
+    }
+    .card__tip {
+      font-size: 13px;
+      color: var(--ink-2);
+      line-height: 1.5;
+      margin-top: 2px;
+    }
+    .card__links {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .card__link {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .card__link:hover { text-decoration: underline; }
+
+    /* Empty / loading */
+    .state {
+      padding: 80px var(--gutter);
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--ink-3);
+    }
+
+    /* Count */
+    .meta {
+      padding: 0 var(--gutter) 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      :root { --gutter: 18px; }
+    }
+    @media (max-width: 560px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="head">
+    <a class="head__logo" href="https://summer-holiday.com">summer holiday</a>
+    <span class="head__sub">Index</span>
+  </header>
+
+  <div class="filters" id="filters">
+    <button class="filter-pill is-active" data-filter="all">All</button>
+  </div>
+
+  <div class="meta" id="meta"></div>
+
+  <main class="main">
+    <div class="grid" id="grid">
+      <div class="state">Loading…</div>
+    </div>
+  </main>
+
+  <script>
+    const API = 'https://kit.summer-holiday.com/api/spots/index';
+    let allSpots = [];
+    let activeFilter = 'all';
+
+    async function load() {
+      try {
+        const res = await fetch(API);
+        const data = await res.json();
+        allSpots = data.spots || [];
+        buildFilters();
+        render();
+      } catch (e) {
+        document.getElementById('grid').innerHTML = '<div class="state">Could not load spots.</div>';
+      }
+    }
+
+    function buildFilters() {
+      const categories = [...new Set(allSpots.map(s => s.curated_category).filter(Boolean))].sort();
+      const filters = document.getElementById('filters');
+      categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-pill';
+        btn.dataset.filter = cat;
+        btn.textContent = cat.replace(/_/g, ' ');
+        btn.addEventListener('click', () => setFilter(cat));
+        filters.appendChild(btn);
+      });
+      document.querySelectorAll('.filter-pill').forEach(b => {
+        b.addEventListener('click', () => setFilter(b.dataset.filter));
+      });
+    }
+
+    function setFilter(f) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-pill').forEach(b => {
+        b.classList.toggle('is-active', b.dataset.filter === f);
+      });
+      render();
+    }
+
+    function render() {
+      const spots = activeFilter === 'all'
+        ? allSpots
+        : allSpots.filter(s => s.curated_category === activeFilter);
+
+      const meta = document.getElementById('meta');
+      meta.textContent = `${spots.length} place${spots.length !== 1 ? 's' : ''}`;
+
+      const grid = document.getElementById('grid');
+      if (!spots.length) {
+        grid.innerHTML = '<div class="state">Nothing here yet.</div>';
+        return;
+      }
+
+      grid.innerHTML = spots.map(s => {
+        const mapsUrl = s.google_place_id
+          ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.place_name)}&query_place_id=${s.google_place_id}`
+          : s.place_name ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.place_name + ' ' + (s.city || ''))}` : null;
+
+        const links = [];
+        if (s.website) links.push(`<a class="card__link" href="${s.website}" target="_blank" rel="noopener">Website</a>`);
+        if (mapsUrl)   links.push(`<a class="card__link" href="${mapsUrl}" target="_blank" rel="noopener">Maps</a>`);
+
+        return `<div class="card">
+          ${s.curated_category ? `<div class="card__category">${s.curated_category.replace(/_/g, ' ')}</div>` : ''}
+          <div class="card__name">${esc(s.place_name)}</div>
+          <div class="card__city">${[s.city, s.country].filter(Boolean).join(', ')}</div>
+          ${s.tip ? `<div class="card__tip">${esc(s.tip)}</div>` : ''}
+          ${links.length ? `<div class="card__links">${links.join('')}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    load();
+  </script>
+</body>
+</html>
