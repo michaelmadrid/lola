@@ -629,6 +629,7 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
 // Returns all curated spots ordered by country, city, place_name.
 // =============================================================
 router.get('/index', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
   try {
     const result = await pool.query(`
       SELECT
