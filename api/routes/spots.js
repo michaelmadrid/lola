@@ -652,6 +652,7 @@ router.get('/index', async (req, res) => {
         s.tip,
         s.neighborhood,
         s.country,
+        s.category,
         s.website,
         s.image_url,
         s.been,
