@@ -5,106 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Index — Summer Holiday</title>
   <style>
-    @font-face {
-      font-family: "ABC Diatype";
-      src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeTrial-Regular.woff2") format("woff2");
-      font-weight: 400; font-style: normal; font-display: swap;
-    }
-    @font-face {
-      font-family: "ABC Diatype";
-      src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeTrial-Medium.woff2") format("woff2");
-      font-weight: 500; font-style: normal; font-display: swap;
-    }
-    @font-face {
-      font-family: "ABC Diatype Mono";
-      src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeMonoTrial-Regular.woff2") format("woff2");
-      font-weight: 400; font-style: normal; font-display: swap;
-    }
+    @font-face { font-family: "ABC Diatype"; src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeTrial-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "ABC Diatype"; src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeTrial-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+    @font-face { font-family: "ABC Diatype Mono"; src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeMonoTrial-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --sans: "ABC Diatype", -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-      --mono: "ABC Diatype Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      --sans: "ABC Diatype", -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono: "ABC Diatype Mono", ui-monospace, "SF Mono", monospace;
       --ink: #111;
-      --ink-2: #555;
+      --ink-2: #666;
       --ink-3: #999;
-      --rule: #e0e0e0;
+      --rule: #ddd;
       --accent: #2a4ed4;
       --gutter: 40px;
     }
 
     html { background: #fff; color: var(--ink); font-family: var(--sans); }
-    body { min-height: 100vh; }
 
     /* ===== Hero ===== */
     .hero {
-      padding: 60px var(--gutter) 40px;
+      padding: 48px var(--gutter) 32px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: flex-end;
     }
     .hero__title {
-      font-size: clamp(48px, 8vw, 96px);
+      font-size: clamp(56px, 10vw, 120px);
       font-weight: 400;
-      letter-spacing: -0.03em;
-      line-height: 1;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
     }
     .hero__brand {
       font-family: var(--mono);
-      font-size: 11px;
-      letter-spacing: 0.06em;
+      font-size: 10px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--ink-3);
-      padding-top: 8px;
     }
 
-    /* ===== Controls bar ===== */
+    /* ===== Controls ===== */
     .controls {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px var(--gutter);
+      gap: 10px;
+      padding: 12px var(--gutter);
       border-top: 1px solid var(--ink);
       border-bottom: 1px solid var(--ink);
-      flex-wrap: wrap;
       background: #fff;
+      flex-wrap: wrap;
       z-index: 50;
     }
-    .controls.is-stuck {
-      position: sticky;
-      top: 0;
-    }
+    .controls.is-stuck { position: sticky; top: 0; }
+
     .controls__search {
       font-family: var(--sans);
-      font-size: 14px;
+      font-size: 13px;
       border: 1px solid var(--rule);
       border-radius: 999px;
-      padding: 7px 16px;
+      padding: 6px 14px;
       outline: none;
-      width: 180px;
+      width: 160px;
       background: transparent;
-      color: var(--ink);
     }
     .controls__search:focus { border-color: var(--ink); }
     .controls__search::placeholder { color: var(--ink-3); }
 
-    .pill-select {
-      position: relative;
-      display: inline-block;
-    }
+    .pill-select { position: relative; }
     .pill-btn {
       font-family: var(--sans);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      padding: 7px 16px;
+      padding: 6px 14px;
       border-radius: 999px;
       border: 1px solid var(--rule);
       background: transparent;
       color: var(--ink-2);
       cursor: pointer;
-      transition: all 140ms ease;
-      white-space: nowrap;
     }
     .pill-btn:hover { border-color: var(--ink); color: var(--ink); }
     .pill-btn.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
@@ -112,157 +90,194 @@
     .pill-dropdown {
       display: none;
       position: absolute;
-      top: calc(100% + 6px);
+      top: calc(100% + 4px);
       left: 0;
       background: #fff;
       border: 1px solid var(--rule);
-      border-radius: 8px;
-      padding: 8px 0;
-      min-width: 220px;
-      max-height: 320px;
+      border-radius: 6px;
+      padding: 6px 0;
+      min-width: 200px;
+      max-height: 300px;
       overflow-y: auto;
       z-index: 100;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     .pill-dropdown.is-open { display: block; }
     .pill-dropdown__search {
       font-family: var(--sans);
-      font-size: 14px;
+      font-size: 13px;
       border: 0;
       border-bottom: 1px solid var(--rule);
-      padding: 8px 16px;
+      padding: 8px 14px;
       width: 100%;
       outline: none;
-      background: transparent;
     }
     .pill-dropdown__item {
       display: block;
       width: 100%;
       text-align: left;
       font-family: var(--sans);
-      font-size: 15px;
-      padding: 10px 16px;
+      font-size: 14px;
+      padding: 8px 14px;
       border: 0;
       background: transparent;
       cursor: pointer;
       color: var(--ink);
     }
     .pill-dropdown__item:hover { background: #f5f5f5; }
-    .pill-dropdown__item .country {
-      font-size: 13px;
-      color: var(--ink-3);
-      margin-left: 8px;
-    }
+    .pill-dropdown__item .country { font-size: 12px; color: var(--ink-3); margin-left: 6px; }
     .pill-dropdown__item.is-active { color: var(--accent); font-weight: 500; }
 
     .sort-btn {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 10px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--ink-3);
-      background: transparent;
+      background: 0;
       border: 0;
       cursor: pointer;
-      padding: 7px 8px;
+      padding: 6px;
     }
     .sort-btn:hover { color: var(--ink); }
 
     .controls__count {
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 10px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--ink-3);
       margin-left: auto;
     }
 
-    /* ===== Table ===== */
-    .index-table {
-      width: 100%;
-    }
-    .index-row {
-      display: grid;
-      grid-template-columns: minmax(0, 3fr) minmax(0, 3fr) minmax(0, 2fr);
-      border-bottom: 1px solid var(--rule);
+    /* ===== List ===== */
+    .index-list {
       padding: 0 var(--gutter);
     }
-    .index-row--head {
+    .index-item {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
       border-bottom: 1px solid var(--rule);
-      background: #fff;
+      padding: 14px 0;
+      cursor: pointer;
+      transition: opacity 100ms;
     }
-    .index-row--head span {
+    .index-item:hover { opacity: 0.5; }
+    .index-item__name {
+      font-size: clamp(20px, 3vw, 32px);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .index-item__city {
       font-family: var(--mono);
       font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--ink-3);
-      padding: 10px 0;
-    }
-    .index-cell {
-      padding: 16px 0;
-      padding-right: 24px;
-      font-size: 16px;
-      line-height: 1.4;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .index-cell__name {
-      font-weight: 500;
-      color: var(--ink);
-    }
-    .index-cell__name a {
-      color: inherit;
-      text-decoration: none;
-    }
-    .index-cell__name a:hover { color: var(--accent); }
-    .index-cell__tip {
-      font-size: 15px;
-      color: var(--ink-2);
-    }
-    .index-cell__city {
-      font-size: 15px;
-      color: var(--ink);
-    }
-    .index-cell__country {
-      font-size: 13px;
-      color: var(--ink-3);
-    }
-    .index-cell__links {
-      display: flex;
-      gap: 12px;
-      margin-top: 2px;
-    }
-    .index-cell__link {
-      font-family: var(--mono);
-      font-size: 10px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--ink-3);
-      text-decoration: none;
+      white-space: nowrap;
     }
-    .index-cell__link:hover { color: var(--accent); }
 
     .empty {
-      padding: 80px var(--gutter);
+      padding: 80px 0;
       text-align: center;
-      font-size: 15px;
       color: var(--ink-3);
+      font-size: 14px;
     }
 
-    /* ===== Mobile ===== */
+    /* ===== Overlay ===== */
+    .overlay-scrim {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+    }
+    .overlay-scrim.is-open { display: block; }
+
+    .overlay-card {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 440px;
+      z-index: 210;
+      padding: 32px;
+    }
+    .overlay-card.is-open { display: block; }
+
+    .overlay-card__close {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--rule);
+      background: transparent;
+      font-size: 16px;
+      cursor: pointer;
+      color: var(--ink-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .overlay-card__close:hover { color: var(--ink); border-color: var(--ink); }
+
+    .overlay-card__name {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+      margin-top: 8px;
+    }
+    .overlay-card__location {
+      font-size: 14px;
+      color: var(--ink-2);
+      margin-bottom: 20px;
+    }
+    .overlay-card__category {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 16px;
+      display: inline-block;
+      border: 1px solid var(--rule);
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+    .overlay-card__links {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .overlay-card__link {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--ink);
+      color: var(--ink);
+    }
+    .overlay-card__link:hover { background: var(--ink); color: #fff; }
+
     @media (max-width: 720px) {
       :root { --gutter: 20px; }
-      .hero { padding: 40px var(--gutter) 24px; }
-      .hero__title { font-size: 48px; }
-      .controls { gap: 8px; padding: 10px var(--gutter); }
+      .hero { padding: 32px var(--gutter) 20px; }
       .controls__search { width: 100%; order: -1; }
-      .index-row { grid-template-columns: 1fr; gap: 2px; padding: 12px var(--gutter); }
-      .index-row--head { display: none; }
-      .index-cell { padding: 0; padding-right: 0; }
-      .index-cell__country { display: inline; }
-      .index-cell__city { display: inline; }
+      .index-item__name { font-size: 22px; }
+      .overlay-card { width: 94%; padding: 24px; }
     }
   </style>
 </head>
@@ -275,189 +290,146 @@
 
   <div class="controls" id="controls">
     <input type="text" class="controls__search" id="search" placeholder="Search…">
-
-    <div class="pill-select" id="city-select">
+    <div class="pill-select">
       <button class="pill-btn" id="city-btn">City</button>
       <div class="pill-dropdown" id="city-dropdown">
         <input type="text" class="pill-dropdown__search" id="city-search" placeholder="Type a city…">
         <div id="city-list"></div>
       </div>
     </div>
-
-    <div class="pill-select" id="cat-select">
+    <div class="pill-select">
       <button class="pill-btn" id="cat-btn">Category</button>
       <div class="pill-dropdown" id="cat-dropdown">
         <div id="cat-list"></div>
       </div>
     </div>
-
-    <button class="sort-btn" id="sort-btn" title="Sort">A–Z</button>
-
+    <button class="sort-btn" id="sort-btn">A–Z</button>
     <span class="controls__count" id="count"></span>
   </div>
 
-  <div class="index-table" id="table">
-    <div class="index-row index-row--head">
-      <span>Place</span>
-      <span>Info</span>
-      <span>Location</span>
-    </div>
-    <div id="rows"><div class="empty">Loading…</div></div>
+  <div class="index-list" id="list">
+    <div class="empty">Loading…</div>
+  </div>
+
+  <div class="overlay-scrim" id="scrim"></div>
+  <div class="overlay-card" id="card">
+    <button class="overlay-card__close" id="card-close">×</button>
+    <div class="overlay-card__name" id="card-name"></div>
+    <div class="overlay-card__location" id="card-location"></div>
+    <div id="card-category"></div>
+    <div class="overlay-card__links" id="card-links"></div>
   </div>
 
 <script>
   const API = 'https://kit.summer-holiday.com/api/spots/index';
-  let allSpots = [];
-  let categories = [];
-  let activeCity = null;
-  let activeCat = null;
-  let sortMode = 'az';
+  let allSpots = [], categories = [], activeCity = null, activeCat = null, sortMode = 'az';
 
   async function load() {
-    const res = await fetch(API);
-    const data = await res.json();
+    const data = await (await fetch(API)).json();
     allSpots = data.spots || [];
     categories = data.categories || [];
-    buildCityList();
-    buildCatList();
-    render();
-    initSticky();
+    buildCityList(); buildCatList(); render(); initSticky();
   }
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // City dropdown
   function buildCityList() {
-    const cities = [...new Map(
-      allSpots.filter(s => s.city).map(s => [s.city, { name: s.city, country: s.country }])
-    ).values()].sort((a,b) => a.name.localeCompare(b.name));
-
+    const cities = [...new Map(allSpots.filter(s=>s.city).map(s=>[s.city,{name:s.city,country:s.country}])).values()].sort((a,b)=>a.name.localeCompare(b.name));
     renderCityItems(cities);
-
     document.getElementById('city-search').addEventListener('input', e => {
       const q = e.target.value.toLowerCase();
-      renderCityItems(q ? cities.filter(c => c.name.toLowerCase().includes(q)) : cities);
+      renderCityItems(q ? cities.filter(c=>c.name.toLowerCase().includes(q)) : cities);
     });
   }
-
   function renderCityItems(cities) {
     const el = document.getElementById('city-list');
-    el.innerHTML = '<button class="pill-dropdown__item' + (!activeCity ? ' is-active' : '') + '" data-val="">All cities</button>' +
-      cities.map(c =>
-        '<button class="pill-dropdown__item' + (activeCity === c.name ? ' is-active' : '') + '" data-val="' + esc(c.name) + '">' +
-        esc(c.name) + '<span class="country">' + esc(c.country) + '</span></button>'
-      ).join('');
-    el.querySelectorAll('.pill-dropdown__item').forEach(b => {
-      b.addEventListener('click', () => {
-        activeCity = b.dataset.val || null;
-        document.getElementById('city-btn').textContent = activeCity || 'City';
-        document.getElementById('city-btn').classList.toggle('is-active', !!activeCity);
-        document.getElementById('city-dropdown').classList.remove('is-open');
-        render();
-      });
-    });
+    el.innerHTML = '<button class="pill-dropdown__item'+ (!activeCity?' is-active':'') +'" data-val="">All cities</button>' +
+      cities.map(c=>'<button class="pill-dropdown__item'+(activeCity===c.name?' is-active':'')+'" data-val="'+esc(c.name)+'">'+esc(c.name)+'<span class="country">'+esc(c.country)+'</span></button>').join('');
+    el.querySelectorAll('.pill-dropdown__item').forEach(b=>b.addEventListener('click',()=>{
+      activeCity=b.dataset.val||null;
+      document.getElementById('city-btn').textContent=activeCity||'City';
+      document.getElementById('city-btn').classList.toggle('is-active',!!activeCity);
+      document.getElementById('city-dropdown').classList.remove('is-open');
+      render();
+    }));
   }
-
-  // Category dropdown
   function buildCatList() {
     const el = document.getElementById('cat-list');
     el.innerHTML = '<button class="pill-dropdown__item is-active" data-val="">All</button>' +
-      categories.map(c =>
-        '<button class="pill-dropdown__item" data-val="' + c.value + '">' + c.label + '</button>'
-      ).join('');
-    el.querySelectorAll('.pill-dropdown__item').forEach(b => {
-      b.addEventListener('click', () => {
-        activeCat = b.dataset.val || null;
-        document.getElementById('cat-btn').textContent = activeCat ? categories.find(c=>c.value===activeCat).label : 'Category';
-        document.getElementById('cat-btn').classList.toggle('is-active', !!activeCat);
-        document.getElementById('cat-dropdown').classList.remove('is-open');
-        render();
-      });
-    });
+      categories.map(c=>'<button class="pill-dropdown__item" data-val="'+c.value+'">'+c.label+'</button>').join('');
+    el.querySelectorAll('.pill-dropdown__item').forEach(b=>b.addEventListener('click',()=>{
+      activeCat=b.dataset.val||null;
+      document.getElementById('cat-btn').textContent=activeCat?categories.find(c=>c.value===activeCat).label:'Category';
+      document.getElementById('cat-btn').classList.toggle('is-active',!!activeCat);
+      document.getElementById('cat-dropdown').classList.remove('is-open');
+      render();
+    }));
   }
 
-  // Pill toggle
-  document.getElementById('city-btn').addEventListener('click', e => {
-    e.stopPropagation();
-    document.getElementById('cat-dropdown').classList.remove('is-open');
-    document.getElementById('city-dropdown').classList.toggle('is-open');
-    if (document.getElementById('city-dropdown').classList.contains('is-open')) {
-      document.getElementById('city-search').focus();
-    }
-  });
-  document.getElementById('cat-btn').addEventListener('click', e => {
-    e.stopPropagation();
-    document.getElementById('city-dropdown').classList.remove('is-open');
-    document.getElementById('cat-dropdown').classList.toggle('is-open');
-  });
-  document.addEventListener('click', () => {
-    document.getElementById('city-dropdown').classList.remove('is-open');
-    document.getElementById('cat-dropdown').classList.remove('is-open');
-  });
-  document.querySelectorAll('.pill-dropdown').forEach(d => d.addEventListener('click', e => e.stopPropagation()));
+  document.getElementById('city-btn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('cat-dropdown').classList.remove('is-open');document.getElementById('city-dropdown').classList.toggle('is-open');if(document.getElementById('city-dropdown').classList.contains('is-open'))document.getElementById('city-search').focus();});
+  document.getElementById('cat-btn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('city-dropdown').classList.remove('is-open');document.getElementById('cat-dropdown').classList.toggle('is-open');});
+  document.addEventListener('click',()=>{document.getElementById('city-dropdown').classList.remove('is-open');document.getElementById('cat-dropdown').classList.remove('is-open');});
+  document.querySelectorAll('.pill-dropdown').forEach(d=>d.addEventListener('click',e=>e.stopPropagation()));
 
-  // Sort
-  const sortModes = ['az', 'za', 'newest', 'oldest'];
-  const sortLabels = { az: 'A–Z', za: 'Z–A', newest: 'Newest', oldest: 'Oldest' };
-  document.getElementById('sort-btn').addEventListener('click', () => {
-    const i = (sortModes.indexOf(sortMode) + 1) % sortModes.length;
-    sortMode = sortModes[i];
-    document.getElementById('sort-btn').textContent = sortLabels[sortMode];
-    render();
-  });
+  const sortModes=['az','za','newest','oldest'], sortLabels={az:'A–Z',za:'Z–A',newest:'Newest',oldest:'Oldest'};
+  document.getElementById('sort-btn').addEventListener('click',()=>{sortMode=sortModes[(sortModes.indexOf(sortMode)+1)%sortModes.length];document.getElementById('sort-btn').textContent=sortLabels[sortMode];render();});
+  document.getElementById('search').addEventListener('input',render);
 
-  // Search
-  document.getElementById('search').addEventListener('input', render);
-
-  // Render
   function render() {
     const q = document.getElementById('search').value.toLowerCase();
-    let spots = allSpots.filter(s => {
-      if (q && !(s.place_name||'').toLowerCase().includes(q) && !(s.tip||'').toLowerCase().includes(q) && !(s.city||'').toLowerCase().includes(q)) return false;
-      if (activeCity && s.city !== activeCity) return false;
-      if (activeCat && s.category !== activeCat) return false;
+    let spots = allSpots.filter(s=>{
+      if(q&&!(s.place_name||'').toLowerCase().includes(q)&&!(s.city||'').toLowerCase().includes(q)) return false;
+      if(activeCity&&s.city!==activeCity) return false;
+      if(activeCat&&s.category!==activeCat) return false;
       return true;
     });
+    if(sortMode==='az') spots.sort((a,b)=>(a.place_name||'').localeCompare(b.place_name||''));
+    else if(sortMode==='za') spots.sort((a,b)=>(b.place_name||'').localeCompare(a.place_name||''));
+    else if(sortMode==='newest') spots.sort((a,b)=>b.id-a.id);
+    else spots.sort((a,b)=>a.id-b.id);
 
-    if (sortMode === 'az') spots.sort((a,b) => (a.place_name||'').localeCompare(b.place_name||''));
-    else if (sortMode === 'za') spots.sort((a,b) => (b.place_name||'').localeCompare(a.place_name||''));
-    else if (sortMode === 'newest') spots.sort((a,b) => b.id - a.id);
-    else if (sortMode === 'oldest') spots.sort((a,b) => a.id - b.id);
+    document.getElementById('count').textContent=spots.length+' place'+(spots.length!==1?'s':'');
+    const el=document.getElementById('list');
+    if(!spots.length){el.innerHTML='<div class="empty">Nothing here.</div>';return;}
 
-    document.getElementById('count').textContent = spots.length + ' place' + (spots.length !== 1 ? 's' : '');
+    el.innerHTML=spots.map(s=>
+      '<div class="index-item" data-id="'+s.id+'">'+
+        '<span class="index-item__name">'+esc(s.place_name)+'</span>'+
+        '<span class="index-item__city">'+esc(s.city||'')+'</span>'+
+      '</div>'
+    ).join('');
 
-    const el = document.getElementById('rows');
-    if (!spots.length) { el.innerHTML = '<div class="empty">Nothing here.</div>'; return; }
-
-    el.innerHTML = spots.map(s => {
-      const mapsUrl = s.google_place_id
-        ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.place_name) + '&query_place_id=' + s.google_place_id
-        : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.place_name||'') + ' ' + (s.city||''));
-
-      const links = [];
-      if (s.website) links.push('<a class="index-cell__link" href="' + esc(s.website) + '" target="_blank" rel="noopener">Web</a>');
-      if (s.place_name) links.push('<a class="index-cell__link" href="' + mapsUrl + '" target="_blank" rel="noopener">Map</a>');
-
-      return '<div class="index-row">' +
-        '<div class="index-cell"><span class="index-cell__name">' + esc(s.place_name) + '</span>' +
-          (links.length ? '<div class="index-cell__links">' + links.join('') + '</div>' : '') +
-        '</div>' +
-        '<div class="index-cell"><span class="index-cell__tip">' + esc(s.tip || '') + '</span></div>' +
-        '<div class="index-cell"><span class="index-cell__city">' + esc(s.city || '') + '</span>' +
-          (s.country ? ' <span class="index-cell__country">' + esc(s.country) + '</span>' : '') +
-        '</div>' +
-      '</div>';
-    }).join('');
+    el.querySelectorAll('.index-item').forEach(row=>row.addEventListener('click',()=>{
+      const s=spots.find(x=>x.id===parseInt(row.dataset.id));
+      if(s) openCard(s);
+    }));
   }
 
-  // Sticky controls
-  function initSticky() {
-    const controls = document.getElementById('controls');
-    const hero = document.querySelector('.hero');
-    const observer = new IntersectionObserver(([e]) => {
-      controls.classList.toggle('is-stuck', !e.isIntersecting);
-    }, { threshold: 0 });
-    observer.observe(hero);
+  function openCard(s) {
+    document.getElementById('card-name').textContent=s.place_name;
+    document.getElementById('card-location').textContent=[s.city,s.country].filter(Boolean).join(', ');
+    document.getElementById('card-category').innerHTML=s.category?'<span class="overlay-card__category">'+esc(s.category)+'</span>':'';
+    const mapsUrl=s.google_place_id
+      ?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.place_name)+'&query_place_id='+s.google_place_id
+      :'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((s.place_name||'')+' '+(s.city||''));
+    let links='<a class="overlay-card__link" href="'+mapsUrl+'" target="_blank" rel="noopener">Map</a>';
+    if(s.website) links+='<a class="overlay-card__link" href="'+esc(s.website)+'" target="_blank" rel="noopener">Website</a>';
+    document.getElementById('card-links').innerHTML=links;
+    document.getElementById('scrim').classList.add('is-open');
+    document.getElementById('card').classList.add('is-open');
+  }
+
+  function closeCard(){
+    document.getElementById('scrim').classList.remove('is-open');
+    document.getElementById('card').classList.remove('is-open');
+  }
+  document.getElementById('card-close').addEventListener('click',closeCard);
+  document.getElementById('scrim').addEventListener('click',closeCard);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();});
+
+  function initSticky(){
+    const c=document.getElementById('controls'),h=document.querySelector('.hero');
+    new IntersectionObserver(([e])=>{c.classList.toggle('is-stuck',!e.isIntersecting);},{threshold:0}).observe(h);
   }
 
   load();

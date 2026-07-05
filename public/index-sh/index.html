@@ -328,7 +328,11 @@
     const data = await (await fetch(API)).json();
     allSpots = data.spots || [];
     categories = data.categories || [];
-    buildCityList(); buildCatList(); render(); initSticky();
+    buildCityList(); buildCatList();
+    if(activeCity) { document.getElementById('city-btn').textContent=activeCity; document.getElementById('city-btn').classList.add('is-active'); }
+    if(activeCat) { const cat=categories.find(c=>c.value===activeCat); if(cat) { document.getElementById('cat-btn').textContent=cat.label; document.getElementById('cat-btn').classList.add('is-active'); } }
+    if(sortMode!=='az') document.getElementById('sort-btn').textContent=sortLabels[sortMode];
+    render(); initSticky();
   }
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
@@ -388,6 +392,7 @@
     else if(sortMode==='newest') spots.sort((a,b)=>b.id-a.id);
     else spots.sort((a,b)=>a.id-b.id);
 
+    writeParams();
     document.getElementById('count').textContent=spots.length+' place'+(spots.length!==1?'s':'');
     const el=document.getElementById('list');
     if(!spots.length){el.innerHTML='<div class="empty">Nothing here.</div>';return;}
@@ -432,6 +437,25 @@
     new IntersectionObserver(([e])=>{c.classList.toggle('is-stuck',!e.isIntersecting);},{threshold:0}).observe(h);
   }
 
+  // URL params
+  function readParams() {
+    const p = new URLSearchParams(location.search);
+    if (p.get('city')) activeCity = p.get('city');
+    if (p.get('cat')) activeCat = p.get('cat');
+    if (p.get('sort')) sortMode = p.get('sort');
+    if (p.get('q')) document.getElementById('search').value = p.get('q');
+  }
+  function writeParams() {
+    const p = new URLSearchParams();
+    if (activeCity) p.set('city', activeCity);
+    if (activeCat) p.set('cat', activeCat);
+    if (sortMode !== 'az') p.set('sort', sortMode);
+    const q = document.getElementById('search').value;
+    if (q) p.set('q', q);
+    const str = p.toString();
+    history.replaceState(null, '', str ? '?' + str : location.pathname);
+  }
+  readParams();
   load();
 </script>
 </body>
