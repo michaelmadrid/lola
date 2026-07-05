@@ -508,7 +508,7 @@ router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
     'text', 'tags', 'url', 'place_id', 'archived_at',
     'place_name', 'category', 'tip', 'country', 'neighborhood',
-    'been',
+    'been', 'curated', 'curated_category', 'website', 'image_url',
   ];
   const updates = [];
   const params = [];
@@ -519,13 +519,15 @@ router.patch('/:id', authenticate, async (req, res) => {
     }
   }
   if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
+  const isAdmin = req.user.role === 'admin';
   params.push(req.params.id);
-  params.push(req.user.id);
+  if (!isAdmin) params.push(req.user.id);
+  const whereClause = isAdmin
+    ? `WHERE id = ${params.length}`
+    : `WHERE id = ${params.length - 1} AND user_id = ${params.length}`;
   try {
     const result = await pool.query(
-      `UPDATE spots SET ${updates.join(', ')}, updated_at = NOW()
-       WHERE id = $${params.length - 1} AND user_id = $${params.length}
-       RETURNING *`,
+      `UPDATE spots SET ${updates.join(', ')}, updated_at = NOW() ${whereClause} RETURNING *`,
       params
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Spot not found' });
@@ -538,10 +540,12 @@ router.patch('/:id', authenticate, async (req, res) => {
 // DELETE /api/spots/:id — hard delete
 router.delete('/:id', authenticate, async (req, res) => {
   try {
-    await pool.query(
-      'DELETE FROM spots WHERE id = $1 AND user_id = $2',
-      [req.params.id, req.user.id]
-    );
+    const isAdmin = req.user.role === 'admin';
+    const deleteQuery = isAdmin
+      ? 'DELETE FROM spots WHERE id = $1'
+      : 'DELETE FROM spots WHERE id = $1 AND user_id = $2';
+    const deleteParams = isAdmin ? [req.params.id] : [req.params.id, req.user.id];
+    await pool.query(deleteQuery, deleteParams);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
