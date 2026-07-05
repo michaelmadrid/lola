@@ -8,6 +8,7 @@
     @font-face { font-family: "ABC Diatype"; src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeTrial-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
     @font-face { font-family: "ABC Diatype"; src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeTrial-Medium.woff2") format("woff2"); font-weight: 500; font-display: swap; }
     @font-face { font-family: "ABC Diatype Mono"; src: url("https://kit.summer-holiday.com/fonts/ABCDiatypeMonoTrial-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -16,14 +17,14 @@
       --ink: #111;
       --ink-2: #666;
       --ink-3: #999;
-      --rule: #d8d8d4;
-      --surface: #ebeae5;
+      --rule: #ddd;
       --accent: #2a4ed4;
       --gutter: 40px;
     }
 
     html { background: #fff; color: var(--ink); font-family: var(--sans); }
 
+    /* ===== Hero ===== */
     .hero {
       padding: 48px var(--gutter) 32px;
       display: flex;
@@ -49,7 +50,7 @@
       z-index: 60;
     }
 
-    /* Controls */
+    /* ===== Controls ===== */
     .controls {
       display: flex;
       align-items: center;
@@ -87,54 +88,53 @@
       color: var(--ink);
       cursor: pointer;
     }
-    .pill-btn.is-active { background: var(--ink); color: #fff; }
+    .pill-btn:hover { border-color: var(--ink); color: var(--ink); }
+    .pill-btn.is-active { background: var(--ink); color: #fff; border-color: var(--ink); }
 
-    /* Dropdown — matches kit capture-fs__city-popover exactly */
     .pill-dropdown {
       display: none;
       position: absolute;
-      top: calc(100% + 6px);
+      top: calc(100% + 4px);
       left: 0;
-      background: #fff;
+      background: var(--ink);
+      color: #fff;
       border: 1px solid var(--ink);
-      border-radius: 4px;
-      padding: 8px;
-      min-width: 240px;
-      max-height: 320px;
+      border-radius: 6px;
+      padding: 6px 0;
+      min-width: 200px;
+      max-height: 300px;
       overflow-y: auto;
       z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     }
     .pill-dropdown.is-open { display: block; }
     .pill-dropdown__search {
-      width: 100%;
-      background: #fff;
-      border: 1px solid var(--rule);
-      border-radius: 4px;
-      padding: 8px 10px;
       font-family: var(--sans);
-      font-size: 14px;
+      font-size: 13px;
+      border: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding: 8px 14px;
+      width: 100%;
       outline: none;
-      color: var(--ink);
-      margin-bottom: 8px;
+      background: transparent;
+      color: #fff;
     }
-    .pill-dropdown__search:focus { border-color: var(--ink); }
-    .pill-dropdown__search::placeholder { color: var(--ink-3); }
+    .pill-dropdown__search::placeholder { color: rgba(255,255,255,0.4); }
     .pill-dropdown__item {
       display: block;
       width: 100%;
       text-align: left;
       font-family: var(--sans);
       font-size: 14px;
-      padding: 8px 10px;
+      padding: 8px 14px;
       border: 0;
       background: transparent;
       cursor: pointer;
-      color: var(--ink);
-      border-radius: 4px;
+      color: rgba(255,255,255,0.7);
     }
-    .pill-dropdown__item:hover { background: var(--surface); }
-    .pill-dropdown__item .country { color: var(--ink-3); margin-left: 6px; font-size: 12px; }
-    .pill-dropdown__item.is-active { font-weight: 500; }
+    .pill-dropdown__item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .pill-dropdown__item .country { font-size: 12px; color: rgba(255,255,255,0.35); margin-left: 6px; }
+    .pill-dropdown__item.is-active { color: #fff; font-weight: 500; }
 
     .sort-btn {
       font-family: var(--mono);
@@ -158,8 +158,10 @@
       margin-left: auto;
     }
 
-    /* List */
-    .index-list { padding: 0 var(--gutter); }
+    /* ===== List ===== */
+    .index-list {
+      padding: 0 var(--gutter);
+    }
     .index-item {
       display: flex;
       align-items: baseline;
@@ -183,6 +185,7 @@
       color: var(--ink-3);
       white-space: nowrap;
     }
+
     .empty {
       padding: 80px 0;
       text-align: center;
@@ -190,7 +193,7 @@
       font-size: 14px;
     }
 
-    /* Overlay */
+    /* ===== Overlay ===== */
     .overlay-scrim {
       display: none;
       position: fixed;
@@ -199,6 +202,7 @@
       z-index: 200;
     }
     .overlay-scrim.is-open { display: block; }
+
     .overlay-card {
       display: none;
       position: fixed;
@@ -213,6 +217,7 @@
       padding: 32px;
     }
     .overlay-card.is-open { display: block; }
+
     .overlay-card__close {
       position: absolute;
       top: 12px;
@@ -228,15 +233,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 1;
     }
     .overlay-card__close:hover { color: var(--ink); border-color: var(--ink); }
+
     .overlay-card__name {
       font-size: 28px;
       font-weight: 500;
       letter-spacing: -0.02em;
-      margin: 8px 0 4px;
+      margin-bottom: 4px;
+      margin-top: 8px;
     }
-    .overlay-card__location { font-size: 14px; color: var(--ink-2); margin-bottom: 20px; }
+    .overlay-card__location {
+      font-size: 14px;
+      color: var(--ink-2);
+      margin-bottom: 20px;
+    }
     .overlay-card__category {
       font-family: var(--mono);
       font-size: 10px;
@@ -249,7 +261,11 @@
       border-radius: 999px;
       padding: 4px 10px;
     }
-    .overlay-card__links { display: flex; gap: 8px; margin-top: 4px; }
+    .overlay-card__links {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
     .overlay-card__link {
       font-family: var(--mono);
       font-size: 11px;
@@ -273,6 +289,7 @@
   </style>
 </head>
 <body>
+
   <header class="hero">
     <h1 class="hero__title">Index</h1>
     <span class="hero__brand">Summer Holiday</span>
@@ -297,7 +314,10 @@
     <span class="controls__count" id="count"></span>
   </div>
 
-  <div class="index-list" id="list"><div class="empty">Loading…</div></div>
+  <div class="index-list" id="list">
+    <div class="empty">Loading…</div>
+  </div>
+
   <div class="overlay-scrim" id="scrim"></div>
   <div class="overlay-card" id="card">
     <button class="overlay-card__close" id="card-close">×</button>
@@ -310,11 +330,121 @@
 <script>
   const API = 'https://kit.summer-holiday.com/api/spots/index';
   let allSpots = [], categories = [], activeCity = null, activeCat = null, sortMode = 'az';
-  const sortModes = ['az','za','newest','oldest'];
-  const sortLabels = {az:'A–Z', za:'Z–A', newest:'Newest', oldest:'Oldest'};
+
+  async function load() {
+    const data = await (await fetch(API)).json();
+    allSpots = data.spots || [];
+    categories = data.categories || [];
+    buildCityList(); buildCatList();
+    if(activeCity) { document.getElementById('city-btn').textContent=activeCity; document.getElementById('city-btn').classList.add('is-active'); }
+    if(activeCat) { const cat=categories.find(c=>c.value===activeCat); if(cat) { document.getElementById('cat-btn').textContent=cat.label; document.getElementById('cat-btn').classList.add('is-active'); } }
+    if(sortMode!=='az') document.getElementById('sort-btn').textContent=sortLabels[sortMode];
+    render(); initSticky();
+  }
 
   function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+  function buildCityList() {
+    const cities = [...new Map(allSpots.filter(s=>s.city).map(s=>[s.city,{name:s.city,country:s.country}])).values()].sort((a,b)=>a.name.localeCompare(b.name));
+    renderCityItems(cities);
+    document.getElementById('city-search').addEventListener('input', e => {
+      const q = e.target.value.toLowerCase();
+      renderCityItems(q ? cities.filter(c=>c.name.toLowerCase().includes(q)) : cities);
+    });
+  }
+  function renderCityItems(cities) {
+    const el = document.getElementById('city-list');
+    el.innerHTML = '<button class="pill-dropdown__item'+ (!activeCity?' is-active':'') +'" data-val="">All cities</button>' +
+      cities.map(c=>'<button class="pill-dropdown__item'+(activeCity===c.name?' is-active':'')+'" data-val="'+esc(c.name)+'">'+esc(c.name)+'<span class="country">'+esc(c.country)+'</span></button>').join('');
+    el.querySelectorAll('.pill-dropdown__item').forEach(b=>b.addEventListener('click',()=>{
+      activeCity=b.dataset.val||null;
+      document.getElementById('city-btn').textContent=activeCity||'City';
+      document.getElementById('city-btn').classList.toggle('is-active',!!activeCity);
+      document.getElementById('city-dropdown').classList.remove('is-open');
+      render();
+    }));
+  }
+  function buildCatList() {
+    const el = document.getElementById('cat-list');
+    el.innerHTML = '<button class="pill-dropdown__item is-active" data-val="">All</button>' +
+      categories.map(c=>'<button class="pill-dropdown__item" data-val="'+c.value+'">'+c.label+'</button>').join('');
+    el.querySelectorAll('.pill-dropdown__item').forEach(b=>b.addEventListener('click',()=>{
+      activeCat=b.dataset.val||null;
+      document.getElementById('cat-btn').textContent=activeCat?categories.find(c=>c.value===activeCat).label:'Category';
+      document.getElementById('cat-btn').classList.toggle('is-active',!!activeCat);
+      document.getElementById('cat-dropdown').classList.remove('is-open');
+      render();
+    }));
+  }
+
+  document.getElementById('city-btn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('cat-dropdown').classList.remove('is-open');document.getElementById('city-dropdown').classList.toggle('is-open');if(document.getElementById('city-dropdown').classList.contains('is-open'))document.getElementById('city-search').focus();});
+  document.getElementById('cat-btn').addEventListener('click',e=>{e.stopPropagation();document.getElementById('city-dropdown').classList.remove('is-open');document.getElementById('cat-dropdown').classList.toggle('is-open');});
+  document.addEventListener('click',()=>{document.getElementById('city-dropdown').classList.remove('is-open');document.getElementById('cat-dropdown').classList.remove('is-open');});
+  document.querySelectorAll('.pill-dropdown').forEach(d=>d.addEventListener('click',e=>e.stopPropagation()));
+
+  const sortModes=['az','za','newest','oldest'], sortLabels={az:'A–Z',za:'Z–A',newest:'Newest',oldest:'Oldest'};
+  document.getElementById('sort-btn').addEventListener('click',()=>{sortMode=sortModes[(sortModes.indexOf(sortMode)+1)%sortModes.length];document.getElementById('sort-btn').textContent=sortLabels[sortMode];render();});
+  document.getElementById('search').addEventListener('input',render);
+
+  function render() {
+    const q = document.getElementById('search').value.toLowerCase();
+    let spots = allSpots.filter(s=>{
+      if(q&&!(s.place_name||'').toLowerCase().includes(q)&&!(s.city||'').toLowerCase().includes(q)) return false;
+      if(activeCity&&s.city!==activeCity) return false;
+      if(activeCat&&s.category!==activeCat) return false;
+      return true;
+    });
+    if(sortMode==='az') spots.sort((a,b)=>(a.place_name||'').localeCompare(b.place_name||''));
+    else if(sortMode==='za') spots.sort((a,b)=>(b.place_name||'').localeCompare(a.place_name||''));
+    else if(sortMode==='newest') spots.sort((a,b)=>b.id-a.id);
+    else spots.sort((a,b)=>a.id-b.id);
+
+    writeParams();
+    document.getElementById('count').textContent=spots.length+' place'+(spots.length!==1?'s':'');
+    const el=document.getElementById('list');
+    if(!spots.length){el.innerHTML='<div class="empty">Nothing here.</div>';return;}
+
+    el.innerHTML=spots.map(s=>
+      '<div class="index-item" data-id="'+s.id+'">'+
+        '<span class="index-item__name">'+esc(s.place_name)+'</span>'+
+        (!activeCity&&s.city?'<span class="index-item__city">'+esc(s.city)+'</span>':'')+
+      '</div>'
+    ).join('');
+
+    el.querySelectorAll('.index-item').forEach(row=>row.addEventListener('click',()=>{
+      const s=spots.find(x=>x.id===parseInt(row.dataset.id));
+      if(s) openCard(s);
+    }));
+  }
+
+  function openCard(s) {
+    document.getElementById('card-name').textContent=s.place_name;
+    document.getElementById('card-location').textContent=[s.city,s.country].filter(Boolean).join(', ');
+    document.getElementById('card-category').innerHTML=s.category?'<span class="overlay-card__category">'+esc(s.category)+'</span>':'';
+    const mapsUrl=s.google_place_id
+      ?'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.place_name)+'&query_place_id='+s.google_place_id
+      :'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((s.place_name||'')+' '+(s.city||''));
+    let links='<a class="overlay-card__link" href="'+mapsUrl+'" target="_blank" rel="noopener">Map</a>';
+    if(s.website) links+='<a class="overlay-card__link" href="'+esc(s.website)+'" target="_blank" rel="noopener">Website</a>';
+    document.getElementById('card-links').innerHTML=links;
+    document.getElementById('scrim').classList.add('is-open');
+    document.getElementById('card').classList.add('is-open');
+  }
+
+  function closeCard(){
+    document.getElementById('scrim').classList.remove('is-open');
+    document.getElementById('card').classList.remove('is-open');
+  }
+  document.getElementById('card-close').addEventListener('click',closeCard);
+  document.getElementById('scrim').addEventListener('click',closeCard);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();});
+
+  function initSticky(){
+    const c=document.getElementById('controls'),h=document.querySelector('.hero');
+    new IntersectionObserver(([e])=>{c.classList.toggle('is-stuck',!e.isIntersecting);},{threshold:0}).observe(h);
+  }
+
+  // URL params
   function readParams() {
     const p = new URLSearchParams(location.search);
     if (p.get('city')) activeCity = p.get('city');
@@ -332,116 +462,6 @@
     const str = p.toString();
     history.replaceState(null, '', str ? '?' + str : location.pathname);
   }
-
-  async function load() {
-    const data = await (await fetch(API)).json();
-    allSpots = data.spots || [];
-    categories = data.categories || [];
-    buildCityList();
-    buildCatList();
-    if (activeCity) { document.getElementById('city-btn').textContent = activeCity; document.getElementById('city-btn').classList.add('is-active'); }
-    if (activeCat) { const cat = categories.find(c => c.value === activeCat); if (cat) { document.getElementById('cat-btn').textContent = cat.label; document.getElementById('cat-btn').classList.add('is-active'); } }
-    if (sortMode !== 'az') document.getElementById('sort-btn').textContent = sortLabels[sortMode];
-    render();
-    initSticky();
-  }
-
-  function buildCityList() {
-    const cities = [...new Map(allSpots.filter(s => s.city).map(s => [s.city, {name: s.city, country: s.country}])).values()].sort((a, b) => a.name.localeCompare(b.name));
-    renderCityItems(cities);
-    document.getElementById('city-search').addEventListener('input', e => {
-      const q = e.target.value.toLowerCase();
-      renderCityItems(q ? cities.filter(c => c.name.toLowerCase().includes(q)) : cities);
-    });
-  }
-  function renderCityItems(cities) {
-    const el = document.getElementById('city-list');
-    el.innerHTML = '<button class="pill-dropdown__item' + (!activeCity ? ' is-active' : '') + '" data-val="">All cities</button>' +
-      cities.map(c => '<button class="pill-dropdown__item' + (activeCity === c.name ? ' is-active' : '') + '" data-val="' + esc(c.name) + '">' + esc(c.name) + '<span class="country">' + esc(c.country) + '</span></button>').join('');
-    el.querySelectorAll('.pill-dropdown__item').forEach(b => b.addEventListener('click', () => {
-      activeCity = b.dataset.val || null;
-      document.getElementById('city-btn').textContent = activeCity || 'City';
-      document.getElementById('city-btn').classList.toggle('is-active', !!activeCity);
-      document.getElementById('city-dropdown').classList.remove('is-open');
-      render();
-    }));
-  }
-  function buildCatList() {
-    const el = document.getElementById('cat-list');
-    el.innerHTML = '<button class="pill-dropdown__item is-active" data-val="">All</button>' +
-      categories.map(c => '<button class="pill-dropdown__item" data-val="' + c.value + '">' + c.label + '</button>').join('');
-    el.querySelectorAll('.pill-dropdown__item').forEach(b => b.addEventListener('click', () => {
-      activeCat = b.dataset.val || null;
-      document.getElementById('cat-btn').textContent = activeCat ? categories.find(c => c.value === activeCat).label : 'Category';
-      document.getElementById('cat-btn').classList.toggle('is-active', !!activeCat);
-      document.getElementById('cat-dropdown').classList.remove('is-open');
-      render();
-    }));
-  }
-
-  document.getElementById('city-btn').addEventListener('click', e => { e.stopPropagation(); document.getElementById('cat-dropdown').classList.remove('is-open'); document.getElementById('city-dropdown').classList.toggle('is-open'); if (document.getElementById('city-dropdown').classList.contains('is-open')) document.getElementById('city-search').focus(); });
-  document.getElementById('cat-btn').addEventListener('click', e => { e.stopPropagation(); document.getElementById('city-dropdown').classList.remove('is-open'); document.getElementById('cat-dropdown').classList.toggle('is-open'); });
-  document.addEventListener('click', () => { document.getElementById('city-dropdown').classList.remove('is-open'); document.getElementById('cat-dropdown').classList.remove('is-open'); });
-  document.querySelectorAll('.pill-dropdown').forEach(d => d.addEventListener('click', e => e.stopPropagation()));
-
-  document.getElementById('sort-btn').addEventListener('click', () => { sortMode = sortModes[(sortModes.indexOf(sortMode) + 1) % sortModes.length]; document.getElementById('sort-btn').textContent = sortLabels[sortMode]; render(); });
-  document.getElementById('search').addEventListener('input', render);
-
-  function render() {
-    const q = document.getElementById('search').value.toLowerCase();
-    let spots = allSpots.filter(s => {
-      if (q && !(s.place_name || '').toLowerCase().includes(q) && !(s.city || '').toLowerCase().includes(q)) return false;
-      if (activeCity && s.city !== activeCity) return false;
-      if (activeCat && s.category !== activeCat) return false;
-      return true;
-    });
-    if (sortMode === 'az') spots.sort((a, b) => (a.place_name || '').localeCompare(b.place_name || ''));
-    else if (sortMode === 'za') spots.sort((a, b) => (b.place_name || '').localeCompare(a.place_name || ''));
-    else if (sortMode === 'newest') spots.sort((a, b) => b.id - a.id);
-    else spots.sort((a, b) => a.id - b.id);
-
-    writeParams();
-    document.getElementById('count').textContent = spots.length + ' place' + (spots.length !== 1 ? 's' : '');
-    const el = document.getElementById('list');
-    if (!spots.length) { el.innerHTML = '<div class="empty">Nothing here.</div>'; return; }
-
-    el.innerHTML = spots.map(s =>
-      '<div class="index-item" data-id="' + s.id + '">' +
-        '<span class="index-item__name">' + esc(s.place_name) + '</span>' +
-        (!activeCity && s.city ? '<span class="index-item__city">' + esc(s.city) + '</span>' : '') +
-      '</div>'
-    ).join('');
-
-    el.querySelectorAll('.index-item').forEach(row => row.addEventListener('click', () => {
-      const s = spots.find(x => x.id === parseInt(row.dataset.id));
-      if (s) openCard(s);
-    }));
-  }
-
-  function openCard(s) {
-    document.getElementById('card-name').textContent = s.place_name;
-    document.getElementById('card-location').textContent = [s.city, s.country].filter(Boolean).join(', ');
-    document.getElementById('card-category').innerHTML = s.category ? '<span class="overlay-card__category">' + esc(s.category) + '</span>' : '';
-    const mapsUrl = s.google_place_id
-      ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.place_name) + '&query_place_id=' + s.google_place_id
-      : 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.place_name || '') + ' ' + (s.city || ''));
-    let links = '<a class="overlay-card__link" href="' + mapsUrl + '" target="_blank" rel="noopener">Map</a>';
-    if (s.website) links += '<a class="overlay-card__link" href="' + esc(s.website) + '" target="_blank" rel="noopener">Website</a>';
-    document.getElementById('card-links').innerHTML = links;
-    document.getElementById('scrim').classList.add('is-open');
-    document.getElementById('card').classList.add('is-open');
-  }
-
-  function closeCard() { document.getElementById('scrim').classList.remove('is-open'); document.getElementById('card').classList.remove('is-open'); }
-  document.getElementById('card-close').addEventListener('click', closeCard);
-  document.getElementById('scrim').addEventListener('click', closeCard);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCard(); });
-
-  function initSticky() {
-    const c = document.getElementById('controls'), h = document.querySelector('.hero');
-    new IntersectionObserver(([e]) => { c.classList.toggle('is-stuck', !e.isIntersecting); }, {threshold: 0}).observe(h);
-  }
-
   readParams();
   load();
 </script>
