@@ -3,6 +3,7 @@ const pool = require('../db');
 const { authenticate } = require('../auth');
 const { parseCapture, parseCaptureStructured, CATEGORIES } = require('../parse-capture');
 const { resolveOrCreatePlace } = require('../places-resolver');
+const SPOT_CATEGORIES = require('../constants/spot-categories');
 
 function extractTags(text) {
   const matches = String(text).match(/#[a-z0-9_-]+/gi) || [];
@@ -231,7 +232,10 @@ router.get('/', authenticate, async (req, res) => {
     }
     if (req.query.category) {
       params.push(req.query.category);
-      sql += ` AND s.category = $${params.length}`;
+      sql += ` AND s.category = ${params.length}`;
+    }
+    if (req.query.curated === 'true') {
+      sql += ` AND s.curated = true`;
     }
     sql += ` ORDER BY s.created_at DESC`;
 
@@ -627,6 +631,11 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/spots/categories — public category list
+router.get('/categories', (req, res) => {
+  res.json({ categories: SPOT_CATEGORIES });
+});
+
 // =============================================================
 // Public index endpoint — no auth required.
 // Powers index.summer-holiday.com
@@ -659,7 +668,7 @@ router.get('/index', async (req, res) => {
         AND s.place_name IS NOT NULL
       ORDER BY s.country, c.name, s.place_name
     `);
-    res.json({ spots: result.rows });
+    res.json({ spots: result.rows, categories: SPOT_CATEGORIES });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
