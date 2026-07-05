@@ -175,7 +175,7 @@
           ${s.tip ? `<small>${esc(s.tip.slice(0,80))}${s.tip.length>80?'…':''}</small>` : ''}
         </span>
         <span class="col-city">${esc(s.attached_cities?.[0]?.name || '—')}</span>
-        <span class="col-cat">${s.curated_category ? `<span class="caption">${esc(s.curated_category)}</span>` : '—'}</span>
+        <span class="col-cat">${s.category ? `<span class="caption">${esc(s.category)}</span>` : '—'}</span>
         <span class="col-img">${s.image_url ? '✓' : ''}</span>
         <span class="admin-actions">
           <button onclick="openEdit(${s.id})">Edit</button>
