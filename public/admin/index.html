@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.body&&document.body.classList.add("dark");}}catch(e){}</script>
   <title>Admin — kit</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/admin.css">
@@ -28,8 +28,8 @@
 </header>
 
 <div class="menu-overlay" id="menu-overlay" data-nav="drawer">
-    <div class="menu-overlay__inner"></div>
-  </div>
+  <div class="menu-overlay__inner"></div>
+</div>
 
 <main class="page page-admin">
 
@@ -38,19 +38,19 @@
   </header>
 
   <nav class="admin-nav">
-    <a href="/admin/blackbook.html" class="admin-link">
-      <span class="admin-link__name">Blackbook</span>
-      <span class="admin-link__desc">Curated places — bookshops, coffee, galleries</span>
+    <a href="/admin/spots-curated.html" class="admin-link">
+      <span class="admin-link__name">Curated Spots</span>
+      <span class="admin-link__desc">Summer Holiday picks — bookstores, film labs, coffee</span>
+      <span class="admin-link__arrow">→</span>
+    </a>
+    <a href="/admin/spots-review.html" class="admin-link">
+      <span class="admin-link__name">Review Spots</span>
+      <span class="admin-link__desc">All member captures — review, delete, promote</span>
       <span class="admin-link__arrow">→</span>
     </a>
     <a href="/admin/cities.html" class="admin-link">
       <span class="admin-link__name">Cities</span>
       <span class="admin-link__desc">Master gazetteer, neighborhoods, regions</span>
-      <span class="admin-link__arrow">→</span>
-    </a>
-    <a href="/admin/spots.html" class="admin-link">
-      <span class="admin-link__name">Spots</span>
-      <span class="admin-link__desc">Review captures, bulk delete, promote to Blackbook</span>
       <span class="admin-link__arrow">→</span>
     </a>
   </nav>
@@ -60,11 +60,9 @@
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
+<script src="/js/nav.js"></script>
 <script>
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
-  const signOutFoot = document.getElementById('signout-link-foot');
-  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
 </script>
-<script src="/js/nav.js"></script>
 </body>
 </html>
