@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
+  <title>Import Spots · Admin — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <style>
+    .import-drop {
+      border: 2px dashed var(--rule);
+      border-radius: var(--r-card);
+      padding: 48px;
+      text-align: center;
+      color: var(--ink-3);
+      font-size: var(--text-body);
+      cursor: pointer;
+      transition: border-color var(--ease-quick), background var(--ease-quick);
+      margin-bottom: 24px;
+    }
+    .import-drop:hover, .import-drop.is-over {
+      border-color: var(--accent);
+      background: var(--surface);
+    }
+    .import-drop input { display: none; }
+    .import-controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .import-controls label {
+      font-family: var(--mono);
+      font-size: var(--text-tiny);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+    }
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--text-small);
+      margin-bottom: 24px;
+    }
+    .preview-table th {
+      font-family: var(--mono);
+      font-size: var(--text-tiny);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--rule);
+      font-weight: 400;
+    }
+    .preview-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--rule);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .preview-table tr.is-dupe { opacity: 0.4; }
+    .preview-table tr.is-dupe td:first-child::after {
+      content: ' (exists)';
+      font-family: var(--mono);
+      font-size: var(--text-tiny);
+      color: var(--ink-3);
+    }
+    .import-result {
+      padding: 16px;
+      border-radius: var(--r-card);
+      background: var(--surface);
+      font-size: var(--text-small);
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">kit</a>
+  </div>
+  <nav class="nav" data-nav="primary"></nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+  <div class="menu-overlay__inner"></div>
+</div>
+
+<main class="page page-admin">
+
+  <header class="admin-head">
+    <div>
+      <div class="admin-head__breadcrumb"><a href="/admin/">Admin</a> / Spots</div>
+      <h1 class="admin-head__title">Import Spots</h1>
+    </div>
+  </header>
+
+  <nav class="admin-subnav">
+    <a href="/admin/spots-curated.html" class="admin-subnav__link">Curated</a>
+    <a href="/admin/spots-review.html" class="admin-subnav__link">Review</a>
+    <a href="/admin/spots-import.html" class="admin-subnav__link is-active">Import</a>
+  </nav>
+
+  <!-- Step 1: Upload -->
+  <div id="step-upload">
+    <div class="import-drop" id="drop-zone">
+      Drop a CSV here or click to select
+      <input type="file" id="file-input" accept=".csv,.tsv,.txt">
+    </div>
+  </div>
+
+  <!-- Step 2: Map columns + preview -->
+  <div id="step-preview" hidden>
+    <div class="import-controls">
+      <div>
+        <label>Name column</label>
+        <select class="select" id="col-name"></select>
+      </div>
+      <div>
+        <label>City</label>
+        <select class="select" id="col-city"></select>
+      </div>
+      <div>
+        <label>Category</label>
+        <select class="select" id="col-category"></select>
+      </div>
+      <div>
+        <label>Website</label>
+        <select class="select" id="col-website"></select>
+      </div>
+      <div>
+        <label>Tip</label>
+        <select class="select" id="col-tip"></select>
+      </div>
+    </div>
+    <div class="import-controls">
+      <div>
+        <label>Override city</label>
+        <select class="select" id="override-city"><option value="">Use CSV column</option></select>
+      </div>
+      <div>
+        <label>Override category</label>
+        <select class="select" id="override-category"><option value="">Use CSV column</option></select>
+      </div>
+    </div>
+
+    <table class="preview-table" id="preview-table"></table>
+
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button class="btn" id="import-btn">Import</button>
+      <span id="import-count" style="font-family:var(--mono);font-size:var(--text-tiny);color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;"></span>
+    </div>
+  </div>
+
+  <!-- Step 3: Result -->
+  <div id="step-result" hidden>
+    <div class="import-result" id="result-msg"></div>
+    <button class="btn btn--secondary" onclick="location.reload()">Import more</button>
+    <a href="/admin/spots-curated.html" class="btn">View curated</a>
+  </div>
+
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+  if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+
+  let csvRows = [];
+  let csvHeaders = [];
+  let cities = [];
+  let categories = [];
+
+  // Load cities + categories
+  async function init() {
+    const [citiesData, catData] = await Promise.all([
+      api.get('/api/cities'),
+      api.get('/api/spots/categories'),
+    ]);
+    cities = (citiesData.cities || citiesData).sort((a,b) => a.name.localeCompare(b.name));
+    categories = catData.categories || [];
+
+    const overrideCity = document.getElementById('override-city');
+    cities.forEach(c => {
+      overrideCity.innerHTML += '<option value="' + c.id + '">' + esc(c.name) + '</option>';
+    });
+
+    const overrideCat = document.getElementById('override-category');
+    categories.forEach(c => {
+      overrideCat.innerHTML += '<option value="' + c.value + '">' + c.label + '</option>';
+    });
+  }
+  init();
+
+  function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // CSV parsing
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    const sep = text.includes('\t') ? '\t' : ',';
+    const headers = lines[0].split(sep).map(h => h.replace(/"/g,'').trim());
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const vals = lines[i].split(sep).map(v => v.replace(/^"|"$/g,'').trim());
+      if (vals.some(v => v)) {
+        const row = {};
+        headers.forEach((h, j) => row[h] = vals[j] || '');
+        rows.push(row);
+      }
+    }
+    return { headers, rows };
+  }
+
+  // Drag & drop + click
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('is-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('is-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('is-over');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+  function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const parsed = parseCSV(e.target.result);
+      csvHeaders = parsed.headers;
+      csvRows = parsed.rows;
+      showPreview();
+    };
+    reader.readAsText(file);
+  }
+
+  function showPreview() {
+    document.getElementById('step-upload').hidden = true;
+    document.getElementById('step-preview').hidden = false;
+
+    // Populate column selects
+    const none = '<option value="">— skip —</option>';
+    const opts = csvHeaders.map(h => '<option value="' + esc(h) + '">' + esc(h) + '</option>').join('');
+
+    ['col-name','col-city','col-category','col-website','col-tip'].forEach(id => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = none + opts;
+    });
+
+    // Auto-guess columns
+    guessCol('col-name', ['name','store','place','title','place_name']);
+    guessCol('col-city', ['city','location','town']);
+    guessCol('col-category', ['category','type','kind']);
+    guessCol('col-website', ['website','url','web','link']);
+    guessCol('col-tip', ['tip','note','notes','description','desc']);
+
+    renderPreview();
+
+    // Re-render on column change
+    document.querySelectorAll('.import-controls select').forEach(s => {
+      s.addEventListener('change', renderPreview);
+    });
+  }
+
+  function guessCol(selectId, keywords) {
+    const sel = document.getElementById(selectId);
+    const lower = csvHeaders.map(h => h.toLowerCase());
+    for (const kw of keywords) {
+      const idx = lower.indexOf(kw);
+      if (idx >= 0) { sel.value = csvHeaders[idx]; return; }
+    }
+  }
+
+  function renderPreview() {
+    const nameCol = document.getElementById('col-name').value;
+    const cityCol = document.getElementById('col-city').value;
+    const catCol = document.getElementById('col-category').value;
+    const webCol = document.getElementById('col-website').value;
+    const tipCol = document.getElementById('col-tip').value;
+
+    let html = '<thead><tr><th>Place</th><th>City</th><th>Category</th><th>Website</th><th>Tip</th></tr></thead><tbody>';
+
+    csvRows.forEach(row => {
+      const name = nameCol ? row[nameCol] : '';
+      const city = cityCol ? row[cityCol] : '';
+      const cat = catCol ? row[catCol] : '';
+      const web = webCol ? row[webCol] : '';
+      const tip = tipCol ? row[tipCol] : '';
+
+      html += '<tr>' +
+        '<td>' + esc(name) + '</td>' +
+        '<td>' + esc(city) + '</td>' +
+        '<td>' + esc(cat) + '</td>' +
+        '<td>' + esc(web) + '</td>' +
+        '<td>' + esc(tip) + '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody>';
+    document.getElementById('preview-table').innerHTML = html;
+    document.getElementById('import-count').textContent = csvRows.length + ' rows';
+  }
+
+  // Import
+  document.getElementById('import-btn').addEventListener('click', async () => {
+    const nameCol = document.getElementById('col-name').value;
+    if (!nameCol) { alert('Select a name column'); return; }
+
+    const cityCol = document.getElementById('col-city').value;
+    const catCol = document.getElementById('col-category').value;
+    const webCol = document.getElementById('col-website').value;
+    const tipCol = document.getElementById('col-tip').value;
+    const overrideCity = document.getElementById('override-city').value;
+    const overrideCat = document.getElementById('override-category').value;
+
+    const rows = csvRows.map(row => {
+      const name = row[nameCol];
+      if (!name) return null;
+
+      let cityId = overrideCity || null;
+      if (!cityId && cityCol && row[cityCol]) {
+        const match = cities.find(c => c.name.toLowerCase() === row[cityCol].toLowerCase());
+        if (match) cityId = match.id;
+      }
+
+      return {
+        place_name: name,
+        city_id: cityId ? parseInt(cityId) : null,
+        category: overrideCat || (catCol ? row[catCol] : null),
+        website: webCol ? row[webCol] : null,
+        tip: tipCol ? row[tipCol] : null,
+        been: true,
+      };
+    }).filter(Boolean);
+
+    const btn = document.getElementById('import-btn');
+    btn.disabled = true;
+    btn.textContent = 'Importing…';
+
+    try {
+      const result = await api.post('/api/spots/batch', { rows });
+      document.getElementById('step-preview').hidden = true;
+      document.getElementById('step-result').hidden = false;
+      document.getElementById('result-msg').innerHTML =
+        '<strong>' + result.imported + '</strong> imported, ' +
+        '<strong>' + result.skipped + '</strong> skipped (duplicates)' +
+        (result.errors.length ? ', <strong>' + result.errors.length + '</strong> errors' : '');
+    } catch (e) {
+      alert('Import failed: ' + e.message);
+      btn.disabled = false;
+      btn.textContent = 'Import';
+    }
+  });
+</script>
+</body>
+</html>

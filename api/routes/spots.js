@@ -674,5 +674,77 @@ router.get('/index', async (req, res) => {
   }
 });
 
+
+// =============================================================
+// POST /api/spots/batch — admin bulk import
+// Expects JSON array of { place_name, city_id, category, website, tip, been }
+// Dedupes by place_name + city_id (case-insensitive).
+// Google resolver fires async per row with 500ms delay.
+// =============================================================
+router.post('/batch', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+
+  const rows = req.body.rows;
+  if (!Array.isArray(rows) || !rows.length) {
+    return res.status(400).json({ error: 'rows array required' });
+  }
+
+  const results = { imported: 0, skipped: 0, errors: [] };
+
+  for (const row of rows) {
+    try {
+      // Dedupe check
+      const existing = await pool.query(
+        `SELECT id FROM spots WHERE LOWER(place_name) = LOWER($1) AND city_id = $2 LIMIT 1`,
+        [row.place_name, row.city_id || null]
+      );
+      if (existing.rows[0]) {
+        results.skipped++;
+        continue;
+      }
+
+      // Insert
+      const ins = await pool.query(
+        `INSERT INTO spots (user_id, text, place_name, tip, category, city_id, been, website, curated, curated_by, ai_parsed_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $1, NOW())
+         RETURNING *`,
+        [
+          req.user.id,
+          row.place_name,
+          row.place_name,
+          row.tip || null,
+          row.category || null,
+          row.city_id || null,
+          row.been !== false,
+          row.website || null,
+        ]
+      );
+
+      const spot = ins.rows[0];
+
+      // Fire Google resolver async with delay
+      setTimeout(() => {
+        const cityMatch = citiesCache.find(c => c.id === parseInt(row.city_id));
+        resolveOrCreatePlace({
+          name: spot.place_name,
+          cityId: spot.city_id,
+          cityName: cityMatch ? cityMatch.name : null,
+        }).then(placeId => {
+          if (placeId) {
+            pool.query('UPDATE spots SET place_id = $1 WHERE id = $2', [placeId, spot.id])
+              .catch(e => console.error('batch place_id update', e.message));
+          }
+        }).catch(e => console.error('batch resolver', spot.id, e.message));
+      }, results.imported * 500);
+
+      results.imported++;
+    } catch (err) {
+      results.errors.push({ place_name: row.place_name, error: err.message });
+    }
+  }
+
+  res.json(results);
+});
+
 module.exports = router;
 module.exports.refreshCitiesCache = refreshCitiesCache;
