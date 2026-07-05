@@ -519,19 +519,20 @@ router.patch('/:id', authenticate, async (req, res) => {
   for (const key of allowed) {
     if (req.body[key] !== undefined) {
       params.push(req.body[key]);
-      updates.push(`${key} = $${params.length}`);
+      updates.push(key + ' = $' + params.length);
     }
   }
   if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
   const isAdmin = req.user.role === 'admin';
   params.push(req.params.id);
   if (!isAdmin) params.push(req.user.id);
+  const idParam = '$' + (isAdmin ? params.length : (params.length - 1));
   const whereClause = isAdmin
-    ? `WHERE id = ${params.length}`
-    : `WHERE id = ${params.length - 1} AND user_id = ${params.length}`;
+    ? 'WHERE id = ' + idParam
+    : 'WHERE id = ' + idParam + ' AND user_id = $' + params.length;
   try {
     const result = await pool.query(
-      `UPDATE spots SET ${updates.join(', ')}, updated_at = NOW() ${whereClause} RETURNING *`,
+      'UPDATE spots SET ' + updates.join(', ') + ', updated_at = NOW() ' + whereClause + ' RETURNING *',
       params
     );
     if (!result.rows[0]) return res.status(404).json({ error: 'Spot not found' });
