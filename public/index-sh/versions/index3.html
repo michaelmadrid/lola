@@ -38,16 +38,11 @@
       line-height: 0.9;
     }
     .hero__brand {
-      position: fixed;
-      top: 16px;
-      right: var(--gutter);
-      font-family: var(--sans);
+      font-family: var(--mono);
       font-size: 10px;
-      font-weight: 500;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--ink);
-      z-index: 60;
+      color: var(--ink-3);
     }
 
     /* ===== Controls ===== */
@@ -56,6 +51,7 @@
       align-items: center;
       gap: 10px;
       padding: 12px var(--gutter);
+      border-top: 1px solid var(--ink);
       border-bottom: 1px solid var(--ink);
       background: #fff;
       flex-wrap: wrap;
@@ -66,7 +62,7 @@
     .controls__search {
       font-family: var(--sans);
       font-size: 13px;
-      border: 1px solid var(--ink);
+      border: 1px solid var(--rule);
       border-radius: 999px;
       padding: 6px 14px;
       outline: none;
@@ -83,9 +79,9 @@
       font-weight: 500;
       padding: 6px 14px;
       border-radius: 999px;
-      border: 1px solid var(--ink);
+      border: 1px solid var(--rule);
       background: transparent;
-      color: var(--ink);
+      color: var(--ink-2);
       cursor: pointer;
     }
     .pill-btn:hover { border-color: var(--ink); color: var(--ink); }
@@ -96,30 +92,26 @@
       position: absolute;
       top: calc(100% + 4px);
       left: 0;
-      background: var(--ink);
-      color: #fff;
-      border: 1px solid var(--ink);
+      background: #fff;
+      border: 1px solid var(--rule);
       border-radius: 6px;
       padding: 6px 0;
       min-width: 200px;
       max-height: 300px;
       overflow-y: auto;
       z-index: 100;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     .pill-dropdown.is-open { display: block; }
     .pill-dropdown__search {
       font-family: var(--sans);
       font-size: 13px;
       border: 0;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
+      border-bottom: 1px solid var(--rule);
       padding: 8px 14px;
       width: 100%;
       outline: none;
-      background: transparent;
-      color: #fff;
     }
-    .pill-dropdown__search::placeholder { color: rgba(255,255,255,0.4); }
     .pill-dropdown__item {
       display: block;
       width: 100%;
@@ -130,11 +122,11 @@
       border: 0;
       background: transparent;
       cursor: pointer;
-      color: rgba(255,255,255,0.7);
+      color: var(--ink);
     }
-    .pill-dropdown__item:hover { background: rgba(255,255,255,0.1); color: #fff; }
-    .pill-dropdown__item .country { font-size: 12px; color: rgba(255,255,255,0.35); margin-left: 6px; }
-    .pill-dropdown__item.is-active { color: #fff; font-weight: 500; }
+    .pill-dropdown__item:hover { background: #f5f5f5; }
+    .pill-dropdown__item .country { font-size: 12px; color: var(--ink-3); margin-left: 6px; }
+    .pill-dropdown__item.is-active { color: var(--accent); font-weight: 500; }
 
     .sort-btn {
       font-family: var(--mono);
@@ -166,6 +158,7 @@
       display: flex;
       align-items: baseline;
       gap: 12px;
+      border-bottom: 1px solid var(--rule);
       padding: 14px 0;
       cursor: pointer;
       transition: opacity 100ms;
@@ -407,7 +400,7 @@
     el.innerHTML=spots.map(s=>
       '<div class="index-item" data-id="'+s.id+'">'+
         '<span class="index-item__name">'+esc(s.place_name)+'</span>'+
-        (!activeCity&&s.city?'<span class="index-item__city">'+esc(s.city)+'</span>':'')+
+        '<span class="index-item__city">'+esc(s.city||'')+'</span>'+
       '</div>'
     ).join('');
 
