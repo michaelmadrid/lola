@@ -512,7 +512,7 @@ router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
     'text', 'tags', 'url', 'place_id', 'archived_at',
     'place_name', 'category', 'tip', 'country', 'neighborhood',
-    'been', 'curated', 'curated_category', 'website', 'image_url',
+    'been', 'curated', 'website', 'image_url',
   ];
   const updates = [];
   const params = [];
@@ -652,7 +652,6 @@ router.get('/index', async (req, res) => {
         s.tip,
         s.neighborhood,
         s.country,
-        s.curated_category,
         s.website,
         s.image_url,
         s.been,

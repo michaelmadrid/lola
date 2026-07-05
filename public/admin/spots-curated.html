@@ -157,7 +157,7 @@
 
     let filtered = spots.filter(s => {
       const matchQ = !q || (s.place_name||'').toLowerCase().includes(q) || (s.tip||'').toLowerCase().includes(q);
-      const matchCat = !cat || s.curated_category === cat;
+      const matchCat = !cat || s.category === cat;
       const matchCity = !cityId || String(s.attached_cities?.[0]?.id) === cityId;
       return matchQ && matchCat && matchCity;
     });
@@ -191,7 +191,7 @@
     document.getElementById('edit-title').textContent = s.place_name || 'Edit Spot';
     document.getElementById('edit-place-name').value = s.place_name || '';
     document.getElementById('edit-tip').value = s.tip || '';
-    document.getElementById('edit-category').value = s.curated_category || '';
+    document.getElementById('edit-category').value = s.category || '';
     document.getElementById('edit-website').value = s.website || '';
     document.getElementById('edit-image-url').value = s.image_url || '';
     document.getElementById('edit-google-place-id').value = s.google_place_id || '';
@@ -214,7 +214,7 @@
     var body = {
       place_name:       document.getElementById('edit-place-name').value,
       tip:              document.getElementById('edit-tip').value,
-      curated_category: document.getElementById('edit-category').value || null,
+      category: document.getElementById('edit-category').value || null,
       website:          document.getElementById('edit-website').value || null,
       image_url:        document.getElementById('edit-image-url').value || null,
     };

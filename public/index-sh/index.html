@@ -225,7 +225,7 @@
     }
 
     function buildFilters() {
-      const categories = [...new Set(allSpots.map(s => s.curated_category).filter(Boolean))].sort();
+      const categories = [...new Set(allSpots.map(s => s.category).filter(Boolean))].sort();
       const filters = document.getElementById('filters');
       categories.forEach(cat => {
         const btn = document.createElement('button');
@@ -251,7 +251,7 @@
     function render() {
       const spots = activeFilter === 'all'
         ? allSpots
-        : allSpots.filter(s => s.curated_category === activeFilter);
+        : allSpots.filter(s => s.category === activeFilter);
 
       const meta = document.getElementById('meta');
       meta.textContent = `${spots.length} place${spots.length !== 1 ? 's' : ''}`;
@@ -272,7 +272,7 @@
         if (mapsUrl)   links.push(`<a class="card__link" href="${mapsUrl}" target="_blank" rel="noopener">Maps</a>`);
 
         return `<div class="card">
-          ${s.curated_category ? `<div class="card__category">${s.curated_category.replace(/_/g, ' ')}</div>` : ''}
+          ${s.category ? `<div class="card__category">${s.category.replace(/_/g, ' ')}</div>` : ''}
           <div class="card__name">${esc(s.place_name)}</div>
           <div class="card__city">${[s.city, s.country].filter(Boolean).join(', ')}</div>
           ${s.tip ? `<div class="card__tip">${esc(s.tip)}</div>` : ''}
