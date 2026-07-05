@@ -17,7 +17,7 @@
 
 const anthropic = require('./claude');
 
-const CATEGORIES = ['eat', 'drink', 'coffee', 'stay', 'shop', 'see', 'other'];
+const CATEGORIES = ['bookstore', 'film_lab', 'record_store', 'cinema', 'gallery', 'coffee', 'eat', 'drink', 'hotel', 'shop', 'other'];
 
 const SYSTEM_PROMPT = `You extract structured fields from short travel notes a user has captured.
 
@@ -51,12 +51,16 @@ Rules:
 - If user wrote a hood without an explicit city, you can still infer the city if you're confident (e.g., "Canggu" → city: Bali, neighborhood: Canggu).
 - Order doesn't matter — "Pererenan, Della Terra" and "Della Terra Pererenan" both have place=Della Terra, city=Bali, neighborhood=Pererenan.
 - Categories:
+    bookstore = bookshops, book stores, independent bookstores
+    film_lab = film labs, photo labs, film processing
+    record_store = record shops, vinyl stores, music stores
+    cinema = cinemas, movie theaters, independent theaters
+    gallery = galleries, museums, exhibition spaces
+    coffee = coffee shops, cafes
     eat = restaurants, food spots, bakeries
     drink = bars, cocktail places, wine bars
-    coffee = coffee shops, cafes
-    stay = hotels, accommodations, airbnbs
-    shop = stores, boutiques, bookshops
-    see = galleries, museums, parks, sights
+    hotel = hotels, accommodations, airbnbs
+    shop = stores, boutiques, retail (NOT bookstores or record stores)
     other = anything else
 - If input is not a place at all (e.g. "tape your mouth"), return all null.
 
