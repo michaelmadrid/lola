@@ -25,6 +25,7 @@
     html { background: #fff; color: var(--ink); font-family: var(--sans); }
 
     .hero {
+      position: relative;
       padding: 48px var(--gutter) 32px;
       display: flex;
       justify-content: space-between;
@@ -37,7 +38,7 @@
       line-height: 0.9;
     }
     .hero__brand {
-      position: fixed;
+      position: absolute;
       top: 16px;
       right: var(--gutter);
       font-family: var(--sans);
@@ -155,7 +156,6 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: var(--ink-3);
-      margin-left: auto;
     }
 
     /* List */
