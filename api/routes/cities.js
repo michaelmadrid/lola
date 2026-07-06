@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const pool = require('../db');
 const { authenticate, softAuthenticate } = require('../auth');
+const { searchCities, lookupTimezone } = require('../city-resolver');
 
 // Refresh spots' city cache after CRUD on cities
 let _spotsRefresh = null;
@@ -110,17 +111,38 @@ router.get('/:idOrSlug', softAuthenticate, async (req, res) => {
 // admin-only when admin city triage UI lands (Job 8). Until then, the new
 // status=1 cities will at least not appear in user-facing pickers (Job 9), so
 // they're effectively invisible orphans rather than active pollution.
+// GET /api/cities/resolve?q=Paris — Google candidates for disambiguation
+router.get('/resolve', authenticate, async (req, res) => {
+  try {
+    const candidates = await searchCities(req.query.q || '', 5);
+    res.json({ candidates });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /api/cities/timezone?lat=..&lng=.. — IANA tz for coords
+router.get('/timezone', authenticate, async (req, res) => {
+  try {
+    const tz = await lookupTimezone(parseFloat(req.query.lat), parseFloat(req.query.lng));
+    res.json({ timezone: tz });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.post('/', authenticate, async (req, res) => {
-  const { name, country, parent_id, is_region, lat, lon, timezone, region, language } = req.body;
+  const { name, country, parent_id, is_region, lat, lon, timezone, region, language, status, google_place_id } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
   try {
     const slug = slugify(name);
     const result = await pool.query(
-      `INSERT INTO cities (name, slug, country, parent_id, is_region, lat, lon, timezone, region, language)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `INSERT INTO cities (name, slug, country, parent_id, is_region, lat, lon, timezone, region, language, status, google_place_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [name, slug, country || null, parent_id || null, !!is_region,
-       lat || null, lon || null, timezone || null, region || null, language || null]
+       lat || null, lon || null, timezone || null, region || null, language || null,
+       status || 1, google_place_id || null]
     );
     refreshSpotsCache();
     res.json({ city: result.rows[0] });
