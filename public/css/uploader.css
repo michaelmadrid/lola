@@ -10,6 +10,7 @@
 
 .uploader__preview {
   width: 100%;
+  max-width: 240px;
   aspect-ratio: 4 / 3;
   border: 1px solid var(--rule);
   border-radius: var(--r-card);
@@ -19,16 +20,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color var(--ease-quick);
+  transition: border-color var(--ease-quick), background var(--ease-quick);
 }
 .uploader__preview:hover { border-color: var(--ink); }
+.uploader__preview.is-dragover { border-color: var(--accent); background: var(--surface-2); }
 .uploader__preview:empty::before {
-  content: "Click to add image";
+  content: "Drop image or click";
   font-family: var(--mono);
   font-size: var(--text-tiny);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-3);
+  text-align: center;
+  padding: 0 12px;
 }
 
 .uploader__img {

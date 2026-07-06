@@ -41,7 +41,19 @@
     if (opts.initialUrl) setPreview(opts.initialUrl);
 
     if (btn) btn.addEventListener('click', () => input.click());
-    if (preview) preview.addEventListener('click', () => input.click());
+    if (preview) {
+      preview.addEventListener('click', () => input.click());
+      preview.addEventListener('dragover', (e) => { e.preventDefault(); preview.classList.add('is-dragover'); });
+      preview.addEventListener('dragleave', () => preview.classList.remove('is-dragover'));
+      preview.addEventListener('drop', (e) => {
+        e.preventDefault();
+        preview.classList.remove('is-dragover');
+        if (e.dataTransfer.files[0]) {
+          input.files = e.dataTransfer.files;
+          input.dispatchEvent(new Event('change'));
+        }
+      });
+    }
 
     input.addEventListener('change', async () => {
       const file = input.files[0];
