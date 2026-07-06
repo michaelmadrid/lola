@@ -41,8 +41,6 @@ async function searchCities(query, max = 5) {
     body: JSON.stringify({
       textQuery: query.trim(),
       maxResultCount: max,
-      // Bias toward localities (cities/towns) rather than businesses.
-      includedType: 'locality',
     }),
   });
 
