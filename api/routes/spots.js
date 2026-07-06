@@ -347,39 +347,10 @@ async function createSpotStructured({ userId, placeName, tip, cityId, cityName, 
   }
   spot.attached_cities = attached;
 
-  // Fire structured AI parse for category + neighborhood. Fire-and-forget.
-  // If AI fails, the spot is still fully usable — just no category/neighborhood.
-  parseCaptureStructured({
-    place_name: placeName,
-    tip: tip || null,
-    boundCityName: cityName,
-  })
-    .then(async (parsed) => {
-      if (parsed.error) {
-        try {
-          await pool.query(
-            `UPDATE spots SET ai_parse_error = $1 WHERE id = $2`,
-            [parsed.error, spot.id]
-          );
-        } catch {}
-        return;
-      }
-      try {
-        await pool.query(
-          manualCategory
-            ? `UPDATE spots SET neighborhood = $1, ai_parsed_at = NOW(), ai_parse_error = NULL WHERE id = $2`
-            : `UPDATE spots SET category = $1, neighborhood = $2, ai_parsed_at = NOW(), ai_parse_error = NULL WHERE id = $3`,
-          manualCategory
-            ? [parsed.neighborhood, spot.id]
-            : [parsed.category, parsed.neighborhood, spot.id]
-        );
-      } catch (err) {
-        console.error('createSpotStructured AI update', err.message);
-      }
-    })
-    .catch(err => {
-      console.error(`[structured-parse-error] spot ${spot.id}: ${err.message}`);
-    });
+  // NOTE: AI parse removed from the save path (2026-07). Category is now picked
+  // manually in the capture overlay; city is bound to a predefined city. We no
+  // longer infer category or neighborhood via AI here. parseCaptureStructured
+  // still exists in parse-capture.js if we ever want to reintroduce it.
 
   // Fire Google resolver. Clean inputs (no AI inference needed) — pass placeName
   // and the bound city directly.
