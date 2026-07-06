@@ -26,6 +26,7 @@
   // was set as a "fallback" without user intent.
   const CITY_STORAGE_KEY = 'kit.capture.lastCity-v2';
   const BEEN_STORAGE_KEY = 'kit.capture.lastBeen';
+  const CAT_STORAGE_KEY = 'kit.capture.lastCategory';
 
   // Module state
   let opts = {};
@@ -208,6 +209,7 @@
 
     // Pre-load city list in background so first open is snappy
     loadCitiesIfNeeded();
+    loadCategoriesIfNeeded();
   }
 
   // ------------------------------------------------------------------
@@ -229,6 +231,10 @@
     try {
       const data = await api.get('/api/spots/categories');
       allCategories = data.categories || [];
+      try {
+        const saved = localStorage.getItem(CAT_STORAGE_KEY);
+        if (saved && allCategories.find(c => c.value === saved)) setPickedCategory(saved);
+      } catch {}
       renderCatList();
     } catch (err) {
       console.error('CaptureOverlay loadCategories', err);
@@ -251,6 +257,10 @@
     const label = allCategories.find(c => c.value === pickedCategory);
     if (captFsCatBtnName) captFsCatBtnName.textContent = label ? label.label : 'Category';
     if (captFsCatBtn) captFsCatBtn.classList.toggle('has-value', !!pickedCategory);
+    try {
+      if (pickedCategory) localStorage.setItem(CAT_STORAGE_KEY, pickedCategory);
+      else localStorage.removeItem(CAT_STORAGE_KEY);
+    } catch {}
   }
   function openCatPopover() {
     if (!captFsCatPopover) return;
@@ -468,7 +478,6 @@
         hideTip();
       }
       updateSubmitEnabled();
-      setPickedCategory(null);
       if (typeof window.toast === 'function') {
         window.toast('Saved');
       }

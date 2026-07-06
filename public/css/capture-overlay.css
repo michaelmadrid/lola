@@ -418,8 +418,8 @@
   cursor: pointer;
   transition: transform 120ms ease;
   line-height: 1;
+  gap: 8px;
   margin: 0;
-  gap: 6px;
 }
 .capture-fs--v2 .capture-fs__cat-btn:hover { transform: translateY(-1px); }
 .capture-fs--v2 .capture-fs__cat-btn.has-value { background: var(--ink); color: var(--bg); }
