@@ -383,12 +383,54 @@
   let editingSpotId = null;
   let editingBeen = true;
   let editingImageUrl = null;
+  let editingTags = [];
 
   function applyEditingBeen(val) {
     editingBeen = !!val;
     if (spotFsBeenYes) spotFsBeenYes.dataset.active = editingBeen ? 'true' : 'false';
     if (spotFsBeenNo)  spotFsBeenNo.dataset.active  = editingBeen ? 'false' : 'true';
   }
+  // -------- Tags --------
+  const tagField = document.getElementById('tag-field');
+  const tagPills = document.getElementById('tag-pills');
+
+  function renderTags() {
+    if (!tagPills) return;
+    tagPills.innerHTML = editingTags.map(t =>
+      '<span class="tag-pill">' + t + '<button type="button" class="tag-pill__x" data-tag="' + t + '">×</button></span>'
+    ).join('');
+    tagPills.querySelectorAll('.tag-pill__x').forEach(x =>
+      x.addEventListener('click', () => {
+        editingTags = editingTags.filter(t => t !== x.dataset.tag);
+        renderTags();
+      })
+    );
+  }
+
+  function addTags(raw) {
+    raw.split(',').forEach(part => {
+      const tag = part.trim().toLowerCase();
+      if (tag && !editingTags.includes(tag)) editingTags.push(tag);
+    });
+    renderTags();
+  }
+
+  if (tagField) {
+    tagField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addTags(tagField.value);
+        tagField.value = '';
+      } else if (e.key === 'Backspace' && !tagField.value && editingTags.length) {
+        editingTags.pop();
+        renderTags();
+      }
+    });
+    tagField.addEventListener('blur', () => {
+      if (tagField.value.trim()) { addTags(tagField.value); tagField.value = ''; }
+    });
+  }
+
   if (spotFsBeenYes) spotFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
   if (spotFsBeenNo)  spotFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
@@ -492,6 +534,8 @@
     spotFsCat.value = spot.category || '';
     if (spotFsWebsite) spotFsWebsite.value = spot.website || '';
     if (spotFsImage) spotFsImage.value = spot.image_url || '';
+    editingTags = Array.isArray(spot.tags) ? [...spot.tags] : [];
+    renderTags();
     renderMapsLink(spot);
     editingImageUrl = spot.image_url || null;
     const uploaderPreview = document.querySelector('#spot-fs-uploader .uploader__preview');
@@ -548,6 +592,7 @@
       been:       editingBeen,
       website:    spotFsWebsite ? (spotFsWebsite.value.trim() || null) : undefined,
       image_url:  editingImageUrl,
+      tags:       editingTags,
     };
     try {
       await api.patch('/api/spots/' + editingSpotId, body);

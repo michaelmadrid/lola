@@ -296,7 +296,7 @@
 /* ===== Maps link swap widget ===== */
 .maps-link {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
   flex-wrap: wrap;
   position: relative;
@@ -350,3 +350,50 @@
 }
 
 .maps-link__editor[hidden] { display: none !important; }
+
+/* ===== Tag input ===== */
+.tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-input);
+  background: var(--surface);
+  padding: 10px 12px;
+}
+.tag-input:focus-within { border-color: var(--accent); background: var(--bg); }
+.tag-input__pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 4px 6px 4px 12px;
+  border-radius: var(--r-pill);
+}
+.tag-pill__x {
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: var(--bg);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 4px;
+  opacity: 0.7;
+}
+.tag-pill__x:hover { opacity: 1; }
+.tag-input__field {
+  flex: 1;
+  min-width: 120px;
+  border: 0;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: var(--text-strong);
+  color: var(--ink);
+  outline: none;
+}
+.tag-input__field::placeholder { color: var(--ink-3); }
