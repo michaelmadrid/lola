@@ -35,6 +35,8 @@
   let captFs, captFsClose, captFsPlace, captFsTip, captFsSubmit;
   let captFsCityBtn, captFsCityBtnName, captFsCityPopover, captFsCitySearch, captFsCityList;
   let captFsBeenBtn, captFsBeenText;
+  let captFsCatBtn, captFsCatBtnName, captFsCatPopover, captFsCatList;
+  let pickedCategory = null;
 
   let allCities = [];
   let pickedCity = null;
@@ -68,6 +70,11 @@
     captFsBeenBtn         = document.getElementById('capture-fs-been-btn');
     captFsBeenText        = document.getElementById('capture-fs-been-text');
 
+    captFsCatBtn          = document.getElementById('capture-fs-cat-btn');
+    captFsCatBtnName      = document.getElementById('capture-fs-cat-btn-name');
+    captFsCatPopover      = document.getElementById('capture-fs-cat-popover');
+    captFsCatList         = document.getElementById('capture-fs-cat-list');
+
     if (!captFs) {
       console.warn('CaptureOverlay.init: #capture-fs missing — overlay markup not on this page.');
       return;
@@ -80,6 +87,23 @@
       applyBeen(stored !== '0');
     } catch { applyBeen(true); }
     if (captFsBeenBtn) captFsBeenBtn.addEventListener('click', () => applyBeen(!been));
+
+    // Category popover
+    if (captFsCatBtn) {
+      captFsCatBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await loadCategoriesIfNeeded();
+        if (captFsCatPopover.classList.contains('is-open')) closeCatPopover();
+        else openCatPopover();
+      });
+    }
+    document.addEventListener('click', (e) => {
+      if (captFsCatPopover && captFsCatPopover.classList.contains('is-open') &&
+          !captFsCatPopover.contains(e.target) &&
+          captFsCatBtn && !captFsCatBtn.contains(e.target)) {
+        closeCatPopover();
+      }
+    });
 
     // Restore city from storage (provisional, full data resolves in loadCitiesIfNeeded)
     try {
@@ -194,6 +218,47 @@
     if (captFsBeenBtn)  captFsBeenBtn.dataset.been = been ? 'true' : 'false';
     if (captFsBeenText) captFsBeenText.textContent = been ? "Been" : "Want to go";
     try { localStorage.setItem(BEEN_STORAGE_KEY, been ? '1' : '0'); } catch {}
+  }
+
+  // ------------------------------------------------------------------
+  // Category picker
+  // ------------------------------------------------------------------
+  let allCategories = [];
+  async function loadCategoriesIfNeeded() {
+    if (allCategories.length) return;
+    try {
+      const data = await api.get('/api/spots/categories');
+      allCategories = data.categories || [];
+      renderCatList();
+    } catch (err) {
+      console.error('CaptureOverlay loadCategories', err);
+    }
+  }
+  function renderCatList() {
+    if (!captFsCatList) return;
+    captFsCatList.innerHTML = allCategories.map(c =>
+      `<button class="capture-fs__cat-item${pickedCategory === c.value ? ' is-current' : ''}" data-cat="${c.value}">${escapeHtml(c.label)}</button>`
+    ).join('');
+    captFsCatList.querySelectorAll('.capture-fs__cat-item').forEach(item => {
+      item.addEventListener('click', () => {
+        setPickedCategory(item.dataset.cat);
+        closeCatPopover();
+      });
+    });
+  }
+  function setPickedCategory(val) {
+    pickedCategory = val || null;
+    const label = allCategories.find(c => c.value === pickedCategory);
+    if (captFsCatBtnName) captFsCatBtnName.textContent = label ? label.label : 'Category';
+    if (captFsCatBtn) captFsCatBtn.classList.toggle('has-value', !!pickedCategory);
+  }
+  function openCatPopover() {
+    if (!captFsCatPopover) return;
+    renderCatList();
+    captFsCatPopover.classList.add('is-open');
+  }
+  function closeCatPopover() {
+    if (captFsCatPopover) captFsCatPopover.classList.remove('is-open');
   }
 
   // ------------------------------------------------------------------
@@ -388,6 +453,7 @@
         city_id: pickedCity.id,
         city_name: pickedCity.name,
         been,
+        category: pickedCategory || null,
       };
       const result = await api.post('/api/spots', body);
       const count = result.count || 1;
@@ -402,7 +468,7 @@
         hideTip();
       }
       updateSubmitEnabled();
-      // Toast
+      setPickedCategory(null);
       if (typeof window.toast === 'function') {
         window.toast('Saved');
       }

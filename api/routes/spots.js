@@ -296,9 +296,10 @@ async function createSingleSpot({ userId, text, tags, url, cityIdHint, boundCity
 // row exists with full structured fields immediately; AI/Google touches
 // only auxiliary fields in background.
 // =============================================================
-async function createSpotStructured({ userId, placeName, tip, cityId, cityName, been, isAdmin }) {
+async function createSpotStructured({ userId, placeName, tip, cityId, cityName, been, isAdmin, category }) {
   const beenValue = (typeof been === 'boolean') ? been : true;
   const curatedBy = isAdmin ? userId : null;
+  const manualCategory = category || null;
 
   // Fetch city for country/timezone (no AI needed for these — they're derivable)
   let country = null;
@@ -327,10 +328,10 @@ async function createSpotStructured({ userId, placeName, tip, cityId, cityName, 
   // also set: ai_parsed_at = NOW so the row doesn't render as a "ghost"
   // waiting state — the user already provided the parse.
   const result = await pool.query(
-    `INSERT INTO spots (user_id, text, place_name, tip, country, city_id, been, ai_parsed_at, curated, curated_by)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9)
+    `INSERT INTO spots (user_id, text, place_name, tip, category, country, city_id, been, ai_parsed_at, curated, curated_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9, $10)
      RETURNING *`,
-    [userId, reconstructedText, placeName, tip || null, country, cityId || null, beenValue, !!isAdmin, curatedBy]
+    [userId, reconstructedText, placeName, tip || null, manualCategory, country, cityId || null, beenValue, !!isAdmin, curatedBy]
   );
   const spot = result.rows[0];
 
@@ -365,13 +366,12 @@ async function createSpotStructured({ userId, placeName, tip, cityId, cityName, 
       }
       try {
         await pool.query(
-          `UPDATE spots
-             SET category = $1,
-                 neighborhood = $2,
-                 ai_parsed_at = NOW(),
-                 ai_parse_error = NULL
-           WHERE id = $3`,
-          [parsed.category, parsed.neighborhood, spot.id]
+          manualCategory
+            ? `UPDATE spots SET neighborhood = $1, ai_parsed_at = NOW(), ai_parse_error = NULL WHERE id = $2`
+            : `UPDATE spots SET category = $1, neighborhood = $2, ai_parsed_at = NOW(), ai_parse_error = NULL WHERE id = $3`,
+          manualCategory
+            ? [parsed.neighborhood, spot.id]
+            : [parsed.category, parsed.neighborhood, spot.id]
         );
       } catch (err) {
         console.error('createSpotStructured AI update', err.message);
@@ -428,6 +428,7 @@ router.post('/', authenticate, async (req, res) => {
     city_name,
     place_id,
     been,
+    category,
   } = req.body;
 
   try {
@@ -453,6 +454,7 @@ router.post('/', authenticate, async (req, res) => {
         cityName: resolvedBoundCityName,
         been,
         isAdmin: req.user.role === 'admin',
+        category,
       });
       return res.json({ spot });
     }
