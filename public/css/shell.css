@@ -455,6 +455,8 @@ input, textarea, select { font: inherit; }
 /* Modal — generic full-screen overlay editor (journal, trip add, place add) */
 .modal {
   position: fixed; inset: 0;
+  height: 100%;
+  overflow: hidden;
   background: var(--bg);
   z-index: 110;
   display: none;
