@@ -392,6 +392,25 @@
   if (spotFsBeenYes) spotFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
   if (spotFsBeenNo)  spotFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
 
+  const spotFsImageRemove = document.getElementById('spot-fs-image-remove');
+  if (spotFsImageRemove) {
+    spotFsImageRemove.addEventListener('click', async () => {
+      if (!editingSpotId) return;
+      try {
+        await api.delete('/api/spots/' + editingSpotId + '/image');
+        editingImageUrl = null;
+        const preview = document.querySelector('#spot-fs-uploader .uploader__preview');
+        if (preview) preview.innerHTML = '';
+        spotFsImageRemove.hidden = true;
+        const spot = allSpots.find(s => s.id === editingSpotId);
+        if (spot) spot.image_url = null;
+        toast('Image removed');
+      } catch (err) {
+        toast(err.message || 'Could not remove image');
+      }
+    });
+  }
+
   // -------- Maps link swap widget --------
   function renderMapsLink(spot) {
     if (!mapsPill) return;
@@ -477,10 +496,25 @@
     editingImageUrl = spot.image_url || null;
     const uploaderPreview = document.querySelector('#spot-fs-uploader .uploader__preview');
     if (uploaderPreview) uploaderPreview.innerHTML = '';
+    const imageRemoveBtn = document.getElementById('spot-fs-image-remove');
+    if (imageRemoveBtn) imageRemoveBtn.hidden = !editingImageUrl;
     if (window.Uploader) {
       window.Uploader.attach('#spot-fs-uploader', {
         initialUrl: editingImageUrl,
-        onUploaded: (result) => { editingImageUrl = result.url; },
+        onUploaded: async (result) => {
+          editingImageUrl = result.url;
+          if (imageRemoveBtn) imageRemoveBtn.hidden = false;
+          if (editingSpotId) {
+            try {
+              await api.patch('/api/spots/' + editingSpotId, { image_url: result.url });
+              const spot = allSpots.find(s => s.id === editingSpotId);
+              if (spot) spot.image_url = result.url;
+              toast('Image saved');
+            } catch (err) {
+              toast(err.message || 'Image save failed');
+            }
+          }
+        },
       });
     }
     applyEditingBeen(typeof spot.been === 'boolean' ? spot.been : true);

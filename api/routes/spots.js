@@ -784,5 +784,25 @@ router.delete('/:id/maps-link', authenticate, async (req, res) => {
   }
 });
 
+// DELETE /api/spots/:id/image — remove image, delete file from disk
+router.delete('/:id/image', authenticate, async (req, res) => {
+  try {
+    const r = await pool.query('SELECT image_url FROM spots WHERE id = $1', [req.params.id]);
+    const url = r.rows[0] && r.rows[0].image_url;
+    await pool.query('UPDATE spots SET image_url = NULL WHERE id = $1', [req.params.id]);
+    if (url && url.startsWith('/uploads/')) {
+      const fs = require('fs');
+      const path = require('path');
+      const filepath = path.join(__dirname, '..', '..', 'public', url);
+      fs.unlink(filepath, () => {});
+      const thumbPath = filepath.replace(/(\.[a-z]+)$/, '-thumb$1');
+      fs.unlink(thumbPath, () => {});
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
 module.exports.refreshCitiesCache = refreshCitiesCache;

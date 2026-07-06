@@ -57,3 +57,6 @@
 }
 .uploader__btn:hover { border-color: var(--ink); color: var(--ink); }
 .uploader__btn:disabled { opacity: 0.5; cursor: default; }
+
+.uploader__btn--remove { color: var(--ink-3); }
+.uploader__btn--remove:hover { color: var(--danger); border-color: var(--danger); }
