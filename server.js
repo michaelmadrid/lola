@@ -40,6 +40,7 @@ app.use('/api/spots',   require('./api/routes/spots'));
 app.use('/api/todos',   require('./api/routes/todos'));
 app.use('/api/guides',  require('./api/routes/guides'));
 app.use('/api/phrases', require('./api/routes/phrases'));
+app.use('/api/upload',  require('./api/routes/upload'));
 
 // ============ PUBLIC GUIDE VIEW ============
 app.get('/guide/:slug', (req, res) => {

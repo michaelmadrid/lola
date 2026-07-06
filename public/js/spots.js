@@ -373,6 +373,7 @@
 
   let editingSpotId = null;
   let editingBeen = true;
+  let editingImageUrl = null;
 
   function applyEditingBeen(val) {
     editingBeen = !!val;
@@ -404,6 +405,13 @@
     if (spotFsWebsite) spotFsWebsite.value = spot.website || '';
     if (spotFsImage) spotFsImage.value = spot.image_url || '';
     if (spotFsPlaceId) spotFsPlaceId.value = spot.google_place_id || '';
+    editingImageUrl = spot.image_url || null;
+    if (window.Uploader) {
+      window.Uploader.attach('#spot-fs-uploader', {
+        initialUrl: editingImageUrl,
+        onUploaded: (result) => { editingImageUrl = result.url; },
+      });
+    }
     applyEditingBeen(typeof spot.been === 'boolean' ? spot.been : true);
 
     spotEditor.classList.add('is-open');
@@ -434,7 +442,7 @@
       category:   spotFsCat.value || null,
       been:       editingBeen,
       website:    spotFsWebsite ? (spotFsWebsite.value.trim() || null) : undefined,
-      image_url:  spotFsImage ? (spotFsImage.value.trim() || null) : undefined,
+      image_url:  editingImageUrl,
     };
     try {
       await api.patch('/api/spots/' + editingSpotId, body);

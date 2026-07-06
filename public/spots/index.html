@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/themes/pills2.css">
   <link rel="stylesheet" href="/css/home.css"><!-- reused for save editor + stream styles -->
   <link rel="stylesheet" href="/css/capture-overlay.css">
+  <link rel="stylesheet" href="/css/uploader.css">
 </head>
 <body>
 
@@ -221,10 +222,14 @@
         <input type="url" class="spot-fs__input" id="spot-fs-website" placeholder="https://…">
       </div>
 
-      <!-- Image URL -->
+      <!-- Image -->
       <div class="spot-fs__field">
-        <label class="spot-fs__label" for="spot-fs-image">Image URL</label>
-        <input type="url" class="spot-fs__input" id="spot-fs-image" placeholder="https://…">
+        <label class="spot-fs__label">Image</label>
+        <div class="uploader" id="spot-fs-uploader">
+          <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+          <div class="uploader__preview"></div>
+          <button type="button" class="uploader__btn">Upload image</button>
+        </div>
       </div>
 
       <!-- Google Place ID -->
@@ -245,6 +250,7 @@
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
 <script src="/js/capture-overlay.js"></script>
+<script src="/js/uploader.js"></script>
 <script src="/js/spots.js"></script>
 <script src="/js/nav.js"></script>
 </body>
