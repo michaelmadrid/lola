@@ -25,9 +25,16 @@
     if (!container) return;
     opts = opts || {};
 
-    const input   = container.querySelector('input[type="file"]');
-    const preview = container.querySelector('.uploader__preview');
-    const btn     = container.querySelector('.uploader__btn');
+    // Clear any previously-bound listeners by cloning the interactive nodes.
+    // openSpotEditor calls attach() every time a spot is opened; without this
+    // the change/click handlers stack and fire against stale closures.
+    let input   = container.querySelector('input[type="file"]');
+    let preview = container.querySelector('.uploader__preview');
+    let btn     = container.querySelector('.uploader__btn:not(.uploader__btn--remove)');
+
+    if (input) { const n = input.cloneNode(true); input.replaceWith(n); input = n; }
+    if (preview) { const n = preview.cloneNode(true); preview.replaceWith(n); preview = n; }
+    if (btn) { const n = btn.cloneNode(true); btn.replaceWith(n); btn = n; }
 
     if (!input) return;
 
