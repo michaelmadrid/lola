@@ -139,7 +139,7 @@ async function parseAndUpdate(spotId, text, opts = {}) {
       cityId: attachedCityId,
       cityName: attachedCityName,
     })
-      .then(async (placeId) => {
+      .then(async ({ id: placeId }) => {
         if (placeId) {
           try {
             await pool.query(
@@ -388,12 +388,15 @@ async function createSpotStructured({ userId, placeName, tip, cityId, cityName, 
     cityId: cityId,
     cityName: cityName,
   })
-    .then(async (placeId) => {
+    .then(async ({ id: placeId, website }) => {
       if (placeId) {
         try {
+          // Auto-fill website from Google only when the user hasn't set one.
           await pool.query(
-            `UPDATE spots SET place_id = $1 WHERE id = $2`,
-            [placeId, spot.id]
+            `UPDATE spots SET place_id = $1,
+               website = COALESCE(NULLIF(website, ''), $2)
+             WHERE id = $3`,
+            [placeId, website || null, spot.id]
           );
         } catch (err) {
           console.error('createSpotStructured place_id update', err.message);
@@ -733,7 +736,7 @@ router.post('/batch', authenticate, async (req, res) => {
           name: spot.place_name,
           cityId: spot.city_id,
           cityName: cityMatch ? cityMatch.name : null,
-        }).then(placeId => {
+        }).then(({ id: placeId }) => {
           if (placeId) {
             pool.query('UPDATE spots SET place_id = $1 WHERE id = $2', [placeId, spot.id])
               .catch(e => console.error('batch place_id update', e.message));

@@ -25,6 +25,10 @@ const FIELD_MASK = [
   'places.shortFormattedAddress',
   'places.location',
   'places.primaryType',
+  // Enterprise-tier fields. Free under the $200/mo Google credit at our volume.
+  // To revert to Pro-tier pricing, remove the two lines below.
+  'places.websiteUri',
+  'places.internationalPhoneNumber',
 ].join(',');
 
 /**
@@ -131,6 +135,9 @@ async function lookupPlace({ name, city, lat, lng } = {}) {
     lng:                top.location && typeof top.location.longitude === 'number' ? top.location.longitude : null,
     primary_type,
     primary_type_label: formatPrimaryTypeLabel(primary_type),
+    // Enterprise-tier fields (see FIELD_MASK note). Null if unavailable.
+    website:            top.websiteUri || null,
+    phone:              top.internationalPhoneNumber || null,
   };
 }
 

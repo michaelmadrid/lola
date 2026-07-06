@@ -48,7 +48,7 @@ async function resolveOrCreatePlace({ name, cityId, cityName } = {}) {
   if (!looked) {
     // Legitimate "Google found nothing" result. Caller should treat
     // this as a normal outcome (set saves.google_lookup_status = 'not_found').
-    return null;
+    return { id: null, website: null };
   }
 
   // 2. Check if we already have a row for this google_place_id.
@@ -57,10 +57,7 @@ async function resolveOrCreatePlace({ name, cityId, cityName } = {}) {
     [looked.google_place_id]
   );
   if (existing.rows[0]) {
-    // Existing row. We deliberately do NOT touch last_synced_at here —
-    // that field's semantics are "when we last pulled data from Google
-    // for this row." Subsequent references aren't refreshes.
-    return existing.rows[0].id;
+    return { id: existing.rows[0].id, website: looked.website || null };
   }
 
   // 3. New place. Insert with bound cityId (may be null if unbound capture).
@@ -86,7 +83,7 @@ async function resolveOrCreatePlace({ name, cityId, cityName } = {}) {
       cityIdInt,
     ]
   );
-  return inserted.rows[0].id;
+  return { id: inserted.rows[0].id, website: looked.website || null };
 }
 
 module.exports = { resolveOrCreatePlace };
