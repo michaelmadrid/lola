@@ -238,6 +238,21 @@
         <input type="url" class="spot-fs__input" id="spot-fs-website" placeholder="https://…">
       </div>
 
+      <!-- Instagram -->
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="spot-fs-instagram">Instagram</label>
+        <input type="text" class="spot-fs__input" id="spot-fs-instagram" placeholder="@handle or URL">
+      </div>
+
+      <!-- Online only -->
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Location</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-online-no" data-active="true">Physical place</button>
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-online-yes" data-active="false">Online only</button>
+        </div>
+      </div>
+
       <!-- Image -->
       <div class="spot-fs__field">
         <label class="spot-fs__label">Image</label>
@@ -250,7 +265,7 @@
       </div>
 
       <!-- Google Maps link -->
-      <div class="spot-fs__field">
+      <div class="spot-fs__field" id="spot-fs-map-field">
         <label class="spot-fs__label">Map</label>
         <div class="maps-link" id="spot-fs-maps-link">
           <a class="maps-link__pill" id="maps-link-pill" href="#" target="_blank" rel="noopener" hidden>

@@ -363,6 +363,11 @@
   const spotFsTip      = document.getElementById('spot-fs-tip');
   const spotFsCat      = document.getElementById('spot-fs-category');
   const spotFsWebsite  = document.getElementById('spot-fs-website');
+  const spotFsInstagram = document.getElementById('spot-fs-instagram');
+  const spotFsMapField = document.getElementById('spot-fs-map-field');
+  const onlineNoBtn    = document.getElementById('spot-fs-online-no');
+  const onlineYesBtn   = document.getElementById('spot-fs-online-yes');
+  let editingOnlineOnly = false;
   const spotFsImage    = document.getElementById('spot-fs-image');
   const mapsPill       = document.getElementById('maps-link-pill');
   const mapsPillText   = document.getElementById('maps-link-text');
@@ -430,6 +435,15 @@
       if (tagField.value.trim()) { addTags(tagField.value); tagField.value = ''; }
     });
   }
+
+  function applyOnlineOnly(v) {
+    editingOnlineOnly = v;
+    if (onlineNoBtn) onlineNoBtn.dataset.active = String(!v);
+    if (onlineYesBtn) onlineYesBtn.dataset.active = String(v);
+    if (spotFsMapField) spotFsMapField.style.display = v ? 'none' : '';
+  }
+  if (onlineNoBtn) onlineNoBtn.addEventListener('click', () => applyOnlineOnly(false));
+  if (onlineYesBtn) onlineYesBtn.addEventListener('click', () => applyOnlineOnly(true));
 
   if (spotFsBeenYes) spotFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
   if (spotFsBeenNo)  spotFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
@@ -533,6 +547,8 @@
     spotFsTip.value = spot.tip || '';
     spotFsCat.value = spot.category || '';
     if (spotFsWebsite) spotFsWebsite.value = spot.website || '';
+    if (spotFsInstagram) spotFsInstagram.value = spot.instagram || '';
+    applyOnlineOnly(!!spot.online_only);
     if (spotFsImage) spotFsImage.value = spot.image_url || '';
     editingTags = Array.isArray(spot.tags) ? [...spot.tags] : [];
     renderTags();
@@ -591,6 +607,8 @@
       category:   spotFsCat.value || null,
       been:       editingBeen,
       website:    spotFsWebsite ? (spotFsWebsite.value.trim() || null) : undefined,
+      instagram:  spotFsInstagram ? (spotFsInstagram.value.trim() || null) : undefined,
+      online_only: editingOnlineOnly,
       image_url:  editingImageUrl,
       tags:       editingTags,
     };
