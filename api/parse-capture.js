@@ -69,6 +69,9 @@ Examples:
 Input: Mosto Canggu natural wine, Italian
 Output: {"place_name": "Mosto", "city": "Bali", "neighborhood": "Canggu", "country": "Indonesia", "timezone": "Asia/Makassar", "category": "drink", "tip": "natural wine, Italian"}
 
+Input: Shakespeare and Company Paris, great old rare selections
+Output: {"place_name": "Shakespeare and Company", "city": "Paris", "neighborhood": null, "country": "France", "timezone": "Europe/Paris", "category": "bookstore", "tip": "great old rare selections"}
+
 Input: Della Terra Pererenan, sit at the bar
 Output: {"place_name": "Della Terra", "city": "Bali", "neighborhood": "Pererenan", "country": "Indonesia", "timezone": "Asia/Makassar", "category": "eat", "tip": "sit at the bar"}
 
