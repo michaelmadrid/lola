@@ -324,6 +324,7 @@
   cursor: default;
 }
 .maps-link__edit {
+  flex: 0 0 28px;
   width: 28px;
   height: 28px;
   border-radius: 50%;
