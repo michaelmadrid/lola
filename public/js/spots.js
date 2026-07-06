@@ -362,6 +362,9 @@
   const spotFsPlace    = document.getElementById('spot-fs-place');
   const spotFsTip      = document.getElementById('spot-fs-tip');
   const spotFsCat      = document.getElementById('spot-fs-category');
+  const spotFsWebsite  = document.getElementById('spot-fs-website');
+  const spotFsImage    = document.getElementById('spot-fs-image');
+  const spotFsPlaceId  = document.getElementById('spot-fs-place-id');
   const spotFsClose    = document.getElementById('spot-editor-close');
   const spotFsSave     = document.getElementById('spot-fs-save');
   const spotFsDelete   = document.getElementById('spot-fs-delete');
@@ -398,6 +401,9 @@
     spotFsPlace.value = spot.place_name || '';
     spotFsTip.value = spot.tip || '';
     spotFsCat.value = spot.category || '';
+    if (spotFsWebsite) spotFsWebsite.value = spot.website || '';
+    if (spotFsImage) spotFsImage.value = spot.image_url || '';
+    if (spotFsPlaceId) spotFsPlaceId.value = spot.google_place_id || '';
     applyEditingBeen(typeof spot.been === 'boolean' ? spot.been : true);
 
     spotEditor.classList.add('is-open');
@@ -427,6 +433,8 @@
       tip:        spotFsTip.value.trim() || null,
       category:   spotFsCat.value || null,
       been:       editingBeen,
+      website:    spotFsWebsite ? (spotFsWebsite.value.trim() || null) : undefined,
+      image_url:  spotFsImage ? (spotFsImage.value.trim() || null) : undefined,
     };
     try {
       await api.patch('/api/spots/' + editingSpotId, body);

@@ -184,3 +184,111 @@
     max-width: calc(100vw - 32px);
   }
 }
+
+/* ===========================================================
+   Spot editor overlay (.spot-fs) — full styling, editorial register.
+   Reuses .modal / .modal__body / .modal__foot base from shell.css.
+   =========================================================== */
+.spot-fs__title {
+  font-family: var(--sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0;
+}
+
+.spot-fs__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.spot-fs__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.spot-fs__label {
+  font-family: var(--mono);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.spot-fs__input,
+.spot-fs__select {
+  font-family: var(--sans);
+  font-size: var(--text-strong);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-input);
+  padding: 12px 14px;
+  letter-spacing: -0.005em;
+  width: 100%;
+}
+.spot-fs__input:hover, .spot-fs__select:hover { background: var(--surface-2); }
+.spot-fs__input:focus, .spot-fs__select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg);
+}
+.spot-fs__input::placeholder { color: var(--ink-3); }
+
+.spot-fs__select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23777773' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.spot-fs__been-row {
+  display: flex;
+  gap: var(--space-2);
+}
+.spot-fs__been-pill {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: all var(--ease-quick);
+}
+.spot-fs__been-pill:hover { border-color: var(--ink); color: var(--ink); }
+.spot-fs__been-pill[data-active="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+.spot-fs__divider {
+  height: 1px;
+  background: var(--rule);
+  margin: var(--space-2) 0;
+}
+
+.spot-fs__hint {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.spot-fs__danger {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ink-3);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 8px 12px;
+  margin: -8px -12px;
+  transition: color var(--ease-quick);
+}
+.spot-fs__danger:hover { color: var(--danger); }
