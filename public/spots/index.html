@@ -232,11 +232,25 @@
         </div>
       </div>
 
-      <!-- Google Place ID -->
+      <!-- Google Maps link -->
       <div class="spot-fs__field">
-        <label class="spot-fs__label" for="spot-fs-place-id">Google Place ID</label>
-        <input type="text" class="spot-fs__input" id="spot-fs-place-id" placeholder="ChIJ…" readonly>
-        <p class="spot-fs__hint">Read-only for now — resolved automatically via Google.</p>
+        <label class="spot-fs__label">Map</label>
+        <div class="maps-link" id="spot-fs-maps-link">
+          <a class="maps-link__pill" id="maps-link-pill" href="#" target="_blank" rel="noopener" hidden>
+            <span id="maps-link-text">Map ↗</span>
+          </a>
+          <button type="button" class="maps-link__empty" id="maps-link-empty">No map linked</button>
+          <button type="button" class="maps-link__edit" id="maps-link-edit-btn" aria-label="Change map link">✎</button>
+          <div class="maps-link__editor" id="maps-link-editor" hidden>
+            <input type="text" class="spot-fs__input" id="maps-link-input" placeholder="Paste a Google Maps link…">
+            <div class="maps-link__editor-actions">
+              <button type="button" class="btn btn--small" id="maps-link-submit">Resolve</button>
+              <button type="button" class="btn btn--small btn--ghost" id="maps-link-cancel">Cancel</button>
+              <button type="button" class="btn btn--small btn--ghost btn--danger" id="maps-link-remove">Remove link</button>
+            </div>
+            <p class="spot-fs__hint" id="maps-link-status"></p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

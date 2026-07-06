@@ -364,7 +364,16 @@
   const spotFsCat      = document.getElementById('spot-fs-category');
   const spotFsWebsite  = document.getElementById('spot-fs-website');
   const spotFsImage    = document.getElementById('spot-fs-image');
-  const spotFsPlaceId  = document.getElementById('spot-fs-place-id');
+  const mapsPill       = document.getElementById('maps-link-pill');
+  const mapsPillText   = document.getElementById('maps-link-text');
+  const mapsEmpty      = document.getElementById('maps-link-empty');
+  const mapsEditBtn    = document.getElementById('maps-link-edit-btn');
+  const mapsEditor     = document.getElementById('maps-link-editor');
+  const mapsInput      = document.getElementById('maps-link-input');
+  const mapsSubmit     = document.getElementById('maps-link-submit');
+  const mapsCancel     = document.getElementById('maps-link-cancel');
+  const mapsRemove     = document.getElementById('maps-link-remove');
+  const mapsStatus     = document.getElementById('maps-link-status');
   const spotFsClose    = document.getElementById('spot-editor-close');
   const spotFsSave     = document.getElementById('spot-fs-save');
   const spotFsDelete   = document.getElementById('spot-fs-delete');
@@ -382,6 +391,66 @@
   }
   if (spotFsBeenYes) spotFsBeenYes.addEventListener('click', () => applyEditingBeen(true));
   if (spotFsBeenNo)  spotFsBeenNo.addEventListener('click', () => applyEditingBeen(false));
+
+  // -------- Maps link swap widget --------
+  function renderMapsLink(spot) {
+    if (!mapsPill) return;
+    if (spot.google_place_id) {
+      const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' +
+        encodeURIComponent(spot.place_name || '') + '&query_place_id=' + spot.google_place_id;
+      mapsPill.href = mapsUrl;
+      mapsPill.hidden = false;
+      mapsEmpty.hidden = true;
+    } else {
+      mapsPill.hidden = true;
+      mapsEmpty.hidden = false;
+    }
+    mapsEditor.hidden = true;
+    mapsStatus.textContent = '';
+    mapsInput.value = '';
+  }
+
+  if (mapsEditBtn) {
+    mapsEditBtn.addEventListener('click', () => {
+      mapsEditor.hidden = !mapsEditor.hidden;
+      if (!mapsEditor.hidden) mapsInput.focus();
+    });
+  }
+  if (mapsCancel) mapsCancel.addEventListener('click', () => { mapsEditor.hidden = true; });
+
+  if (mapsSubmit) {
+    mapsSubmit.addEventListener('click', async () => {
+      const url = mapsInput.value.trim();
+      if (!url || !editingSpotId) return;
+      mapsStatus.textContent = 'Resolving…';
+      mapsSubmit.disabled = true;
+      try {
+        const result = await api.post('/api/spots/' + editingSpotId + '/maps-link', { url });
+        mapsStatus.textContent = '';
+        const spot = allSpots.find(s => s.id === editingSpotId);
+        if (spot) spot.google_place_id = result.google_place_id;
+        renderMapsLink({ google_place_id: result.google_place_id, place_name: spotFsPlace.value });
+        toast('Map linked: ' + result.name);
+      } catch (err) {
+        mapsStatus.textContent = err.message || 'Could not resolve that link';
+      } finally {
+        mapsSubmit.disabled = false;
+      }
+    });
+  }
+
+  if (mapsRemove) {
+    mapsRemove.addEventListener('click', async () => {
+      if (!editingSpotId) return;
+      try {
+        await api.delete('/api/spots/' + editingSpotId + '/maps-link');
+        renderMapsLink({ google_place_id: null });
+        toast('Map link removed');
+      } catch (err) {
+        toast(err.message || 'Could not remove link');
+      }
+    });
+  }
 
   function toast(msg) {
     const t = document.createElement('div');
@@ -404,7 +473,7 @@
     spotFsCat.value = spot.category || '';
     if (spotFsWebsite) spotFsWebsite.value = spot.website || '';
     if (spotFsImage) spotFsImage.value = spot.image_url || '';
-    if (spotFsPlaceId) spotFsPlaceId.value = spot.google_place_id || '';
+    renderMapsLink(spot);
     editingImageUrl = spot.image_url || null;
     if (window.Uploader) {
       window.Uploader.attach('#spot-fs-uploader', {

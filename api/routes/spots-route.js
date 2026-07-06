@@ -4,6 +4,7 @@ const { authenticate } = require('../auth');
 const { parseCapture, parseCaptureStructured, CATEGORIES } = require('../parse-capture');
 const { resolveOrCreatePlace } = require('../places-resolver');
 const SPOT_CATEGORIES = require('../constants/spot-categories');
+const { resolveFromMapsUrl } = require('../maps-url-resolver');
 
 function extractTags(text) {
   const matches = String(text).match(/#[a-z0-9_-]+/gi) || [];
@@ -745,6 +746,40 @@ router.post('/batch', authenticate, async (req, res) => {
   }
 
   res.json(results);
+});
+
+// POST /api/spots/:id/maps-link — paste a Google Maps URL, auto-resolve place_id
+router.post('/:id/maps-link', authenticate, async (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: 'url required' });
+
+  try {
+    const spot = await pool.query('SELECT city_id FROM spots WHERE id = $1', [req.params.id]);
+    if (!spot.rows[0]) return res.status(404).json({ error: 'Spot not found' });
+
+    const resolved = await resolveFromMapsUrl(url, spot.rows[0].city_id);
+
+    await pool.query('UPDATE spots SET place_id = $1 WHERE id = $2', [resolved.placeId, req.params.id]);
+
+    res.json({
+      place_id: resolved.placeId,
+      google_place_id: resolved.google_place_id,
+      name: resolved.name,
+      address: resolved.address,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE /api/spots/:id/maps-link — unlink the place (no physical location)
+router.delete('/:id/maps-link', authenticate, async (req, res) => {
+  try {
+    await pool.query('UPDATE spots SET place_id = NULL WHERE id = $1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

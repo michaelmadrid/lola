@@ -51,7 +51,7 @@ function formatPrimaryTypeLabel(snake) {
  * @returns {Promise<object|null>} structured place data, or null if no match
  * @throws {Error} on API errors (network, non-200 response, malformed JSON)
  */
-async function lookupPlace({ name, city } = {}) {
+async function lookupPlace({ name, city, lat, lng } = {}) {
   if (!name || !String(name).trim()) {
     throw new Error('lookupPlace: name is required');
   }
@@ -71,6 +71,9 @@ async function lookupPlace({ name, city } = {}) {
     textQuery,
     maxResultCount: 1,
   };
+  if (typeof lat === 'number' && typeof lng === 'number') {
+    body.locationBias = { circle: { center: { latitude: lat, longitude: lng }, radius: 200 } };
+  }
 
   let response;
   try {
