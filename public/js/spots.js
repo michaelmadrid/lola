@@ -475,6 +475,8 @@
     if (spotFsImage) spotFsImage.value = spot.image_url || '';
     renderMapsLink(spot);
     editingImageUrl = spot.image_url || null;
+    const uploaderPreview = document.querySelector('#spot-fs-uploader .uploader__preview');
+    if (uploaderPreview) uploaderPreview.innerHTML = '';
     if (window.Uploader) {
       window.Uploader.attach('#spot-fs-uploader', {
         initialUrl: editingImageUrl,
