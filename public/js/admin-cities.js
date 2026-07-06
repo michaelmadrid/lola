@@ -26,6 +26,14 @@
   const fRegion = document.getElementById('c-region');
   const fIsRegion = document.getElementById('c-is-region');
 
+  // Populate timezone dropdown from the browser's IANA list
+  (function populateTimezones() {
+    let zones = [];
+    try { zones = Intl.supportedValuesOf('timeZone'); } catch { zones = []; }
+    fTimezone.innerHTML = '<option value="">— none —</option>' +
+      zones.map(z => `<option value="${z}">${z}</option>`).join('');
+  })();
+
   let cities = [];
   let editingId = null;
   let editingStatus = 3;

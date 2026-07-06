@@ -88,6 +88,26 @@ router.get('/', softAuthenticate, async (req, res) => {
 // No status filter: looking up a specific city by ID (or slug) is intentional.
 // If a user has a saved reference to a city that later gets demoted from featured,
 // they should still be able to read its name/details.
+// GET /api/cities/resolve?q=Paris — Google candidates for disambiguation
+router.get('/resolve', authenticate, async (req, res) => {
+  try {
+    const candidates = await searchCities(req.query.q || '', 5);
+    res.json({ candidates });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// GET /api/cities/timezone?lat=..&lng=.. — IANA tz for coords
+router.get('/timezone', authenticate, async (req, res) => {
+  try {
+    const tz = await lookupTimezone(parseFloat(req.query.lat), parseFloat(req.query.lng));
+    res.json({ timezone: tz });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 router.get('/:idOrSlug', softAuthenticate, async (req, res) => {
   const { idOrSlug } = req.params;
   try {
@@ -111,26 +131,6 @@ router.get('/:idOrSlug', softAuthenticate, async (req, res) => {
 // admin-only when admin city triage UI lands (Job 8). Until then, the new
 // status=1 cities will at least not appear in user-facing pickers (Job 9), so
 // they're effectively invisible orphans rather than active pollution.
-// GET /api/cities/resolve?q=Paris — Google candidates for disambiguation
-router.get('/resolve', authenticate, async (req, res) => {
-  try {
-    const candidates = await searchCities(req.query.q || '', 5);
-    res.json({ candidates });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// GET /api/cities/timezone?lat=..&lng=.. — IANA tz for coords
-router.get('/timezone', authenticate, async (req, res) => {
-  try {
-    const tz = await lookupTimezone(parseFloat(req.query.lat), parseFloat(req.query.lng));
-    res.json({ timezone: tz });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
 router.post('/', authenticate, async (req, res) => {
   const { name, country, parent_id, is_region, lat, lon, timezone, region, language, status, google_place_id } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
