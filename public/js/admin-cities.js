@@ -14,7 +14,6 @@
   const closeBtn    = document.getElementById('city-editor-close');
   const saveBtn     = document.getElementById('city-save');
   const deleteBtn   = document.getElementById('city-delete');
-  const parentSel   = document.getElementById('c-parent');
   const resolveField= document.getElementById('city-resolve-field');
   const resolveInput= document.getElementById('city-resolve-input');
   const resolveBtn  = document.getElementById('city-resolve-btn');
@@ -23,7 +22,6 @@
   const fName = document.getElementById('c-name');
   const fCountry = document.getElementById('c-country');
   const fTimezone = document.getElementById('c-timezone');
-  const fRegion = document.getElementById('c-region');
   const fIsRegion = document.getElementById('c-is-region');
 
   // Populate timezone dropdown from the browser's IANA list
@@ -40,7 +38,7 @@
   let editingLat = null, editingLng = null, editingPlaceId = null;
 
   const esc = (s) => util.escapeHtml(String(s || ''));
-  const statusLabel = (s) => s === 3 ? '★ Featured' : s === 2 ? 'Pending' : 'Auto';
+  const statusLabel = (s) => s === 3 ? '★ Featured' : s === 2 ? 'Pending' : 'Normal';
 
   async function load() {
     try {
@@ -60,7 +58,7 @@
       const matchS = !sf || String(c.status) === sf;
       return matchQ && matchS;
     });
-    filtered.sort((a, b) => a.name.localeCompare(b.name));
+    filtered.sort((a, b) => (b.created_at||'').localeCompare(a.created_at||''));
 
     if (!filtered.length) { listEl.innerHTML = '<div class="list-empty">No cities found.</div>'; return; }
 
@@ -76,12 +74,6 @@
 
     listEl.querySelectorAll('[data-edit]').forEach(b =>
       b.addEventListener('click', () => openEditor(parseInt(b.dataset.edit))));
-  }
-
-  function populateParents() {
-    const sorted = [...cities].filter(c => c.id !== editingId).sort((a, b) => a.name.localeCompare(b.name));
-    parentSel.innerHTML = '<option value="">— none —</option>' +
-      sorted.map(c => `<option value="${c.id}">${esc(c.name)}${c.country ? ', ' + esc(c.country) : ''}</option>`).join('');
   }
 
   function applyStatus(s) {
@@ -106,14 +98,11 @@
     fName.value = c ? c.name : '';
     fCountry.value = c ? (c.country || '') : '';
     fTimezone.value = c ? (c.timezone || '') : '';
-    fRegion.value = c ? (c.region || '') : '';
     fIsRegion.checked = c ? !!c.is_region : false;
     editingLat = c ? c.lat : null;
     editingLng = c ? c.lon : null;
     editingPlaceId = c ? c.google_place_id : null;
     applyStatus(c ? c.status : 3);
-    populateParents();
-    if (c && c.parent_id) parentSel.value = c.parent_id;
 
     editor.classList.add('is-open');
   }
@@ -140,7 +129,6 @@
           const c = candidates[parseInt(btn.dataset.i)];
           fName.value = c.name || '';
           fCountry.value = c.country || '';
-          fRegion.value = c.region || '';
           editingLat = c.lat; editingLng = c.lng; editingPlaceId = c.google_place_id;
           resolveOut.innerHTML = '<p class="spot-fs__hint">Fetching timezone…</p>';
           try {
@@ -159,8 +147,6 @@
       name: fName.value.trim(),
       country: fCountry.value.trim() || null,
       timezone: fTimezone.value.trim() || null,
-      region: fRegion.value.trim() || null,
-      parent_id: parentSel.value || null,
       is_region: fIsRegion.checked,
       status: editingStatus,
       lat: editingLat, lon: editingLng,
