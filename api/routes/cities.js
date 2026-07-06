@@ -57,7 +57,7 @@ router.get('/', softAuthenticate, async (req, res) => {
       params.push(parseInt(status, 10));
       sql += ` AND c.status = $${params.length}`;
     } else if (include_all !== 'true') {
-      sql += ` AND c.status = 3`;
+      sql += ` AND c.status IN (1, 3)`;
     }
 
     if (country) {
