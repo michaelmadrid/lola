@@ -422,7 +422,6 @@
   margin: 0;
 }
 .capture-fs--v2 .capture-fs__cat-btn:hover { transform: translateY(-1px); }
-.capture-fs--v2 .capture-fs__cat-btn.has-value { background: var(--ink); color: var(--bg); }
 
 .capture-fs--v2 .capture-fs__cat-popover {
   display: none;
