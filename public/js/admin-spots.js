@@ -58,6 +58,8 @@
 
   function render() {
     const rows = filtered();
+    const countEl = document.getElementById('spot-count');
+    if (countEl) countEl.textContent = rows.length + (rows.length === 1 ? ' spot' : ' spots');
     if (!rows.length) { listEl.innerHTML = '<div class="list-empty">No spots.</div>'; updateBulk(); return; }
     listEl.innerHTML = rows.map(s => `
       <div class="admin-table__row spots-admin-row">

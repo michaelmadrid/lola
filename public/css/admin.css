@@ -466,3 +466,12 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
   white-space: pre-wrap;
   color: var(--ink);
 }
+
+.admin-head__count {
+  font-family: var(--mono);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 4px;
+}
