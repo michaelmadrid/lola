@@ -413,3 +413,5 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
   .spots-admin-row > span:nth-child(4),
   .spots-admin-row > span:nth-child(5) { display: none; }
 }
+
+.bulk-bar .btn[hidden] { display: none !important; }
