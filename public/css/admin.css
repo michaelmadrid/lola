@@ -189,7 +189,7 @@
 .bulk-bar__cancel {
   background: transparent;
   border: 0;
-  color: rgba(255,255,255,0.6);
+  color: var(--ink-3);
   font-family: var(--mono);
   font-size: var(--text-tiny);
   letter-spacing: 0.06em;
@@ -197,7 +197,7 @@
   cursor: pointer;
   padding: 4px 8px;
 }
-.bulk-bar__cancel:hover { color: var(--bg); }
+.bulk-bar__cancel:hover { color: var(--ink); }
 .bulk-bar__delete {
   background: var(--danger);
   border: 0;

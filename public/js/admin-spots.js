@@ -136,5 +136,15 @@
     });
   }
 
+  const exportBtn = document.getElementById('export-filtered');
+  if (exportBtn) exportBtn.addEventListener('click', () => {
+    const rows = filtered();
+    const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'spots-export.json';
+    a.click();
+  });
+
   load();
 })();
