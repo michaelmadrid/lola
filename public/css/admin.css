@@ -376,7 +376,7 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
   .admin-rail__logo { padding-left: 68px; }
   .admin-rail.is-open { transform: translateX(0); }
   .admin-rail__sub { display: flex; }
-  body.has-admin-rail .page-admin { margin-left: 0; }
+  body.has-admin-rail .page-admin { margin-left: 0; padding-top: 64px; }
   body.has-admin-rail .head { padding-left: var(--gutter); }
   .admin-rail-toggle {
     position: fixed;
