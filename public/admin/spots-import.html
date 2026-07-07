@@ -81,41 +81,15 @@
 </head>
 <body>
 
-<header class="head">
-  <div class="head__left">
-    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
-      <span class="menu-btn__icon" aria-hidden="true">
-        <span class="menu-btn__bar menu-btn__bar--top"></span>
-        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
-      </span>
-    </button>
-    <a href="/" class="logo">kit</a>
-  </div>
-  <nav class="nav" data-nav="primary"></nav>
-  <div class="head__right">
-    <span class="where">Bali</span>
-    <span id="hdr-time">—</span>
-  </div>
-</header>
-
-<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
-  <div class="menu-overlay__inner"></div>
-</div>
-
 <main class="page page-admin">
 
   <header class="admin-head">
     <div>
-      <div class="admin-head__breadcrumb"><a href="/admin/">Admin</a> / Spots</div>
+      <div class="admin-head__breadcrumb">Admin / Spots</div>
       <h1 class="admin-head__title">Import Spots</h1>
     </div>
   </header>
 
-  <nav class="admin-subnav">
-    <a href="/admin/spots-curated.html" class="admin-subnav__link">Curated</a>
-    <a href="/admin/spots-review.html" class="admin-subnav__link">Review</a>
-    <a href="/admin/spots-import.html" class="admin-subnav__link is-active">Import</a>
-  </nav>
 
   <!-- Step 1: Upload -->
   <div id="step-upload">
@@ -179,9 +153,9 @@
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
-<script src="/js/shell.js"></script>
-<script src="/js/nav.js"></script>
+<script src="/js/admin-shell.js"></script>
 <script>
+  if (window.AdminShell) AdminShell.render('import');
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
 
   let csvRows = [];
