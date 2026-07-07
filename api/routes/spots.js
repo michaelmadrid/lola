@@ -217,8 +217,21 @@ router.get('/', authenticate, async (req, res) => {
                FROM spots s
                LEFT JOIN cities c ON s.city_id = c.id
                LEFT JOIN places p ON s.place_id = p.id
-               WHERE s.user_id = $1`;
-    const params = [req.user.id];
+               WHERE 1=1`;
+    const params = [];
+
+    // Admin can list all users' spots with ?all=true; otherwise scoped to self.
+    if (!(req.query.all === 'true' && req.user.role === 'admin')) {
+      params.push(req.user.id);
+      sql += ` AND s.user_id = $${params.length}`;
+    }
+
+    // Trash filter: default hides trashed; ?trashed=true shows only trashed.
+    if (req.query.trashed === 'true') {
+      sql += ` AND s.deleted_at IS NOT NULL`;
+    } else {
+      sql += ` AND s.deleted_at IS NULL`;
+    }
 
     if (req.query.include_archived !== 'true') {
       sql += ` AND s.archived_at IS NULL`;
@@ -233,7 +246,7 @@ router.get('/', authenticate, async (req, res) => {
     }
     if (req.query.category) {
       params.push(req.query.category);
-      sql += ` AND s.category = ${params.length}`;
+      sql += ` AND s.category = $${params.length}`;
     }
     if (req.query.curated === 'true') {
       sql += ` AND s.curated = true`;

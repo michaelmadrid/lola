@@ -1,182 +1,131 @@
-/* =========================================================
-   admin-spots.js — review captures with bulk delete (spots table)
-   ========================================================= */
-
+/* admin-spots.js — master spots tool: filter, bulk actions, shared editor */
 (async function () {
-  if (!api.isSignedIn()) {
-    location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
-    return;
-  }
+  if (!api.isSignedIn()) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
 
-  const listEl     = document.getElementById('spots-list');
-  const checkAll   = document.getElementById('check-all');
-  const bulkBar    = document.getElementById('bulk-bar');
-  const bulkCount  = document.getElementById('bulk-count');
-  const bulkDelete = document.getElementById('bulk-delete');
-  const bulkCancel = document.getElementById('bulk-cancel');
+  const params = new URLSearchParams(location.search);
+  const view = params.get('view') || 'all'; // all | curated | standard | trash
+
+  AdminShell.render('spots-' + (view === 'all' ? 'all' : view));
+
+  const titles = { all: 'All Spots', curated: 'Curated', standard: 'Standard', trash: 'Trash' };
+  document.getElementById('page-title').textContent = titles[view] || 'Spots';
+
+  const listEl   = document.getElementById('spots-list');
+  const searchEl = document.getElementById('search-input');
+  const cityEl   = document.getElementById('city-filter');
+  const catEl    = document.getElementById('cat-filter');
+  const checkAll = document.getElementById('check-all');
+  const bulkBar  = document.getElementById('bulk-bar');
+  const bulkCount= document.getElementById('bulk-count');
 
   let spots = [];
-  // Set of selected spot ids (numbers)
-  const selected = new Set();
-
-  function toast(msg) {
-    const t = document.createElement('div');
-    t.className = 'toast';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.classList.add('is-visible'), 10);
-    setTimeout(() => { t.classList.remove('is-visible'); setTimeout(() => t.remove(), 300); }, 2400);
-  }
+  let selected = new Set();
+  const esc = (s) => util.escapeHtml(String(s || ''));
 
   async function load() {
+    const q = view === 'trash' ? '?all=true&trashed=true&limit=500' : '?all=true&limit=500';
     try {
-      const data = await api.get('/api/spots?limit=200');
+      const data = await api.get('/api/spots' + q);
       spots = data.spots || [];
-      // Cleanse selection of any ids that no longer exist
-      const idsNow = new Set(spots.map(s => s.id));
-      for (const id of selected) if (!idsNow.has(id)) selected.delete(id);
+      if (view === 'curated') spots = spots.filter(s => s.curated);
+      if (view === 'standard') spots = spots.filter(s => !s.curated);
+      buildFilters();
       render();
-      updateBulkBar();
-    } catch (err) {
+    } catch (e) {
       listEl.innerHTML = '<div class="list-empty">Failed to load.</div>';
     }
   }
 
+  function buildFilters() {
+    const cities = [...new Map(spots.filter(s => s.city_name).map(s => [s.city_name, s.city_name])).values()].sort();
+    cityEl.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+    const cats = [...new Set(spots.map(s => s.category).filter(Boolean))].sort();
+    catEl.innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
+  function filtered() {
+    const q = searchEl.value.toLowerCase();
+    const city = cityEl.value, cat = catEl.value;
+    return spots.filter(s => {
+      const mq = !q || (s.place_name||'').toLowerCase().includes(q) || (s.tip||'').toLowerCase().includes(q);
+      const mc = !city || s.city_name === city;
+      const mcat = !cat || s.category === cat;
+      return mq && mc && mcat;
+    });
+  }
+
   function render() {
-    if (!spots.length) {
-      listEl.innerHTML = '<div class="list-empty">No spots yet.</div>';
-      return;
-    }
-    listEl.innerHTML = spots.map(s => `
-      <div class="admin-table__row spots-row" data-id="${s.id}">
-        <span class="col-check">
-          <input type="checkbox" class="row-check" data-id="${s.id}"${selected.has(s.id) ? ' checked' : ''} aria-label="Select spot">
-        </span>
-        <span style="word-break:break-word">${util.escapeHtml(s.text)}</span>
-        <span style="font-size:13px;color:var(--ink-3)">${(s.tags || []).map(t => '#' + util.escapeHtml(t)).join(' · ')}</span>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--ink-3)">${util.timeAgo(s.created_at)}</span>
-        <span class="admin-actions">
-          <button data-id="${s.id}" class="del-btn is-danger">Delete</button>
-        </span>
-      </div>
-    `).join('');
+    const rows = filtered();
+    if (!rows.length) { listEl.innerHTML = '<div class="list-empty">No spots.</div>'; updateBulk(); return; }
+    listEl.innerHTML = rows.map(s => `
+      <div class="admin-table__row spots-admin-row">
+        <span class="col-check"><input type="checkbox" data-check="${s.id}" ${selected.has(s.id)?'checked':''}></span>
+        <span class="col-name"><strong>${esc(s.place_name || '—')}</strong>${s.online_only?' <span class="caption">online</span>':''}</span>
+        <span>${esc(s.city_name || '—')}</span>
+        <span>${s.category?`<span class="caption">${esc(s.category)}</span>`:'—'}</span>
+        <span>${s.curated?'<span class="caption caption--accent">Curated</span>':'<span class="caption">Standard</span>'}</span>
+        <span class="admin-actions"><button data-edit="${s.id}">Edit</button></span>
+      </div>`).join('');
 
-    // Per-row checkbox change
-    listEl.querySelectorAll('.row-check').forEach(cb => {
+    listEl.querySelectorAll('[data-edit]').forEach(b =>
+      b.addEventListener('click', () => { const s = spots.find(x => x.id === parseInt(b.dataset.edit)); if (s) SpotEditor.open(s); }));
+    listEl.querySelectorAll('[data-check]').forEach(cb =>
       cb.addEventListener('change', () => {
-        const id = parseInt(cb.dataset.id, 10);
-        if (cb.checked) selected.add(id);
-        else selected.delete(id);
-        updateBulkBar();
-        syncCheckAllState();
-      });
-    });
-
-    // Single-row delete (kept for one-off deletes)
-    listEl.querySelectorAll('.del-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Delete this spot?')) return;
-        try {
-          await api.delete('/api/spots/' + btn.dataset.id);
-          selected.delete(parseInt(btn.dataset.id, 10));
-          await load();
-        } catch (err) {
-          toast(err.message || 'Delete failed');
-        }
-      });
-    });
-
-    syncCheckAllState();
-  }
-
-  function updateBulkBar() {
-    const n = selected.size;
-    if (n === 0) {
-      bulkBar.hidden = true;
-      return;
-    }
-    bulkBar.hidden = false;
-    bulkCount.textContent = n === 1 ? '1 selected' : `${n} selected`;
-  }
-
-  function syncCheckAllState() {
-    if (!checkAll) return;
-    const total = spots.length;
-    const sel = selected.size;
-    if (sel === 0) {
-      checkAll.checked = false;
-      checkAll.indeterminate = false;
-    } else if (sel === total) {
-      checkAll.checked = true;
-      checkAll.indeterminate = false;
-    } else {
-      checkAll.checked = false;
-      checkAll.indeterminate = true;
-    }
-  }
-
-  if (checkAll) {
-    checkAll.addEventListener('change', () => {
-      if (checkAll.checked) {
-        spots.forEach(s => selected.add(s.id));
-      } else {
-        selected.clear();
-      }
-      // Re-render to update each row's checkbox
-      render();
-      updateBulkBar();
-    });
-  }
-
-  if (bulkCancel) {
-    bulkCancel.addEventListener('click', () => {
-      selected.clear();
-      render();
-      updateBulkBar();
-    });
-  }
-
-  if (bulkDelete) {
-    bulkDelete.addEventListener('click', async () => {
-      const ids = Array.from(selected);
-      if (!ids.length) return;
-      const word = ids.length === 1 ? 'spot' : 'spots';
-      if (!confirm(`Delete ${ids.length} ${word}? This cannot be undone.`)) return;
-
-      // Disable button while deleting
-      bulkDelete.disabled = true;
-      bulkDelete.textContent = 'Deleting…';
-
-      // Fire deletes in parallel; keep track of failures
-      const failures = [];
-      await Promise.all(ids.map(async (id) => {
-        try {
-          await api.delete('/api/spots/' + id);
-        } catch (err) {
-          failures.push(id);
-        }
+        const id = parseInt(cb.dataset.check);
+        cb.checked ? selected.add(id) : selected.delete(id);
+        updateBulk();
       }));
-
-      bulkDelete.disabled = false;
-      bulkDelete.textContent = 'Delete selected';
-
-      if (failures.length === 0) {
-        selected.clear();
-        toast(`Deleted ${ids.length} ${word}`);
-      } else if (failures.length === ids.length) {
-        toast('Delete failed');
-      } else {
-        // Keep failed ones selected
-        selected.clear();
-        failures.forEach(id => selected.add(id));
-        toast(`Deleted ${ids.length - failures.length}, ${failures.length} failed`);
-      }
-      await load();
-    });
+    updateBulk();
   }
 
-  const signOutFoot = document.getElementById('signout-link-foot');
-  if (signOutFoot) signOutFoot.addEventListener('click', (e) => { e.preventDefault(); api.signOut(); });
+  function updateBulk() {
+    bulkCount.textContent = selected.size + ' selected';
+    bulkBar.hidden = selected.size === 0;
+    // Toggle trash-mode buttons
+    document.getElementById('bulk-curate').hidden = view === 'trash';
+    document.getElementById('bulk-decurate').hidden = view === 'trash';
+    document.getElementById('bulk-trash').hidden = view === 'trash';
+    document.getElementById('bulk-restore').hidden = view !== 'trash';
+    document.getElementById('bulk-delete').hidden = view !== 'trash';
+  }
+
+  async function bulkPatch(body) {
+    await Promise.all([...selected].map(id => api.patch('/api/spots/' + id, body)));
+    selected.clear(); load();
+  }
+
+  document.getElementById('bulk-curate').addEventListener('click', () => bulkPatch({ curated: true }));
+  document.getElementById('bulk-decurate').addEventListener('click', () => bulkPatch({ curated: false }));
+  document.getElementById('bulk-trash').addEventListener('click', () => {
+    if (!confirm('Move ' + selected.size + ' spots to trash?')) return;
+    bulkPatch({ deleted_at: new Date().toISOString() });
+  });
+  document.getElementById('bulk-restore').addEventListener('click', () => bulkPatch({ deleted_at: null }));
+  document.getElementById('bulk-delete').addEventListener('click', async () => {
+    if (!confirm('Permanently delete ' + selected.size + ' spots? Cannot be undone.')) return;
+    await Promise.all([...selected].map(id => api.delete('/api/spots/' + id)));
+    selected.clear(); load();
+  });
+  document.getElementById('bulk-clear').addEventListener('click', () => {
+    selected.clear(); checkAll.checked = false; render();
+  });
+
+  checkAll.addEventListener('change', () => {
+    const rows = filtered();
+    if (checkAll.checked) rows.forEach(s => selected.add(s.id));
+    else selected.clear();
+    render();
+  });
+
+  searchEl.addEventListener('input', render);
+  cityEl.addEventListener('change', render);
+  catEl.addEventListener('change', render);
+
+  SpotEditor.init({
+    onSaved: () => load(),
+    onDeleted: () => load(),
+    softDelete: view !== 'trash',
+  });
 
   load();
 })();

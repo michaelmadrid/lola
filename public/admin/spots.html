@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
+  <title>Spots · Admin — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/spots.css">
+  <link rel="stylesheet" href="/css/capture-overlay.css">
+  <link rel="stylesheet" href="/css/uploader.css">
+</head>
+<body>
+
+<main class="page page-admin">
+  <header class="admin-head">
+    <div>
+      <div class="admin-head__breadcrumb">Admin / Spots</div>
+      <h1 class="admin-head__title" id="page-title">All Spots</h1>
+    </div>
+  </header>
+
+  <div class="admin-controls">
+    <input type="text" class="admin-search" id="search-input" placeholder="Search spots…">
+    <select class="select" id="city-filter"><option value="">All cities</option></select>
+    <select class="select" id="cat-filter"><option value="">All categories</option></select>
+  </div>
+
+  <!-- Bulk bar -->
+  <div class="bulk-bar" id="bulk-bar" hidden>
+    <span class="bulk-bar__count" id="bulk-count">0 selected</span>
+    <div class="bulk-bar__actions">
+      <button class="btn btn--small" id="bulk-curate">Make curated</button>
+      <button class="btn btn--small btn--secondary" id="bulk-decurate">Make standard</button>
+      <button class="btn btn--small btn--ghost btn--danger" id="bulk-trash">Move to trash</button>
+      <button class="btn btn--small btn--ghost" id="bulk-restore" hidden>Restore</button>
+      <button class="btn btn--small btn--ghost btn--danger" id="bulk-delete" hidden>Delete forever</button>
+      <button class="bulk-bar__cancel" id="bulk-clear">Clear</button>
+    </div>
+  </div>
+
+  <div class="admin-table">
+    <div class="admin-table__head spots-admin-head">
+      <span class="col-check"><input type="checkbox" id="check-all" aria-label="Check all"></span>
+      <span>Place</span>
+      <span>City</span>
+      <span>Category</span>
+      <span>Tier</span>
+      <span>Actions</span>
+    </div>
+    <div id="spots-list"><div class="list-empty">Loading…</div></div>
+  </div>
+</main>
+
+<!-- Shared spot editor -->
+<div class="modal spot-fs" id="spot-editor">
+  <div class="modal__head spot-fs__head">
+    <button class="btn-close-circle" id="spot-editor-close" aria-label="Close" type="button">×</button>
+    <h3 class="spot-fs__title">Edit</h3>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner spot-fs__inner">
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="spot-fs-place">Place</label>
+        <input type="text" class="spot-fs__input" id="spot-fs-place" placeholder="Place name">
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="spot-fs-tip">Tip</label>
+        <input type="text" class="spot-fs__input" id="spot-fs-tip" placeholder="Note, advice…">
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="spot-fs-category">Category</label>
+        <select class="spot-fs__select" id="spot-fs-category">
+          <option value="">— none —</option>
+          <option value="bookstore">Bookstore</option>
+          <option value="film_lab">Film Lab</option>
+          <option value="record_store">Record Store</option>
+          <option value="cinema">Cinema</option>
+          <option value="gallery">Gallery</option>
+          <option value="coffee">Coffee</option>
+          <option value="eat">Eat</option>
+          <option value="drink">Drink</option>
+          <option value="hotel">Hotel</option>
+          <option value="shop">Shop</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Status</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-been-yes" data-active="true">I've been here</button>
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-been-no" data-active="false">I want to go</button>
+        </div>
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Tags</label>
+        <div class="tag-input" id="spot-fs-tag-input">
+          <div class="tag-input__pills" id="tag-pills"></div>
+          <input type="text" class="tag-input__field" id="tag-field" placeholder="Add tag, press enter or comma…">
+        </div>
+      </div>
+      <div class="spot-fs__divider"></div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="spot-fs-website">Website</label>
+        <input type="url" class="spot-fs__input" id="spot-fs-website" placeholder="https://…">
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="spot-fs-instagram">Instagram</label>
+        <input type="text" class="spot-fs__input" id="spot-fs-instagram" placeholder="@handle or URL">
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Location</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-online-no" data-active="true">Physical place</button>
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-online-yes" data-active="false">Online only</button>
+        </div>
+      </div>
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Image</label>
+        <div class="uploader" id="spot-fs-uploader">
+          <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+          <div class="uploader__preview"></div>
+          <button type="button" class="uploader__btn">Upload image</button>
+          <button type="button" class="uploader__btn uploader__btn--remove" id="spot-fs-image-remove" hidden>Remove image</button>
+        </div>
+      </div>
+      <div class="spot-fs__field" id="spot-fs-map-field">
+        <label class="spot-fs__label">Map</label>
+        <div class="maps-link" id="spot-fs-maps-link">
+          <a class="maps-link__pill" id="maps-link-pill" href="#" target="_blank" rel="noopener" hidden><span id="maps-link-text">Map ↗</span></a>
+          <button type="button" class="maps-link__empty" id="maps-link-empty">No map linked</button>
+          <button type="button" class="maps-link__edit" id="maps-link-edit-btn" aria-label="Change map link">✎</button>
+          <div class="maps-link__editor" id="maps-link-editor" hidden>
+            <input type="text" class="spot-fs__input" id="maps-link-input" placeholder="Paste a Google Maps link…">
+            <div class="maps-link__editor-actions">
+              <button type="button" class="btn btn--small" id="maps-link-submit">Resolve</button>
+              <button type="button" class="btn btn--small btn--ghost" id="maps-link-cancel">Cancel</button>
+              <button type="button" class="btn btn--small btn--ghost btn--danger" id="maps-link-remove">Remove link</button>
+            </div>
+            <p class="spot-fs__hint" id="maps-link-status"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal__foot spot-fs__foot">
+    <button class="spot-fs__danger" id="spot-fs-delete">Delete</button>
+    <span style="flex:1"></span>
+    <button class="btn" id="spot-fs-save">Save<span class="kbd">⌘ ↵</span></button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/admin-shell.js"></script>
+<script src="/js/uploader.js"></script>
+<script src="/js/spot-editor.js"></script>
+<script src="/js/admin-spots.js"></script>
+</body>
+</html>
