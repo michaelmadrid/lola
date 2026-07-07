@@ -668,6 +668,29 @@ router.get('/index', async (req, res) => {
 
 
 // =============================================================
+// POST /api/spots/batch-preview — classify rows without inserting (admin)
+router.post('/batch-preview', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const rows = req.body.rows;
+  if (!Array.isArray(rows)) return res.status(400).json({ error: 'rows array required' });
+
+  const out = [];
+  for (const row of rows) {
+    let status = 'new';
+    if (!row.city_id) {
+      status = 'no_city';
+    } else {
+      const dup = await pool.query(
+        `SELECT id FROM spots WHERE LOWER(place_name) = LOWER($1) AND city_id = $2 LIMIT 1`,
+        [row.place_name, row.city_id]
+      );
+      if (dup.rows[0]) status = 'duplicate';
+    }
+    out.push({ place_name: row.place_name, city: row.city || null, status });
+  }
+  res.json({ rows: out });
+});
+
 // POST /api/spots/batch — admin bulk import
 // Expects JSON array of { place_name, city_id, category, website, tip, been }
 // Dedupes by place_name + city_id (case-insensitive).

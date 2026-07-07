@@ -137,6 +137,7 @@
     <table class="preview-table" id="preview-table"></table>
 
     <div style="display:flex; gap:12px; align-items:center;">
+      <button class="btn btn--secondary" id="preview-btn">Preview</button>
       <button class="btn" id="import-btn">Import</button>
       <span id="import-count" style="font-family:var(--mono);font-size:var(--text-tiny);color:var(--ink-3);text-transform:uppercase;letter-spacing:0.04em;"></span>
     </div>
@@ -296,10 +297,9 @@
   }
 
   // Import
-  document.getElementById('import-btn').addEventListener('click', async () => {
+  function buildRows() {
     const nameCol = document.getElementById('col-name').value;
-    if (!nameCol) { alert('Select a name column'); return; }
-
+    if (!nameCol) { alert('Select a name column'); return null; }
     const cityCol = document.getElementById('col-city').value;
     const catCol = document.getElementById('col-category').value;
     const webCol = document.getElementById('col-website').value;
@@ -307,25 +307,49 @@
     const overrideCity = document.getElementById('override-city').value;
     const overrideCat = document.getElementById('override-category').value;
 
-    const rows = csvRows.map(row => {
+    return csvRows.map(row => {
       const name = row[nameCol];
       if (!name) return null;
-
       let cityId = overrideCity || null;
-      if (!cityId && cityCol && row[cityCol]) {
-        const match = cities.find(c => c.name.toLowerCase() === row[cityCol].toLowerCase());
-        if (match) cityId = match.id;
+      let cityName = null;
+      if (cityCol && row[cityCol]) {
+        cityName = row[cityCol];
+        if (!cityId) {
+          const match = cities.find(c => c.name.toLowerCase() === row[cityCol].toLowerCase());
+          if (match) cityId = match.id;
+        }
       }
-
       return {
         place_name: name,
         city_id: cityId ? parseInt(cityId) : null,
+        city: cityName,
         category: overrideCat || (catCol ? row[catCol] : null),
         website: webCol ? row[webCol] : null,
         tip: tipCol ? row[tipCol] : null,
         been: true,
       };
     }).filter(Boolean);
+  }
+
+  document.getElementById('preview-btn').addEventListener('click', async () => {
+    const rows = buildRows();
+    if (!rows) return;
+    const btn = document.getElementById('preview-btn');
+    btn.disabled = true; btn.textContent = 'Checking…';
+    try {
+      const { rows: checked } = await api.post('/api/spots/batch-preview', { rows });
+      const n = checked.filter(r => r.status === 'new').length;
+      const d = checked.filter(r => r.status === 'duplicate').length;
+      const nc = checked.filter(r => r.status === 'no_city').length;
+      document.getElementById('import-count').innerHTML =
+        `<strong style="color:var(--ink)">${n} new</strong> · ${d} duplicate (skip) · ${nc} no city`;
+    } catch (e) { alert('Preview failed: ' + e.message); }
+    finally { btn.disabled = false; btn.textContent = 'Preview'; }
+  });
+
+  document.getElementById('import-btn').addEventListener('click', async () => {
+    const rows = buildRows();
+    if (!rows) return;
 
     const btn = document.getElementById('import-btn');
     btn.disabled = true;
