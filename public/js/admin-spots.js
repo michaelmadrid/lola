@@ -129,5 +129,12 @@
     softDelete: view !== 'trash',
   });
 
+  if (window.CaptureOverlay) {
+    CaptureOverlay.init({
+      launcher: '#capture-launcher',
+      onSaved: () => { setTimeout(load, 1500); },
+    });
+  }
+
   load();
 })();
