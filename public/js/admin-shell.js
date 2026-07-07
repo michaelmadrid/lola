@@ -11,6 +11,7 @@
         { key: 'spots-standard', label: 'Standard', href: '/admin/spots.html?view=standard' },
         { key: 'spots-trash',    label: 'Trash',    href: '/admin/spots.html?view=trash' },
         { key: 'import',         label: 'Import', href: '/admin/import.html' },
+        { key: 'dupes',          label: 'Duplicates', href: '/admin/dupes.html' },
       ],
     },
     { key: 'cities', label: 'Cities', href: '/admin/cities.html' },

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Duplicates · Admin — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<main class="page page-admin">
+  <header class="admin-head">
+    <div>
+      <div class="admin-head__breadcrumb">Admin / Spots</div>
+      <h1 class="admin-head__title">Duplicates</h1>
+    </div>
+    <button class="btn" id="scan-btn">Scan</button>
+  </header>
+  <div id="dupes-list"><p class="ie-desc">Click Scan to check for duplicate spots.</p></div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/admin-shell.js"></script>
+<script>
+  if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+  AdminShell.render('dupes');
+  const esc = s => util.escapeHtml(String(s||''));
+
+  document.getElementById('scan-btn').addEventListener('click', async () => {
+    const list = document.getElementById('dupes-list');
+    list.innerHTML = '<p class="ie-desc">Scanning…</p>';
+    try {
+      const { dupes } = await api.get('/api/spots/dupes');
+      if (!dupes.length) { list.innerHTML = '<p class="ie-desc">No duplicates found.</p>'; return; }
+      list.innerHTML = dupes.map(g =>
+        '<div class="ie-section"><div style="display:flex;flex-direction:column;gap:8px">' +
+        g.map(s => '<div style="display:flex;justify-content:space-between;align-items:center">' +
+          '<span>' + esc(s.place_name) + (s.city?' <span class="caption">'+esc(s.city)+'</span>':'') + '</span>' +
+          '<a class="btn btn--small btn--secondary" href="/admin/spots.html?edit=' + s.id + '">Edit #' + s.id + '</a>' +
+        '</div>').join('') +
+        '</div></div>'
+      ).join('');
+    } catch (e) { list.innerHTML = '<p class="ie-desc">Failed: ' + esc(e.message) + '</p>'; }
+  });
+</script>
+</body>
+</html>
