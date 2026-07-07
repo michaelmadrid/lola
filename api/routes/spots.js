@@ -792,5 +792,51 @@ router.delete('/:id/image', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/spots/export — full JSON of all spots (admin)
+router.get('/export', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    const r = await pool.query(`
+      SELECT s.id, s.place_name, s.tip, s.category, s.been, s.curated,
+             s.website, s.instagram, s.online_only, s.image_url, s.tags,
+             s.city_id, c.name AS city, p.google_place_id
+      FROM spots s
+      LEFT JOIN cities c ON s.city_id = c.id
+      LEFT JOIN places p ON s.place_id = p.id
+      WHERE s.deleted_at IS NULL
+      ORDER BY s.id`);
+    res.json({ spots: r.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/spots/import-json — update existing spots by id (admin)
+router.post('/import-json', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const rows = req.body.spots;
+  if (!Array.isArray(rows)) return res.status(400).json({ error: 'spots array required' });
+
+  const editable = ['place_name', 'tip', 'category', 'been', 'curated', 'website', 'instagram', 'online_only', 'image_url', 'tags'];
+  const result = { updated: 0, skipped: 0, errors: [] };
+
+  for (const row of rows) {
+    if (!row.id) { result.skipped++; continue; }
+    const sets = [], params = [];
+    for (const k of editable) {
+      if (row[k] !== undefined) { params.push(row[k]); sets.push(`${k} = $${params.length}`); }
+    }
+    if (!sets.length) { result.skipped++; continue; }
+    params.push(row.id);
+    try {
+      const r = await pool.query(`UPDATE spots SET ${sets.join(', ')}, updated_at = NOW() WHERE id = $${params.length} RETURNING id`, params);
+      if (r.rows[0]) result.updated++; else result.skipped++;
+    } catch (err) {
+      result.errors.push({ id: row.id, error: err.message });
+    }
+  }
+  res.json(result);
+});
+
 module.exports = router;
 module.exports.refreshCitiesCache = refreshCitiesCache;

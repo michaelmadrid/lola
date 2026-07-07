@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
+  <title>Import / Export · Admin — kit</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+
+<main class="page page-admin">
+  <header class="admin-head">
+    <div>
+      <div class="admin-head__breadcrumb">Admin / Spots</div>
+      <h1 class="admin-head__title">Import / Export</h1>
+    </div>
+  </header>
+
+  <div class="ie-section">
+    <h2 class="ie-title">Export</h2>
+    <p class="ie-desc">Download all spots as JSON. Edit the file (or run it through AI), then re-import to update by id.</p>
+    <button class="btn" id="export-btn">Download spots.json</button>
+  </div>
+
+  <div class="ie-section">
+    <h2 class="ie-title">Import JSON</h2>
+    <p class="ie-desc">Upload a spots.json to update existing spots. Matched by <code>id</code>. Only included fields change.</p>
+    <input type="file" id="json-file" accept=".json" hidden>
+    <button class="btn btn--secondary" id="json-btn">Choose JSON file</button>
+    <pre class="ie-result" id="json-result" hidden></pre>
+  </div>
+
+  <div class="ie-section">
+    <h2 class="ie-title">Import CSV</h2>
+    <p class="ie-desc">Bulk-add new spots from a CSV. Resolves via Google Places.</p>
+    <a class="btn btn--secondary" href="/admin/spots-import.html">Open CSV importer</a>
+  </div>
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/admin-shell.js"></script>
+<script>
+  if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
+  AdminShell.render('import');
+
+  document.getElementById('export-btn').addEventListener('click', async () => {
+    const data = await api.get('/api/spots/export');
+    const blob = new Blob([JSON.stringify(data.spots, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'spots.json';
+    a.click();
+  });
+
+  const jsonBtn = document.getElementById('json-btn');
+  const jsonFile = document.getElementById('json-file');
+  const jsonResult = document.getElementById('json-result');
+  jsonBtn.addEventListener('click', () => jsonFile.click());
+  jsonFile.addEventListener('change', async () => {
+    const file = jsonFile.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      let spots = JSON.parse(text);
+      if (spots.spots) spots = spots.spots; // accept {spots:[...]} or [...]
+      const res = await api.post('/api/spots/import-json', { spots });
+      jsonResult.hidden = false;
+      jsonResult.textContent = `Updated: ${res.updated}\nSkipped: ${res.skipped}` +
+        (res.errors.length ? `\nErrors: ${JSON.stringify(res.errors, null, 2)}` : '');
+    } catch (err) {
+      jsonResult.hidden = false;
+      jsonResult.textContent = 'Failed: ' + err.message;
+    }
+    jsonFile.value = '';
+  });
+</script>
+</body>
+</html>

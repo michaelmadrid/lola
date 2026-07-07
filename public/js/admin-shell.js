@@ -10,10 +10,10 @@
         { key: 'spots-curated',  label: 'Curated',  href: '/admin/spots.html?view=curated' },
         { key: 'spots-standard', label: 'Standard', href: '/admin/spots.html?view=standard' },
         { key: 'spots-trash',    label: 'Trash',    href: '/admin/spots.html?view=trash' },
+        { key: 'import',         label: 'Import / Export', href: '/admin/import.html' },
       ],
     },
     { key: 'cities', label: 'Cities', href: '/admin/cities.html' },
-    { key: 'import', label: 'Import / Export', href: '/admin/import.html' },
   ];
 
   function render(activeKey) {
