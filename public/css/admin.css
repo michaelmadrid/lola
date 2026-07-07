@@ -444,3 +444,5 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
   text-transform: uppercase;
   color: var(--ink-3);
 }
+
+.admin-table__row .col-name strong { font-weight: 500; }
