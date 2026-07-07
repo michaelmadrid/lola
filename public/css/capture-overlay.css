@@ -207,6 +207,9 @@
   color: var(--ink);
   cursor: pointer;
   border-radius: 4px;
+  text-align: left;
+  display: block;
+  width: 100%;
 }
 .capture-fs--v2 .capture-fs__city-item:hover { background: var(--surface); }
 .capture-fs--v2 .capture-fs__city-item.is-current {
