@@ -343,6 +343,15 @@
       const nc = checked.filter(r => r.status === 'no_city').length;
       document.getElementById('import-count').innerHTML =
         `<strong style="color:var(--ink)">${n} new</strong> · ${d} duplicate (skip) · ${nc} no city`;
+
+      const flagged = checked.filter(r => r.similar && r.similar.length);
+      const tbl = document.getElementById('preview-table');
+      if (flagged.length) {
+        tbl.innerHTML = '<thead><tr><th>Importing</th><th>Possible match in DB</th></tr></thead><tbody>' +
+          flagged.map(r =>
+            '<tr><td>' + r.place_name + '</td><td style="color:var(--accent)">' + r.similar.join(', ') + '</td></tr>'
+          ).join('') + '</tbody>';
+      }
     } catch (e) { alert('Preview failed: ' + e.message); }
     finally { btn.disabled = false; btn.textContent = 'Preview'; }
   });

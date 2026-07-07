@@ -686,7 +686,23 @@ router.post('/batch-preview', authenticate, async (req, res) => {
       );
       if (dup.rows[0]) status = 'duplicate';
     }
-    out.push({ place_name: row.place_name, city: row.city || null, status });
+
+    // Fuzzy: find similar names in same city (or anywhere if no city)
+    let similar = [];
+    if (status === 'new') {
+      const firstWord = String(row.place_name).split(/\s+/)[0];
+      if (firstWord && firstWord.length >= 3) {
+        const sim = await pool.query(
+          `SELECT place_name FROM spots
+           WHERE place_name ILIKE $1 AND deleted_at IS NULL
+           LIMIT 3`,
+          ['%' + firstWord + '%']
+        );
+        similar = sim.rows.map(r => r.place_name).filter(n => n.toLowerCase() !== String(row.place_name).toLowerCase());
+      }
+    }
+
+    out.push({ place_name: row.place_name, city: row.city || null, status, similar });
   }
   res.json({ rows: out });
 });
