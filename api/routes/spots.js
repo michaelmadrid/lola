@@ -714,6 +714,24 @@ router.post('/batch-preview', authenticate, async (req, res) => {
 // GET /api/spots/dupes — group likely duplicate spots (admin)
 router.get('/dupes', authenticate, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+
+  function lev(a, b) {
+    const m = [];
+    for (let i = 0; i <= b.length; i++) m[i] = [i];
+    for (let j = 0; j <= a.length; j++) m[0][j] = j;
+    for (let i = 1; i <= b.length; i++)
+      for (let j = 1; j <= a.length; j++)
+        m[i][j] = b[i-1] === a[j-1] ? m[i-1][j-1] : Math.min(m[i-1][j-1]+1, m[i][j-1]+1, m[i-1][j]+1);
+    return m[b.length][a.length];
+  }
+  const similar = (a, b) => {
+    if (!a || !b) return false;
+    if (a === b) return true;
+    if (a.length >= 4 && b.length >= 4 && (a.includes(b) || b.includes(a))) return true;
+    const d = lev(a, b);
+    return d <= Math.max(1, Math.floor(Math.min(a.length, b.length) * 0.2));
+  };
+
   try {
     const r = await pool.query(`
       SELECT s.id, s.place_name, s.city_id, c.name AS city,
@@ -722,12 +740,25 @@ router.get('/dupes', authenticate, async (req, res) => {
       LEFT JOIN cities c ON s.city_id = c.id
       WHERE s.deleted_at IS NULL AND s.place_name IS NOT NULL
       ORDER BY s.place_name`);
-    const groups = {};
-    for (const row of r.rows) {
-      const key = row.norm + '|' + (row.city_id || '');
-      (groups[key] = groups[key] || []).push({ id: row.id, place_name: row.place_name, city: row.city });
+
+    const rows = r.rows;
+    const used = new Set();
+    const dupes = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (used.has(rows[i].id)) continue;
+      const group = [rows[i]];
+      for (let j = i + 1; j < rows.length; j++) {
+        if (used.has(rows[j].id)) continue;
+        const sameCity = (rows[i].city_id || null) === (rows[j].city_id || null);
+        if (sameCity && similar(rows[i].norm, rows[j].norm)) {
+          group.push(rows[j]); used.add(rows[j].id);
+        }
+      }
+      if (group.length > 1) {
+        group.forEach(g => used.add(g.id));
+        dupes.push(group.map(g => ({ id: g.id, place_name: g.place_name, city: g.city })));
+      }
     }
-    const dupes = Object.values(groups).filter(g => g.length > 1);
     res.json({ dupes });
   } catch (err) {
     res.status(500).json({ error: err.message });
