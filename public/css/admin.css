@@ -415,3 +415,32 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
 }
 
 .bulk-bar .btn[hidden] { display: none !important; }
+
+/* ===== Admin overview cards ===== */
+.admin-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+.admin-card {
+  background: var(--bg);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  transition: background var(--ease-quick);
+}
+.admin-card:hover { background: var(--surface); }
+.admin-card__name { font-size: var(--text-body); font-weight: 500; color: var(--ink); }
+.admin-card__stat {
+  font-family: var(--mono);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
