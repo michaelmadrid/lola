@@ -704,10 +704,34 @@ router.post('/batch', authenticate, async (req, res) => {
     return res.status(400).json({ error: 'rows array required' });
   }
 
-  const results = { imported: 0, skipped: 0, errors: [] };
+  const results = { imported: 0, skipped: 0, cities_created: 0, errors: [] };
+  const { resolveTopCity } = require('../city-resolver');
+
+  function slugify(s) { return String(s).toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 
   for (const row of rows) {
     try {
+      // Auto-create city (Pending) if we have a name but no id
+      if (!row.city_id && row.city) {
+        const existingCity = await pool.query(
+          `SELECT id FROM cities WHERE LOWER(name) = LOWER($1) LIMIT 1`, [row.city]
+        );
+        if (existingCity.rows[0]) {
+          row.city_id = existingCity.rows[0].id;
+        } else {
+          const resolved = await resolveTopCity(row.city).catch(() => null);
+          if (resolved && resolved.name) {
+            const ins = await pool.query(
+              `INSERT INTO cities (name, slug, country, timezone, lat, lon, status, google_place_id, created_at)
+               VALUES ($1, $2, $3, $4, $5, $6, 2, $7, NOW()) RETURNING id`,
+              [resolved.name, slugify(resolved.name), resolved.country, resolved.timezone, resolved.lat, resolved.lng, resolved.google_place_id]
+            );
+            row.city_id = ins.rows[0].id;
+            results.cities_created++;
+          }
+        }
+      }
+
       // Dedupe check
       const existing = await pool.query(
         `SELECT id FROM spots WHERE LOWER(place_name) = LOWER($1) AND city_id = $2 LIMIT 1`,

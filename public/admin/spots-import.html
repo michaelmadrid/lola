@@ -362,6 +362,7 @@
       document.getElementById('result-msg').innerHTML =
         '<strong>' + result.imported + '</strong> imported, ' +
         '<strong>' + result.skipped + '</strong> skipped (duplicates)' +
+        (result.cities_created ? ', <strong>' + result.cities_created + '</strong> cities created (pending)' : '') +
         (result.errors.length ? ', <strong>' + result.errors.length + '</strong> errors' : '');
     } catch (e) {
       alert('Import failed: ' + e.message);
