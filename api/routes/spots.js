@@ -502,7 +502,7 @@ router.patch('/:id', authenticate, async (req, res) => {
   const allowed = [
     'text', 'tags', 'url', 'place_id', 'archived_at',
     'place_name', 'category', 'tip', 'country', 'neighborhood',
-    'been', 'curated', 'website', 'image_url', 'online_only', 'instagram', 'deleted_at',
+    'been', 'curated', 'website', 'image_url', 'online_only', 'instagram', 'deleted_at', 'city_id',
   ];
   const updates = [];
   const params = [];

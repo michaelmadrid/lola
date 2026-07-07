@@ -21,6 +21,7 @@
   let editingTags = [];
   let editingOnlineOnly = false;
   let currentSpot = null;
+  let cityOptions = [];
 
   // DOM refs (resolved in init)
   let el = {};
@@ -94,6 +95,7 @@
     el.place.value = spot.place_name || '';
     el.tip.value = spot.tip || '';
     el.cat.value = spot.category || '';
+    if (el.city) el.city.value = (spot.attached_cities && spot.attached_cities[0]) ? spot.attached_cities[0].id : '';
     if (el.website) el.website.value = spot.website || '';
     if (el.instagram) el.instagram.value = spot.instagram || '';
     applyOnlineOnly(!!spot.online_only);
@@ -140,6 +142,7 @@
       place_name: el.place.value.trim() || null,
       tip:        el.tip.value.trim() || null,
       category:   el.cat.value || null,
+      city_id:    el.city ? (el.city.value ? parseInt(el.city.value) : null) : undefined,
       been:       editingBeen,
       website:    el.website ? (el.website.value.trim() || null) : undefined,
       instagram:  el.instagram ? (el.instagram.value.trim() || null) : undefined,
@@ -181,6 +184,7 @@
       place:      $('spot-fs-place'),
       tip:        $('spot-fs-tip'),
       cat:        $('spot-fs-category'),
+      city:       $('spot-fs-city'),
       website:    $('spot-fs-website'),
       instagram:  $('spot-fs-instagram'),
       mapField:   $('spot-fs-map-field'),
@@ -206,6 +210,15 @@
     };
 
     if (!el.editor) return; // markup not present
+
+    // Load cities for the picker (once)
+    if (el.city) {
+      api.get('/api/cities').then(data => {
+        cityOptions = (data.cities || []).sort((a, b) => a.name.localeCompare(b.name));
+        el.city.innerHTML = '<option value="">— none —</option>' +
+          cityOptions.map(c => '<option value="' + c.id + '">' + (c.name) + (c.country ? ', ' + c.country : '') + '</option>').join('');
+      }).catch(() => {});
+    }
 
     el.beenYes && el.beenYes.addEventListener('click', () => applyBeen(true));
     el.beenNo && el.beenNo.addEventListener('click', () => applyBeen(false));
