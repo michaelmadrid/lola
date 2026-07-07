@@ -364,6 +364,12 @@
         '<strong>' + result.skipped + '</strong> skipped (duplicates)' +
         (result.cities_created ? ', <strong>' + result.cities_created + '</strong> cities created (pending)' : '') +
         (result.errors.length ? ', <strong>' + result.errors.length + '</strong> errors' : '');
+      if (result.errors.length) {
+        document.getElementById('result-msg').innerHTML +=
+          '<pre class="ie-result" style="margin-top:12px">' +
+          result.errors.map(e => (e.place_name || '?') + ': ' + e.error).join('\n') +
+          '</pre>';
+      }
     } catch (e) {
       alert('Import failed: ' + e.message);
       btn.disabled = false;
