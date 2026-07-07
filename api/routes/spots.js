@@ -656,6 +656,7 @@ router.get('/index', async (req, res) => {
       LEFT JOIN cities c ON s.city_id = c.id
       LEFT JOIN places p ON s.place_id = p.id
       WHERE s.curated = true
+        AND s.deleted_at IS NULL
         AND s.place_name IS NOT NULL
       ORDER BY s.country, c.name, s.place_name
     `);
