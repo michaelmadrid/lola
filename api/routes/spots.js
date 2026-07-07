@@ -711,6 +711,29 @@ router.post('/batch-preview', authenticate, async (req, res) => {
   res.json({ rows: out });
 });
 
+// GET /api/spots/dupes — group likely duplicate spots (admin)
+router.get('/dupes', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  try {
+    const r = await pool.query(`
+      SELECT s.id, s.place_name, s.city_id, c.name AS city,
+             regexp_replace(lower(s.place_name), '[^a-z0-9]', '', 'g') AS norm
+      FROM spots s
+      LEFT JOIN cities c ON s.city_id = c.id
+      WHERE s.deleted_at IS NULL AND s.place_name IS NOT NULL
+      ORDER BY s.place_name`);
+    const groups = {};
+    for (const row of r.rows) {
+      const key = row.norm + '|' + (row.city_id || '');
+      (groups[key] = groups[key] || []).push({ id: row.id, place_name: row.place_name, city: row.city });
+    }
+    const dupes = Object.values(groups).filter(g => g.length > 1);
+    res.json({ dupes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/spots/batch — admin bulk import
 // Expects JSON array of { place_name, city_id, category, website, tip, been }
 // Dedupes by place_name + city_id (case-insensitive).

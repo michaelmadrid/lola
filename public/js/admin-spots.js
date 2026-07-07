@@ -147,5 +147,19 @@
     a.click();
   });
 
+  const dupesBtn = document.getElementById('find-dupes');
+  if (dupesBtn) dupesBtn.addEventListener('click', async () => {
+    dupesBtn.disabled = true; dupesBtn.textContent = 'Scanning…';
+    try {
+      const { dupes } = await api.get('/api/spots/dupes');
+      if (!dupes.length) { alert('No duplicates found.'); return; }
+      const lines = dupes.map(g =>
+        g.map(s => s.place_name + (s.city ? ' ('+s.city+')' : '') + ' #' + s.id).join('  ↔  ')
+      ).join('\n');
+      alert(dupes.length + ' duplicate group(s):\n\n' + lines);
+    } catch (e) { alert('Failed: ' + e.message); }
+    finally { dupesBtn.disabled = false; dupesBtn.textContent = 'Find dupes'; }
+  });
+
   load();
 })();
