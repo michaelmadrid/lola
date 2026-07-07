@@ -4,6 +4,7 @@
     location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
     return;
   }
+  if (window.AdminShell) AdminShell.render('cities');
 
   const listEl      = document.getElementById('cities-list');
   const searchEl    = document.getElementById('search-input');
