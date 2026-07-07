@@ -687,18 +687,22 @@ router.post('/batch-preview', authenticate, async (req, res) => {
       if (dup.rows[0]) status = 'duplicate';
     }
 
-    // Fuzzy: find similar names in same city (or anywhere if no city)
+    // Fuzzy: find similar names (ignore punctuation, match on normalized text)
     let similar = [];
     if (status === 'new') {
-      const firstWord = String(row.place_name).split(/\s+/)[0];
-      if (firstWord && firstWord.length >= 3) {
+      const norm = String(row.place_name).toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+      const firstWord = norm.split(/\s+/)[0];
+      if (firstWord && firstWord.length >= 2) {
         const sim = await pool.query(
           `SELECT place_name FROM spots
-           WHERE place_name ILIKE $1 AND deleted_at IS NULL
+           WHERE regexp_replace(lower(place_name), '[^a-z0-9 ]', '', 'g') ILIKE $1
+             AND deleted_at IS NULL
            LIMIT 3`,
           ['%' + firstWord + '%']
         );
-        similar = sim.rows.map(r => r.place_name).filter(n => n.toLowerCase() !== String(row.place_name).toLowerCase());
+        similar = sim.rows.map(r => r.place_name).filter(n =>
+          n.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim() !== norm
+        );
       }
     }
 
@@ -739,7 +743,9 @@ router.post('/batch', authenticate, async (req, res) => {
           if (resolved && resolved.name) {
             const ins = await pool.query(
               `INSERT INTO cities (name, slug, country, timezone, lat, lon, status, google_place_id, created_at)
-               VALUES ($1, $2, $3, $4, $5, $6, 2, $7, NOW()) RETURNING id`,
+               VALUES ($1, $2, $3, $4, $5, $6, 2, $7, NOW())
+               ON CONFLICT (name) DO UPDATE SET name = cities.name
+               RETURNING id`,
               [resolved.name, slugify(resolved.name), resolved.country, resolved.timezone, resolved.lat, resolved.lng, resolved.google_place_id]
             );
             row.city_id = ins.rows[0].id;
