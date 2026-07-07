@@ -38,6 +38,19 @@
 
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('has-admin-rail');
+
+    const toggle = document.createElement('button');
+    toggle.className = 'admin-rail-toggle';
+    toggle.setAttribute('aria-label', 'Menu');
+    toggle.innerHTML = '☰';
+    const scrim = document.createElement('div');
+    scrim.className = 'admin-rail-scrim';
+    document.body.appendChild(toggle);
+    document.body.appendChild(scrim);
+    const openRail = () => { rail.classList.add('is-open'); scrim.classList.add('is-open'); };
+    const closeRail = () => { rail.classList.remove('is-open'); scrim.classList.remove('is-open'); };
+    toggle.addEventListener('click', openRail);
+    scrim.addEventListener('click', closeRail);
   }
 
   window.AdminShell = { render };

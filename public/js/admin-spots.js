@@ -20,7 +20,9 @@
 
   let spots = [];
   let selected = new Set();
+  const CAT_LABELS = { bookstore:'Bookstore', film_lab:'Film Lab', record_store:'Record Store', cinema:'Cinema', gallery:'Gallery', coffee:'Coffee', eat:'Eat', drink:'Drink', hotel:'Hotel', shop:'Shop', other:'Other' };
   const esc = (s) => util.escapeHtml(String(s || ''));
+  const cityOf = (s) => (s.attached_cities && s.attached_cities[0]) ? s.attached_cities[0].name : '';
 
   async function load() {
     const q = view === 'trash' ? '?all=true&trashed=true&limit=500' : '?all=true&limit=500';
@@ -37,10 +39,10 @@
   }
 
   function buildFilters() {
-    const cities = [...new Map(spots.filter(s => s.city_name).map(s => [s.city_name, s.city_name])).values()].sort();
+    const cities = [...new Map(spots.filter(s => cityOf(s)).map(s => [cityOf(s), cityOf(s)])).values()].sort();
     cityEl.innerHTML = '<option value="">All cities</option>' + cities.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
     const cats = [...new Set(spots.map(s => s.category).filter(Boolean))].sort();
-    catEl.innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    catEl.innerHTML = '<option value="">All categories</option>' + cats.map(c => `<option value="${c}">${CAT_LABELS[c]||c}</option>`).join('');
   }
 
   function filtered() {
@@ -48,7 +50,7 @@
     const city = cityEl.value, cat = catEl.value;
     return spots.filter(s => {
       const mq = !q || (s.place_name||'').toLowerCase().includes(q) || (s.tip||'').toLowerCase().includes(q);
-      const mc = !city || s.city_name === city;
+      const mc = !city || cityOf(s) === city;
       const mcat = !cat || s.category === cat;
       return mq && mc && mcat;
     });
@@ -61,8 +63,8 @@
       <div class="admin-table__row spots-admin-row">
         <span class="col-check"><input type="checkbox" data-check="${s.id}" ${selected.has(s.id)?'checked':''}></span>
         <span class="col-name"><strong>${esc(s.place_name || '—')}</strong>${s.online_only?' <span class="caption">online</span>':''}</span>
-        <span>${esc(s.city_name || '—')}</span>
-        <span>${s.category?`<span class="caption">${esc(s.category)}</span>`:'—'}</span>
+        <span>${esc(cityOf(s) || '—')}</span>
+        <span>${s.category?`<span class="caption">${esc(CAT_LABELS[s.category]||s.category)}</span>`:'—'}</span>
         <span>${s.curated?'<span class="caption caption--accent">Curated</span>':'<span class="caption">Standard</span>'}</span>
         <span class="admin-actions"><button data-edit="${s.id}">Edit</button></span>
       </div>`).join('');
