@@ -346,19 +346,29 @@
 
       const flagged = checked.filter(r => r.similar && r.similar.length);
       const tbl = document.getElementById('preview-table');
+      window.excludeNames = new Set();
       if (flagged.length) {
-        tbl.innerHTML = '<thead><tr><th>Importing</th><th>Possible match in DB</th></tr></thead><tbody>' +
+        tbl.innerHTML = '<thead><tr><th style="width:40px">Skip</th><th>Importing</th><th>Possible match in DB</th></tr></thead><tbody>' +
           flagged.map(r =>
-            '<tr><td>' + r.place_name + '</td><td style="color:var(--accent)">' + r.similar.join(', ') + '</td></tr>'
+            '<tr><td><input type="checkbox" class="prev-skip" data-name="' + r.place_name.replace(/"/g,'&quot;') + '"></td>' +
+            '<td>' + r.place_name + '</td>' +
+            '<td style="color:var(--accent)">' + r.similar.join(', ') + '</td></tr>'
           ).join('') + '</tbody>';
+        tbl.querySelectorAll('.prev-skip').forEach(cb =>
+          cb.addEventListener('change', () => {
+            cb.checked ? window.excludeNames.add(cb.dataset.name) : window.excludeNames.delete(cb.dataset.name);
+          }));
       }
     } catch (e) { alert('Preview failed: ' + e.message); }
     finally { btn.disabled = false; btn.textContent = 'Preview'; }
   });
 
   document.getElementById('import-btn').addEventListener('click', async () => {
-    const rows = buildRows();
+    let rows = buildRows();
     if (!rows) return;
+    if (window.excludeNames && window.excludeNames.size) {
+      rows = rows.filter(r => !window.excludeNames.has(r.place_name));
+    }
 
     const btn = document.getElementById('import-btn');
     btn.disabled = true;
