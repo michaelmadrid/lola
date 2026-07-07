@@ -89,6 +89,7 @@
     document.getElementById('bulk-trash').hidden = view === 'trash';
     document.getElementById('bulk-restore').hidden = view !== 'trash';
     document.getElementById('bulk-delete').hidden = view !== 'trash';
+    document.getElementById('bulk-export').hidden = view === 'trash';
   }
 
   async function bulkPatch(body) {
@@ -136,9 +137,9 @@
     });
   }
 
-  const exportBtn = document.getElementById('export-filtered');
+  const exportBtn = document.getElementById('bulk-export');
   if (exportBtn) exportBtn.addEventListener('click', () => {
-    const rows = filtered();
+    const rows = spots.filter(s => selected.has(s.id));
     const blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
