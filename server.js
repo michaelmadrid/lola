@@ -50,7 +50,7 @@ app.get('/guide/:slug', (req, res) => {
 // ============ SUMMER HOLIDAY INDEX ============
 // Serves on index.summer-holiday.com subdomain OR /index-sh path
 app.use((req, res, next) => {
-  if (req.hostname === 'index.summer-holiday.com') {
+  if (req.hostname === 'index.summer-holiday.com' && !req.path.startsWith('/api/')) {
     return res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
   }
   next();
