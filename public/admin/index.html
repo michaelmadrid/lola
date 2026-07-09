@@ -32,6 +32,20 @@
       <span class="admin-card__stat">JSON · CSV</span>
     </a>
   </div>
+
+  <section class="annex-overview">
+    <div class="annex-overview__head">
+      <h2 class="annex-overview__title">Annex</h2>
+      <div class="annex-toggle" id="annex-toggle">
+        <button class="annex-toggle__btn is-active" data-mode="curated">Curated</button>
+        <button class="annex-toggle__btn" data-mode="standard">Standard</button>
+      </div>
+    </div>
+    <div class="annex-overview__meta" id="annex-meta">—</div>
+    <div class="annex-overview__table" id="annex-table">
+      <div class="annex-overview__loading">Loading…</div>
+    </div>
+  </section>
 </main>
 
 <script src="/js/api.js"></script>
@@ -40,11 +54,81 @@
 <script>
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
   AdminShell.render('overview');
+
+  const CATS = ['eat','drink','coffee','stay','shop','see','other'];
+  let allSpots = [];
+  let mode = 'curated';
+
+  function groupAndRender(spots) {
+    const byCity = {};
+    for (const s of spots) {
+      const city = s.city || s.city_name || '—';
+      if (!byCity[city]) byCity[city] = { total: 0, cats: {}, hasImage: 0 };
+      byCity[city].total++;
+      if (s.category) byCity[city].cats[s.category] = (byCity[city].cats[s.category] || 0) + 1;
+      if (s.image_url) byCity[city].hasImage++;
+    }
+
+    const cities = Object.entries(byCity).sort((a, b) => b[1].total - a[1].total);
+    const readyCount = cities.filter(([,d]) => d.total >= 10).length;
+    const label = mode === 'curated' ? 'curated' : 'standard';
+
+    document.getElementById('annex-meta').textContent =
+      `${spots.length} ${label} spots · ${cities.length} cities · ${readyCount} ready (≥10)`;
+
+    const maxTotal = cities[0]?.[1].total || 1;
+    const table = document.getElementById('annex-table');
+    table.innerHTML = `
+      <div class="annex-row annex-row--head">
+        <span>City</span>
+        <span>Total</span>
+        <span class="annex-bar-col">Distribution</span>
+        <span>Categories</span>
+        <span>Photos</span>
+      </div>
+      ${cities.map(([city, d]) => {
+        const barPct = Math.round((d.total / maxTotal) * 100);
+        const ready = d.total >= 10
+          ? '<span class="annex-badge annex-badge--ready">ready</span>'
+          : '<span class="annex-badge annex-badge--thin">thin</span>';
+        const catChips = CATS
+          .filter(c => d.cats[c])
+          .map(c => `<span class="annex-cat">${c} ${d.cats[c]}</span>`)
+          .join('');
+        const photoPct = d.total ? Math.round((d.hasImage / d.total) * 100) : 0;
+        return `
+          <div class="annex-row">
+            <span class="annex-city">${city} ${ready}</span>
+            <span class="annex-total">${d.total}</span>
+            <span class="annex-bar-col"><span class="annex-bar" style="width:${barPct}%"></span></span>
+            <span class="annex-cats">${catChips}</span>
+            <span class="annex-photos">${d.hasImage}/${d.total} <span class="annex-photos__pct">${photoPct}%</span></span>
+          </div>`;
+      }).join('')}
+    `;
+  }
+
+  // Toggle
+  document.getElementById('annex-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('.annex-toggle__btn');
+    if (!btn) return;
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.annex-toggle__btn').forEach(b => b.classList.toggle('is-active', b === btn));
+    const filtered = mode === 'curated'
+      ? allSpots.filter(s => s.curated)
+      : allSpots.filter(s => !s.curated);
+    groupAndRender(filtered);
+  });
+
   (async () => {
     try {
       const s = await api.get('/api/spots?all=true&limit=500');
-      document.getElementById('stat-spots').textContent = (s.spots||[]).length + ' spots';
-    } catch {}
+      allSpots = s.spots || [];
+      document.getElementById('stat-spots').textContent = allSpots.length + ' spots';
+      groupAndRender(allSpots.filter(s => s.curated));
+    } catch(err) {
+      document.getElementById('annex-table').textContent = 'Failed to load: ' + err.message;
+    }
     try {
       const c = await api.get('/api/cities?include_all=true');
       document.getElementById('stat-cities').textContent = (c.cities||[]).length + ' cities';
