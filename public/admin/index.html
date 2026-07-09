@@ -62,7 +62,7 @@
   function groupAndRender(spots) {
     const byCity = {};
     for (const s of spots) {
-      const city = s.city || s.city_name || '—';
+      const city = s.city_name || s.city || '—';
       if (!byCity[city]) byCity[city] = { total: 0, cats: {}, hasImage: 0 };
       byCity[city].total++;
       if (s.category) byCity[city].cats[s.category] = (byCity[city].cats[s.category] || 0) + 1;
