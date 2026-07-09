@@ -7,7 +7,8 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;background:#f5f5f2}
-#stage{width:100%;height:100vh;overflow-y:scroll;background:#f5f5f2;-webkit-overflow-scrolling:touch}
+#stage{width:100%;height:100vh;overflow-y:scroll;background:#f5f5f2;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
+#stage::-webkit-scrollbar{display:none}
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f2;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#aaa}
 .row{display:flex;align-items:center;white-space:nowrap;height:52px;overflow:hidden}
 .row-inner{display:flex;align-items:center;white-space:nowrap;will-change:transform}
