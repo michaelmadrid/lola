@@ -42,6 +42,7 @@
       </div>
     </div>
     <div class="annex-overview__meta" id="annex-meta">—</div>
+    <div class="annex-cat-filters" id="annex-cat-filters"></div>
     <div class="annex-overview__table" id="annex-table">
       <div class="annex-overview__loading">Loading…</div>
     </div>
@@ -57,6 +58,24 @@
 
   let allSpots = [];
   let mode = 'curated';
+  let activeCat = null;
+
+  function getFilteredSpots() {
+    const byMode = mode === 'curated' ? allSpots.filter(s => s.curated) : allSpots.filter(s => !s.curated);
+    return activeCat ? byMode.filter(s => s.category === activeCat) : byMode;
+  }
+
+  function renderCatFilters(spots) {
+    const counts = {};
+    for (const s of spots) {
+      if (s.category) counts[s.category] = (counts[s.category] || 0) + 1;
+    }
+    const cats = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const el = document.getElementById('annex-cat-filters');
+    el.innerHTML = cats.map(([c, n]) =>
+      `<button class="annex-cat-filter${activeCat === c ? ' is-active' : ''}" data-cat="${c}">${c} <span>${n}</span></button>`
+    ).join('');
+  }
 
   function groupAndRender(spots) {
     const byCity = {};
@@ -109,16 +128,25 @@
     `;
   }
 
-  // Toggle
+  // Curated/standard toggle
   document.getElementById('annex-toggle').addEventListener('click', e => {
     const btn = e.target.closest('.annex-toggle__btn');
     if (!btn) return;
     mode = btn.dataset.mode;
+    activeCat = null;
     document.querySelectorAll('.annex-toggle__btn').forEach(b => b.classList.toggle('is-active', b === btn));
-    const filtered = mode === 'curated'
-      ? allSpots.filter(s => s.curated)
-      : allSpots.filter(s => !s.curated);
-    groupAndRender(filtered);
+    const base = getFilteredSpots();
+    renderCatFilters(mode === 'curated' ? allSpots.filter(s => s.curated) : allSpots.filter(s => !s.curated));
+    groupAndRender(base);
+  });
+
+  // Category filter
+  document.getElementById('annex-cat-filters').addEventListener('click', e => {
+    const btn = e.target.closest('.annex-cat-filter');
+    if (!btn) return;
+    activeCat = activeCat === btn.dataset.cat ? null : btn.dataset.cat;
+    document.querySelectorAll('.annex-cat-filter').forEach(b => b.classList.toggle('is-active', b.dataset.cat === activeCat));
+    groupAndRender(getFilteredSpots());
   });
 
   (async () => {
@@ -126,7 +154,9 @@
       const s = await api.get('/api/spots?all=true&limit=500');
       allSpots = s.spots || [];
       document.getElementById('stat-spots').textContent = allSpots.length + ' spots';
-      groupAndRender(allSpots.filter(s => s.curated));
+      const curated = allSpots.filter(s => s.curated);
+      renderCatFilters(curated);
+      groupAndRender(curated);
     } catch(err) {
       document.getElementById('annex-table').textContent = 'Failed to load: ' + err.message;
     }

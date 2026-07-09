@@ -510,6 +510,29 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
 }
 .annex-toggle__btn:hover { color: var(--ink); }
 .annex-toggle__btn.is-active { background: var(--ink); color: var(--bg); }
+.annex-cat-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.annex-cat-filter {
+  font-family: var(--mono);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--rule);
+  color: var(--ink-3);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--ease-quick), color var(--ease-quick), border-color var(--ease-quick);
+}
+.annex-cat-filter span { color: var(--ink-3); margin-left: 4px; }
+.annex-cat-filter:hover { color: var(--ink); border-color: var(--ink); }
+.annex-cat-filter.is-active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.annex-cat-filter.is-active span { color: var(--bg); }
 .annex-overview__title {
   font-size: var(--text-display);
   font-weight: 500;
