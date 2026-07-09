@@ -55,7 +55,6 @@
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
   AdminShell.render('overview');
 
-  const CATS = ['eat','drink','coffee','stay','shop','see','other'];
   let allSpots = [];
   let mode = 'curated';
 
@@ -65,7 +64,9 @@
       const city = (s.attached_cities && s.attached_cities[0] && s.attached_cities[0].name) || '—';
       if (!byCity[city]) byCity[city] = { total: 0, cats: {}, hasImage: 0 };
       byCity[city].total++;
-      if (s.category) byCity[city].cats[s.category] = (byCity[city].cats[s.category] || 0) + 1;
+      if (s.category) {
+        byCity[city].cats[s.category] = (byCity[city].cats[s.category] || 0) + 1;
+      }
       if (s.image_url) byCity[city].hasImage++;
     }
 
@@ -91,9 +92,9 @@
         const ready = d.total >= 10
           ? '<span class="annex-badge annex-badge--ready">ready</span>'
           : '<span class="annex-badge annex-badge--thin">thin</span>';
-        const catChips = CATS
-          .filter(c => d.cats[c])
-          .map(c => `<span class="annex-cat">${c} ${d.cats[c]}</span>`)
+        const catChips = Object.entries(d.cats)
+          .sort((a, b) => b[1] - a[1])
+          .map(([c, n]) => `<span class="annex-cat">${c} ${n}</span>`)
           .join('');
         const photoPct = d.total ? Math.round((d.hasImage / d.total) * 100) : 0;
         return `
