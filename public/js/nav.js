@@ -143,6 +143,12 @@
     const authed = isAuthed();
     const currentNorm = currentPath();
     loadNavConfig().then(config => {
+      // Centralized logo — single source of truth.
+      const brand = (config._meta && config._meta.brand) || 'annex';
+      document.querySelectorAll('.logo').forEach(logo => {
+        logo.textContent = brand;
+        if (!logo.getAttribute('href')) logo.setAttribute('href', '/');
+      });
       slots.forEach(slot => {
         const which = slot.dataset.nav;  // 'primary' | 'drawer'
         const items = config[which];

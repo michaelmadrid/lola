@@ -39,7 +39,6 @@ app.use('/api/notes',   require('./api/routes/notes'));
 app.use('/api/spots',   require('./api/routes/spots'));
 app.use('/api/todos',   require('./api/routes/todos'));
 app.use('/api/guides',  require('./api/routes/guides'));
-app.use('/api/phrases', require('./api/routes/phrases'));
 app.use('/api/upload',  require('./api/routes/upload'));
 
 // ============ PUBLIC GUIDE VIEW ============
@@ -50,7 +49,7 @@ app.get('/guide/:slug', (req, res) => {
 // ============ SUMMER HOLIDAY INDEX ============
 // Serves on index.summer-holiday.com subdomain OR /index-sh path
 app.use((req, res, next) => {
- if (req.hostname === 'index.summer-holiday.com') {
+  if (req.hostname === 'index.summer-holiday.com') {
     return res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
   }
   next();

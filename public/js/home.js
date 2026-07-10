@@ -185,7 +185,7 @@
   // Idle quote always shows now (no longer trip-state-gated).
   renderIdleQuote();
 
-  loadActiveTrip();
+  // loadActiveTrip(); // Travel removed — launcher no longer on home
 
   // ============ ITINERARY OVERLAY ============
   const itinOverlay   = document.getElementById('itin-overlay');

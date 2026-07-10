@@ -1,19 +1,18 @@
 {
   "_meta": {
-    "version": 2,
-    "note": "Single source of truth for kit's navigation. Editing this file updates every page that uses nav.js. Settings/Admin/Sign-out live in the user panel sheet (.user-panel), NOT here. Apps area not yet shipped — link will be added when Phase 3 lands."
+    "version": 3,
+    "brand": "annex",
+    "note": "Single source of truth for navigation + logo. Editing this file updates every page that uses nav.js."
   },
 
   "primary": [
     { "label": "Home",   "href": "/",        "auth": "any" },
-    { "label": "Travel", "href": "/travel/", "auth": "any" },
     { "label": "Spots",  "href": "/spots/",  "auth": "in"  },
     { "label": "Guides", "href": "/guides/", "auth": "in"  }
   ],
 
   "drawer": [
     { "label": "Home",    "href": "/",           "auth": "any" },
-    { "label": "Travel",  "href": "/travel/",    "auth": "any" },
     { "label": "Spots",   "href": "/spots/",     "auth": "in"  },
     { "label": "Guides",  "href": "/guides/",    "auth": "in"  },
     { "label": "Sign in", "href": "/login.html", "auth": "out" }
