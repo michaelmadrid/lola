@@ -46,16 +46,11 @@ app.get('/guide/:slug', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'g.html'));
 });
 
-// ============ SUMMER HOLIDAY INDEX ============
-// Serves on index.summer-holiday.com subdomain OR /index-sh path
-app.use((req, res, next) => {
-  if (req.hostname === 'index.summer-holiday.com') {
-    return res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
-  }
-  next();
-});
-app.get('/index-sh', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index-sh', 'index.html'));
+// ============ ANNEX PUBLIC ============
+// The public site (annex.site) is served by Nginx directly from
+// public/annex-public/. This route is a fallback for local/testing.
+app.get('/annex-public', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'annex-public', 'index.html'));
 });
 
 // ============ FALLBACK ============
