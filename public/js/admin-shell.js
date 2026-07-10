@@ -21,7 +21,7 @@
     const rail = document.createElement('nav');
     rail.className = 'admin-rail';
     rail.innerHTML =
-      '<a class="admin-rail__logo" href="/admin/">kit admin</a>' +
+      '<a class="admin-rail__logo" href="/admin/">annex studio</a>' +
       NAV.map(item => {
         const isActive = activeKey === item.key || (item.sub && item.sub.some(s => s.key === activeKey));
         let html = '<div class="admin-rail__group">';
@@ -35,7 +35,7 @@
         html += '</div>';
         return html;
       }).join('') +
-      '<a class="admin-rail__back" href="/">← Back to kit</a>';
+      '<a class="admin-rail__back" href="/">← Back to annex</a>';
 
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('has-admin-rail');
