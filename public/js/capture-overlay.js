@@ -457,8 +457,14 @@
     isSubmitting = true;
     if (captFsSubmit) captFsSubmit.disabled = true;
     try {
+      const body = {
+        place_name: placeName,
+        tip: tipValue || null,
+        city_id: pickedCity.id,
+        city_name: pickedCity.name,
+        been,
         category: pickedCategory || null,
-            };
+      };
       const result = await api.post('/api/spots', body);
       const count = result.count || 1;
       const savedSpot = result.spot || (result.spots && result.spots[0]) || null;
