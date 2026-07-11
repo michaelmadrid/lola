@@ -20,7 +20,7 @@
 
   let spots = [];
   let selected = new Set();
-  const CAT_LABELS = { bookstore:'Bookstore', film_lab:'Film Lab', record_store:'Record Store', cinema:'Cinema', gallery:'Gallery', coffee:'Coffee', eat:'Eat', drink:'Drink', hotel:'Hotel', shop:'Shop', other:'Other' };
+  const CAT_LABELS = { bookstore:'Bookstore', cinema:'Cinema', recordstore:'Recordstore', gallery:'Gallery', make:'Make', visit:'Visit', shop:'Shop', coffee:'Coffee', eat:'Eat', drink:'Drink', stay:'Stay', other:'Other' };
   const esc = (s) => util.escapeHtml(String(s || ''));
   const cityOf = (s) => (s.attached_cities && s.attached_cities[0]) ? s.attached_cities[0].name : '';
 
