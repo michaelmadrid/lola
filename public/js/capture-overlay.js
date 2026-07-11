@@ -82,11 +82,7 @@
     }
     initialized = true;
 
-    // Restore been state
-    try {
-      const stored = localStorage.getItem(BEEN_STORAGE_KEY);
-      applyBeen(stored !== '0');
-    } catch { applyBeen(true); }
+    applyBeen(true); // always default to been
     if (captFsBeenBtn) captFsBeenBtn.addEventListener('click', () => applyBeen(!been));
 
     // Category popover
