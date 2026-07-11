@@ -101,10 +101,11 @@
 
   // Bulk tag
   const bulkTagBtn  = document.getElementById('bulk-tag-btn');
-  const bulkTagPop  = document.getElementById('bulk-tag-popover');
+  const bulkTagRow  = document.getElementById('bulk-tag-row');
   const bulkTagSugs = document.getElementById('bulk-tag-suggestions');
   const bulkTagInput= document.getElementById('bulk-tag-input');
   const bulkTagApply= document.getElementById('bulk-tag-apply');
+  const bulkTagClose= document.getElementById('bulk-tag-close');
 
   const ALL_SUGGESTIONS = [
     'Photobooks', 'Art Books', 'Literary', 'Secondhand', 'Zines',
@@ -130,17 +131,15 @@
   }
 
   if (bulkTagBtn) {
-    bulkTagBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      bulkTagPop.hidden = !bulkTagPop.hidden;
+    bulkTagBtn.addEventListener('click', () => {
+      bulkTagRow.hidden = !bulkTagRow.hidden;
+      if (!bulkTagRow.hidden && bulkTagInput) bulkTagInput.focus();
     });
   }
 
-  document.addEventListener('click', (e) => {
-    if (bulkTagPop && !bulkTagPop.hidden && !document.getElementById('bulk-tag-wrap').contains(e.target)) {
-      bulkTagPop.hidden = true;
-    }
-  });
+  if (bulkTagClose) {
+    bulkTagClose.addEventListener('click', () => { bulkTagRow.hidden = true; });
+  }
 
   async function applyBulkTag(tag) {
     if (!tag) return;
@@ -152,7 +151,7 @@
         await api.patch('/api/spots/' + id, { tags: [...existing, tag] });
       }
     }));
-    bulkTagPop.hidden = true;
+    bulkTagRow.hidden = true;
     bulkTagInput.value = '';
     if (bulkTagSugs) bulkTagSugs.querySelectorAll('.bulk-tag-sug').forEach(b => b.classList.remove('is-active'));
     selected.clear();
