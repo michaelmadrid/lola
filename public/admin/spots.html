@@ -39,20 +39,10 @@
       <button class="btn btn--small btn--ghost" id="bulk-restore" hidden>Restore</button>
       <button class="btn btn--small btn--ghost btn--danger" id="bulk-delete" hidden>Delete forever</button>
       <button class="btn btn--small btn--ghost" id="bulk-export">Export selected</button>
-      <button class="btn btn--small btn--secondary" id="bulk-tag-btn">Add Tag</button>
       <button class="bulk-bar__cancel" id="bulk-clear">Clear</button>
     </div>
   </div>
 
-  <!-- Bulk tag row -->
-  <div class="bulk-tag-row" id="bulk-tag-row" hidden>
-    <div class="bulk-tag-suggestions" id="bulk-tag-suggestions"></div>
-    <div class="bulk-tag-custom">
-      <input type="text" class="input" id="bulk-tag-input" placeholder="Or type a tag…">
-      <button class="btn btn--small" id="bulk-tag-apply">Apply</button>
-      <button class="btn btn--small btn--ghost" id="bulk-tag-close">Cancel</button>
-    </div>
-  </div>
 
   <div class="admin-table">
     <div class="admin-table__head spots-admin-head">
@@ -95,9 +85,6 @@
           <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
         </div>
 
-        <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
-          <span id="capture-fs-been-text">Been</span>
-        </button>
 
         <button class="capture-fs__cat-btn" id="capture-fs-cat-btn" type="button">
           <span id="capture-fs-cat-btn-name">Category</span>
