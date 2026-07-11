@@ -164,12 +164,10 @@
           <option value="other">Other</option>
         </select>
       </div>
-      <div class="spot-fs__field">
-        <label class="spot-fs__label">Status</label>
-        <div class="spot-fs__been-row">
-          <button type="button" class="spot-fs__been-pill" id="spot-fs-been-yes" data-active="true">I've been here</button>
-          <button type="button" class="spot-fs__been-pill" id="spot-fs-been-no" data-active="false">I want to go</button>
-        </div>
+      <!-- Category suggestions (shown dynamically) -->
+      <div class="spot-fs__field spot-fs__suggestions-field" id="spot-fs-suggestions-field" style="display:none">
+        <label class="spot-fs__label">Type</label>
+        <div class="spot-fs__suggestions" id="spot-fs-suggestions"></div>
       </div>
       <div class="spot-fs__field">
         <label class="spot-fs__label">Tags</label>

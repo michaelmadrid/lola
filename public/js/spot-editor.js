@@ -26,6 +26,17 @@
   // DOM refs (resolved in init)
   let el = {};
 
+  // Category suggestions — mirrors api/constants/spot-categories.js
+  const CAT_SUGGESTIONS = {
+    bookstore:   ['Photobooks', 'Art Books', 'Literary', 'Secondhand', 'Zines'],
+    cinema:      ['Repertory', 'Arthouse', 'Drive-in', 'Outdoor'],
+    recordstore: ['Vinyl', 'New Releases', 'Secondhand', 'Jazz', 'Electronic'],
+    gallery:     ['Photography', 'Contemporary', 'Print', 'Sculpture', 'Commercial'],
+    make:        ['Film Lab', 'Darkroom', 'Screenprint', 'Risograph', 'Print Studio', 'Ceramics'],
+    visit:       ['Museum', 'Architecture', 'Landmark', 'Public Space', 'Garden', 'Library'],
+    shop:        ['Concept Store', 'Vintage', 'Clothing', 'Objects', 'Homewares'],
+  };
+
   function $(id) { return document.getElementById(id); }
 
   function toast(msg) {
@@ -61,6 +72,33 @@
         renderTags();
       })
     );
+  }
+
+  function renderSuggestions(cat) {
+    if (!el.suggestionsField || !el.suggestions) return;
+    const list = CAT_SUGGESTIONS[cat] || [];
+    if (!list.length) {
+      el.suggestionsField.style.display = 'none';
+      return;
+    }
+    el.suggestionsField.style.display = '';
+    el.suggestions.innerHTML = list.map(s => {
+      const tag = s.toLowerCase();
+      const active = editingTags.includes(tag);
+      return '<button type="button" class="spot-fs__suggestion' + (active ? ' is-active' : '') + '" data-tag="' + tag + '">' + s + '</button>';
+    }).join('');
+    el.suggestions.querySelectorAll('.spot-fs__suggestion').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tag = btn.dataset.tag;
+        if (editingTags.includes(tag)) {
+          editingTags = editingTags.filter(t => t !== tag);
+        } else {
+          editingTags.push(tag);
+        }
+        renderTags();
+        renderSuggestions(el.cat.value);
+      });
+    });
   }
 
   function addTags(raw) {
@@ -124,6 +162,7 @@
     }
     applyBeen(typeof spot.been === 'boolean' ? spot.been : true);
 
+    renderSuggestions(el.cat.value);
     el.editor.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     setTimeout(() => el.place.focus(), 50);
@@ -207,6 +246,8 @@
       mapsCancel: $('maps-link-cancel'),
       mapsRemove: $('maps-link-remove'),
       mapsStatus: $('maps-link-status'),
+      suggestionsField: $('spot-fs-suggestions-field'),
+      suggestions:      $('spot-fs-suggestions'),
     };
 
     if (!el.editor) return; // markup not present
@@ -218,6 +259,10 @@
         el.city.innerHTML = '<option value="">— none —</option>' +
           cityOptions.map(c => '<option value="' + c.id + '">' + (c.name) + (c.country ? ', ' + c.country : '') + '</option>').join('');
       }).catch(() => {});
+    }
+
+    if (el.cat) {
+      el.cat.addEventListener('change', () => renderSuggestions(el.cat.value));
     }
 
     el.beenYes && el.beenYes.addEventListener('click', () => applyBeen(true));
