@@ -46,18 +46,19 @@
 
   // Type options — keep in sync with edit drawer Category select
   const TYPES = [
-    { value: 'all',          label: 'All types' },
-    { value: 'bookstore',    label: 'Bookstore' },
-    { value: 'film_lab',     label: 'Film Lab' },
-    { value: 'record_store', label: 'Record Store' },
-    { value: 'cinema',       label: 'Cinema' },
-    { value: 'gallery',      label: 'Gallery' },
-    { value: 'coffee',       label: 'Coffee' },
-    { value: 'eat',          label: 'Eat' },
-    { value: 'drink',        label: 'Drink' },
-    { value: 'hotel',        label: 'Hotel' },
-    { value: 'shop',         label: 'Shop' },
-    { value: 'other',        label: 'Other' },
+    { value: 'all',         label: 'All types' },
+    { value: 'bookstore',   label: 'Bookstore' },
+    { value: 'cinema',      label: 'Cinema' },
+    { value: 'recordstore', label: 'Recordstore' },
+    { value: 'gallery',     label: 'Gallery' },
+    { value: 'make',        label: 'Make' },
+    { value: 'visit',       label: 'Visit' },
+    { value: 'shop',        label: 'Shop' },
+    { value: 'coffee',      label: 'Coffee' },
+    { value: 'eat',         label: 'Eat' },
+    { value: 'drink',       label: 'Drink' },
+    { value: 'stay',        label: 'Stay' },
+    { value: 'other',       label: 'Other' },
   ];
 
   // Been-state options — three-tier filter
