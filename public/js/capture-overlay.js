@@ -36,7 +36,17 @@
   let captFs, captFsClose, captFsPlace, captFsTip, captFsSubmit;
   let captFsCityBtn, captFsCityBtnName, captFsCityPopover, captFsCitySearch, captFsCityList;
   let captFsBeenBtn, captFsBeenText;
-  let captFsCatBtn, captFsCatBtnName, captFsCatPopover, captFsCatList;
+  let captFsCatBtn, captFsCatBtnName, captFsCatPopover, captFsCatList, captFsSuggestions;
+
+  const CAT_SUGGESTIONS = {
+    bookstore:   ['Photobooks', 'Art Books', 'Literary', 'Secondhand', 'Zines'],
+    cinema:      ['Repertory', 'Arthouse', 'Drive-in', 'Outdoor'],
+    recordstore: ['Vinyl', 'New Releases', 'Secondhand', 'Jazz', 'Electronic'],
+    gallery:     ['Photography', 'Contemporary', 'Print', 'Sculpture', 'Commercial'],
+    make:        ['Film Lab', 'Darkroom', 'Screenprint', 'Risograph', 'Print Studio', 'Ceramics'],
+    visit:       ['Museum', 'Architecture', 'Landmark', 'Public Space', 'Garden', 'Library'],
+    shop:        ['Concept Store', 'Vintage', 'Clothing', 'Objects', 'Homewares'],
+  };
   let pickedCategory = null;
 
   let allCities = [];
@@ -75,6 +85,7 @@
     captFsCatBtnName      = document.getElementById('capture-fs-cat-btn-name');
     captFsCatPopover      = document.getElementById('capture-fs-cat-popover');
     captFsCatList         = document.getElementById('capture-fs-cat-list');
+    captFsSuggestions     = document.getElementById('capture-fs-suggestions');
 
     if (!captFs) {
       console.warn('CaptureOverlay.init: #capture-fs missing — overlay markup not on this page.');
@@ -257,11 +268,29 @@
     const label = allCategories.find(c => c.value === pickedCategory);
     if (captFsCatBtnName) captFsCatBtnName.textContent = label ? label.label : 'Category';
     if (captFsCatBtn) captFsCatBtn.classList.toggle('has-value', !!pickedCategory);
+    renderCaptureSuggestions(pickedCategory);
     try {
       if (pickedCategory) localStorage.setItem(CAT_STORAGE_KEY, pickedCategory);
       else localStorage.removeItem(CAT_STORAGE_KEY);
     } catch {}
   }
+  function renderCaptureSuggestions(cat) {
+    if (!captFsSuggestions) return;
+    const list = CAT_SUGGESTIONS[cat] || [];
+    if (!list.length) { captFsSuggestions.style.display = 'none'; return; }
+    captFsSuggestions.style.display = '';
+    captFsSuggestions.innerHTML = list.map(s => {
+      const tag = s.toLowerCase();
+      return `<button type="button" class="capture-fs__suggestion" data-tag="${tag}">${s}</button>`;
+    }).join('');
+    captFsSuggestions.querySelectorAll('.capture-fs__suggestion').forEach(btn => {
+      btn.addEventListener('click', () => {
+        captFsSuggestions.querySelectorAll('.capture-fs__suggestion').forEach(b => b.classList.remove('is-active'));
+        btn.classList.toggle('is-active');
+      });
+    });
+  }
+
   function openCatPopover() {
     if (!captFsCatPopover) return;
     renderCatList();
@@ -385,6 +414,9 @@
     if (captFsPlace) {
       captFsPlace.value = '';
       autoGrow(captFsPlace);
+      if (captFsSuggestions) {
+        captFsSuggestions.querySelectorAll('.capture-fs__suggestion').forEach(b => b.classList.remove('is-active'));
+      }
     }
     if (captFsTip) {
       captFsTip.value = '';
@@ -457,6 +489,8 @@
     isSubmitting = true;
     if (captFsSubmit) captFsSubmit.disabled = true;
     try {
+      const activeTag = captFsSuggestions && captFsSuggestions.querySelector('.capture-fs__suggestion.is-active');
+      const suggestionTag = activeTag ? [activeTag.dataset.tag] : [];
       const body = {
         place_name: placeName,
         tip: tipValue || null,
@@ -464,6 +498,7 @@
         city_name: pickedCity.name,
         been,
         category: pickedCategory || null,
+        tags: suggestionTag,
       };
       const result = await api.post('/api/spots', body);
       const count = result.count || 1;

@@ -1490,3 +1490,34 @@
   flex-direction: column;
   gap: var(--space-3);   /* 12px */
 }
+
+/* Capture overlay — category suggestion pills */
+.capture-fs__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+}
+
+.capture-fs__suggestion {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: border-color var(--ease-quick), color var(--ease-quick), background var(--ease-quick);
+}
+
+.capture-fs__suggestion:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.capture-fs__suggestion.is-active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
