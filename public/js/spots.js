@@ -19,6 +19,7 @@
   }
 
   let allSpots = [];
+  let activeView = 'all'; // all | curated | standard | trash
   let activeCity = lsGet(LS_CITY, 'all');
   let activeCat  = lsGet(LS_CAT, 'all');
   let activeBeen = lsGet(LS_BEEN, 'all'); // 'all' | 'want' | 'been'
@@ -46,19 +47,18 @@
 
   // Type options — keep in sync with edit drawer Category select
   const TYPES = [
-    { value: 'all',         label: 'All types' },
-    { value: 'bookstore',   label: 'Bookstore' },
-    { value: 'cinema',      label: 'Cinema' },
-    { value: 'recordstore', label: 'Recordstore' },
-    { value: 'gallery',     label: 'Gallery' },
-    { value: 'make',        label: 'Make' },
-    { value: 'visit',       label: 'Visit' },
-    { value: 'shop',        label: 'Shop' },
-    { value: 'coffee',      label: 'Coffee' },
-    { value: 'eat',         label: 'Eat' },
-    { value: 'drink',       label: 'Drink' },
-    { value: 'stay',        label: 'Stay' },
-    { value: 'other',       label: 'Other' },
+    { value: 'all',          label: 'All types' },
+    { value: 'bookstore',    label: 'Bookstore' },
+    { value: 'film_lab',     label: 'Film Lab' },
+    { value: 'record_store', label: 'Record Store' },
+    { value: 'cinema',       label: 'Cinema' },
+    { value: 'gallery',      label: 'Gallery' },
+    { value: 'coffee',       label: 'Coffee' },
+    { value: 'eat',          label: 'Eat' },
+    { value: 'drink',        label: 'Drink' },
+    { value: 'hotel',        label: 'Hotel' },
+    { value: 'shop',         label: 'Shop' },
+    { value: 'other',        label: 'Other' },
   ];
 
   // Been-state options — three-tier filter
@@ -84,8 +84,11 @@
   // -------- Load --------
   async function loadSpots() {
     try {
-      const data = await api.get('/api/spots?limit=500');
-      // Spots where AI extracted a place_name (filter raw text captures)
+      // Shared library: all users' spots. Trash view pulls soft-deleted.
+      const q = activeView === 'trash'
+        ? '/api/spots?all=true&trashed=true&limit=500'
+        : '/api/spots?all=true&limit=500';
+      const data = await api.get(q);
       allSpots = (data.spots || []).filter(s => s.place_name && s.place_name.trim());
       restoreLabelsFromState();
       buildCityPickerOptions();
@@ -291,6 +294,9 @@
   function render() {
     const term = searchTerm.toLowerCase().trim();
     const filtered = allSpots.filter(s => {
+      // View filter (curated / standard — trash is handled at load time)
+      if (activeView === 'curated' && !s.curated) return false;
+      if (activeView === 'standard' && s.curated) return false;
       if (activeCat !== 'all' && s.category !== activeCat) return false;
       if (activeCity !== 'all') {
         const cities = (s.attached_cities || []).map(c => c.name);
@@ -306,6 +312,9 @@
       }
       return true;
     });
+
+    const countEl = document.getElementById('spot-count');
+    if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' spot' : ' spots');
 
     if (!filtered.length) {
       const msg = term
@@ -393,6 +402,24 @@
         setTimeout(() => loadSpots(), 4000);
         setTimeout(() => loadSpots(), 9000);
       },
+    });
+  }
+
+  // View switcher
+  const viewSwitch = document.getElementById('view-switch');
+  if (viewSwitch) {
+    viewSwitch.querySelectorAll('.view-switch__item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.dataset.view;
+        if (v === activeView) return;
+        const wasTrash = allSpots.some(s => s.deleted_at);
+        activeView = v;
+        viewSwitch.querySelectorAll('.view-switch__item').forEach(b =>
+          b.classList.toggle('is-active', b.dataset.view === v));
+        // Trash uses a different query — reload when entering or leaving it.
+        if (v === 'trash' || wasTrash) loadSpots();
+        else render();
+      });
     });
   }
 

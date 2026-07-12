@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Spots — kit</title>
+  <title>Spots — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/spots.css">
   <link rel="stylesheet" href="/css/themes/pills.css">
@@ -23,7 +23,7 @@
         <span class="menu-btn__bar menu-btn__bar--bottom"></span>
       </span>
     </button>
-    <a href="/" class="logo">kit</a>
+    <a href="/" class="logo">annex</a>
   </div>
   <nav class="nav" data-nav="primary"></nav>
   <div class="head__right">
@@ -42,9 +42,17 @@
     <div class="mast__head">
       <div>
         <h1 class="mast__title">Spots</h1>
-        <p class="mast__intro">Your places, by city</p>
+        <p class="mast__count" id="spot-count"></p>
       </div>
-      <button class="btn" id="capture-launcher" type="button">+ Add a spot</button>
+      <div class="mast__head-right">
+        <nav class="view-switch" id="view-switch">
+          <button class="view-switch__item is-active" data-view="all" type="button">All</button>
+          <button class="view-switch__item" data-view="curated" type="button">Curated</button>
+          <button class="view-switch__item" data-view="standard" type="button">Standard</button>
+          <button class="view-switch__item view-switch__item--danger" data-view="trash" type="button">Trash</button>
+        </nav>
+        <button class="btn" id="capture-launcher" type="button">+ Add a spot</button>
+      </div>
     </div>
   </header>
 
@@ -77,13 +85,16 @@
           <div class="capture-fs__city-list" id="capture-fs-city-list"></div>
         </div>
 
-<button class="capture-fs__cat-btn" id="capture-fs-cat-btn" type="button">
+        <button class="capture-fs__been-btn" id="capture-fs-been-btn" data-been="true" type="button" aria-label="Toggle been or want to go">
+          <span id="capture-fs-been-text">Been</span>
+        </button>
+
+        <button class="capture-fs__cat-btn" id="capture-fs-cat-btn" type="button">
           <span id="capture-fs-cat-btn-name">Category</span>
         </button>
         <div class="capture-fs__cat-popover" id="capture-fs-cat-popover">
           <div class="capture-fs__cat-list" id="capture-fs-cat-list"></div>
         </div>
-        <div class="capture-fs__suggestions" id="capture-fs-suggestions" style="display:none"></div>
       </div>
 
       <div class="capture-fs__body">
@@ -200,28 +211,30 @@
         <select class="spot-fs__select" id="spot-fs-category">
           <option value="">— none —</option>
           <option value="bookstore">Bookstore</option>
+          <option value="film_lab">Film Lab</option>
+          <option value="record_store">Record Store</option>
           <option value="cinema">Cinema</option>
-          <option value="recordstore">Recordstore</option>
           <option value="gallery">Gallery</option>
-          <option value="make">Make</option>
-          <option value="visit">Visit</option>
-          <option value="shop">Shop</option>
           <option value="coffee">Coffee</option>
           <option value="eat">Eat</option>
           <option value="drink">Drink</option>
-          <option value="stay">Stay</option>
+          <option value="hotel">Hotel</option>
+          <option value="shop">Shop</option>
           <option value="other">Other</option>
         </select>
       </div>
 
-      <!-- Category suggestions (shown dynamically) -->
-      <div class="spot-fs__field spot-fs__suggestions-field" id="spot-fs-suggestions-field" style="display:none">
-        <label class="spot-fs__label">Type</label>
-        <div class="spot-fs__suggestions" id="spot-fs-suggestions"></div>
+      <!-- Been / Want to go -->
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Status</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-been-yes" data-active="true">I've been here</button>
+          <button type="button" class="spot-fs__been-pill" id="spot-fs-been-no" data-active="false">I want to go</button>
+        </div>
       </div>
 
       <!-- Tags -->
-      <div class="spot-fs__field" id="spot-fs-tags-field" style="display:none">
+      <div class="spot-fs__field">
         <label class="spot-fs__label">Tags</label>
         <div class="tag-input" id="spot-fs-tag-input">
           <div class="tag-input__pills" id="tag-pills"></div>
