@@ -20,6 +20,8 @@
 
   let allSpots = [];
   let activeView = 'all'; // all | curated | standard | trash
+  let isAdmin = false;
+  let selected = new Set();
   let activeCity = lsGet(LS_CITY, 'all');
   let activeCat  = lsGet(LS_CAT, 'all');
   let activeBeen = lsGet(LS_BEEN, 'all'); // 'all' | 'want' | 'been'
@@ -337,7 +339,11 @@
 
       const catAttr = s.category ? ` data-category="${util.escapeHtml(s.category)}"` : '';
       const treatment = (parseInt(s.id, 10) % 7);
+      const checkboxHtml = isAdmin
+        ? `<input type="checkbox" class="stream__check" data-check="${s.id}" aria-label="Select ${util.escapeHtml(s.place_name)}">`
+        : '';
       return `<div class="stream__item is-structured${s.been === false ? ' is-want' : ''}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}>
+        ${checkboxHtml}
         <div class="stream__body">
           <span class="stream__name">${util.escapeHtml(s.place_name)}</span>
           ${tipLine}
@@ -346,6 +352,7 @@
         <span class="stream__when">${util.timeAgo(s.created_at)}</span>
       </div>`;
     }).join('');
+    updateBulkBar();
   }
 
   // -------- Search --------
@@ -405,6 +412,64 @@
     });
   }
 
+  async function checkAdmin() {
+    try {
+      const me = await api.get('/api/auth/me');
+      isAdmin = !!(me.user && me.user.role === 'admin');
+      document.body.classList.toggle('has-admin-checks', isAdmin);
+    } catch { isAdmin = false; }
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulk-bar');
+    if (!bar) return;
+    if (!isAdmin || selected.size === 0) { bar.hidden = true; return; }
+    bar.hidden = false;
+    document.getElementById('bulk-count').textContent = selected.size + ' selected';
+    const inTrash = activeView === 'trash';
+    document.getElementById('bulk-curate').hidden = inTrash;
+    document.getElementById('bulk-standard').hidden = inTrash;
+    document.getElementById('bulk-trash').hidden = inTrash;
+    document.getElementById('bulk-restore').hidden = !inTrash;
+    document.getElementById('bulk-delete-forever').hidden = !inTrash;
+  }
+
+  async function bulkPatch(body) {
+    await Promise.all([...selected].map(id => api.patch('/api/spots/' + id, body)));
+    selected.clear();
+    loadSpots();
+  }
+
+  function wireBulkActions() {
+    const bar = document.getElementById('bulk-bar');
+    if (!bar) return;
+    document.getElementById('bulk-curate').addEventListener('click', () => bulkPatch({ curated: true }));
+    document.getElementById('bulk-standard').addEventListener('click', () => bulkPatch({ curated: false }));
+    document.getElementById('bulk-trash').addEventListener('click', () => {
+      if (!confirm('Move ' + selected.size + ' spots to trash?')) return;
+      bulkPatch({ deleted_at: new Date().toISOString() });
+    });
+    document.getElementById('bulk-restore').addEventListener('click', () => bulkPatch({ deleted_at: null }));
+    document.getElementById('bulk-delete-forever').addEventListener('click', async () => {
+      if (!confirm('Permanently delete ' + selected.size + ' spots? This cannot be undone.')) return;
+      await Promise.all([...selected].map(id => api.delete('/api/spots/' + id)));
+      selected.clear();
+      loadSpots();
+    });
+    document.getElementById('bulk-clear').addEventListener('click', () => {
+      selected.clear();
+      document.querySelectorAll('.stream__check').forEach(cb => cb.checked = false);
+      updateBulkBar();
+    });
+  }
+
+  listEl.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('stream__check')) return;
+    const id = parseInt(e.target.dataset.check, 10);
+    e.target.checked ? selected.add(id) : selected.delete(id);
+    updateBulkBar();
+  });
+
   // View switcher
   const viewSwitch = document.getElementById('view-switch');
   if (viewSwitch) {
@@ -423,5 +488,6 @@
     });
   }
 
-  loadSpots();
+  wireBulkActions();
+  checkAdmin().then(loadSpots);
 })();

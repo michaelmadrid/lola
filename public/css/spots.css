@@ -437,3 +437,53 @@
   .mast__head-right { flex-direction: column; align-items: flex-end; gap: 12px; }
   .view-switch { flex-wrap: wrap; justify-content: flex-end; }
 }
+
+/* ===== Admin bulk tools (role-gated, red accents = god-mode) ===== */
+.stream__check {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.stream__item { position: relative; }
+body.has-admin-checks .stream__item { padding-left: 28px; }
+
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  color: var(--ink);
+  padding: 10px 16px;
+  border-radius: var(--r-tight);
+  margin: 0 0 20px;
+  font-family: var(--sans);
+  font-size: var(--text-small);
+}
+.bulk-bar[hidden] { display: none; }
+.bulk-bar__count {
+  font-family: var(--mono);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--danger);
+}
+.bulk-bar__actions { display: flex; gap: 12px; align-items: center; }
+.bulk-bar__actions .btn[hidden] { display: none !important; }
+.bulk-bar__cancel {
+  background: none;
+  border: 0;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.bulk-bar__cancel:hover { color: var(--ink); }
