@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
+  <title>Notes — annex</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/spots.css">
+  <link rel="stylesheet" href="/css/uploader.css">
+</head>
+<body>
+
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">annex</a>
+  </div>
+  <nav class="nav" data-nav="primary"></nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
+
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+  <div class="menu-overlay__inner"></div>
+</div>
+
+<main class="page page-spots">
+
+  <header class="mast">
+    <div class="mast__head">
+      <div>
+        <h1 class="mast__title">Notes</h1>
+        <p class="mast__count" id="note-count"></p>
+      </div>
+      <div class="mast__head-right">
+        <nav class="view-switch" id="view-switch">
+          <button class="view-switch__item is-active" data-view="all" type="button">All</button>
+          <button class="view-switch__item" data-view="published" type="button">Published</button>
+          <button class="view-switch__item" data-view="draft" type="button">Draft</button>
+          <button class="view-switch__item view-switch__item--danger" data-view="trash" type="button">Trash</button>
+        </nav>
+        <button class="btn" id="note-add-btn" type="button">+ Add a note</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="notes-list"><div class="stream__empty">Loading…</div></div>
+
+</main>
+
+<!-- Note editor -->
+<div class="modal spot-fs" id="note-editor">
+  <div class="modal__head spot-fs__head">
+    <button class="btn-close-circle" id="note-editor-close" aria-label="Close" type="button">×</button>
+    <h3 class="spot-fs__title">Note</h3>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner spot-fs__inner">
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Type</label>
+        <div class="spot-fs__been-row" id="note-type-row">
+          <button type="button" class="spot-fs__been-pill" data-type="note">Note</button>
+          <button type="button" class="spot-fs__been-pill" data-type="photograph">Photograph</button>
+          <button type="button" class="spot-fs__been-pill" data-type="link">Link</button>
+          <button type="button" class="spot-fs__been-pill" data-type="announcement">Announcement</button>
+        </div>
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="note-headline">Headline</label>
+        <input type="text" class="spot-fs__input" id="note-headline" placeholder="The title shown on the front page">
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="note-body">Body</label>
+        <textarea class="spot-fs__input" id="note-body" rows="4" placeholder="Optional supporting text…" style="resize: vertical; min-height: 90px;"></textarea>
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Image</label>
+        <div class="uploader" id="note-fs-uploader">
+          <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+          <div class="uploader__preview"></div>
+          <button type="button" class="uploader__btn">Upload image</button>
+          <button type="button" class="uploader__btn uploader__btn--remove" id="note-image-remove" hidden>Remove image</button>
+        </div>
+      </div>
+
+      <div class="spot-fs__field">
+        <button type="button" class="btn btn--small btn--secondary" id="note-ref-toggle">+ Add reference</button>
+        <div id="note-ref-fields" hidden style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
+          <input type="text" class="spot-fs__input" id="note-ref-title" placeholder="Reference title">
+          <input type="url" class="spot-fs__input" id="note-ref-url" placeholder="https://…">
+        </div>
+      </div>
+
+      <div class="spot-fs__divider"></div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Pin</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="note-pin-off" data-active="true">Normal</button>
+          <button type="button" class="spot-fs__been-pill" id="note-pin-on" data-active="false">Pinned to top</button>
+        </div>
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="note-publish-date">Publish date</label>
+        <input type="datetime-local" class="spot-fs__input" id="note-publish-date">
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="note-expires">Expires (optional)</label>
+        <input type="datetime-local" class="spot-fs__input" id="note-expires">
+      </div>
+
+    </div>
+  </div>
+  <div class="modal__foot spot-fs__foot">
+    <button class="spot-fs__danger" id="note-delete">Delete</button>
+    <span style="flex:1"></span>
+    <button class="btn btn--secondary" id="note-save-draft">Save draft</button>
+    <button class="btn" id="note-publish">Publish</button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/uploader.js"></script>
+<script src="/js/notes.js"></script>
+</body>
+</html>
