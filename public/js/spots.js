@@ -480,8 +480,14 @@
         if (v === activeView) return;
         const wasTrash = allSpots.some(s => s.deleted_at);
         activeView = v;
+        activeCity = 'all'; activeCat = 'all'; activeBeen = 'all'; searchTerm = '';
+        if (searchInput) searchInput.value = '';
+        lsSet(LS_CITY, 'all'); lsSet(LS_CAT, 'all'); lsSet(LS_BEEN, 'all');
         viewSwitch.querySelectorAll('.view-switch__item').forEach(b =>
           b.classList.toggle('is-active', b.dataset.view === v));
+        buildCityPickerOptions();
+        buildTypePickerOptions();
+        buildBeenPickerOptions();
         // Trash uses a different query — reload when entering or leaving it.
         if (v === 'trash' || wasTrash) loadSpots();
         else render();

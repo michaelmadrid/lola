@@ -440,10 +440,12 @@
 
 /* ===== Admin bulk tools (role-gated, red accents = god-mode) ===== */
 .stream__check {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   cursor: pointer;
   align-self: center;
+  position: relative;
+  z-index: 2;
 }
 body.has-admin-checks .stream__item {
   grid-template-columns: 16px 1fr auto;
