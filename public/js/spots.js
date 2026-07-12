@@ -19,7 +19,7 @@
   }
 
   let allSpots = [];
-  let activeView = 'all'; // all | curated | standard | trash
+  let activeView = (new URLSearchParams(location.search).get('view')) || 'all'; // all | curated | standard | trash
   let isAdmin = false;
   let selected = new Set();
   let activeCity = lsGet(LS_CITY, 'all');
@@ -473,6 +473,10 @@
 
   // View switcher
   const viewSwitch = document.getElementById('view-switch');
+  if (viewSwitch) {
+    viewSwitch.querySelectorAll('.view-switch__item').forEach(b =>
+      b.classList.toggle('is-active', b.dataset.view === activeView));
+  }
   if (viewSwitch) {
     viewSwitch.querySelectorAll('.view-switch__item').forEach(btn => {
       btn.addEventListener('click', () => {

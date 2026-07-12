@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
-  <title>Admin — kit</title>
+  <title>Admin — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
@@ -19,7 +19,7 @@
   </header>
 
   <div class="admin-cards" id="admin-cards">
-    <a class="admin-card" href="/admin/spots.html">
+    <a class="admin-card" href="/spots/">
       <span class="admin-card__name">Spots</span>
       <span class="admin-card__stat" id="stat-spots">—</span>
     </a>
@@ -32,21 +32,6 @@
       <span class="admin-card__stat">JSON · CSV</span>
     </a>
   </div>
-
-  <section class="annex-overview">
-    <div class="annex-overview__head">
-      <h2 class="annex-overview__title">Annex</h2>
-      <div class="annex-toggle" id="annex-toggle">
-        <button class="annex-toggle__btn is-active" data-mode="curated">Curated</button>
-        <button class="annex-toggle__btn" data-mode="standard">Standard</button>
-      </div>
-    </div>
-    <div class="annex-overview__meta" id="annex-meta">—</div>
-    <div class="annex-cat-filters" id="annex-cat-filters"></div>
-    <div class="annex-overview__table" id="annex-table">
-      <div class="annex-overview__loading">Loading…</div>
-    </div>
-  </section>
 </main>
 
 <script src="/js/api.js"></script>
@@ -55,111 +40,11 @@
 <script>
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
   AdminShell.render('overview');
-
-  let allSpots = [];
-  let mode = 'curated';
-  let activeCat = null;
-
-  function getFilteredSpots() {
-    const byMode = mode === 'curated' ? allSpots.filter(s => s.curated) : allSpots.filter(s => !s.curated);
-    return activeCat ? byMode.filter(s => s.category === activeCat) : byMode;
-  }
-
-  function renderCatFilters(spots) {
-    const counts = {};
-    for (const s of spots) {
-      if (s.category) counts[s.category] = (counts[s.category] || 0) + 1;
-    }
-    const cats = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const el = document.getElementById('annex-cat-filters');
-    el.innerHTML = cats.map(([c, n]) =>
-      `<button class="annex-cat-filter${activeCat === c ? ' is-active' : ''}" data-cat="${c}">${c} <span>${n}</span></button>`
-    ).join('');
-  }
-
-  function groupAndRender(spots) {
-    const byCity = {};
-    for (const s of spots) {
-      const city = (s.attached_cities && s.attached_cities[0] && s.attached_cities[0].name) || '—';
-      if (!byCity[city]) byCity[city] = { total: 0, cats: {}, hasImage: 0 };
-      byCity[city].total++;
-      if (s.category) {
-        byCity[city].cats[s.category] = (byCity[city].cats[s.category] || 0) + 1;
-      }
-      if (s.image_url) byCity[city].hasImage++;
-    }
-
-    const cities = Object.entries(byCity).sort((a, b) => b[1].total - a[1].total);
-    const readyCount = cities.filter(([,d]) => d.total >= 10).length;
-    const label = mode === 'curated' ? 'curated' : 'standard';
-
-    document.getElementById('annex-meta').textContent =
-      `${spots.length} ${label} spots · ${cities.length} cities · ${readyCount} ready (≥10)`;
-
-    const maxTotal = cities[0]?.[1].total || 1;
-    const table = document.getElementById('annex-table');
-    table.innerHTML = `
-      <div class="annex-row annex-row--head">
-        <span>City</span>
-        <span>Total</span>
-        <span class="annex-bar-col">Distribution</span>
-        <span>Categories</span>
-        <span>Photos</span>
-      </div>
-      ${cities.map(([city, d]) => {
-        const barPct = Math.round((d.total / maxTotal) * 100);
-        const ready = d.total >= 10
-          ? '<span class="annex-badge annex-badge--ready">ready</span>'
-          : '<span class="annex-badge annex-badge--thin">thin</span>';
-        const catChips = Object.entries(d.cats)
-          .sort((a, b) => b[1] - a[1])
-          .map(([c, n]) => `<span class="annex-cat">${c} ${n}</span>`)
-          .join('');
-        const photoPct = d.total ? Math.round((d.hasImage / d.total) * 100) : 0;
-        return `
-          <div class="annex-row">
-            <span class="annex-city">${city} ${ready}</span>
-            <span class="annex-total">${d.total}</span>
-            <span class="annex-bar-col"><span class="annex-bar" style="width:${barPct}%"></span></span>
-            <span class="annex-cats">${catChips}</span>
-            <span class="annex-photos">${d.hasImage}/${d.total} <span class="annex-photos__pct">${photoPct}%</span></span>
-          </div>`;
-      }).join('')}
-    `;
-  }
-
-  // Curated/standard toggle
-  document.getElementById('annex-toggle').addEventListener('click', e => {
-    const btn = e.target.closest('.annex-toggle__btn');
-    if (!btn) return;
-    mode = btn.dataset.mode;
-    activeCat = null;
-    document.querySelectorAll('.annex-toggle__btn').forEach(b => b.classList.toggle('is-active', b === btn));
-    const base = getFilteredSpots();
-    renderCatFilters(mode === 'curated' ? allSpots.filter(s => s.curated) : allSpots.filter(s => !s.curated));
-    groupAndRender(base);
-  });
-
-  // Category filter
-  document.getElementById('annex-cat-filters').addEventListener('click', e => {
-    const btn = e.target.closest('.annex-cat-filter');
-    if (!btn) return;
-    activeCat = activeCat === btn.dataset.cat ? null : btn.dataset.cat;
-    document.querySelectorAll('.annex-cat-filter').forEach(b => b.classList.toggle('is-active', b.dataset.cat === activeCat));
-    groupAndRender(getFilteredSpots());
-  });
-
   (async () => {
     try {
       const s = await api.get('/api/spots?all=true&limit=500');
-      allSpots = s.spots || [];
-      document.getElementById('stat-spots').textContent = allSpots.length + ' spots';
-      const curated = allSpots.filter(s => s.curated);
-      renderCatFilters(curated);
-      groupAndRender(curated);
-    } catch(err) {
-      document.getElementById('annex-table').textContent = 'Failed to load: ' + err.message;
-    }
+      document.getElementById('stat-spots').textContent = (s.spots||[]).length + ' spots';
+    } catch {}
     try {
       const c = await api.get('/api/cities?include_all=true');
       document.getElementById('stat-cities').textContent = (c.cities||[]).length + ' cities';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Duplicates · Admin — kit</title>
+  <title>Duplicates · Admin — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/admin.css">
 </head>
@@ -37,7 +37,7 @@
         '<div class="ie-section"><div style="display:flex;flex-direction:column;gap:8px">' +
         g.map(s => '<div style="display:flex;justify-content:space-between;align-items:center">' +
           '<span>' + esc(s.place_name) + (s.city?' <span class="caption">'+esc(s.city)+'</span>':'') + '</span>' +
-          '<a class="btn btn--small btn--secondary" href="/admin/spots.html?edit=' + s.id + '">Edit #' + s.id + '</a>' +
+          '<a class="btn btn--small btn--secondary" href="/spots/?edit=' + s.id + '">Edit #' + s.id + '</a>' +
         '</div>').join('') +
         '</div></div>'
       ).join('');

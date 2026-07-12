@@ -4,12 +4,12 @@
 (function () {
   const NAV = [
     {
-      key: 'spots', label: 'Spots', href: '/admin/spots.html',
+      key: 'spots', label: 'Spots', href: '/spots/',
       sub: [
-        { key: 'spots-all',      label: 'All',      href: '/admin/spots.html' },
-        { key: 'spots-curated',  label: 'Curated',  href: '/admin/spots.html?view=curated' },
-        { key: 'spots-standard', label: 'Standard', href: '/admin/spots.html?view=standard' },
-        { key: 'spots-trash',    label: 'Trash',    href: '/admin/spots.html?view=trash' },
+        { key: 'spots-all',      label: 'All',      href: '/spots/' },
+        { key: 'spots-curated',  label: 'Curated',  href: '/spots/?view=curated' },
+        { key: 'spots-standard', label: 'Standard', href: '/spots/?view=standard' },
+        { key: 'spots-trash',    label: 'Trash',    href: '/spots/?view=trash' },
         { key: 'import',         label: 'Import', href: '/admin/import.html' },
         { key: 'dupes',          label: 'Duplicates', href: '/admin/dupes.html' },
       ],
