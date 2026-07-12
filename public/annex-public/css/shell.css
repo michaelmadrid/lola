@@ -145,7 +145,7 @@ img { display: block; max-width: 100%; height: auto; }
 
 /* ── Cities list (left col) ─────────────────────────────── */
 .cities-list {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: var(--text-large);
   line-height: 1.2;
   letter-spacing: -0.01em;
