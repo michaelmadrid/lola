@@ -103,10 +103,11 @@ img { display: block; max-width: 100%; height: auto; }
   margin-bottom: var(--space-6);
 }
 .annex-logo {
-  font-family:  'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
-  font-size: var(--text-medium);
-  font-weight: 400;
-  letter-spacing: 0.18em;
+  font-family:  'Times', 'Times Now', serif;
+  font-size: 32px;
+  font-weight: bold;
+  
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink);
 }
@@ -226,8 +227,8 @@ img { display: block; max-width: 100%; height: auto; }
 /* link: muted, underlined, quieter than a plain note — it's
    pointing away from the page, not a primary thought here. */
 .notice-item[data-type="link"] .notice-text {
-  font-size: var(--text-large);
-  color: var(--ink-2);
+  font-size: var(--text-display);
+  color: var(--ink-1);
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
