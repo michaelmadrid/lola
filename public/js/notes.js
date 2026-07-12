@@ -192,9 +192,14 @@
     if (window.Uploader) {
       window.Uploader.attach('#note-fs-uploader', {
         initialUrl: editingImageUrl,
-        onUploaded: (result) => {
+        onUploaded: async (result) => {
           editingImageUrl = result.url;
           imageRemoveBtn.hidden = false;
+          if (editingId) {
+            try {
+              await api.patch('/api/board-notes/' + editingId, { image_url: result.url });
+            } catch (err) { alert('Image save failed: ' + err.message); }
+          }
         },
       });
     }
@@ -210,11 +215,16 @@
   }
   closeBtn.addEventListener('click', closeEditor);
 
-  imageRemoveBtn.addEventListener('click', () => {
+  imageRemoveBtn.addEventListener('click', async () => {
     editingImageUrl = null;
     const preview = document.querySelector('#note-fs-uploader .uploader__preview');
     if (preview) preview.innerHTML = '';
     imageRemoveBtn.hidden = true;
+    if (editingId) {
+      try {
+        await api.patch('/api/board-notes/' + editingId, { image_url: null });
+      } catch (err) { alert('Remove failed: ' + err.message); }
+    }
   });
 
   function buildBody(status) {
