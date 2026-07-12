@@ -97,7 +97,7 @@ img { display: block; max-width: 100%; height: auto; }
 .annex-head {
   text-align: center;
   padding: var(--space-7) 0 var(--space-6);
-  border-bottom: 1px solid var(--rule);
+
   margin-bottom: var(--space-6);
 }
 .annex-logo {

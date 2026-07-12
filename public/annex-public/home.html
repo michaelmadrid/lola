@@ -2,9 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Annex</title>
   <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
+  <script>
+    // Robust cache-bust: force a network fetch bypassing HTTP cache entirely,
+    // then inject as an inline <style>. The <link> above is a fallback.
+    fetch('/css/shell.css?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.text())
+      .then(css => {
+        const tag = document.createElement('style');
+        tag.textContent = css;
+        document.head.appendChild(tag);
+      })
+      .catch(() => {});
+  </script>
 </head>
 <body>
 
@@ -85,6 +100,11 @@
 
 </div><!-- /page -->
 
-<script>document.write('<script src="/js/notes-feed.js?t=' + Date.now() + '"><\/script>');</script>
+<script>
+  fetch('/js/notes-feed.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(code => { (0, eval)(code); })
+    .catch(() => {});
+</script>
 </body>
 </html>
