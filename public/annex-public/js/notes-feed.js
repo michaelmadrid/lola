@@ -12,6 +12,11 @@
     return d.innerHTML;
   }
 
+  function imgSrc(url) {
+    if (!url) return '';
+    return url.startsWith('http') ? url : 'https://studio.annex.site' + url;
+  }
+
   function renderNote(n) {
     const parts = [];
 
@@ -24,10 +29,10 @@
     }
 
     if (n.type === 'photograph' && n.image_url) {
-      parts.push('<div class="notice-image"><img src="' + esc(n.image_url) + '" alt="' + esc(n.headline) + '"></div>');
+      parts.push('<div class="notice-image"><img src="' + esc(imgSrc(n.image_url)) + '" alt="' + esc(n.headline) + '"></div>');
     } else if (n.image_url) {
       // Note/link/announcement with an attached image still gets shown, half width.
-      parts.push('<div class="notice-image notice-image--half"><img src="' + esc(n.image_url) + '" alt=""></div>');
+      parts.push('<div class="notice-image notice-image--half"><img src="' + esc(imgSrc(n.image_url)) + '" alt=""></div>');
     }
 
     if (n.body) {
