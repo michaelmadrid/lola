@@ -106,7 +106,7 @@ img { display: block; max-width: 100%; height: auto; }
   font-size: var(--text-medium); //22px
   font-size:26px;
   font-weight: bold;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--ink);
 }
