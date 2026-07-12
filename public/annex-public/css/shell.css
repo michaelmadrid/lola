@@ -3,6 +3,39 @@
    Base tokens, grid, typography, primitives
    ========================================================= */
 
+   @font-face {
+     font-family: 'Authentic Sans';
+     src: url('/fonts/authentic-sans-pro-condensed-90.woff2') format('woff2');
+     font-weight: 400;
+     font-style: normal;
+     font-display: swap;
+   }
+   
+  @font-face {
+     font-family: 'Authentic Sans';
+     src: url('/fonts/authentic-sans-pro-condensed-130.woff2') format('woff2');
+     font-weight: 500;
+     font-style: normal;
+     font-display: swap;
+   }
+   
+   @font-face {
+     font-family: 'ABC Diatype';
+     src: url('/fonts/ABCDiatypeTrial-Regular.woff2') format('woff2');
+     font-weight: 400;
+     font-style: normal;
+     font-display: swap;
+   }
+   
+   @font-face {
+     font-family: 'ABC Diatype';
+     src: url('/fonts/ABCDiatypeTrial-Medium.woff2') format('woff2');
+     font-weight: 500;
+     font-style: normal;
+     font-display: swap;
+   }
+
+
 /* ── Tokens ────────────────────────────────────────────── */
 :root {
   /* Colors */
@@ -68,7 +101,7 @@ img { display: block; max-width: 100%; height: auto; }
   margin-bottom: var(--space-6);
 }
 .annex-logo {
-  font-family: var(--sans);
+  font-family:  'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
   font-size: var(--text-medium);
   font-weight: 400;
   letter-spacing: 0.18em;
