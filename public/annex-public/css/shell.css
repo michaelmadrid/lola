@@ -102,6 +102,7 @@ img { display: block; max-width: 100%; height: auto; }
 }
 .annex-logo {
   font-family:  'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-family:  'Times', 'Times Now', serif,serif;
   font-size: var(--text-medium);
   font-weight: 400;
   letter-spacing: 0.18em;
