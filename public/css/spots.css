@@ -448,7 +448,8 @@
   z-index: 2;
 }
 body.has-admin-checks .stream__item {
-  grid-template-columns: 16px 1fr auto;
+  grid-template-columns: 24px 1fr auto;
+  gap: 20px;
 }
 
 .bulk-bar {
