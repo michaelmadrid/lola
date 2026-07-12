@@ -48,6 +48,7 @@ router.get('/', authenticate, async (req, res) => {
 // GET /api/board-notes/public — annex.site front page feed. No auth.
 // Published, not trashed, not expired. Pinned float to top.
 router.get('/public', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
   try {
     const result = await pool.query(`
       SELECT id, type, headline, body, image_url, reference_title, reference_url,

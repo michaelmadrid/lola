@@ -45,11 +45,60 @@
     </aside>
 
     <!-- ── Center col ────────────────────────────────── -->
-    <!-- Live-fed from /api/board-notes/public (Notes tool in studio).
-         notes-feed.js fetches, sorts pinned-first, renders each note
-         by type. Nothing here is hardcoded once JS runs. -->
-    <main class="col-center" id="notes-feed">
-      <p class="notice-caption">Loading…</p>
+    <main class="col-center">
+
+      <!-- Notice 1 — big phrase -->
+      <div class="notice-text">
+        How is this working out for the fartherest reach to the moon?
+      </div>
+
+      <!-- Image block — full width -->
+      <div class="notice-image">
+        <div class="dummy-image dummy-image--tall"></div>
+      </div>
+
+      <!-- Notice 2 -->
+      <div class="notice-text">
+        Are we in this alone or are we in this together?
+      </div>
+
+      <hr class="divider">
+
+      <!-- Image block — half width -->
+      <div class="notice-image notice-image--half">
+        <div class="dummy-image dummy-image--medium"></div>
+      </div>
+
+      <!-- Notice 3 -->
+      <div class="notice-text">
+        Describe how you dry yourself off after the shower.
+      </div>
+
+      <hr class="divider">
+
+      <!-- Caption + image float -->
+      <div class="notice-caption">Monthly Shelf Cleaning</div>
+      <div class="notice-image">
+        <div class="dummy-image dummy-image--tall"></div>
+      </div>
+
+      <!-- Notice 4 -->
+      <div class="notice-text">
+        The expression of realistic muscle beauty — ongoing.
+      </div>
+
+      <hr class="divider">
+
+      <!-- Another image -->
+      <div class="notice-image notice-image--half">
+        <div class="dummy-image dummy-image--short"></div>
+      </div>
+
+      <!-- Notice 5 -->
+      <div class="notice-text">
+        What did they teach you, lately?
+      </div>
+
     </main>
 
     <!-- ── Right col ─────────────────────────────────── -->
@@ -85,6 +134,5 @@
 
 </div><!-- /page -->
 
-<script src="/js/notes-feed.js"></script>
 </body>
 </html>
