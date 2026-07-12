@@ -3,6 +3,15 @@
    Base tokens, grid, typography, primitives
    ========================================================= */
 
+
+ @font-face {
+   font-family: 'Times Now';
+   src: url('/fontsTimesNow-SemiBold.woff2') format('woff2');
+   font-weight: 400;
+   font-style: normal;
+   font-display: swap;
+ }
+ 
    @font-face {
      font-family: 'Authentic Sans';
      src: url('/fonts/authentic-sans-pro-condensed-90.woff2') format('woff2');
@@ -49,7 +58,7 @@
 
   /* Type */
   --sans:     'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
-  --serif:    'Times New Roman', Times, serif;
+  --serif:    'Times Now','Times New Roman', Times, serif;
 
   /* Type scale — adjust freely while exploring */
   --text-tiny:    11px;
@@ -102,7 +111,7 @@ img { display: block; max-width: 100%; height: auto; }
   margin-bottom: var(--space-6);
 }
 .annex-logo {
-  font-family:  'Times', 'Times Now', serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 32px;
   font-weight: bold;
   
