@@ -1,0 +1,255 @@
+/* =========================================================
+   annex — shell.css
+   Base tokens, grid, typography, primitives
+   ========================================================= */
+
+/* ── Tokens ────────────────────────────────────────────── */
+:root {
+  /* Colors */
+  --bg:       #ffffff;
+  --ink:      #111111;
+  --ink-2:    #555551;
+  --ink-3:    #999994;
+  --rule:     #e0e0dc;
+
+  /* Type */
+  --sans:     'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
+  --serif:    'Times New Roman', Times, serif;
+
+  /* Type scale — adjust freely while exploring */
+  --text-tiny:    11px;
+  --text-small:   13px;
+  --text-body:    16px;
+  --text-medium:  22px;
+  --text-large:   32px;
+  --text-display: 48px;
+  --text-hero:    72px;
+
+  /* Spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  80px;
+
+  /* Grid */
+  --page-width:  92%;
+  --col-gap:     32px;
+}
+
+/* ── Reset ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; height: auto; }
+
+/* ── Page wrapper ───────────────────────────────────────── */
+.page {
+  width: var(--page-width);
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* ── Header / Logo ──────────────────────────────────────── */
+.annex-head {
+  text-align: center;
+  padding: var(--space-7) 0 var(--space-6);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--space-6);
+}
+.annex-logo {
+  font-family: var(--sans);
+  font-size: var(--text-medium);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* ── 3-col grid (3 / 6 / 3) ────────────────────────────── */
+.home-grid {
+  display: grid;
+  grid-template-columns: 3fr 6fr 3fr;
+  gap: var(--col-gap);
+  align-items: start;
+}
+
+/* Sticky outer columns */
+.col-left,
+.col-right {
+  position: sticky;
+  top: var(--space-6);
+  height: fit-content;
+}
+
+/* Center scrolls naturally */
+.col-center {
+  min-height: 100vh;
+}
+
+/* ── Cities list (left col) ─────────────────────────────── */
+.cities-list {
+  font-family: var(--serif);
+  font-size: var(--text-large);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+/* EXPLORE: try --text-medium or --text-display for different feels */
+
+/* ── Categories list (right col) ───────────────────────── */
+.categories-list {
+  font-family: var(--serif);
+  font-size: var(--text-large);
+  line-height: 1.5;
+  text-align: center;
+  color: var(--ink);
+  list-style: none;
+}
+.categories-list li a:hover { color: var(--ink-2); }
+/* EXPLORE: try left-aligned, or smaller --text-medium */
+
+/* ── Pinned links (right col, above categories) ─────────── */
+.pinned-links {
+  list-style: none;
+  margin-bottom: var(--space-6);
+}
+.pinned-links li {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  color: var(--ink-2);
+  padding: 3px 0;
+  letter-spacing: 0.01em;
+}
+.pinned-links li::before {
+  content: '• ';
+  color: var(--ink-3);
+}
+.pinned-links li a:hover { color: var(--ink); }
+
+/* ── Notice / phrase (center col) ──────────────────────── */
+.notice-text {
+  font-family: var(--serif);
+  font-size: var(--text-display);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: var(--space-6);
+}
+/* EXPLORE: try --text-large for smaller, --text-hero for bigger */
+/* EXPLORE: try font-style: italic on some notices */
+
+.notice-caption {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: var(--space-3);
+}
+
+/* ── Image block (center col) ───────────────────────────── */
+.notice-image {
+  margin-bottom: var(--space-6);
+}
+.notice-image img {
+  width: 100%;
+  /* EXPLORE: try max-width: 70% or fixed px widths for varied sizes */
+}
+.notice-image--half { max-width: 55%; }
+.notice-image--float-left {
+  float: left;
+  width: 42%;
+  margin-right: var(--space-5);
+  margin-bottom: var(--space-4);
+}
+
+/* ── Left col extras ────────────────────────────────────── */
+.col-left-image {
+  margin-bottom: var(--space-5);
+}
+.col-left-image img {
+  width: 100%;
+}
+.col-label {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: var(--space-2);
+}
+
+/* ── Divider ────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px solid var(--rule);
+  margin: var(--space-6) 0;
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.annex-foot {
+  border-top: 1px solid var(--rule);
+  padding: var(--space-5) 0;
+  margin-top: var(--space-8);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.annex-foot__brand {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .home-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "center center"
+      "left   right";
+  }
+  .col-left  { grid-area: left;   position: static; }
+  .col-right { grid-area: right;  position: static; }
+  .col-center { grid-area: center; }
+  .notice-text { font-size: var(--text-large); }
+}
+
+@media (max-width: 560px) {
+  .home-grid { grid-template-columns: 1fr; grid-template-areas: "center" "left" "right"; }
+  .cities-list { font-size: var(--text-medium); }
+  .categories-list { font-size: var(--text-medium); text-align: left; }
+}
+
+/* =========================================================
+   DUMMY STYLES — for layout exploration only
+   Remove when real content replaces placeholders
+   ========================================================= */
+.dummy-image {
+  background: var(--rule);
+  width: 100%;
+}
+.dummy-image--tall   { height: 420px; }
+.dummy-image--medium { height: 280px; }
+.dummy-image--short  { height: 160px; }
+.dummy-image--left-col { height: 220px; }
+.dummy-text-block {
+  background: var(--rule);
+  height: 1em;
+  border-radius: 2px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
