@@ -9,6 +9,7 @@
   const viewSwitch = document.getElementById('view-switch');
   let activeView = 'all'; // all | published | draft | trash
   let allNotes = [];
+  let selected = new Set();
 
   const esc = s => util.escapeHtml(String(s || ''));
   const TYPE_LABELS = { note: 'Note', photograph: 'Photograph', link: 'Link', announcement: 'Announcement' };
@@ -39,6 +40,7 @@
 
     listEl.innerHTML = rows.map(n => `
       <div class="stream__item is-structured" data-id="${n.id}">
+        <input type="checkbox" class="stream__check" data-check="${n.id}" aria-label="Select ${esc(n.headline)}">
         <div class="stream__body">
           <span class="stream__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
           ${n.body ? `<span class="stream__tip">${esc(n.body.slice(0, 120))}</span>` : ''}
@@ -49,12 +51,60 @@
     `).join('');
 
     listEl.querySelectorAll('.stream__item').forEach(row => {
-      row.addEventListener('click', () => {
+      row.addEventListener('click', (e) => {
+        if (e.target.classList.contains('stream__check')) return;
         const note = allNotes.find(n => n.id === parseInt(row.dataset.id, 10));
         if (note) openEditor(note);
       });
     });
+    updateBulkBar();
   }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulk-bar');
+    if (!bar) return;
+    if (selected.size === 0) { bar.hidden = true; return; }
+    bar.hidden = false;
+    document.getElementById('bulk-count').textContent = selected.size + ' selected';
+    const inTrash = activeView === 'trash';
+    document.getElementById('bulk-publish').hidden = inTrash;
+    document.getElementById('bulk-draft').hidden = inTrash;
+    document.getElementById('bulk-trash').hidden = inTrash;
+    document.getElementById('bulk-restore').hidden = !inTrash;
+    document.getElementById('bulk-delete-forever').hidden = !inTrash;
+  }
+
+  async function bulkPatch(body) {
+    await Promise.all([...selected].map(id => api.patch('/api/board-notes/' + id, body)));
+    selected.clear();
+    load();
+  }
+
+  listEl.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('stream__check')) return;
+    const id = parseInt(e.target.dataset.check, 10);
+    e.target.checked ? selected.add(id) : selected.delete(id);
+    updateBulkBar();
+  });
+
+  document.getElementById('bulk-publish').addEventListener('click', () => bulkPatch({ status: 'published' }));
+  document.getElementById('bulk-draft').addEventListener('click', () => bulkPatch({ status: 'draft' }));
+  document.getElementById('bulk-trash').addEventListener('click', () => {
+    if (!confirm('Move ' + selected.size + ' notes to trash?')) return;
+    bulkPatch({ deleted_at: new Date().toISOString() });
+  });
+  document.getElementById('bulk-restore').addEventListener('click', () => bulkPatch({ deleted_at: null }));
+  document.getElementById('bulk-delete-forever').addEventListener('click', async () => {
+    if (!confirm('Permanently delete ' + selected.size + ' notes? This cannot be undone.')) return;
+    await Promise.all([...selected].map(id => api.delete('/api/board-notes/' + id)));
+    selected.clear();
+    load();
+  });
+  document.getElementById('bulk-clear').addEventListener('click', () => {
+    selected.clear();
+    document.querySelectorAll('.stream__check').forEach(cb => cb.checked = false);
+    updateBulkBar();
+  });
 
   viewSwitch.querySelectorAll('.view-switch__item').forEach(btn => {
     btn.addEventListener('click', () => {

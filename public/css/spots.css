@@ -497,3 +497,18 @@ body.has-admin-checks .stream__item {
 
 .stream__item[data-id] { cursor: pointer; }
 .stream__item[data-id]:hover .stream__name { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ===== Notes list: larger headline ===== */
+.page-notes .stream__name { font-size: var(--text-medium); }
+
+/* ===== Notes: checkbox column ===== */
+.page-notes .stream__item {
+  grid-template-columns: 24px 1fr auto;
+  gap: 20px;
+}
+.page-notes .stream__check {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  align-self: center;
+}
