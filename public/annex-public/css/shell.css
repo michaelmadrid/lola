@@ -99,7 +99,6 @@ img { display: block; max-width: 100%; height: auto; }
 .annex-head {
   text-align: center;
   padding: var(--space-7) 0 var(--space-6);
-  border-bottom: 1px solid var(--rule);
   margin-bottom: var(--space-6);
 }
 .annex-logo {
@@ -241,7 +240,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* announcement: small blue pill/badge instead of the big serif line */
 .notice-item[data-type="announcement"] .notice-text {
   display: inline-block;
-  font-family: var(--sans);
+  font-family: var(--serif);
   font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: -0.005em;
@@ -279,7 +278,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Divider ────────────────────────────────────────────── */
 .divider {
   border: none;
-  border-top: 1px solid var(--rule);
+  /* border-top: 1px solid var(--rule); */
   margin: var(--space-6) 0;
 }
 
