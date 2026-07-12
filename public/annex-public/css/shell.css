@@ -99,14 +99,14 @@ img { display: block; max-width: 100%; height: auto; }
 .annex-head {
   text-align: center;
   padding: var(--space-7) 0 var(--space-6);
+  border-bottom: 1px solid var(--rule);
   margin-bottom: var(--space-6);
 }
 .annex-logo {
-  font-family:  'Times', 'Times Now', serif;
-  font-size: 32px;
-  font-weight: bold;
-  
-  letter-spacing: 0;
+  font-family:  'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--text-medium);
+  font-weight: 400;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink);
 }
@@ -175,8 +175,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Notice / phrase (center col) ──────────────────────── */
 .notice-text {
   font-family: var(--serif);
-  
-  font-size: var(--text-large);
+  font-size: var(--text-display);
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -217,7 +216,7 @@ img { display: block; max-width: 100%; height: auto; }
    The caption reuses reference_title from the Notes editor. */
 .notice-item[data-type="photograph"] .notice-text {
   font-family: var(--sans);
-  font-size: var(--text-large);
+  font-size: var(--text-small);
   font-weight: 500;
   color: var(--ink-2);
   letter-spacing: 0.01em;
@@ -228,19 +227,19 @@ img { display: block; max-width: 100%; height: auto; }
    pointing away from the page, not a primary thought here. */
 .notice-item[data-type="link"] .notice-text {
   font-size: var(--text-large);
-  color: var(--ink-1);
+  color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
   cursor: pointer;
 }
-.notice-item[data-type="link"] .notice-text:hover { color: var(--ink); }
+.notice-item[data-type="link"] .notice-text:hover { color: var(--ink-2); }
 .notice-item[data-type="link"] .notice-text::after { content: ' ↗'; }
 
 /* announcement: small blue pill/badge instead of the big serif line */
 .notice-item[data-type="announcement"] .notice-text {
   display: inline-block;
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: var(--text-body);
   font-weight: 500;
   letter-spacing: -0.005em;
@@ -278,7 +277,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Divider ────────────────────────────────────────────── */
 .divider {
   border: none;
-  /* border-top: 1px solid var(--rule); */
+  border-top: 1px solid var(--rule);
   margin: var(--space-6) 0;
 }
 
