@@ -440,16 +440,14 @@
 
 /* ===== Admin bulk tools (role-gated, red accents = god-mode) ===== */
 .stream__check {
-  position: absolute;
-  left: -28px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 16px;
   height: 16px;
   cursor: pointer;
+  align-self: center;
 }
-.stream__item { position: relative; }
-body.has-admin-checks .stream__item { padding-left: 28px; }
+body.has-admin-checks .stream__item {
+  grid-template-columns: 16px 1fr auto;
+}
 
 .bulk-bar {
   display: flex;

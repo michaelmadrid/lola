@@ -383,6 +383,7 @@
 
   // Click delegation on the spots list
   listEl.addEventListener('click', (e) => {
+    if (e.target.classList.contains('stream__check')) return;
     const row = e.target.closest('.stream__item');
     if (!row) return;
     const id = row.dataset.id;
