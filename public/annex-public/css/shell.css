@@ -44,6 +44,8 @@
   --ink-2:    #555551;
   --ink-3:    #999994;
   --rule:     #e0e0dc;
+  --accent:   #2a4ed4;  /* French blue — reserved for Announcement + pin */
+  --accent-bg: #eef1ff;
 
   /* Type */
   --sans:     'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
@@ -97,16 +99,14 @@ img { display: block; max-width: 100%; height: auto; }
 .annex-head {
   text-align: center;
   padding: var(--space-7) 0 var(--space-6);
-
+  border-bottom: 1px solid var(--rule);
   margin-bottom: var(--space-6);
 }
 .annex-logo {
   font-family:  'Authentic Sans', 'Helvetica Neue', Arial, sans-serif;
-  font-family:  'Times', 'Times Now', serif,serif;
- 
-  font-size:28px;
-  font-weight: bold;
-  letter-spacing: 0;
+  font-size: var(--text-medium);
+  font-weight: 400;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink);
 }
@@ -207,6 +207,55 @@ img { display: block; max-width: 100%; height: auto; }
   width: 42%;
   margin-right: var(--space-5);
   margin-bottom: var(--space-4);
+}
+
+/* ── Notice types (data-type on .notice-item) ───────────── */
+/* note: no override — this is the default .notice-text voice */
+
+/* photograph: image leads, caption goes small + sans underneath.
+   The caption reuses reference_title from the Notes editor. */
+.notice-item[data-type="photograph"] .notice-text {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--ink-2);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+/* link: muted, underlined, quieter than a plain note — it's
+   pointing away from the page, not a primary thought here. */
+.notice-item[data-type="link"] .notice-text {
+  font-size: var(--text-large);
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+.notice-item[data-type="link"] .notice-text:hover { color: var(--ink); }
+.notice-item[data-type="link"] .notice-text::after { content: ' ↗'; }
+
+/* announcement: small blue pill/badge instead of the big serif line */
+.notice-item[data-type="announcement"] .notice-text {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: var(--text-body);
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  background: var(--accent);
+  color: var(--accent-bg);
+  padding: 10px 20px;
+  border-radius: 999px;
+  line-height: 1.3;
+}
+
+/* pinned: modifier on top of any type — small pin mark, no framing */
+.notice-item.is-pinned .notice-text::before {
+  content: '📌';
+  font-size: 0.5em;
+  vertical-align: super;
+  margin-right: 6px;
 }
 
 /* ── Left col extras ────────────────────────────────────── */
