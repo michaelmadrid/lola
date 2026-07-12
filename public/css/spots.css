@@ -488,3 +488,12 @@ body.has-admin-checks .stream__item {
   padding: 4px 8px;
 }
 .bulk-bar__cancel:hover { color: var(--ink); }
+
+/* ===== Notes: reference toggle + expires + row hover ===== */
+#note-ref-fields[hidden] { display: none !important; }
+
+.note-expires-row { display: flex; gap: 8px; align-items: center; }
+.note-expires-row .spot-fs__input { flex: 1; }
+
+.stream__item[data-id] { cursor: pointer; }
+.stream__item[data-id]:hover .stream__name { text-decoration: underline; text-underline-offset: 3px; }

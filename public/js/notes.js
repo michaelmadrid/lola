@@ -118,6 +118,10 @@
     refFields.hidden = !refFields.hidden;
   });
 
+  document.getElementById('note-expires-clear').addEventListener('click', () => {
+    expiresEl.value = '';
+  });
+
   function openEditor(note) {
     editingId = note ? note.id : null;
     setType(note ? note.type : 'note');
