@@ -335,7 +335,6 @@ img { display: block; max-width: 100%; height: auto; }
 
 @media (max-width: 860px) {
   .home-grid {
-    border:solid 1px blue;
     grid-template-columns: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
      grid-template-areas: 
@@ -343,15 +342,14 @@ img { display: block; max-width: 100%; height: auto; }
      "right center";
      gap: 20px;
   }
-  .col-left  { grid-area: left;   position: static; }
-  .col-right { grid-area: right;  position: static; }
+  .col-left  { grid-area: left;   position: static; border:solid 1px blue; }
+  .col-right { grid-area: right;  position: static;  border:solid 1px red;}
   .col-center { grid-area: center; }
   .notice-text { font-size: var(--text-large); }
   
 }
 @media (max-width: 560px) {
   .home-grid {
-   border:solid 1px red;
    gap: 10px;
   }
 }
