@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annex</title>
+  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <div data-include="header"></div>
+
+  <main class="note-permalink" id="note-permalink">
+    <!-- filled by note.js -->
+  </main>
+
+  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
+  <div data-include="footer"></div>
+
+</div><!-- /page -->
+
+<script>
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+<script>
+  fetch('/js/note.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-1HoWOhl3IAm6dlcK-3sNc.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
+
+</body>
+</html>

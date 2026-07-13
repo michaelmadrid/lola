@@ -66,6 +66,27 @@ router.get('/public', async (req, res) => {
   }
 });
 
+// GET /api/board-notes/public/:id — single published note for permalink page
+router.get('/public/:id', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  try {
+    const result = await pool.query(`
+      SELECT id, type, headline, body, image_url, reference_title, reference_url,
+             pin, publish_date
+      FROM board_notes
+      WHERE id = $1
+        AND status = 'published'
+        AND deleted_at IS NULL
+        AND publish_date <= NOW()
+        AND (expires_at IS NULL OR expires_at > NOW())
+      LIMIT 1`, [req.params.id]);
+    if (!result.rows[0]) return res.status(404).json({ error: 'Note not found' });
+    res.json({ note: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/board-notes/types — fixed type list for the editor
 router.get('/types', (req, res) => {
   res.json({ types: TYPES });
