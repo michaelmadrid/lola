@@ -123,8 +123,6 @@
   const typeRow = document.getElementById('note-type-row');
   const headlineEl = document.getElementById('note-headline');
   const bodyEl = document.getElementById('note-body');
-  const refToggle = document.getElementById('note-ref-toggle');
-  const refFields = document.getElementById('note-ref-fields');
   const refTitleEl = document.getElementById('note-ref-title');
   const refUrlEl = document.getElementById('note-ref-url');
   const pinOffBtn = document.getElementById('note-pin-off');
@@ -164,10 +162,6 @@
   pinOffBtn.addEventListener('click', () => setPin(false));
   pinOnBtn.addEventListener('click', () => setPin(true));
 
-  refToggle.addEventListener('click', () => {
-    refFields.hidden = !refFields.hidden;
-  });
-
   document.getElementById('note-expires-clear').addEventListener('click', () => {
     expiresEl.value = '';
   });
@@ -179,7 +173,6 @@
     bodyEl.value = note ? (note.body || '') : '';
     refTitleEl.value = note ? (note.reference_title || '') : '';
     refUrlEl.value = note ? (note.reference_url || '') : '';
-    refFields.hidden = !(note && (note.reference_title || note.reference_url));
     setPin(note ? !!note.pin : false);
     publishDateEl.value = note ? toLocalInput(note.publish_date) : toLocalInput(new Date().toISOString());
     expiresEl.value = note ? toLocalInput(note.expires_at) : '';

@@ -108,11 +108,13 @@
       </div>
 
       <div class="spot-fs__field">
-        <button type="button" class="btn btn--small btn--secondary" id="note-ref-toggle">+ Add reference</button>
-        <div id="note-ref-fields" hidden style="margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
-          <input type="text" class="spot-fs__input" id="note-ref-title" placeholder="Reference title">
-          <input type="url" class="spot-fs__input" id="note-ref-url" placeholder="https://…">
-        </div>
+        <label class="spot-fs__label" for="note-ref-url">URL (optional)</label>
+        <input type="url" class="spot-fs__input" id="note-ref-url" placeholder="https://…">
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="note-ref-title">Optional caption / reference</label>
+        <input type="text" class="spot-fs__input" id="note-ref-title" placeholder="Caption or source name">
       </div>
 
       <div class="spot-fs__divider"></div>
