@@ -1,5 +1,6 @@
 (function () {
   if (!api.isSignedIn()) { location.href = '/login.html'; return; }
+  if (window.AdminShell) AdminShell.render('categories');
 
   const listEl = document.getElementById('cats-list');
   const editor = document.getElementById('cat-editor');
