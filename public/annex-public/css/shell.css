@@ -234,7 +234,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* photograph: image leads, caption goes small + sans underneath.
    The caption reuses reference_title from the Notes editor. */
 .notice-item[data-type="photograph"] .notice-text {
-  font-family: var(--sans);
+  font-family: var(--serif);
   font-size: var(--text-large);
   font-weight: 500;
   color: var(--ink-2);
