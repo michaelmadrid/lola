@@ -327,7 +327,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Responsive ─────────────────────────────────────────── */
 
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .home-grid { grid-template-columns: 3fr 6fr 3fr; 
     border:solid 1px red;
   }
