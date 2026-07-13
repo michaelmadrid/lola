@@ -57,6 +57,8 @@
     return t;
   }
 
+  const hasFilter = !!(fCat || fCity || fTags.length || fQ);
+
   fetch(API)
     .then(r => r.json())
     .then(data => {
@@ -75,16 +77,45 @@
         return;
       }
 
-      html += '<ul class="spots-index__list">';
-      rows.forEach(s => {
-        const meta = [CAT_LABELS[s.category] || s.category, s.city].filter(Boolean).join(' · ');
-        html += '<li class="spots-index__item">' +
-          '<a href="/spot/' + s.id + '">' +
-            '<span class="spots-index__name">' + esc(s.place_name) + '</span>' +
-            (meta ? '<span class="spots-index__meta">' + esc(meta) + '</span>' : '') +
-          '</a></li>';
-      });
-      html += '</ul>';
+      if (hasFilter) {
+        el.classList.remove('spots-index--wide');
+        // Filtered view — simple vertical list.
+        html += '<ul class="spots-index__list">';
+        rows.forEach(s => {
+          const meta = [CAT_LABELS[s.category] || s.category, s.city].filter(Boolean).join(' · ');
+          html += '<li class="spots-index__item">' +
+            '<a href="/spot/' + s.id + '">' +
+              '<span class="spots-index__name">' + esc(s.place_name) + '</span>' +
+              (meta ? '<span class="spots-index__meta">' + esc(meta) + '</span>' : '') +
+            '</a></li>';
+        });
+        html += '</ul>';
+      } else {
+        el.classList.add('spots-index--wide');
+        // Unfiltered view — flowing alphabetical index with letter headers.
+        // Sort by place name, then stream letter/items continuously so the
+        // CSS column flow spills A→B→C down and across columns.
+        const sorted = rows.slice().sort((a, b) =>
+          (a.place_name || '').localeCompare(b.place_name || '', undefined, { sensitivity: 'base' }));
+
+        html += '<div class="index-flow">';
+        let currentLetter = '';
+        sorted.forEach(s => {
+          const first = (s.place_name || '#').trim().charAt(0).toUpperCase();
+          const letter = /[A-Z]/.test(first) ? first : '#';
+          if (letter !== currentLetter) {
+            currentLetter = letter;
+            html += '<div class="index-flow__letter">' + esc(letter) + '</div>';
+          }
+          const meta = [CAT_LABELS[s.category] || s.category, s.city].filter(Boolean).join(' · ');
+          html += '<div class="index-flow__item"><a href="/spot/' + s.id + '">' +
+            '<span class="index-flow__name">' + esc(s.place_name) + '</span>' +
+            (meta ? '<span class="index-flow__meta">' + esc(meta) + '</span>' : '') +
+            '</a></div>';
+        });
+        html += '</div>';
+      }
+
       el.innerHTML = html;
     })
     .catch(() => {

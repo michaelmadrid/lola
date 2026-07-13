@@ -101,7 +101,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Page wrapper ───────────────────────────────────────── */
 .page {
   width: var(--page-width);
-  max-width: 1360px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -119,9 +119,9 @@ img { display: block; max-width: 100%; height: auto; }
 .annex-logo {
   font-family: 'Times Now', Times, serif;
   font-size: 32px;
-  letter-spacing: -1px;
   font-weight: bold;
-
+  
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--ink);
 }
@@ -444,6 +444,7 @@ img { display: block; max-width: 100%; height: auto; }
   margin: 0 auto;
   padding: var(--space-6) 0 var(--space-8);
 }
+.spots-index--wide { max-width: 100%; }
 .spots-index__title {
   font-family: var(--serif);
   font-size: var(--text-large);
@@ -484,6 +485,44 @@ img { display: block; max-width: 100%; height: auto; }
   color: var(--ink-3);
   white-space: nowrap;
 }
+
+/* Flowing alphabetical index (unfiltered /spots view) */
+.index-flow {
+  column-count: 8;
+  column-gap: 20px;
+  column-rule: 1px solid var(--rule);
+}
+.index-flow__letter {
+  font-family: var(--serif);
+  font-size: var(--text-medium);
+  font-weight: 500;
+  color: var(--ink);
+  margin: 16px 0 4px;
+  break-inside: avoid;
+}
+.index-flow__letter:first-child { margin-top: 0; }
+.index-flow__item {
+  margin-bottom: 8px;
+  break-inside: avoid;
+  line-height: 1.2;
+}
+.index-flow__name {
+  display: block;
+  font-family: var(--serif);
+  font-size: var(--text-body);
+  color: var(--ink);
+}
+.index-flow__item a:hover .index-flow__name { text-decoration: underline; text-underline-offset: 2px; }
+.index-flow__meta {
+  display: block;
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  color: var(--ink-3);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 1100px) { .index-flow { column-count: 4; } }
+@media (max-width: 640px)  { .index-flow { column-count: 2; column-gap: 14px; } }
 
 /* ── Spot detail (permalink) ────────────────────────────── */
 .spot-detail {
