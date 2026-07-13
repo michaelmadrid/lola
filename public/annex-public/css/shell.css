@@ -337,10 +337,11 @@ img { display: block; max-width: 100%; height: auto; }
   .home-grid {
     border:solid 1px blue;
     grid-template-columns: 1fr 1fr;
-    grid-template-areas: 
-      "left center"
-      "right right";
-      gap: 16px;
+    grid-template-columns: 1fr 1fr;
+     grid-template-areas: 
+     "left center"
+     "right center";
+     gap: 20px;
   }
   .col-left  { grid-area: left;   position: static; }
   .col-right { grid-area: right;  position: static; }
