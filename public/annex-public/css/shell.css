@@ -101,7 +101,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Page wrapper ───────────────────────────────────────── */
 .page {
   width: var(--page-width);
-  max-width: 1600px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
