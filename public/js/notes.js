@@ -61,11 +61,14 @@
     listEl.innerHTML = rows.map(n => `
       <div class="stream__item is-structured" data-id="${n.id}">
         <input type="checkbox" class="stream__check" data-check="${n.id}" aria-label="Select ${esc(n.headline)}">
-        ${n.image_url ? `<img class="stream__thumb" src="${esc(n.image_url)}" alt="">` : ''}
         <div class="stream__body">
-          <span class="stream__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
-          <span class="stream__meta">${TYPE_LABELS[n.type] || n.type} · ${util.timeAgo(n.created_at)} · ${n.status}</span>
+          <div class="stream__body-row">
+            ${n.image_url ? `<img class="stream__thumb" src="${esc(n.image_url)}" alt="">` : ''}
+            <span class="stream__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
+          </div>
+          <span class="stream__meta">${TYPE_LABELS[n.type] || n.type} · ${n.status}</span>
         </div>
+        <span class="stream__when">${util.timeAgo(n.created_at)}</span>
       </div>
     `).join('');
 
