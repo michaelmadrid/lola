@@ -110,6 +110,11 @@ img { display: block; max-width: 100%; height: auto; }
   padding: var(--space-7) 0 var(--space-6);
   margin-bottom: var(--space-6);
 }
+
+/* Reserve header space before the partial injects, so no layout shift.
+   Matches the rendered .annex-head height (pad + logo + margin ≈ 152px). */
+[data-include="header"] { display: block; min-height: 152px; }
+[data-include="footer"] { display: block; min-height: 80px; }
 .annex-logo {
   font-family: 'Times New Roman', Times, serif;
   font-size: 32px;
