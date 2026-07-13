@@ -119,6 +119,7 @@ img { display: block; max-width: 100%; height: auto; }
 .annex-logo {
   font-family: 'Times Now', Times, serif;
   font-size: 32px;
+  letter-spacing: -1px;
   font-weight: bold;
   
   letter-spacing: 0;
