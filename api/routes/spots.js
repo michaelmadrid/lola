@@ -635,16 +635,6 @@ router.get('/categories', (req, res) => {
 router.get('/index', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   try {
-    const { category, city } = req.query;
-    const conditions = [
-      's.curated = true',
-      's.deleted_at IS NULL',
-      's.place_name IS NOT NULL'
-    ];
-    const params = [];
-    if (category) { params.push(category); conditions.push(`s.category = $${params.length}`); }
-    if (city)     { params.push(city);     conditions.push(`c.name ILIKE $${params.length}`); }
-
     const result = await pool.query(`
       SELECT
         s.id,
@@ -654,6 +644,8 @@ router.get('/index', async (req, res) => {
         s.country,
         s.category,
         s.website,
+        s.instagram,
+        s.tags,
         s.image_url,
         s.been,
         p.google_place_id,
@@ -665,9 +657,11 @@ router.get('/index', async (req, res) => {
       FROM spots s
       LEFT JOIN cities c ON s.city_id = c.id
       LEFT JOIN places p ON s.place_id = p.id
-      WHERE ${conditions.join(' AND ')}
+      WHERE s.curated = true
+        AND s.deleted_at IS NULL
+        AND s.place_name IS NOT NULL
       ORDER BY s.country, c.name, s.place_name
-    `, params);
+    `);
     res.json({ spots: result.rows, categories: SPOT_CATEGORIES });
   } catch (err) {
     res.status(500).json({ error: err.message });

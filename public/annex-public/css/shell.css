@@ -437,3 +437,50 @@ img { display: block; max-width: 100%; height: auto; }
   padding: 10px 20px;
   border-radius: 999px;
 }
+
+/* ── Spots index (public browse) ────────────────────────── */
+.spots-index {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-6) 0 var(--space-8);
+}
+.spots-index__title {
+  font-family: var(--serif);
+  font-size: var(--text-large);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+.spots-index__count {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: var(--space-6);
+}
+.spots-index__list { list-style: none; }
+.spots-index__item {
+  border-top: 1px solid var(--rule);
+}
+.spots-index__item:last-child { border-bottom: 1px solid var(--rule); }
+.spots-index__item a {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+}
+.spots-index__name {
+  font-family: var(--serif);
+  font-size: var(--text-medium);
+  color: var(--ink);
+}
+.spots-index__item a:hover .spots-index__name { color: var(--ink-2); }
+.spots-index__meta {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
