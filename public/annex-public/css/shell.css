@@ -145,7 +145,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* Center scrolls naturally */
 .col-center {
   min-height: 100vh;
-  max-width: 460px;
+  max-width: 500px;
   margin:0 auto;
   border:solid 1px blue;
 }
