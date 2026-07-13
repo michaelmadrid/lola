@@ -10,9 +10,20 @@
   let activeView = 'all'; // all | published | draft | trash
   let allNotes = [];
   let selected = new Set();
+  let searchTerm = '';
 
   const esc = s => util.escapeHtml(String(s || ''));
   const TYPE_LABELS = { note: 'Note', photograph: 'Photograph', link: 'Link', announcement: 'Announcement' };
+
+  let scheduledNotes = [];
+
+  async function loadScheduled() {
+    try {
+      const data = await api.get('/api/board-notes');
+      scheduledNotes = data.notes || [];
+      renderScheduled();
+    } catch { /* panel just stays empty on failure */ }
+  }
 
   async function load() {
     listEl.innerHTML = '<div class="stream__empty">Loading…</div>';
@@ -21,6 +32,8 @@
       const data = await api.get('/api/board-notes' + q);
       allNotes = data.notes || [];
       render();
+      if (activeView !== 'trash') { scheduledNotes = allNotes; renderScheduled(); }
+      else loadScheduled();
     } catch (err) {
       listEl.innerHTML = '<div class="stream__empty">Could not load notes.</div>';
     }
@@ -30,23 +43,29 @@
     let rows = allNotes;
     if (activeView === 'published') rows = rows.filter(n => n.status === 'published');
     if (activeView === 'draft') rows = rows.filter(n => n.status === 'draft');
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      rows = rows.filter(n =>
+        (n.headline || '').toLowerCase().includes(q) ||
+        (n.body || '').toLowerCase().includes(q));
+    }
 
     countEl.textContent = rows.length + (rows.length === 1 ? ' note' : ' notes');
 
     if (!rows.length) {
       listEl.innerHTML = '<div class="stream__empty">No notes here.</div>';
+      updateBulkBar();
       return;
     }
 
     listEl.innerHTML = rows.map(n => `
       <div class="stream__item is-structured" data-id="${n.id}">
         <input type="checkbox" class="stream__check" data-check="${n.id}" aria-label="Select ${esc(n.headline)}">
+        ${n.image_url ? `<img class="stream__thumb" src="${esc(n.image_url)}" alt="">` : ''}
         <div class="stream__body">
           <span class="stream__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
-          ${n.body ? `<span class="stream__tip">${esc(n.body.slice(0, 120))}</span>` : ''}
-          <span class="stream__meta">${TYPE_LABELS[n.type] || n.type} · ${n.status}</span>
+          <span class="stream__meta">${TYPE_LABELS[n.type] || n.type} · ${util.timeAgo(n.created_at)} · ${n.status}</span>
         </div>
-        <span class="stream__when">${util.timeAgo(n.created_at)}</span>
       </div>
     `).join('');
 
@@ -58,6 +77,44 @@
       });
     });
     updateBulkBar();
+  }
+
+  function renderScheduled() {
+    const panel = document.getElementById('notes-scheduled');
+    if (!panel) return;
+    const now = new Date();
+    const upcoming = scheduledNotes
+      .filter(n => !n.deleted_at && n.publish_date && new Date(n.publish_date) > now)
+      .sort((a, b) => new Date(a.publish_date) - new Date(b.publish_date));
+
+    if (!upcoming.length) {
+      panel.innerHTML = '<p class="spot-fs__hint">Nothing scheduled.</p>';
+      return;
+    }
+
+    const groups = new Map();
+    upcoming.forEach(n => {
+      const d = new Date(n.publish_date);
+      const key = d.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(n);
+    });
+
+    let html = '';
+    groups.forEach((notes, dateLabel) => {
+      html += `<div class="notes-scheduled-date">${esc(dateLabel)}</div><ul style="margin:0;padding:0">`;
+      notes.forEach(n => {
+        html += `<li class="notes-scheduled-item" data-id="${n.id}">${esc(n.headline)}</li>`;
+      });
+      html += '</ul>';
+    });
+    panel.innerHTML = html;
+    panel.querySelectorAll('.notes-scheduled-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const note = scheduledNotes.find(n => n.id === parseInt(item.dataset.id, 10));
+        if (note) openEditor(note);
+      });
+    });
   }
 
   function updateBulkBar() {
@@ -105,6 +162,14 @@
     document.querySelectorAll('.stream__check').forEach(cb => cb.checked = false);
     updateBulkBar();
   });
+
+  const notesSearchEl = document.getElementById('notes-search');
+  if (notesSearchEl) {
+    notesSearchEl.addEventListener('input', () => {
+      searchTerm = notesSearchEl.value.trim();
+      render();
+    });
+  }
 
   viewSwitch.querySelectorAll('.view-switch__item').forEach(btn => {
     btn.addEventListener('click', () => {

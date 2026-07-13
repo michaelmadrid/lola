@@ -52,19 +52,32 @@
     </div>
   </header>
 
-  <div class="bulk-bar" id="bulk-bar" hidden>
-    <span class="bulk-bar__count" id="bulk-count">0 selected</span>
-    <div class="bulk-bar__actions">
-      <button class="btn btn--small" id="bulk-publish">Publish</button>
-      <button class="btn btn--small btn--secondary" id="bulk-draft">Make draft</button>
-      <button class="btn btn--small btn--ghost btn--danger" id="bulk-trash">Move to trash</button>
-      <button class="btn btn--small btn--ghost" id="bulk-restore" hidden>Restore</button>
-      <button class="btn btn--small btn--ghost btn--danger" id="bulk-delete-forever" hidden>Delete forever</button>
-      <button class="bulk-bar__cancel" id="bulk-clear">Clear</button>
-    </div>
-  </div>
+  <div class="notes-layout">
+    <div class="notes-layout__main">
 
-  <div id="notes-list"><div class="stream__empty">Loading…</div></div>
+      <input type="text" class="admin-search" id="notes-search" placeholder="Search">
+
+      <div class="bulk-bar" id="bulk-bar" hidden>
+        <span class="bulk-bar__count" id="bulk-count">0 selected</span>
+        <div class="bulk-bar__actions">
+          <button class="btn btn--small" id="bulk-publish">Publish</button>
+          <button class="btn btn--small btn--secondary" id="bulk-draft">Make draft</button>
+          <button class="btn btn--small btn--ghost btn--danger" id="bulk-trash">Move to trash</button>
+          <button class="btn btn--small btn--ghost" id="bulk-restore" hidden>Restore</button>
+          <button class="btn btn--small btn--ghost btn--danger" id="bulk-delete-forever" hidden>Delete forever</button>
+          <button class="bulk-bar__cancel" id="bulk-clear">Clear</button>
+        </div>
+      </div>
+
+      <div id="notes-list"><div class="stream__empty">Loading…</div></div>
+
+    </div>
+
+    <aside class="notes-layout__side">
+      <div class="notes-scheduled-label">Scheduled</div>
+      <div id="notes-scheduled"><p class="spot-fs__hint">Nothing scheduled.</p></div>
+    </aside>
+  </div>
 
 </main>
 
