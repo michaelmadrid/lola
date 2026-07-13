@@ -622,9 +622,70 @@ router.post('/:id/reparse', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/spots/categories — public category list
-router.get('/categories', (req, res) => {
-  res.json({ categories: SPOT_CATEGORIES });
+// GET /api/spots/categories — public category list (active only, ordered)
+// favorites first (pinned), then by sort_order, then label.
+router.get('/categories', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  try {
+    // includeInactive=true (admin) returns everything for management.
+    const all = req.query.includeInactive === 'true';
+    const sql = `
+      SELECT id, slug, label, favorite, sort_order, active
+      FROM spot_categories
+      ${all ? '' : 'WHERE active = true'}
+      ORDER BY favorite DESC, sort_order ASC, label ASC`;
+    const result = await pool.query(sql);
+    // Keep the { value, label, core } shape the frontends already expect,
+    // plus the richer fields for admin.
+    const categories = result.rows.map(r => ({
+      value: r.slug, label: r.label, core: r.favorite,
+      id: r.id, favorite: r.favorite, sort_order: r.sort_order, active: r.active,
+    }));
+    res.json({ categories });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/spots/categories — create (admin)
+router.post('/categories', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const { slug, label, favorite, sort_order } = req.body;
+  if (!slug || !label) return res.status(400).json({ error: 'slug and label required' });
+  const cleanSlug = String(slug).trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+  try {
+    const r = await pool.query(
+      `INSERT INTO spot_categories (slug, label, favorite, sort_order)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [cleanSlug, label.trim(), !!favorite, Number.isInteger(sort_order) ? sort_order : 100]
+    );
+    res.json({ category: r.rows[0] });
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Slug already exists' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/spots/categories/:id — update (admin)
+router.patch('/categories/:id', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const allowed = ['label', 'favorite', 'sort_order', 'active'];
+  const sets = [], params = [];
+  for (const k of allowed) {
+    if (req.body[k] !== undefined) { params.push(req.body[k]); sets.push(`${k} = $${params.length}`); }
+  }
+  if (!sets.length) return res.status(400).json({ error: 'no fields to update' });
+  params.push(req.params.id);
+  try {
+    const r = await pool.query(
+      `UPDATE spot_categories SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params
+    );
+    if (!r.rows[0]) return res.status(404).json({ error: 'not found' });
+    res.json({ category: r.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // =============================================================
@@ -662,7 +723,10 @@ router.get('/index', async (req, res) => {
         AND s.place_name IS NOT NULL
       ORDER BY s.country, c.name, s.place_name
     `);
-    res.json({ spots: result.rows, categories: SPOT_CATEGORIES });
+    const cats = await pool.query(
+      `SELECT slug AS value, label, favorite AS core FROM spot_categories
+       WHERE active = true ORDER BY favorite DESC, sort_order ASC, label ASC`);
+    res.json({ spots: result.rows, categories: cats.rows });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
