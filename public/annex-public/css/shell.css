@@ -117,7 +117,7 @@ img { display: block; max-width: 100%; height: auto; }
 [data-include="header"] { display: block; min-height: 152px; }
 [data-include="footer"] { display: block; min-height: 80px; }
 .annex-logo {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Times Now', Times, serif;
   font-size: 32px;
   font-weight: bold;
   
