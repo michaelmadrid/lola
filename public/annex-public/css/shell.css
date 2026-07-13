@@ -340,11 +340,17 @@ img { display: block; max-width: 100%; height: auto; }
     grid-template-areas: 
       "left center"
       "right right";
+      gap: 16px;
   }
   .col-left  { grid-area: left;   position: static; }
   .col-right { grid-area: right;  position: static; }
   .col-center { grid-area: center; }
   .notice-text { font-size: var(--text-large); }
+  
+}
+@media (max-width: 560px) {
+  border:solid 1px red;
+  gap: 10px;
 }
 /* 
 @media (max-width: 560px) {
