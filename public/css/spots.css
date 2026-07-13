@@ -489,19 +489,14 @@ body.has-admin-checks .stream__item {
 }
 .bulk-bar__cancel:hover { color: var(--ink); }
 
-/* ===== Notes: reference toggle + expires + row hover ===== */
+/* ===== Notes: reference toggle + expires ===== */
 #note-ref-fields[hidden] { display: none !important; }
 
 .note-expires-row { display: flex; gap: 8px; align-items: center; }
 .note-expires-row .spot-fs__input { flex: 1; }
 
-.stream__item[data-id] { cursor: pointer; }
-.stream__item[data-id]:hover .stream__name { text-decoration: underline; text-underline-offset: 3px; }
-
-/* ===== Notes list: larger headline ===== */
-.page-notes .stream__name { font-size: var(--text-medium); }
-
-/* ===== Notes: checkbox column + row alignment ===== */
+/* ===== Notes: checkbox column (matches Spots row styling exactly,
+   inheriting grid/dividers/name/meta/when from home.css) ===== */
 .page-notes .stream__item {
   grid-template-columns: 24px 1fr auto;
   gap: 20px;
@@ -584,17 +579,15 @@ body.has-admin-checks .stream__item {
 }
 .notes-layout__main .admin-search::placeholder { color: var(--ink-3); }
 
-/* Note row thumbnail — sits inline with the headline inside stream__body,
-   NOT as its own grid column, so the row keeps Spots' exact 3-col shape
-   (checkbox | body | time). */
+/* Note row thumbnail — inline with headline, doesn't break the row grid */
 .stream__body-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 .stream__thumb {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--r-tight);
   object-fit: cover;
   flex-shrink: 0;
