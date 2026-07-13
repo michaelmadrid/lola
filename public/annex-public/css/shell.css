@@ -237,7 +237,7 @@ img { display: block; max-width: 100%; height: auto; }
   font-family: var(--serif);
   font-size: var(--text-large);
   font-weight: 500;
-  color: var(--ink-2);
+ color: var(--ink);
   letter-spacing: 0.01em;
   line-height: 1.4;
 }
@@ -246,7 +246,7 @@ img { display: block; max-width: 100%; height: auto; }
    pointing away from the page, not a primary thought here. */
 .notice-item[data-type="link"] .notice-text {
   font-size: var(--text-large);
-  color: var(--ink-1);
+  color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
