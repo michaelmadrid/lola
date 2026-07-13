@@ -198,7 +198,7 @@ img { display: block; max-width: 100%; height: auto; }
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--ink);
-  margin-bottom: var(--space-6);
+  margin-bottom:10px;
 }
 /* EXPLORE: try --text-large for smaller, --text-hero for bigger */
 /* EXPLORE: try font-style: italic on some notices */
@@ -297,7 +297,8 @@ img { display: block; max-width: 100%; height: auto; }
 .divider {
   border: none;
   /* border-top: 1px solid var(--rule); */
-  margin: var(--space-6) 0;
+ 
+  margin-bottom:30px;
 }
 
 /* ── Footer ─────────────────────────────────────────────── */
