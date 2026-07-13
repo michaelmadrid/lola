@@ -484,3 +484,50 @@ img { display: block; max-width: 100%; height: auto; }
   color: var(--ink-3);
   white-space: nowrap;
 }
+
+/* ── Spot detail (permalink) ────────────────────────────── */
+.spot-detail {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-6) 0 var(--space-8);
+}
+.spot-detail__name {
+  font-family: var(--serif);
+  font-size: var(--text-display);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+.spot-detail__city {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: var(--space-5);
+}
+.spot-detail__image { margin: var(--space-5) 0; }
+.spot-detail__image img { width: 100%; }
+.spot-detail__tip {
+  font-family: var(--serif);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin-bottom: var(--space-5);
+}
+.spot-detail__links {
+  font-family: var(--sans);
+  font-size: var(--text-body);
+}
+.spot-detail__links a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.spot-detail__links a:hover { color: var(--ink-2); }
+.spot-detail__sep {
+  color: var(--ink-3);
+  margin: 0 10px;
+}
