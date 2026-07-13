@@ -147,7 +147,6 @@ img { display: block; max-width: 100%; height: auto; }
   min-height: 100vh;
   max-width: 500px;
   margin:0 auto;
-  border:solid 1px blue;
 }
 
 /* ── Cities list (left col) ─────────────────────────────── */
@@ -220,7 +219,7 @@ img { display: block; max-width: 100%; height: auto; }
   width: 100%;
   /* EXPLORE: try max-width: 70% or fixed px widths for varied sizes */
 }
-.notice-image--half { max-width: 55%; }
+.notice-image--half { max-width: 85%; }
 .notice-image--float-left {
   float: left;
   width: 42%;
