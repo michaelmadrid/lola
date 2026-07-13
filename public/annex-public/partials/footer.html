@@ -1,8 +1,8 @@
 
 <footer class="annex-foot">
   <div id="annex-info">
-    Annex is an editorial project by <a href="https://summer-holiday.com" target="_blank">Summer Holiday</a><br>
-    A growing archive of places and things worth knowing about, assembled through research, travel, recommendations, and curiosity.
+    Annex is an  <a href="javascript:bioReveal();" target="_blank"> by <a href="https://summer-holiday.com" target="_blank">Summer Holiday</a><br>
+    <span id="bioreveal">A growing archive of places and things worth knowing about, assembled through research, travel, recommendations, and curiosity.</span>
   </div>
 </footer>
 
@@ -10,5 +10,9 @@
 <script async src="https://plausible.io/js/pa-1HoWOhl3IAm6dlcK-3sNc.js"></script>
 <script>
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()
+  plausible.init();
+  
+  function bioReveal(){
+    document.getElementById('bioreveal').style.display = 'block';
+  }
 </script>

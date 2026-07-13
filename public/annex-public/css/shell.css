@@ -310,9 +310,16 @@ img { display: block; max-width: 100%; height: auto; }
   align-items: baseline;
 }
 #annex-info{
+  font-family: var(--sans);
   text-align: center;
   max-width:70%;
   margin:0 auto;
+}
+#bioreveal{
+  display: none;
+}
+#bioreveal.show{
+  display: block;
 }
 
 /* ── Responsive ─────────────────────────────────────────── */
