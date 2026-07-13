@@ -11,6 +11,7 @@
       ],
     },
     { key: 'cities', label: 'Cities', href: '/admin/cities.html' },
+    { key: 'categories', label: 'Categories', href: '/admin/categories.html' },
   ];
 
   function render(activeKey) {
