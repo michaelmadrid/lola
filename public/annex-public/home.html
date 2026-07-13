@@ -25,10 +25,8 @@
 
 <div class="page">
 
-  <!-- ── Header ───────────────────────────────────────── -->
-  <header class="annex-head">
-    <span class="annex-logo">Annex</span>
-  </header>
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <div data-include="header"></div>
 
   <!-- ── Main 3-col grid ──────────────────────────────── -->
   <div class="home-grid">
@@ -92,13 +90,18 @@
 
   </div><!-- /home-grid -->
 
-  <!-- ── Footer ───────────────────────────────────────── -->
-  <footer class="annex-foot">
-    <span class="annex-foot__brand"><a href="#">INFO</a></span>
-    <span class="annex-foot__brand">© 2026</span>
-  </footer>
+  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
+  <div data-include="footer"></div>
 
 </div><!-- /page -->
+
+<script>
+  // Header/footer partials — load first
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(code => { (0, eval)(code); })
+    .catch(() => {});
+</script>
 
 <script>
   fetch('/js/notes-feed.js?t=' + Date.now(), { cache: 'no-store' })
