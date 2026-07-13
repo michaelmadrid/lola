@@ -349,8 +349,10 @@ img { display: block; max-width: 100%; height: auto; }
   
 }
 @media (max-width: 560px) {
-  border:solid 1px red;
-  gap: 10px;
+  .home-grid {
+   border:solid 1px red;
+   gap: 10px;
+  }
 }
 /* 
 @media (max-width: 560px) {
