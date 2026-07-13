@@ -33,17 +33,19 @@
     </a>
   </div>
 
-  <div class="overview-grid">
-    <section class="overview-panel">
-      <h2 class="overview-panel__title">By category</h2>
-      <div id="cat-breakdown"><div class="list-empty">Loading…</div></div>
-    </section>
-
-    <section class="overview-panel">
-      <h2 class="overview-panel__title">By city</h2>
-      <div id="city-breakdown"><div class="list-empty">Loading…</div></div>
-    </section>
-  </div>
+  <section class="annex-overview">
+    <div class="annex-overview__head">
+      <h2 class="annex-overview__title">Annex</h2>
+      <div class="annex-toggle" id="annex-toggle">
+        <button class="annex-toggle__btn is-active" data-mode="curated">Curated</button>
+        <button class="annex-toggle__btn" data-mode="standard">Standard</button>
+      </div>
+    </div>
+    <div class="annex-overview__meta" id="annex-meta">—</div>
+    <div class="annex-overview__table" id="annex-table">
+      <div class="annex-overview__loading">Loading…</div>
+    </div>
+  </section>
 </main>
 
 <script src="/js/api.js"></script>
@@ -53,86 +55,92 @@
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
   AdminShell.render('overview');
 
-  const esc = (s) => (window.util ? util.escapeHtml(String(s||'')) : String(s||''));
+  let allSpots = [];
+  let mode = 'curated';
+  let catLabels = {};
+
+  function labelFor(slug) { return catLabels[slug] || slug; }
+
+  function groupAndRender(spots) {
+    const byCity = {};
+    for (const s of spots) {
+      const city = (s.attached_cities && s.attached_cities[0] && s.attached_cities[0].name) || '—';
+      if (!byCity[city]) byCity[city] = { total: 0, cats: {}, hasImage: 0 };
+      byCity[city].total++;
+      if (s.category) {
+        byCity[city].cats[s.category] = (byCity[city].cats[s.category] || 0) + 1;
+      }
+      if (s.image_url) byCity[city].hasImage++;
+    }
+
+    const cities = Object.entries(byCity).sort((a, b) => b[1].total - a[1].total);
+    const readyCount = cities.filter(([,d]) => d.total >= 10).length;
+    const label = mode === 'curated' ? 'curated' : 'standard';
+
+    document.getElementById('annex-meta').textContent =
+      `${spots.length} ${label} spots · ${cities.length} cities · ${readyCount} ready (≥10)`;
+
+    const maxTotal = cities[0]?.[1].total || 1;
+    const table = document.getElementById('annex-table');
+    table.innerHTML = `
+      <div class="annex-row annex-row--head">
+        <span>City</span>
+        <span>Total</span>
+        <span class="annex-bar-col">Distribution</span>
+        <span>Categories</span>
+        <span>Photos</span>
+      </div>
+      ${cities.map(([city, d]) => {
+        const barPct = Math.round((d.total / maxTotal) * 100);
+        const ready = d.total >= 10
+          ? '<span class="annex-badge annex-badge--ready">ready</span>'
+          : '<span class="annex-badge annex-badge--thin">thin</span>';
+        const catChips = Object.entries(d.cats)
+          .sort((a, b) => b[1] - a[1])
+          .map(([c, n]) => `<span class="annex-cat">${labelFor(c)} ${n}</span>`)
+          .join('');
+        const photoPct = d.total ? Math.round((d.hasImage / d.total) * 100) : 0;
+        return `
+          <div class="annex-row">
+            <span class="annex-city">${city} ${ready}</span>
+            <span class="annex-total">${d.total}</span>
+            <span class="annex-bar-col"><span class="annex-bar" style="width:${barPct}%"></span></span>
+            <span class="annex-cats">${catChips}</span>
+            <span class="annex-photos">${d.hasImage}/${d.total} <span class="annex-photos__pct">${photoPct}%</span></span>
+          </div>`;
+      }).join('')}
+    `;
+  }
+
+  // Toggle
+  document.getElementById('annex-toggle').addEventListener('click', e => {
+    const btn = e.target.closest('.annex-toggle__btn');
+    if (!btn) return;
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.annex-toggle__btn').forEach(b => b.classList.toggle('is-active', b === btn));
+    const filtered = mode === 'curated'
+      ? allSpots.filter(s => s.curated)
+      : allSpots.filter(s => !s.curated);
+    groupAndRender(filtered);
+  });
 
   (async () => {
-    let spots = [];
     try {
-      const s = await api.get('/api/spots?all=true&limit=1000');
-      spots = (s.spots || []).filter(x => !x.deleted_at);
-      document.getElementById('stat-spots').textContent = spots.length + ' spots';
+      const cd = await api.get('/api/spots/categories?includeInactive=true');
+      (cd.categories || []).forEach(c => { catLabels[c.value] = c.label; });
     } catch {}
-
+    try {
+      const s = await api.get('/api/spots?all=true&limit=500');
+      allSpots = s.spots || [];
+      document.getElementById('stat-spots').textContent = allSpots.length + ' spots';
+      groupAndRender(allSpots.filter(s => s.curated));
+    } catch(err) {
+      document.getElementById('annex-table').textContent = 'Failed to load: ' + err.message;
+    }
     try {
       const c = await api.get('/api/cities?include_all=true');
       document.getElementById('stat-cities').textContent = (c.cities||[]).length + ' cities';
     } catch {}
-
-    // Category labels/order from the DB-backed taxonomy
-    let cats = [];
-    try {
-      const cd = await api.get('/api/spots/categories?includeInactive=true');
-      cats = cd.categories || [];
-    } catch {}
-    const labelFor = (slug) => {
-      const c = cats.find(x => x.value === slug);
-      return c ? c.label : (slug || 'Uncategorized');
-    };
-
-    // ---- Category breakdown: total + curated per category ----
-    const catStats = {};
-    for (const sp of spots) {
-      const key = sp.category || '(none)';
-      if (!catStats[key]) catStats[key] = { total: 0, curated: 0 };
-      catStats[key].total++;
-      if (sp.curated) catStats[key].curated++;
-    }
-    // Order: follow the taxonomy order, then any leftover keys
-    const orderedKeys = cats.map(c => c.value).filter(k => catStats[k]);
-    Object.keys(catStats).forEach(k => { if (!orderedKeys.includes(k)) orderedKeys.push(k); });
-
-    const catEl = document.getElementById('cat-breakdown');
-    if (!orderedKeys.length) {
-      catEl.innerHTML = '<div class="list-empty">No spots yet.</div>';
-    } else {
-      const maxTotal = Math.max(...orderedKeys.map(k => catStats[k].total));
-      catEl.innerHTML = orderedKeys.map(k => {
-        const st = catStats[k];
-        const pct = maxTotal ? Math.round((st.total / maxTotal) * 100) : 0;
-        return `<a class="ov-row" href="/spots/?view=all">
-          <span class="ov-row__label">${esc(labelFor(k))}</span>
-          <span class="ov-row__bar"><span class="ov-row__bar-fill" style="width:${pct}%"></span></span>
-          <span class="ov-row__num">${st.curated}<span class="ov-row__num-sub">/${st.total}</span></span>
-        </a>`;
-      }).join('');
-    }
-
-    // ---- City breakdown: total + curated per city ----
-    const cityStats = {};
-    for (const sp of spots) {
-      const name = (sp.attached_cities && sp.attached_cities[0] && sp.attached_cities[0].name)
-        || sp.city_name || '(no city)';
-      if (!cityStats[name]) cityStats[name] = { total: 0, curated: 0 };
-      cityStats[name].total++;
-      if (sp.curated) cityStats[name].curated++;
-    }
-    const cityKeys = Object.keys(cityStats).sort((a, b) => cityStats[b].total - cityStats[a].total);
-
-    const cityEl = document.getElementById('city-breakdown');
-    if (!cityKeys.length) {
-      cityEl.innerHTML = '<div class="list-empty">No cities yet.</div>';
-    } else {
-      const maxCity = Math.max(...cityKeys.map(k => cityStats[k].total));
-      cityEl.innerHTML = cityKeys.map(k => {
-        const st = cityStats[k];
-        const pct = maxCity ? Math.round((st.total / maxCity) * 100) : 0;
-        return `<div class="ov-row">
-          <span class="ov-row__label">${esc(k)}</span>
-          <span class="ov-row__bar"><span class="ov-row__bar-fill" style="width:${pct}%"></span></span>
-          <span class="ov-row__num">${st.curated}<span class="ov-row__num-sub">/${st.total}</span></span>
-        </div>`;
-      }).join('');
-    }
   })();
 </script>
 </body>
