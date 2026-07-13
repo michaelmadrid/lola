@@ -4,7 +4,26 @@
   <meta charset="UTF-8">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ── SEO / social ─────────────────────────────────────
+       These are the DEFAULT/fallback tags. Because this page is
+       client-rendered, social scrapers (iMessage, Twitter, etc.)
+       see only these, not the note's real content.
+
+       When rich per-note previews are wanted later: have the studio
+       backend serve this file and replace the <!-- OG_META --> token
+       below with the note's real og:title / og:description / og:image.
+       The visible content JS below stays exactly as-is. -->
   <title>Annex</title>
+  <meta name="description" content="A note from Annex.">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Annex">
+  <meta property="og:title" content="Annex">
+  <meta property="og:description" content="A note from Annex.">
+  <meta property="og:image" content="https://annex.site/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- OG_META -->
+
   <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
 </head>
 <body>
