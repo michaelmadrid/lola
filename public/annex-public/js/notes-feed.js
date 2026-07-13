@@ -19,29 +19,48 @@
 
   function renderNote(n) {
     const parts = [];
+    const isPhoto = n.type === 'photograph';
+    const isAnnouncement = n.type === 'announcement';
+    // Headline links out only for non-photo, non-announcement notes with a URL.
+    const headlineLinks = n.reference_url && !isPhoto && !isAnnouncement;
 
-    if (n.type === 'announcement') {
+    if (isAnnouncement) {
       parts.push('<div class="notice-caption">Announcement</div>');
     }
 
     if (n.headline) {
-      parts.push('<div class="notice-text">' + esc(n.headline) + '</div>');
+      if (headlineLinks) {
+        parts.push('<div class="notice-text"><a href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' + esc(n.headline) + '</a></div>');
+      } else {
+        parts.push('<div class="notice-text">' + esc(n.headline) + '</div>');
+      }
     }
 
-    if (n.type === 'photograph' && n.image_url) {
+    if (isPhoto && n.image_url) {
       parts.push('<div class="notice-image"><img src="' + esc(imgSrc(n.image_url)) + '" alt="' + esc(n.headline) + '"></div>');
     } else if (n.image_url) {
-      // Note/link/announcement with an attached image still gets shown, half width.
       parts.push('<div class="notice-image notice-image--half"><img src="' + esc(imgSrc(n.image_url)) + '" alt=""></div>');
+    }
+
+    // Photograph: caption under the image. Clickable if a URL is given
+    // (credit/source), otherwise plain text.
+    if (isPhoto && (n.reference_title || n.reference_url)) {
+      const capLabel = n.reference_title || n.reference_url;
+      if (n.reference_url) {
+        parts.push('<div class="notice-caption"><a href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' + esc(capLabel) + '</a></div>');
+      } else {
+        parts.push('<div class="notice-caption">' + esc(capLabel) + '</div>');
+      }
     }
 
     if (n.body) {
       parts.push('<div class="notice-body" style="font-family:var(--serif);font-size:var(--text-body);line-height:1.5;color:var(--ink-2);margin-bottom:var(--space-5)">' + esc(n.body) + '</div>');
     }
 
-    if (n.reference_url) {
-      const label = n.reference_title || n.reference_url;
-      parts.push('<div class="col-label"><a href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' + esc(label) + ' ↗</a></div>');
+    // Non-photo, non-announcement: show a separate reference line only when
+    // there's a distinct title AND the headline didn't already carry the link.
+    if (!isPhoto && !isAnnouncement && n.reference_url && n.reference_title && !headlineLinks) {
+      parts.push('<div class="col-label"><a href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' + esc(n.reference_title) + ' ↗</a></div>');
     }
 
     parts.push('<hr class="divider">');
