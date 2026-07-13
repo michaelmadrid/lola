@@ -1,8 +1,8 @@
 
 <footer class="annex-foot">
   <div id="annex-info">
-    Annex is an  <a href="javascript:bioReveal();" target="_blank">editorial project</a> by <a href="https://summer-holiday.com" target="_blank">Summer Holiday</a><br>
-    <span id="bioreveal">A growing archive of places and things worth knowing about, assembled through research, travel, recommendations, and curiosity.</span>
+    Annex is an  <a href="javascript:showBioInfo();" target="_blank">editorial project</a> by <a href="https://summer-holiday.com" target="_blank">Summer Holiday</a><br>
+    <div id="bioreveal">A growing archive of places and things worth knowing about, assembled through research, travel, recommendations, and curiosity.</div>
   </div>
 </footer>
 
@@ -12,7 +12,7 @@
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init();
   
-  function bioReveal(){
-    document.getElementById('bioreveal').style.display = 'block';
+  function showBioInfo(){
+    document.getElementById('bioreveal').classList.add('show'); 
   }
 </script>
