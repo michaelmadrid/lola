@@ -329,13 +329,13 @@ img { display: block; max-width: 100%; height: auto; }
 
 @media (max-width: 1400px) {
   .home-grid { grid-template-columns: 4fr 4fr 4fr; 
-    border:solid 1px red;
   }
 }
 
 
 @media (max-width: 860px) {
   .home-grid {
+    border:solid 1px blue;
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       "center center"
