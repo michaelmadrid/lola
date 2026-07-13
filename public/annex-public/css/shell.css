@@ -311,6 +311,7 @@ img { display: block; max-width: 100%; height: auto; }
 }
 #annex-info{
   font-family: var(--sans);
+  font-size: var(--text-small);
   text-align: center;
   max-width:70%;
   margin:0 auto;
