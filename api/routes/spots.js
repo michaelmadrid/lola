@@ -668,9 +668,31 @@ router.get('/index', async (req, res) => {
   }
 });
 
-
 // =============================================================
-// POST /api/spots/batch-preview — classify rows without inserting (admin)
+// GET /api/spots/public/:id — single curated spot for permalink page
+router.get('/public/:id', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  try {
+    const result = await pool.query(`
+      SELECT
+        s.id, s.place_name, s.tip, s.neighborhood, s.country,
+        s.category, s.website, s.instagram, s.tags, s.image_url, s.been,
+        p.google_place_id, p.lat, p.lng, p.address,
+        c.name AS city, c.slug AS city_slug
+      FROM spots s
+      LEFT JOIN cities c ON s.city_id = c.id
+      LEFT JOIN places p ON s.place_id = p.id
+      WHERE s.id = $1
+        AND s.curated = true
+        AND s.deleted_at IS NULL
+        AND s.place_name IS NOT NULL
+      LIMIT 1`, [req.params.id]);
+    if (!result.rows[0]) return res.status(404).json({ error: 'Spot not found' });
+    res.json({ spot: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 router.post('/batch-preview', authenticate, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const rows = req.body.rows;
