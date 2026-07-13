@@ -346,12 +346,12 @@ img { display: block; max-width: 100%; height: auto; }
   .col-center { grid-area: center; }
   .notice-text { font-size: var(--text-large); }
 }
-
+/* 
 @media (max-width: 560px) {
   .home-grid { grid-template-columns: 1fr; grid-template-areas: "center" "left" "right"; }
   .cities-list { font-size: var(--text-medium); }
   .categories-list { font-size: var(--text-medium); text-align: left; }
-}
+} */
 
 
 
