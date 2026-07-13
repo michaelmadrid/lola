@@ -32,6 +32,18 @@
       <span class="admin-card__stat">JSON · CSV</span>
     </a>
   </div>
+
+  <div class="overview-grid">
+    <section class="overview-panel">
+      <h2 class="overview-panel__title">By category</h2>
+      <div id="cat-breakdown"><div class="list-empty">Loading…</div></div>
+    </section>
+
+    <section class="overview-panel">
+      <h2 class="overview-panel__title">By city</h2>
+      <div id="city-breakdown"><div class="list-empty">Loading…</div></div>
+    </section>
+  </div>
 </main>
 
 <script src="/js/api.js"></script>
@@ -40,15 +52,87 @@
 <script>
   if (!api.isSignedIn()) location.href = '/login.html?next=' + encodeURIComponent(location.pathname);
   AdminShell.render('overview');
+
+  const esc = (s) => (window.util ? util.escapeHtml(String(s||'')) : String(s||''));
+
   (async () => {
+    let spots = [];
     try {
-      const s = await api.get('/api/spots?all=true&limit=500');
-      document.getElementById('stat-spots').textContent = (s.spots||[]).length + ' spots';
+      const s = await api.get('/api/spots?all=true&limit=1000');
+      spots = (s.spots || []).filter(x => !x.deleted_at);
+      document.getElementById('stat-spots').textContent = spots.length + ' spots';
     } catch {}
+
     try {
       const c = await api.get('/api/cities?include_all=true');
       document.getElementById('stat-cities').textContent = (c.cities||[]).length + ' cities';
     } catch {}
+
+    // Category labels/order from the DB-backed taxonomy
+    let cats = [];
+    try {
+      const cd = await api.get('/api/spots/categories?includeInactive=true');
+      cats = cd.categories || [];
+    } catch {}
+    const labelFor = (slug) => {
+      const c = cats.find(x => x.value === slug);
+      return c ? c.label : (slug || 'Uncategorized');
+    };
+
+    // ---- Category breakdown: total + curated per category ----
+    const catStats = {};
+    for (const sp of spots) {
+      const key = sp.category || '(none)';
+      if (!catStats[key]) catStats[key] = { total: 0, curated: 0 };
+      catStats[key].total++;
+      if (sp.curated) catStats[key].curated++;
+    }
+    // Order: follow the taxonomy order, then any leftover keys
+    const orderedKeys = cats.map(c => c.value).filter(k => catStats[k]);
+    Object.keys(catStats).forEach(k => { if (!orderedKeys.includes(k)) orderedKeys.push(k); });
+
+    const catEl = document.getElementById('cat-breakdown');
+    if (!orderedKeys.length) {
+      catEl.innerHTML = '<div class="list-empty">No spots yet.</div>';
+    } else {
+      const maxTotal = Math.max(...orderedKeys.map(k => catStats[k].total));
+      catEl.innerHTML = orderedKeys.map(k => {
+        const st = catStats[k];
+        const pct = maxTotal ? Math.round((st.total / maxTotal) * 100) : 0;
+        return `<a class="ov-row" href="/spots/?view=all">
+          <span class="ov-row__label">${esc(labelFor(k))}</span>
+          <span class="ov-row__bar"><span class="ov-row__bar-fill" style="width:${pct}%"></span></span>
+          <span class="ov-row__num">${st.curated}<span class="ov-row__num-sub">/${st.total}</span></span>
+        </a>`;
+      }).join('');
+    }
+
+    // ---- City breakdown: total + curated per city ----
+    const cityStats = {};
+    for (const sp of spots) {
+      const name = (sp.attached_cities && sp.attached_cities[0] && sp.attached_cities[0].name)
+        || sp.city_name || '(no city)';
+      if (!cityStats[name]) cityStats[name] = { total: 0, curated: 0 };
+      cityStats[name].total++;
+      if (sp.curated) cityStats[name].curated++;
+    }
+    const cityKeys = Object.keys(cityStats).sort((a, b) => cityStats[b].total - cityStats[a].total);
+
+    const cityEl = document.getElementById('city-breakdown');
+    if (!cityKeys.length) {
+      cityEl.innerHTML = '<div class="list-empty">No cities yet.</div>';
+    } else {
+      const maxCity = Math.max(...cityKeys.map(k => cityStats[k].total));
+      cityEl.innerHTML = cityKeys.map(k => {
+        const st = cityStats[k];
+        const pct = maxCity ? Math.round((st.total / maxCity) * 100) : 0;
+        return `<div class="ov-row">
+          <span class="ov-row__label">${esc(k)}</span>
+          <span class="ov-row__bar"><span class="ov-row__bar-fill" style="width:${pct}%"></span></span>
+          <span class="ov-row__num">${st.curated}<span class="ov-row__num-sub">/${st.total}</span></span>
+        </div>`;
+      }).join('');
+    }
   })();
 </script>
 </body>

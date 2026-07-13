@@ -497,3 +497,56 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
   .cats-row > span:nth-child(4),
   .cats-row > span:nth-child(5) { display: none; }
 }
+
+/* Admin overview — category / city breakdown */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-top: 40px;
+}
+@media (max-width: 860px) { .overview-grid { grid-template-columns: 1fr; gap: 32px; } }
+
+.overview-panel__title {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 16px;
+  font-weight: 500;
+}
+.ov-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1.4fr) 3fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  border-top: 1px solid var(--rule);
+}
+.ov-row:first-child { border-top: 0; }
+a.ov-row:hover .ov-row__label { color: var(--ink-2); }
+.ov-row__label {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  color: var(--ink);
+}
+.ov-row__bar {
+  height: 6px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.ov-row__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  border-radius: 999px;
+}
+.ov-row__num {
+  font-family: var(--mono);
+  font-size: var(--text-small);
+  color: var(--ink);
+  white-space: nowrap;
+}
+.ov-row__num-sub { color: var(--ink-3); }
