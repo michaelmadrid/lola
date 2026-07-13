@@ -121,8 +121,7 @@ img { display: block; max-width: 100%; height: auto; }
   font-size: 32px;
   letter-spacing: -1px;
   font-weight: bold;
-  
-  letter-spacing: 0;
+
   text-transform: uppercase;
   color: var(--ink);
 }
