@@ -501,10 +501,11 @@ body.has-admin-checks .stream__item {
 /* ===== Notes list: larger headline ===== */
 .page-notes .stream__name { font-size: var(--text-medium); }
 
-/* ===== Notes: checkbox column ===== */
+/* ===== Notes: checkbox column + row alignment ===== */
 .page-notes .stream__item {
   grid-template-columns: 24px 1fr auto;
   gap: 20px;
+  align-items: center;
 }
 .page-notes .stream__check {
   width: 20px;
