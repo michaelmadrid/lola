@@ -143,8 +143,11 @@
   coverBtn.addEventListener('click', () => {
     const inp = document.createElement('input');
     inp.type = 'file'; inp.accept = 'image/*';
+    inp.style.display = 'none';
+    document.body.appendChild(inp);
     inp.onchange = async () => {
-      const file = inp.files[0]; if (!file) return;
+      const file = inp.files[0];
+      if (!file) { inp.remove(); return; }
       flash('Uploading…');
       const fd = new FormData(); fd.append('image', file);
       try {
@@ -158,6 +161,7 @@
         if (data.url) { showCover(data.url); patchGuide({ image_url: data.url }, true); }
         else flash('Upload failed');
       } catch (e) { flash('Upload failed'); }
+      finally { inp.remove(); }
     };
     inp.click();
   });
