@@ -230,8 +230,9 @@
     const SPEED = isTouch ? 1.2 : 1;         // mobile ~20% faster
 
     // Idle drift only briefly settles the wall into motion on load, then stops.
-    // It never runs perpetually — that reads as broken autoplay.
-    let settleFrames = Math.round(3 * 60);   // ~3s at 60fps, then stop
+    // Eased envelope: ramps up, holds, then decays — not a flat linear cut.
+    const SETTLE_TOTAL = Math.round(3.2 * 60);   // ~3.2s at 60fps
+    let settleFrames = SETTLE_TOTAL;
 
     function applyHorizontal(dx) {
       rowEls.forEach(r => {
@@ -296,17 +297,22 @@
       if (moved > 6) { e.preventDefault(); }
     }, true);
 
-    // Animation loop: fling inertia after release, brief settle drift on load.
+    // Animation loop: fling inertia after release, eased settle drift on load.
     function tick() {
       if (!dragging) {
-        if (Math.abs(velX) > 0.05 || Math.abs(velY) > 0.05) {
+        if (Math.abs(velX) > 0.03 || Math.abs(velY) > 0.03) {
+          // Fling: ease-out decay (feels like a real toss losing energy).
           applyHorizontal(velX);
           applyVertical(velY);
-          velX *= 0.94; velY *= 0.94;
+          velX *= 0.955; velY *= 0.955;
         } else if (settleFrames > 0) {
-          // Brief settle so the wall shows it's alive, then stops.
-          applyHorizontal(-0.5 * SPEED);
-          applyVertical(-0.18 * SPEED);
+          // Eased envelope over the settle window: sin() ramps up from 0,
+          // peaks mid-way, and eases back to 0 — no abrupt start or stop.
+          const t = 1 - (settleFrames / SETTLE_TOTAL);   // 0 → 1 over the window
+          const env = Math.sin(t * Math.PI);             // 0 → 1 → 0, smooth
+          const base = 1.6 * SPEED;                      // peak drift speed
+          applyHorizontal(-base * env);
+          applyVertical(-0.35 * SPEED * env);
           settleFrames--;
         }
       }
