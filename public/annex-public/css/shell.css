@@ -590,6 +590,10 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   touch-action: none;   /* we handle all panning ourselves */
 }
 #wall-stage.is-dragging { cursor: grabbing; }
+/* Names are links but the wall is a pan surface — show the grab hand,
+   not the link finger, so the drag affordance is always visible. */
+.wall-item { cursor: grab; }
+#wall-stage.is-dragging .wall-item { cursor: grabbing; }
 .wall-track { will-change: transform; }
 
 .wall-row {
