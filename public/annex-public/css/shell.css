@@ -624,7 +624,21 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   -webkit-font-smoothing: antialiased;
   text-decoration: none;
 }
-.wall-item:hover { color: var(--accent); }
+/* Wall hover — highlighter energy.
+   Active: B (full block, softer yellow). Text stays black for legibility.
+   To A/B test later, comment this out and uncomment the E variant below. */
+.wall-item:hover {
+  background: #efe86a;      /* softer yellow (D-tone). Neon alt: #f2ec3d */
+  color: #111;
+  padding: 2px 14px;        /* chunky block; matches base 0 14px horizontally */
+}
+
+/* --- Alt hover: E (bottom-half marker swipe). Uncomment to try. ---
+.wall-item:hover {
+  background: linear-gradient(180deg, transparent 55%, #f2ec3d 55%);
+  color: #111;
+}
+*/
 .wall-dot {
   font-size: 36px;
   color: var(--rule);
