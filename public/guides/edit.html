@@ -41,7 +41,21 @@
     <!-- LEFT: the guide being assembled -->
     <section class="builder__guide">
       <input type="text" class="guide-title" id="guide-title" placeholder="Untitled guide" autocomplete="off">
-      <textarea class="guide-intro" id="guide-intro" placeholder="Optional intro — set the scene…" rows="2"></textarea>
+
+      <div class="guide-head-row">
+        <textarea class="guide-intro" id="guide-intro" placeholder="Optional intro — set the scene…" rows="2"></textarea>
+        <div class="guide-cover" id="guide-cover">
+          <input type="file" id="cover-input" accept="image/*" style="display:none">
+          <button class="guide-cover__drop" id="cover-btn" type="button">
+            <span class="guide-cover__plus">+</span>
+            <span>Add a cover image</span>
+          </button>
+          <div class="guide-cover__filled" id="cover-filled" hidden>
+            <img id="cover-img" alt="Cover">
+            <button class="guide-cover__rm" id="cover-rm" type="button">Remove</button>
+          </div>
+        </div>
+      </div>
 
       <div class="guide-settings">
         <div class="guide-settings__group">
@@ -63,18 +77,6 @@
             <button class="seg__btn is-active" data-val="manual" type="button">Manual</button>
             <button class="seg__btn" data-val="alpha" type="button">A–Z</button>
           </div>
-        </div>
-      </div>
-
-      <div class="guide-cover" id="guide-cover">
-        <input type="file" id="cover-input" accept="image/*" style="display:none">
-        <button class="guide-cover__drop" id="cover-btn" type="button">
-          <span class="guide-cover__plus">+</span>
-          <span>Add a cover image</span>
-        </button>
-        <div class="guide-cover__filled" id="cover-filled" hidden>
-          <img id="cover-img" alt="Cover">
-          <button class="guide-cover__rm" id="cover-rm" type="button">Remove</button>
         </div>
       </div>
 
