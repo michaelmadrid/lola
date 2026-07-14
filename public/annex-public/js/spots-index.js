@@ -197,8 +197,45 @@
 
     const ROW_H = 52;
     const BLOCK = letters.length * ROW_H;
-    let lastSy = 0;
 
+    const isTouch = window.matchMedia('(hover: none)').matches ||
+                    ('ontouchstart' in window);
+
+    if (isTouch) {
+      // Mobile: autonomous drift. Rows move on their own via rAF; the stage
+      // never hijacks touch scroll, so nothing fights the browser.
+      stage.style.overflow = 'hidden';
+
+      // Wrap all rows so we can translateY the whole column for vertical drift.
+      const track = document.createElement('div');
+      track.className = 'wall-track';
+      while (stage.firstChild) track.appendChild(stage.firstChild);
+      stage.appendChild(track);
+
+      rowEls.forEach(r => { r.w = r.inner.scrollWidth / 12; });
+
+      let vOff = -BLOCK;           // start mid-block for seamless vertical loop
+      const vSpeed = 0.18;         // gentle px/frame
+
+      function tick() {
+        vOff -= vSpeed;
+        if (vOff <= -BLOCK * 2) vOff += BLOCK;
+        track.style.transform = 'translateY(' + vOff + 'px)';
+
+        rowEls.forEach(r => {
+          const speed = (r.count / maxCount) * 1.1 + 0.25;
+          r.hOff -= speed;
+          if (r.hOff < -r.w) r.hOff += r.w;
+          r.inner.style.transform = 'translateX(' + r.hOff + 'px)';
+        });
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      return;
+    }
+
+    // Desktop: scroll-driven (vertical scroll powers horizontal motion).
+    let lastSy = 0;
     stage.addEventListener('scroll', () => {
       const sy = stage.scrollTop;
       const delta = sy - lastSy;
