@@ -11,6 +11,7 @@
   const esc = (s) => util.escapeHtml(String(s == null ? '' : s));
 
   const titleEl   = document.getElementById('guide-title');
+  const subtitleEl= document.getElementById('guide-subtitle');
   const introEl   = document.getElementById('guide-intro');
   const cityEl    = document.getElementById('guide-city');
   const segGroup  = document.getElementById('seg-grouping');
@@ -85,6 +86,7 @@
 
   function hydrateGuideMeta() {
     titleEl.value = guide.title || '';
+    subtitleEl.value = guide.subtitle || '';
     introEl.value = guide.intro || '';
     cityEl.value = guide.city_id || '';
     grouping = guide.grouping || 'list';
@@ -120,6 +122,7 @@
     patchGuide({ title: titleEl.value });
   });
   introEl.addEventListener('input', () => patchGuide({ intro: introEl.value }));
+  subtitleEl.addEventListener('input', () => patchGuide({ subtitle: subtitleEl.value }));
   cityEl.addEventListener('change', () => {
     const v = cityEl.value ? parseInt(cityEl.value, 10) : null;
     patchGuide({ city_id: v }, true);
