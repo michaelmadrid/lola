@@ -101,7 +101,7 @@ img { display: block; max-width: 100%; height: auto; }
 /* ── Page wrapper ───────────────────────────────────────── */
 .page {
   width: var(--page-width);
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -117,7 +117,7 @@ img { display: block; max-width: 100%; height: auto; }
 [data-include="header"] { display: block; min-height: 152px; }
 [data-include="footer"] { display: block; min-height: 80px; }
 .annex-logo {
-  font-family: 'Times Now', Times, serif;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 32px;
   font-weight: bold;
   
@@ -569,4 +569,71 @@ img { display: block; max-width: 100%; height: auto; }
 .spot-detail__sep {
   color: var(--ink-3);
   margin: 0 10px;
+}
+
+/* ── Spots layout: WALL (immersive kinetic marquee) ─────── */
+body.wall-mode { overflow: hidden; }
+/* Hide the normal page chrome (header/footer partials) in wall mode */
+body.wall-mode [data-include="header"],
+body.wall-mode [data-include="footer"] { display: none; }
+body.wall-mode .page { width: 100%; max-width: none; margin: 0; }
+body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
+
+#wall-stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  overflow-y: scroll;
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#wall-stage::-webkit-scrollbar { display: none; }
+
+.wall-row {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  height: 52px;
+  overflow: hidden;
+}
+.wall-row-inner {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  will-change: transform;
+}
+.wall-item {
+  font-size: 36px;
+  font-weight: 500;
+  font-family: var(--sans);
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  padding: 0 14px;
+  flex-shrink: 0;
+  -webkit-font-smoothing: antialiased;
+  text-decoration: none;
+}
+.wall-item:hover { color: var(--accent); }
+.wall-dot {
+  font-size: 36px;
+  color: var(--rule);
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+/* Corner dot nav — the quiet seed that (later) expands into filters */
+.wall-nav {
+  position: fixed;
+  top: 18px;
+  left: 20px;
+  z-index: 10;
+  font-family: var(--serif);
+  font-size: 28px;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+  user-select: none;
 }

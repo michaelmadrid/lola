@@ -4,7 +4,11 @@
      ?city=paris            city name or slug (case-insensitive)
      ?tags=rare,vintage     any of these tags (comma-separated)
      ?q=natural wine        keyword in place name or tip
-   Combine freely: /spots?city=paris&cat=coffee
+   Layout:
+     ?layout=index          flowing alphabetical index (default when no filter)
+     ?layout=list           simple vertical list (default when filtered)
+     ?layout=wall           immersive kinetic marquee wall (full viewport)
+   Combine: /spots?cat=bookstore&layout=wall
    Source: curated, non-trashed spots from studio. */
 (function () {
   const API = 'https://studio.annex.site/api/spots/index';
@@ -16,6 +20,7 @@
   const fCity = (params.get('city') || '').toLowerCase().trim();
   const fTags = (params.get('tags') || '').toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
   const fQ    = (params.get('q')    || '').toLowerCase().trim();
+  const fLayout = (params.get('layout') || '').toLowerCase().trim();
 
   const CAT_LABELS = {
     bookstore: 'Bookstore', film_lab: 'Film Lab', record_store: 'Record Store',
@@ -58,6 +63,9 @@
   }
 
   const hasFilter = !!(fCat || fCity || fTags.length || fQ);
+  // Resolve which layout to use. Explicit ?layout= wins; otherwise default
+  // to list when filtered, flowing index when not.
+  const layout = fLayout || (hasFilter ? 'list' : 'index');
 
   fetch(API)
     .then(r => r.json())
@@ -68,6 +76,8 @@
       const title = buildTitle();
       document.title = title + ' — Annex';
 
+      if (layout === 'wall') { renderWall(rows, title); return; }
+
       let html = '<h1 class="spots-index__title">' + esc(title) + '</h1>';
       html += '<p class="spots-index__count">' + rows.length + (rows.length === 1 ? ' place' : ' places') + '</p>';
 
@@ -77,9 +87,8 @@
         return;
       }
 
-      if (hasFilter) {
+      if (layout === 'list') {
         el.classList.remove('spots-index--wide');
-        // Filtered view — simple vertical list.
         html += '<ul class="spots-index__list">';
         rows.forEach(s => {
           const meta = [CAT_LABELS[s.category] || s.category, s.city].filter(Boolean).join(' · ');
@@ -91,10 +100,8 @@
         });
         html += '</ul>';
       } else {
+        // index (flowing alphabetical)
         el.classList.add('spots-index--wide');
-        // Unfiltered view — flowing alphabetical index with letter headers.
-        // Sort by place name, then stream letter/items continuously so the
-        // CSS column flow spills A→B→C down and across columns.
         const sorted = rows.slice().sort((a, b) =>
           (a.place_name || '').localeCompare(b.place_name || '', undefined, { sensitivity: 'base' }));
 
@@ -121,4 +128,93 @@
     .catch(() => {
       el.innerHTML = '<p class="notice-caption">Could not load spots.</p>';
     });
+
+  // ---- Wall layout: immersive kinetic marquee, one row per letter ----
+  function renderWall(rows, title) {
+    document.body.classList.add('wall-mode');
+
+    if (!rows.length) {
+      el.innerHTML = '<p class="notice-caption" style="padding:32px">Nothing here.</p>';
+      return;
+    }
+
+    // Group by first letter (ignoring leading articles)
+    const alpha = {};
+    rows.forEach(s => {
+      if (!s.place_name) return;
+      const l = s.place_name.replace(/^(the |le |la |les )/i, '')[0].toUpperCase();
+      (alpha[l] = alpha[l] || []).push(s);
+    });
+    const letters = Object.keys(alpha).sort();
+    if (!letters.length) { el.innerHTML = ''; return; }
+    const maxCount = Math.max(...letters.map(l => alpha[l].length));
+
+    // Build stage: triple the letter-rows vertically for seamless vertical loop
+    const stage = document.createElement('div');
+    stage.id = 'wall-stage';
+    const rowEls = [];
+    const allLetters = [...letters, ...letters, ...letters];
+
+    allLetters.forEach(letter => {
+      const group = alpha[letter];
+      const row = document.createElement('div');
+      row.className = 'wall-row';
+      const inner = document.createElement('div');
+      inner.className = 'wall-row-inner';
+
+      // Repeat the group enough times to fill very wide screens seamlessly
+      const rep = [];
+      for (let i = 0; i < 12; i++) rep.push(...group);
+      rep.forEach(spot => {
+        const a = document.createElement('a');
+        a.className = 'wall-item';
+        a.textContent = spot.place_name;
+        a.href = '/spot/' + spot.id;
+        inner.appendChild(a);
+        const d = document.createElement('span');
+        d.className = 'wall-dot';
+        d.textContent = '·';
+        inner.appendChild(d);
+      });
+
+      row.appendChild(inner);
+      stage.appendChild(row);
+      rowEls.push({ inner, count: group.length, hOff: 0 });
+    });
+
+    // Replace the whole page body content with the wall + a corner dot nav
+    el.innerHTML = '';
+    el.appendChild(stage);
+
+    // Corner dot nav — quiet seed. For now links to the plain index; later
+    // this expands into a city/category/search overlay.
+    const nav = document.createElement('a');
+    nav.className = 'wall-nav';
+    nav.textContent = '\u00B7'; // ·
+    nav.href = '/spots';
+    nav.setAttribute('aria-label', 'Index');
+    document.body.appendChild(nav);
+
+    const ROW_H = 52;
+    const BLOCK = letters.length * ROW_H;
+    let lastSy = 0;
+
+    stage.addEventListener('scroll', () => {
+      const sy = stage.scrollTop;
+      const delta = sy - lastSy;
+      lastSy = sy;
+      if (sy < BLOCK * 0.4) stage.scrollTop = sy + BLOCK;
+      if (sy > BLOCK * 1.6) stage.scrollTop = sy - BLOCK;
+      rowEls.forEach(r => {
+        const speed = (r.count / maxCount) * 0.55 + 0.08;
+        r.hOff -= delta * speed;
+        const w = r.inner.scrollWidth / 12;
+        if (r.hOff < -w) r.hOff += w;
+        if (r.hOff > 0) r.hOff -= w;
+        r.inner.style.transform = 'translateX(' + r.hOff + 'px)';
+      });
+    }, { passive: true });
+
+    stage.scrollTop = BLOCK;
+  }
 })();
