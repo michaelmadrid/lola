@@ -149,9 +149,16 @@
     if (!letters.length) { el.innerHTML = ''; return; }
     const maxCount = Math.max(...letters.map(l => alpha[l].length));
 
-    // Build stage: triple the letter-rows vertically for seamless vertical loop
+    const isTouch = window.matchMedia('(hover: none)').matches || ('ontouchstart' in window);
+    const ROW_H = isTouch ? 34 : 52;   // must match .wall-row height in CSS
+
+    // Build a vertically-tripled stack of rows for seamless vertical looping.
     const stage = document.createElement('div');
     stage.id = 'wall-stage';
+    const track = document.createElement('div');
+    track.className = 'wall-track';
+    stage.appendChild(track);
+
     const rowEls = [];
     const allLetters = [...letters, ...letters, ...letters];
 
@@ -162,15 +169,14 @@
       const inner = document.createElement('div');
       inner.className = 'wall-row-inner';
 
-      // Repeat the group enough times to fill very wide screens seamlessly
       const rep = [];
       for (let i = 0; i < 12; i++) rep.push(...group);
       rep.forEach(spot => {
         const a = document.createElement('a');
         a.className = 'wall-item';
         a.textContent = spot.place_name;
-        // The wall is an overture: clicking a name drops you into that spot's
-        // city, filtered to the wall's category — the useful browsing view.
+        // The wall is an overture: a name drops you into that spot's city,
+        // filtered to the wall's category — the useful browsing view.
         const citySlug = (spot.city_slug || spot.city || '').toLowerCase();
         if (citySlug && fCat) {
           a.href = '/spots?city=' + encodeURIComponent(citySlug) + '&cat=' + encodeURIComponent(fCat);
@@ -182,84 +188,115 @@
         inner.appendChild(a);
         const d = document.createElement('span');
         d.className = 'wall-dot';
-        d.textContent = '·';
+        d.textContent = '\u00B7';
         inner.appendChild(d);
       });
 
       row.appendChild(inner);
-      stage.appendChild(row);
-      rowEls.push({ inner, count: group.length, hOff: 0 });
+      track.appendChild(row);
+      rowEls.push({ inner, count: group.length, hOff: 0, w: 0 });
     });
 
-    // Replace the whole page body content with the wall + a corner dot nav
     el.innerHTML = '';
     el.appendChild(stage);
 
-    // Corner dot nav — quiet seed. For now links to the plain index; later
-    // this expands into a city/category/search overlay.
-    const nav = document.createElement('a');
-    nav.className = 'wall-nav';
-    nav.textContent = '\u00B7'; // ·
-    nav.href = '/spots';
-    nav.setAttribute('aria-label', 'Index');
-    document.body.appendChild(nav);
+    // Persistent ANNEX wordmark — brand + way out (present on all screens).
+    const mark = document.createElement('a');
+    mark.className = 'wall-mark';
+    mark.textContent = 'ANNEX';
+    mark.href = '/';
+    mark.setAttribute('aria-label', 'Annex home');
+    document.body.appendChild(mark);
 
-    const isTouch = window.matchMedia('(hover: none)').matches ||
-                    ('ontouchstart' in window);
-    const ROW_H = isTouch ? 34 : 52;   // must match .wall-row height in CSS
-    const BLOCK = letters.length * ROW_H;
+    // Measure a single group's width per row (for horizontal wrap).
+    rowEls.forEach(r => { r.w = r.inner.scrollWidth / 12; });
 
-    if (isTouch) {
-      // Mobile: autonomous drift. Rows move on their own via rAF; the stage
-      // never hijacks touch scroll, so nothing fights the browser.
-      stage.style.overflow = 'hidden';
+    const BLOCK = letters.length * ROW_H;   // one alphabet's vertical height
+    let vOff = -BLOCK;                       // start in the middle copy
 
-      // Wrap all rows so we can translateY the whole column for vertical drift.
-      const track = document.createElement('div');
-      track.className = 'wall-track';
-      while (stage.firstChild) track.appendChild(stage.firstChild);
-      stage.appendChild(track);
+    // --- Drag-to-pan (Google-Maps style) with per-row horizontal parallax ---
+    let dragging = false, lastX = 0, lastY = 0;
+    let velX = 0, velY = 0;                  // for fling inertia
+    let idle = true, idleTimer = null;
 
-      rowEls.forEach(r => { r.w = r.inner.scrollWidth / 12; });
-
-      let vOff = -BLOCK;           // start mid-block for seamless vertical loop
-      const vSpeed = 0.18;         // gentle px/frame
-
-      function tick() {
-        vOff -= vSpeed;
-        if (vOff <= -BLOCK * 2) vOff += BLOCK;
-        track.style.transform = 'translateY(' + vOff + 'px)';
-
-        rowEls.forEach(r => {
-          const speed = (r.count / maxCount) * 1.1 + 0.25;
-          r.hOff -= speed;
-          if (r.hOff < -r.w) r.hOff += r.w;
-          r.inner.style.transform = 'translateX(' + r.hOff + 'px)';
-        });
-        requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-      return;
-    }
-
-    // Desktop: scroll-driven (vertical scroll powers horizontal motion).
-    let lastSy = 0;
-    stage.addEventListener('scroll', () => {
-      const sy = stage.scrollTop;
-      const delta = sy - lastSy;
-      lastSy = sy;
-      if (sy < BLOCK * 0.4) stage.scrollTop = sy + BLOCK;
-      if (sy > BLOCK * 1.6) stage.scrollTop = sy - BLOCK;
+    function applyHorizontal(dx) {
       rowEls.forEach(r => {
-        const speed = (r.count / maxCount) * 0.55 + 0.08;
-        r.hOff -= delta * speed;
-        const w = r.inner.scrollWidth / 12;
-        if (r.hOff < -w) r.hOff += w;
-        if (r.hOff > 0) r.hOff -= w;
+        // Per-row parallax: denser letters drift faster, creating depth.
+        const mult = (r.count / maxCount) * 0.9 + 0.35;
+        r.hOff += dx * mult;
+        if (r.w > 0) {
+          r.hOff = ((r.hOff % r.w) + r.w) % r.w - r.w; // keep in (-w, 0]
+        }
         r.inner.style.transform = 'translateX(' + r.hOff + 'px)';
       });
-    }, { passive: true });
+    }
+    function applyVertical(dy) {
+      vOff += dy;
+      // Seamless vertical loop across the 3 stacked copies.
+      if (vOff <= -BLOCK * 2) vOff += BLOCK;
+      if (vOff > -1) vOff -= BLOCK;
+      track.style.transform = 'translateY(' + vOff + 'px)';
+    }
 
-    stage.scrollTop = BLOCK;
+    applyVertical(0);
+    applyHorizontal(0);
+
+    function onDown(x, y) {
+      dragging = true; idle = false;
+      lastX = x; lastY = y; velX = 0; velY = 0;
+      stage.classList.add('is-dragging');
+    }
+    function onMove(x, y) {
+      if (!dragging) return;
+      const dx = x - lastX, dy = y - lastY;
+      lastX = x; lastY = y;
+      velX = dx; velY = dy;
+      applyHorizontal(dx);
+      applyVertical(dy);
+    }
+    function onUp() {
+      dragging = false;
+      stage.classList.remove('is-dragging');
+      scheduleIdle();
+    }
+
+    // Pointer events cover mouse + touch + pen uniformly.
+    stage.addEventListener('pointerdown', e => { onDown(e.clientX, e.clientY); });
+    window.addEventListener('pointermove', e => { onMove(e.clientX, e.clientY); });
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+
+    // Suppress click navigation if the pointer actually dragged (so a fling
+    // doesn't accidentally open a spot). Small threshold.
+    let downX = 0, downY = 0;
+    stage.addEventListener('pointerdown', e => { downX = e.clientX; downY = e.clientY; });
+    stage.addEventListener('click', e => {
+      const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+      if (moved > 6) { e.preventDefault(); }
+    }, true);
+
+    function scheduleIdle() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => { idle = true; }, 2600);
+    }
+    scheduleIdle();
+
+    // Animation loop: fling inertia after release, then gentle idle drift.
+    function tick() {
+      if (!dragging) {
+        // Inertia decay from the last drag velocity.
+        if (Math.abs(velX) > 0.05 || Math.abs(velY) > 0.05) {
+          applyHorizontal(velX);
+          applyVertical(velY);
+          velX *= 0.94; velY *= 0.94;
+        } else if (idle) {
+          // Ambient resting drift — slow, leftward + gently up.
+          applyHorizontal(-0.4);
+          applyVertical(-0.15);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
   }
 })();

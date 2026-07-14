@@ -584,13 +584,12 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   inset: 0;
   width: 100%;
   height: 100vh;
-  overflow-y: scroll;
+  overflow: hidden;
   background: var(--bg);
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  cursor: grab;
+  touch-action: none;   /* we handle all panning ourselves */
 }
-#wall-stage::-webkit-scrollbar { display: none; }
+#wall-stage.is-dragging { cursor: grabbing; }
 .wall-track { will-change: transform; }
 
 .wall-row {
@@ -625,22 +624,25 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   flex-shrink: 0;
 }
 
+/* Persistent ANNEX wordmark — brand + exit, all screen sizes */
+.wall-mark {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  z-index: 10;
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  mix-blend-mode: difference;
+  color: #fff;   /* difference-blended against names for legibility */
+}
+
 @media (max-width: 640px) {
   .wall-row { height: 34px; }
   .wall-item { font-size: 20px; padding: 0 9px; }
   .wall-dot { font-size: 20px; }
 }
 
-/* Corner dot nav — the quiet seed that (later) expands into filters */
-.wall-nav {
-  position: fixed;
-  top: 18px;
-  left: 20px;
-  z-index: 10;
-  font-family: var(--serif);
-  font-size: 28px;
-  line-height: 1;
-  color: var(--ink);
-  cursor: pointer;
-  user-select: none;
-}
