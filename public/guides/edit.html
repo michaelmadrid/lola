@@ -64,12 +64,17 @@
             <button class="seg__btn" data-val="alpha" type="button">A–Z</button>
           </div>
         </div>
-        <button class="guide-settings__img" id="cover-btn" type="button">+ Cover image</button>
       </div>
 
-      <div class="guide-cover" id="guide-cover" hidden>
-        <img id="cover-img" alt="Cover">
-        <button class="guide-cover__rm" id="cover-rm" type="button">Remove</button>
+      <div class="guide-cover" id="guide-cover">
+        <button class="guide-cover__drop" id="cover-btn" type="button">
+          <span class="guide-cover__plus">+</span>
+          <span>Add a cover image</span>
+        </button>
+        <div class="guide-cover__filled" id="cover-filled" hidden>
+          <img id="cover-img" alt="Cover">
+          <button class="guide-cover__rm" id="cover-rm" type="button">Remove</button>
+        </div>
       </div>
 
       <div class="guide-spots" id="guide-spots">

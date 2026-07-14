@@ -20,7 +20,6 @@
   const saveStat  = document.getElementById('save-status');
   const publishBtn= document.getElementById('publish-btn');
   const coverBtn  = document.getElementById('cover-btn');
-  const coverBox  = document.getElementById('guide-cover');
   const coverImg  = document.getElementById('cover-img');
   const coverRm   = document.getElementById('cover-rm');
 
@@ -154,6 +153,7 @@
           headers: { 'Authorization': 'Bearer ' + api.token.get() },
           body: fd,
         });
+        if (!res.ok) { flash('Upload failed (' + res.status + ')'); return; }
         const data = await res.json();
         if (data.url) { showCover(data.url); patchGuide({ image_url: data.url }, true); }
         else flash('Upload failed');
@@ -162,10 +162,16 @@
     inp.click();
   });
   coverRm.addEventListener('click', () => {
-    coverBox.hidden = true; coverImg.src = '';
+    coverImg.src = '';
+    document.getElementById('cover-filled').hidden = true;
+    coverBtn.hidden = false;
     patchGuide({ image_url: null }, true);
   });
-  function showCover(url) { coverImg.src = url; coverBox.hidden = false; }
+  function showCover(url) {
+    coverImg.src = url;
+    document.getElementById('cover-filled').hidden = false;
+    coverBtn.hidden = true;
+  }
 
   function renderGuideSpots() {
     if (!items.length) {
@@ -242,6 +248,14 @@
       row.addEventListener('dragover', (e) => {
         e.preventDefault();
         if (!dragEl || dragEl === row) return;
+        // In category mode, a spot can only be reordered WITHIN its own
+        // category cluster — you can't drag a Stay into Coffee (category is
+        // the spot's own property, not something the guide sets).
+        if (grouping === 'category') {
+          const a = items.find(i => i.id === parseInt(dragEl.dataset.item, 10));
+          const b = items.find(i => i.id === parseInt(row.dataset.item, 10));
+          if (a && b && (a.category || 'other') !== (b.category || 'other')) return;
+        }
         const rect = row.getBoundingClientRect();
         const after = (e.clientY - rect.top) / rect.height > 0.5;
         row.parentNode.insertBefore(dragEl, after ? row.nextSibling : row);

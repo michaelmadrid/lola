@@ -131,15 +131,6 @@
   text-transform: uppercase;
   color: var(--ink-3);
 }
-.guide-settings__img {
-  background: none;
-  border: none;
-  color: var(--accent);
-  cursor: pointer;
-  font-size: var(--text-small, 13px);
-  text-decoration: underline;
-  font-family: var(--sans);
-}
 
 .seg {
   display: inline-flex;
@@ -158,8 +149,26 @@
 }
 .seg__btn.is-active { background: var(--ink); color: var(--bg); }
 
-.guide-cover { position: relative; margin: var(--space-3, 12px) 0; max-width: 320px; }
-.guide-cover img { width: 100%; border-radius: var(--r-card, 6px); display: block; }
+.guide-cover { margin: var(--space-4, 16px) 0; max-width: 340px; }
+.guide-cover__drop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  width: 100%;
+  padding: var(--space-5, 20px);
+  border: 1px dashed var(--rule);
+  border-radius: var(--r-card, 6px);
+  background: var(--surface, #fafafa);
+  color: var(--ink-3);
+  font-family: var(--sans);
+  font-size: var(--text-small, 13px);
+  cursor: pointer;
+  justify-content: center;
+}
+.guide-cover__drop:hover { border-color: var(--ink-3); color: var(--ink-2); }
+.guide-cover__plus { font-size: 18px; line-height: 1; }
+.guide-cover__filled { position: relative; }
+.guide-cover__filled img { width: 100%; border-radius: var(--r-card, 6px); display: block; }
 .guide-cover__rm {
   position: absolute; top: 8px; right: 8px;
   background: rgba(0,0,0,0.6); color: #fff; border: none;
@@ -168,13 +177,19 @@
 
 .guide-spots { margin-top: var(--space-4, 16px); }
 .guide-group__label {
-  font-family: var(--serif);
-  font-size: var(--text-body, 16px);
-  color: var(--ink-2);
-  margin: var(--space-5, 20px) 0 var(--space-1, 4px);
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans);
+  font-size: var(--text-tiny, 11px);
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: var(--space-6, 28px) 0 var(--space-2, 8px);
 }
+/* First group label needs no top gap */
+.guide-spots > .guide-group__label:first-child { margin-top: var(--space-2, 8px); }
+/* The gspot right after a label shouldn't draw its own top rule (avoids
+   the doubled line under the category header). */
+.guide-group__label + .gspot { border-top: none; }
 
 .gspot {
   display: grid;
