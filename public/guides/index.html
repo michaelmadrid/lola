@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Guides — kit</title>
+  <title>Guides — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/spots.css">
+  <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/guides.css">
 </head>
 <body>
@@ -18,7 +20,7 @@
         <span class="menu-btn__bar menu-btn__bar--bottom"></span>
       </span>
     </button>
-    <a href="/" class="logo">kit</a>
+    <a href="/" class="logo">annex</a>
   </div>
   <nav class="nav" data-nav="primary"></nav>
   <div class="head__right">
@@ -28,23 +30,37 @@
 </header>
 
 <div class="menu-overlay" id="menu-overlay" data-nav="drawer">
-    <div class="menu-overlay__inner"></div>
-  </div>
+  <div class="menu-overlay__inner"></div>
+</div>
 
-<main class="page page-guides">
+<main class="page page-spots">
 
   <header class="mast">
     <div class="mast__head">
       <div>
         <h1 class="mast__title">Guides</h1>
-        <p class="mast__intro">Curated city stories from your spots.</p>
+        <p class="mast__count" id="guide-count"></p>
       </div>
-      <button class="btn" id="new-guide-btn" type="button">+ New guide</button>
+      <div class="mast__head-right">
+        <nav class="view-switch" id="view-switch">
+          <button class="view-switch__item is-active" data-view="all" type="button">All</button>
+          <button class="view-switch__item" data-view="published" type="button">Published</button>
+          <button class="view-switch__item" data-view="draft" type="button">Drafts</button>
+        </nav>
+        <button class="btn" id="new-guide-btn" type="button">+ New guide</button>
+      </div>
     </div>
   </header>
 
+  <div class="guides-controls">
+    <input type="text" class="admin-search" id="guide-search" placeholder="Search guides…" autocomplete="off">
+    <select class="select select--small" id="city-filter">
+      <option value="">All cities</option>
+    </select>
+  </div>
+
   <div class="guides-list" id="guides-list">
-    <div class="guides-list__loading">Loading…</div>
+    <div class="stream__empty">Loading…</div>
   </div>
 
 </main>
@@ -52,7 +68,7 @@
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
-<script src="/js/guides-index.js"></script>
 <script src="/js/nav.js"></script>
+<script src="/js/guides-list.js"></script>
 </body>
 </html>

@@ -4,136 +4,106 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");document.addEventListener("DOMContentLoaded",function(){document.body.classList.add("dark");});}}catch(e){}</script>
-  <title>Edit guide — kit</title>
+  <title>Editing guide — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/spots.css">
+  <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/guides.css">
+  <link rel="stylesheet" href="/css/uploader.css">
 </head>
 <body>
 
 <header class="head">
   <div class="head__left">
-    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
-      <span class="menu-btn__icon" aria-hidden="true">
-        <span class="menu-btn__bar menu-btn__bar--top"></span>
-        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
-      </span>
-    </button>
-    <a href="/" class="logo">kit</a>
+    <a href="/guides/" class="logo">annex</a>
   </div>
-  <nav class="nav">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/travel/" data-auth="in">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" class="is-active" data-auth="in">Guides</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
-  </nav>
+  <nav class="nav" data-nav="primary"></nav>
   <div class="head__right">
-    <span class="where">Bali</span>
     <span id="hdr-time">—</span>
   </div>
 </header>
 
-<div class="menu-overlay" id="menu-overlay">
-  <div class="menu-overlay__inner">
-    <a href="/" data-auth="in">Home</a>
-    <a href="/travel/" data-auth="in">Travel</a>
-    <a href="/spots/" data-auth="in">Spots</a>
-    <a href="/guides/" class="is-active" data-auth="in">Guides</a>
-    <a href="/settings.html" data-auth="in">Settings</a>
-    <a href="/admin/" data-auth="in">Admin</a>
-    <a href="/login.html" data-auth="out">Sign in</a>
-    <a href="#" id="signout-link" class="menu-overlay__signout" data-auth="in">Sign out</a>
-  </div>
-</div>
+<main class="page page-guide-edit">
 
-<main class="page page-guide-edit" id="page-guide-edit">
-
-  <header class="ge-bar">
-    <div class="ge-bar__left">
-      <a href="/guides/" class="ge-bar__back" aria-label="Back to guides">←  All guides</a>
+  <header class="guide-edit__bar">
+    <div class="guide-edit__crumb">
+      <a href="/guides/">Guides</a> <span>/</span> <span id="crumb-title">Editing</span>
     </div>
-    <div class="ge-bar__center">
-      <span class="ge-bar__save-state" id="ge-save-state"></span>
-    </div>
-    <div class="ge-bar__right">
-      <button class="ge-bar__btn" id="ge-preview-btn" type="button">Preview</button>
-      <button class="ge-bar__btn ge-bar__btn--primary" id="ge-publish-btn" type="button">Publish</button>
-      <button class="ge-bar__btn ge-bar__btn--danger" id="ge-delete-btn" type="button">Delete</button>
+    <div class="guide-edit__actions">
+      <span class="guide-edit__saved" id="save-status"></span>
+      <button class="btn btn--ghost" id="delete-btn" type="button">Delete</button>
+      <button class="btn" id="publish-btn" type="button">Publish</button>
     </div>
   </header>
 
-  <div class="ge-loading" id="ge-loading">Loading…</div>
-  <div class="ge-error" id="ge-error" hidden></div>
+  <div class="builder">
 
-  <!-- ========== EDITOR ========== -->
-  <div class="ge-editor" id="ge-editor" hidden>
+    <!-- LEFT: the guide being assembled -->
+    <section class="builder__guide">
+      <input type="text" class="guide-title" id="guide-title" placeholder="Untitled guide" autocomplete="off">
+      <textarea class="guide-intro" id="guide-intro" placeholder="Optional intro — set the scene…" rows="2"></textarea>
 
-    <!-- Setup row: city + title fields -->
-    <div class="ge-setup">
-      <div class="ge-city-row">
-        <span class="ge-city-row__label">City</span>
-        <button class="picker-btn ge-city-btn" id="ge-city-btn" type="button" aria-haspopup="true">
-          <span id="ge-city-name" class="picker-btn__label">Pick a city</span>
-          <span class="picker-btn__caret" aria-hidden="true">▾</span>
-        </button>
-        <div class="picker-popover ge-city-popover" id="ge-city-popover" hidden>
-          <input type="text" class="picker-search" id="ge-city-search" placeholder="Search cities…" autocomplete="off">
-          <div class="picker-list" id="ge-city-list"></div>
+      <div class="guide-settings">
+        <div class="guide-settings__group">
+          <span class="guide-settings__label">Anchor city</span>
+          <select class="select select--small" id="guide-city">
+            <option value="">Worldwide</option>
+          </select>
         </div>
+        <div class="guide-settings__group">
+          <span class="guide-settings__label">Group</span>
+          <div class="seg" id="seg-grouping">
+            <button class="seg__btn is-active" data-val="list" type="button">Flat</button>
+            <button class="seg__btn" data-val="category" type="button">By category</button>
+          </div>
+        </div>
+        <div class="guide-settings__group">
+          <span class="guide-settings__label">Order</span>
+          <div class="seg" id="seg-sort">
+            <button class="seg__btn is-active" data-val="manual" type="button">Manual</button>
+            <button class="seg__btn" data-val="alpha" type="button">A–Z</button>
+          </div>
+        </div>
+        <button class="guide-settings__img" id="cover-btn" type="button">+ Cover image</button>
       </div>
 
-      <input
-        type="text"
-        class="ge-title"
-        id="ge-title"
-        placeholder="Guide title"
-        autocomplete="off"
-      >
+      <div class="guide-cover" id="guide-cover" hidden>
+        <img id="cover-img" alt="Cover">
+        <button class="guide-cover__rm" id="cover-rm" type="button">Remove</button>
+      </div>
 
-      <input
-        type="text"
-        class="ge-subtitle"
-        id="ge-subtitle"
-        placeholder="A short subtitle (optional)"
-        autocomplete="off"
-      >
+      <div class="guide-spots" id="guide-spots">
+        <div class="stream__empty">No spots yet — add from the right.</div>
+      </div>
+    </section>
 
-      <textarea
-        class="ge-intro"
-        id="ge-intro"
-        placeholder="Optional intro… markdown supported"
-        rows="3"
-      ></textarea>
-    </div>
-
-    <!-- Picker panel: tap-to-toggle list of city's spots -->
-    <div class="ge-picker">
-      <header class="ge-picker__head">
-        <span class="ge-picker__count" id="ge-picker-count"></span>
-        <button class="ge-picker__selectall" id="ge-picker-selectall" type="button" hidden>Select all</button>
-      </header>
-      <div class="ge-picker__empty" id="ge-picker-empty" hidden></div>
-      <div class="ge-picker__list" id="ge-picker-list"></div>
-    </div>
+    <!-- RIGHT: persistent spot picker -->
+    <aside class="builder__picker">
+      <div class="picker">
+        <h3 class="picker__title">Add spots</h3>
+        <div class="picker__filters">
+          <input type="text" class="admin-search" id="picker-search" placeholder="Search all spots…" autocomplete="off">
+          <select class="select select--small" id="picker-city">
+            <option value="">All cities</option>
+          </select>
+          <select class="select select--small" id="picker-cat">
+            <option value="">All categories</option>
+          </select>
+        </div>
+        <div class="picker__list" id="picker-list">
+          <div class="stream__empty">Loading spots…</div>
+        </div>
+      </div>
+    </aside>
 
   </div>
-
-  <!-- ========== PREVIEW ========== -->
-  <article class="ge-preview" id="ge-preview" hidden>
-    <header class="ge-preview__head">
-      <p class="ge-preview__city" id="ge-preview-city"></p>
-      <h1 class="ge-preview__title" id="ge-preview-title"></h1>
-      <p class="ge-preview__subtitle" id="ge-preview-subtitle"></p>
-    </header>
-    <div class="ge-preview__intro" id="ge-preview-intro"></div>
-    <div id="ge-preview-items"></div>
-  </article>
-
 </main>
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/uploader.js"></script>
 <script src="/js/guides-edit.js"></script>
 </body>
 </html>

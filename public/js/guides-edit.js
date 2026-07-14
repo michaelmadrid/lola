@@ -1,528 +1,349 @@
-/* =====================================================================
-   guides-edit.js — V1.5
-
-   Pick-and-share city guide editor. Flat list, tap-to-toggle.
-   Sections deferred entirely — schema supports them, but no UI.
-
-   Flow:
-   1. Setup at top: city picker (locked when items added) + title +
-      subtitle + intro. All autosave on blur.
-   2. Below setup: full list of every spot from the guide's city.
-      Each spot is a row with a tap-to-toggle "in this guide" state.
-      Tap → adds (POST /api/guides/:id/items).
-      Tap again → removes (DELETE).
-      "Select all" / "Deselect all" toggles all visible.
-   3. Top bar: Preview, Publish, Delete.
-   ===================================================================== */
-
+/* guides-edit.js — the Guide builder.
+   Left: the guide (title, intro, settings, ordered spots w/ per-spot notes).
+   Right: persistent filterable spot picker (search + city + category).
+   Autosaves guide meta on change; item add/remove/reorder hit the API live. */
 (function () {
-  // ---------- DOM refs ----------
-  const loadingEl = document.getElementById('ge-loading');
-  const errorEl   = document.getElementById('ge-error');
-  const editorEl  = document.getElementById('ge-editor');
-  const previewEl = document.getElementById('ge-preview');
+  if (!api.isSignedIn()) { location.href = '/login.html?next=' + encodeURIComponent(location.pathname); return; }
 
-  const titleInput    = document.getElementById('ge-title');
-  const subtitleInput = document.getElementById('ge-subtitle');
-  const introInput    = document.getElementById('ge-intro');
+  const guideId = parseInt(new URLSearchParams(location.search).get('id'), 10);
+  if (!guideId) { location.href = '/guides/'; return; }
 
-  const cityBtn      = document.getElementById('ge-city-btn');
-  const cityName     = document.getElementById('ge-city-name');
-  const cityPopover  = document.getElementById('ge-city-popover');
-  const citySearch   = document.getElementById('ge-city-search');
-  const cityList     = document.getElementById('ge-city-list');
+  const esc = (s) => util.escapeHtml(String(s == null ? '' : s));
 
-  const pickerListEl = document.getElementById('ge-picker-list');
-  const pickerCountEl = document.getElementById('ge-picker-count');
-  const pickerSelectAllBtn = document.getElementById('ge-picker-selectall');
-  const pickerEmptyEl = document.getElementById('ge-picker-empty');
+  const titleEl   = document.getElementById('guide-title');
+  const introEl   = document.getElementById('guide-intro');
+  const cityEl    = document.getElementById('guide-city');
+  const segGroup  = document.getElementById('seg-grouping');
+  const segSort   = document.getElementById('seg-sort');
+  const spotsEl   = document.getElementById('guide-spots');
+  const crumbEl   = document.getElementById('crumb-title');
+  const saveStat  = document.getElementById('save-status');
+  const publishBtn= document.getElementById('publish-btn');
+  const coverBtn  = document.getElementById('cover-btn');
+  const coverBox  = document.getElementById('guide-cover');
+  const coverImg  = document.getElementById('cover-img');
+  const coverRm   = document.getElementById('cover-rm');
 
-  const previewBtn   = document.getElementById('ge-preview-btn');
-  const publishBtn   = document.getElementById('ge-publish-btn');
-  const deleteBtn    = document.getElementById('ge-delete-btn');
-  const saveStateEl  = document.getElementById('ge-save-state');
+  const pSearch = document.getElementById('picker-search');
+  const pCity   = document.getElementById('picker-city');
+  const pCat    = document.getElementById('picker-cat');
+  const pList   = document.getElementById('picker-list');
 
-  const previewTitle    = document.getElementById('ge-preview-title');
-  const previewSubtitle = document.getElementById('ge-preview-subtitle');
-  const previewCity     = document.getElementById('ge-preview-city');
-  const previewIntro    = document.getElementById('ge-preview-intro');
-  const previewItems    = document.getElementById('ge-preview-items');
-
-  // ---------- State ----------
-  let guideId = null;
   let guide = null;
-  let items = [];          // flat list — V1.5 doesn't use sections
-  let allCities = [];
+  let items = [];
   let allSpots = [];
-  let selectedSet = new Set(); // spot_ids in the guide (fast toggle lookup)
-  let isPreview = false;
+  let categories = [];
+  let grouping = 'list';
+  let sortMode = 'manual';
+  const CAT_LABELS = {};
 
-  // ---------- Init ----------
-  const params = new URLSearchParams(location.search);
-  guideId = parseInt(params.get('id'), 10);
-  if (!guideId) {
-    showError('No guide id provided.');
-    return;
+  function flash(msg) {
+    saveStat.textContent = msg;
+    if (msg === 'Saved') setTimeout(() => { if (saveStat.textContent === 'Saved') saveStat.textContent = ''; }, 1500);
   }
 
-  loadGuide();
-
-  async function loadGuide() {
+  async function init() {
     try {
-      const data = await api.get('/api/guides/' + guideId);
-      guide = data.guide;
-      items = data.items || [];
-      selectedSet = new Set(items.map(it => it.spot_id));
-      hydrateEditor();
-      loadingEl.hidden = true;
-      editorEl.hidden = false;
-      if (guide.city_id) {
-        await loadSavesAndRenderPicker();
-      } else {
-        renderPickerEmpty();
-      }
+      const [gData, spotData, catData, cityData] = await Promise.all([
+        api.get('/api/guides/' + guideId),
+        api.get('/api/spots?all=true&limit=1000'),
+        api.get('/api/spots/categories'),
+        api.get('/api/cities?include_all=true'),
+      ]);
+      guide = gData.guide;
+      items = (gData.items || []).slice().sort((a, b) => a.position - b.position);
+      allSpots = (spotData.spots || []).filter(s => !s.deleted_at && s.curated && s.place_name);
+      categories = catData.categories || [];
+      categories.forEach(c => { CAT_LABELS[c.value] = c.label; });
+      populateCitySelects(cityData.cities || []);
+      populateCatSelect();
+      hydrateGuideMeta();
+      renderGuideSpots();
+      renderPicker();
     } catch (err) {
-      console.error('loadGuide', err);
-      showError(err.message || 'Could not load guide.');
+      spotsEl.innerHTML = '<div class="stream__empty">Could not load guide.</div>';
     }
   }
 
-  function showError(msg) {
-    loadingEl.hidden = true;
-    errorEl.hidden = false;
-    errorEl.textContent = msg;
+  function spotCity(s) {
+    return (s.attached_cities && s.attached_cities[0] && s.attached_cities[0].name) || s.city_name || '';
   }
 
-  function hydrateEditor() {
-    titleInput.value = guide.title || '';
-    subtitleInput.value = guide.subtitle || '';
-    introInput.value = guide.intro || '';
-    updateCityButton();
-    updatePublishButton();
-    updateDocumentTitle();
+  function populateCitySelects(cities) {
+    const opts = cities.filter(c => c.name)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    cityEl.innerHTML = '<option value="">Worldwide</option>' + opts;
+    const names = Array.from(new Set(allSpots.map(spotCity).filter(Boolean))).sort();
+    pCity.innerHTML = '<option value="">All cities</option>' +
+      names.map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
   }
 
-  function updateCityButton() {
-    cityName.textContent = guide.city_name || 'Pick a city';
-    if (guide.city_name) cityName.classList.remove('is-placeholder');
-    else cityName.classList.add('is-placeholder');
-
-    if (items.length > 0) {
-      cityBtn.classList.add('is-locked');
-      cityBtn.title = 'Remove all spots from this guide before changing the city.';
-    } else {
-      cityBtn.classList.remove('is-locked');
-      cityBtn.title = '';
-    }
+  function populateCatSelect() {
+    pCat.innerHTML = '<option value="">All categories</option>' +
+      categories.map(c => `<option value="${esc(c.value)}">${esc(c.label)}</option>`).join('');
   }
 
-  function updateDocumentTitle() {
-    document.title = (guide.title || 'Untitled guide') + ' — kit';
+  function hydrateGuideMeta() {
+    titleEl.value = guide.title || '';
+    introEl.value = guide.intro || '';
+    cityEl.value = guide.city_id || '';
+    grouping = guide.grouping || 'list';
+    sortMode = guide.sort_mode || 'manual';
+    setSeg(segGroup, grouping);
+    setSeg(segSort, sortMode);
+    crumbEl.textContent = guide.title || 'Editing';
+    publishBtn.textContent = guide.status === 'published' ? 'Unpublish' : 'Publish';
+    if (guide.image_url) showCover(guide.image_url);
   }
 
-  // ---------- Save state ----------
-  let saveStateTimer = null;
-  function showSaveState(text, persistent) {
-    saveStateEl.textContent = text;
-    saveStateEl.classList.add('is-visible');
-    clearTimeout(saveStateTimer);
-    if (!persistent) {
-      saveStateTimer = setTimeout(() => {
-        saveStateEl.classList.remove('is-visible');
-      }, 1500);
-    }
+  function setSeg(seg, val) {
+    seg.querySelectorAll('.seg__btn').forEach(b => b.classList.toggle('is-active', b.dataset.val === val));
   }
 
-  // ---------- Field saves ----------
-  async function saveGuideField(patch) {
-    showSaveState('Saving…', true);
-    try {
-      const data = await api.patch('/api/guides/' + guideId, patch);
-      if (data.guide) {
-        guide = { ...guide, ...data.guide };
-        if ('city_id' in patch) {
-          const refreshed = await api.get('/api/guides/' + guideId);
-          guide = refreshed.guide;
-        }
-      }
-      updatePublishButton();
-      updateDocumentTitle();
-      showSaveState('Saved');
-      return true;
-    } catch (err) {
-      console.error('saveGuideField', err);
-      if (err.data && err.data.code === 'city_locked') {
-        showSaveState('City is locked', true);
-        alert(err.message || 'Remove all spots from this guide before changing the city.');
-      } else {
-        showSaveState('Save failed', true);
-      }
-      return false;
-    }
+  let saveTimer = null;
+  function patchGuide(patch, immediate) {
+    Object.assign(guide, patch);
+    clearTimeout(saveTimer);
+    const doSave = async () => {
+      flash('Saving…');
+      try {
+        const r = await api.patch('/api/guides/' + guideId, patch);
+        if (r.guide) Object.assign(guide, r.guide);
+        flash('Saved');
+      } catch (e) { flash('Save failed'); }
+    };
+    if (immediate) doSave(); else saveTimer = setTimeout(doSave, 700);
   }
 
-  titleInput.addEventListener('blur', () => {
-    if ((titleInput.value || '') === (guide.title || '')) return;
-    saveGuideField({ title: titleInput.value || null });
+  titleEl.addEventListener('input', () => {
+    crumbEl.textContent = titleEl.value || 'Editing';
+    patchGuide({ title: titleEl.value });
   });
-  subtitleInput.addEventListener('blur', () => {
-    if ((subtitleInput.value || '') === (guide.subtitle || '')) return;
-    saveGuideField({ subtitle: subtitleInput.value || null });
-  });
-  introInput.addEventListener('blur', () => {
-    if ((introInput.value || '') === (guide.intro || '')) return;
-    saveGuideField({ intro: introInput.value || null });
+  introEl.addEventListener('input', () => patchGuide({ intro: introEl.value }));
+  cityEl.addEventListener('change', () => {
+    const v = cityEl.value ? parseInt(cityEl.value, 10) : null;
+    patchGuide({ city_id: v }, true);
+    const name = cityEl.options[cityEl.selectedIndex] ? cityEl.options[cityEl.selectedIndex].textContent : '';
+    if (v && name && name !== 'Worldwide') { pCity.value = name; renderPicker(); }
   });
 
-  // ---------- City picker ----------
-  async function ensureCities() {
-    if (allCities.length) return;
-    try {
-      const data = await api.get('/api/cities');
-      allCities = (data.cities || []).filter(c => c.status !== 0);
-    } catch (err) {
-      console.error('ensureCities', err);
-    }
-  }
+  segGroup.addEventListener('click', (e) => {
+    const b = e.target.closest('.seg__btn'); if (!b) return;
+    grouping = b.dataset.val; setSeg(segGroup, grouping);
+    patchGuide({ grouping }, true);
+    renderGuideSpots();
+  });
+  segSort.addEventListener('click', (e) => {
+    const b = e.target.closest('.seg__btn'); if (!b) return;
+    sortMode = b.dataset.val; setSeg(segSort, sortMode);
+    patchGuide({ sort_mode: sortMode }, true);
+    if (sortMode === 'alpha') alphabetize();
+  });
 
-  function renderCityList(filter) {
-    const f = (filter || '').toLowerCase().trim();
-    const filtered = (f ? allCities.filter(c => c.name.toLowerCase().includes(f)) : allCities)
-      .slice(0, 60)
-      .map(c => `
-        <button class="picker-item ${guide.city_id === c.id ? 'is-current' : ''}" data-id="${c.id}" data-name="${util.escapeHtml(c.name)}">
-          <span>${util.escapeHtml(c.name)}</span>
-        </button>
-      `);
-    if (!filtered.length) {
-      cityList.innerHTML = '<div class="picker-empty">No cities found.</div>';
+  coverBtn.addEventListener('click', () => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.onchange = async () => {
+      const file = inp.files[0]; if (!file) return;
+      flash('Uploading…');
+      const fd = new FormData(); fd.append('image', file);
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + api.token.get() },
+          body: fd,
+        });
+        const data = await res.json();
+        if (data.url) { showCover(data.url); patchGuide({ image_url: data.url }, true); }
+        else flash('Upload failed');
+      } catch (e) { flash('Upload failed'); }
+    };
+    inp.click();
+  });
+  coverRm.addEventListener('click', () => {
+    coverBox.hidden = true; coverImg.src = '';
+    patchGuide({ image_url: null }, true);
+  });
+  function showCover(url) { coverImg.src = url; coverBox.hidden = false; }
+
+  function renderGuideSpots() {
+    if (!items.length) {
+      spotsEl.innerHTML = '<div class="stream__empty">No spots yet — add from the right.</div>';
       return;
     }
-    cityList.innerHTML = filtered.join('');
-    cityList.querySelectorAll('.picker-item').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = parseInt(btn.dataset.id, 10);
-        const name = btn.dataset.name;
-        guide.city_id = id;
-        guide.city_name = name;
-        cityName.textContent = name;
-        cityName.classList.remove('is-placeholder');
-        closePicker(cityPopover);
-        const ok = await saveGuideField({ city_id: id });
-        if (ok) {
-          allSpots = []; // bust cache
-          await loadSavesAndRenderPicker();
+    if (grouping === 'category') {
+      const groups = {};
+      items.forEach(it => { const k = it.category || 'other'; (groups[k] = groups[k] || []).push(it); });
+      const order = categories.map(c => c.value).filter(v => groups[v]);
+      Object.keys(groups).forEach(k => { if (!order.includes(k)) order.push(k); });
+      spotsEl.innerHTML = order.map(cat =>
+        `<div class="guide-group__label">${esc(CAT_LABELS[cat] || cat)}</div>` +
+        groups[cat].map(rowHtml).join('')
+      ).join('');
+    } else {
+      spotsEl.innerHTML = items.map(rowHtml).join('');
+    }
+    bindSpotRows();
+  }
+
+  function rowHtml(it) {
+    const cat = CAT_LABELS[it.category] || it.category || '';
+    const loc = [cat, it.city].filter(Boolean).join(' · ');
+    const ph = it.spot_tip ? esc(it.spot_tip) + '  (spot tip — click to override)' : 'add a note for this guide…';
+    return `
+      <div class="gspot" data-item="${it.id}" draggable="true">
+        <div class="gspot__handle" title="Drag to reorder">⠿</div>
+        <div class="gspot__body">
+          <div class="gspot__name">${esc(it.place_name)}</div>
+          ${loc ? `<div class="gspot__cat">${esc(loc)}</div>` : ''}
+          <textarea class="gspot__note" rows="1" data-item="${it.id}" placeholder="${ph}">${esc(it.note || '')}</textarea>
+        </div>
+        <button class="gspot__rm" data-item="${it.id}" title="Remove">×</button>
+      </div>`;
+  }
+
+  function bindSpotRows() {
+    spotsEl.querySelectorAll('.gspot__note').forEach(t => {
+      t.addEventListener('blur', () => {
+        const id = parseInt(t.dataset.item, 10);
+        const it = items.find(i => i.id === id);
+        if (it && (it.note || '') !== t.value) {
+          it.note = t.value;
+          api.patch('/api/guides/' + guideId + '/items/' + id, { note: t.value }).catch(() => {});
         }
+      });
+      t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px';
+      t.addEventListener('input', () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; });
+    });
+
+    spotsEl.querySelectorAll('.gspot__rm').forEach(b => {
+      b.addEventListener('click', async () => {
+        const id = parseInt(b.dataset.item, 10);
+        try {
+          await api.delete('/api/guides/' + guideId + '/items/' + id);
+          items = items.filter(i => i.id !== id);
+          renderGuideSpots(); renderPicker();
+        } catch (e) { alert('Could not remove'); }
+      });
+    });
+
+    bindDrag();
+  }
+
+  let dragEl = null;
+  function bindDrag() {
+    spotsEl.querySelectorAll('.gspot').forEach(row => {
+      row.addEventListener('dragstart', () => { dragEl = row; row.classList.add('is-dragging'); });
+      row.addEventListener('dragend', () => {
+        row.classList.remove('is-dragging'); dragEl = null;
+        persistOrder();
+      });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!dragEl || dragEl === row) return;
+        const rect = row.getBoundingClientRect();
+        const after = (e.clientY - rect.top) / rect.height > 0.5;
+        row.parentNode.insertBefore(dragEl, after ? row.nextSibling : row);
       });
     });
   }
 
-  cityBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    if (cityBtn.classList.contains('is-locked')) {
-      alert('Remove all spots from this guide before changing the city.');
-      return;
-    }
-    if (cityPopover.classList.contains('is-open')) {
-      closePicker(cityPopover);
-    } else {
-      await ensureCities();
-      renderCityList('');
-      openPicker(cityPopover);
-      setTimeout(() => citySearch && citySearch.focus(), 50);
-    }
-  });
-  if (citySearch) {
-    citySearch.addEventListener('input', () => renderCityList(citySearch.value));
+  function persistOrder() {
+    const ids = Array.from(spotsEl.querySelectorAll('.gspot')).map(r => parseInt(r.dataset.item, 10));
+    items.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+    items.forEach((it, i) => { it.position = i; });
+    api.patch('/api/guides/' + guideId + '/reorder', { order: ids })
+      .then(() => flash('Saved')).catch(() => flash('Save failed'));
   }
-  document.addEventListener('click', (e) => {
-    if (cityPopover && !cityPopover.hidden && !cityPopover.contains(e.target) && !cityBtn.contains(e.target)) {
-      closePicker(cityPopover);
-    }
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closePicker(cityPopover);
-  });
 
-  function openPicker(pop) { pop.hidden = false; pop.classList.add('is-open'); }
-  function closePicker(pop) { pop.classList.remove('is-open'); pop.hidden = true; }
-
-  // ---------- Spot picker ----------
-  async function ensureSaves() {
-    if (allSpots.length) return;
+  async function alphabetize() {
     try {
-      const data = await api.get('/api/spots?limit=500');
-      allSpots = (data.spots || []).filter(s => s.place_name && s.place_name.trim());
-    } catch (err) {
-      console.error('ensureSaves', err);
-    }
-  }
-
-  function getSpotsForCurrentCity() {
-    if (!guide.city_id) return [];
-    return allSpots.filter(s => {
-      if (!s.attached_cities) return false;
-      return s.attached_cities.some(c => c.id === guide.city_id);
-    });
-  }
-
-  async function loadSavesAndRenderPicker() {
-    pickerListEl.innerHTML = '<div class="ge-picker__loading">Loading spots…</div>';
-    pickerEmptyEl.hidden = true;
-    pickerSelectAllBtn.hidden = true;
-    await ensureSaves();
-    renderPicker();
-  }
-
-  function renderPickerEmpty() {
-    pickerEmptyEl.hidden = false;
-    pickerEmptyEl.innerHTML = '<p class="ge-picker__empty-line">Pick a city above to see your spots.</p>';
-    pickerListEl.innerHTML = '';
-    pickerCountEl.textContent = '';
-    pickerSelectAllBtn.hidden = true;
+      await api.post('/api/guides/' + guideId + '/alphabetize', {});
+      items.sort((a, b) => (a.place_name || '').localeCompare(b.place_name || ''));
+      items.forEach((it, i) => { it.position = i; });
+      renderGuideSpots();
+      flash('Saved');
+    } catch (e) { flash('Save failed'); }
   }
 
   function renderPicker() {
-    const spots = getSpotsForCurrentCity();
-    pickerEmptyEl.hidden = true;
+    const q = (pSearch.value || '').toLowerCase().trim();
+    const fCity = pCity.value;
+    const fCat = pCat.value;
+    const inGuide = new Set(items.map(i => i.spot_id));
 
-    updatePickerCount();
+    const rows = allSpots.filter(s => {
+      if (fCity && spotCity(s) !== fCity) return false;
+      if (fCat && (s.category || '') !== fCat) return false;
+      if (q) {
+        const hay = ((s.place_name || '') + ' ' + (s.tip || '')).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => (a.place_name || '').localeCompare(b.place_name || ''));
 
-    if (!spots.length) {
-      pickerSelectAllBtn.hidden = true;
-      pickerListEl.innerHTML = `
-        <div class="ge-picker__empty-line ge-picker__empty-line--inline">
-          No spots tagged for ${util.escapeHtml(guide.city_name || 'this city')} yet.
-          <br><a href="/spots/" class="ge-picker__empty-link">Capture some spots first →</a>
-        </div>
-      `;
-      return;
-    }
+    if (!rows.length) { pList.innerHTML = '<div class="stream__empty">No matching spots.</div>'; return; }
 
-    pickerSelectAllBtn.hidden = false;
-
-    pickerListEl.innerHTML = spots.map(s => {
-      const isSelected = selectedSet.has(s.id);
-      const tip = s.tip ? `<span class="ge-pick-row__tip">${util.escapeHtml(s.tip)}</span>` : '';
-      const cat = s.category ? `<span class="ge-pick-row__cat">${util.escapeHtml(s.category)}</span>` : '';
+    pList.innerHTML = rows.map(s => {
+      const added = inGuide.has(s.id);
+      const cat = CAT_LABELS[s.category] || s.category || '';
+      const meta = [cat, spotCity(s)].filter(Boolean).join(' · ');
       return `
-        <button class="ge-pick-row ${isSelected ? 'is-selected' : ''}" data-save-id="${s.id}" type="button">
-          <span class="ge-pick-row__check" aria-hidden="true">
-            <span class="ge-pick-row__check-mark">✓</span>
-          </span>
-          <span class="ge-pick-row__body">
-            <span class="ge-pick-row__name">${util.escapeHtml(s.place_name)}</span>
-            ${tip}
-          </span>
-          ${cat}
-        </button>
-      `;
+        <div class="pspot ${added ? 'is-added' : ''}" data-spot="${s.id}">
+          <div class="pspot__body">
+            <div class="pspot__name">${esc(s.place_name)}</div>
+            ${meta ? `<div class="pspot__meta">${esc(meta)}</div>` : ''}
+          </div>
+          <button class="pspot__add" data-spot="${s.id}" ${added ? 'disabled' : ''}>${added ? '✓' : '+'}</button>
+        </div>`;
     }).join('');
 
-    pickerListEl.querySelectorAll('.ge-pick-row').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const spotId = parseInt(btn.dataset.spotId, 10);
-        toggleSpot(spotId, btn);
-      });
+    pList.querySelectorAll('.pspot__add:not([disabled])').forEach(b => {
+      b.addEventListener('click', () => addSpot(parseInt(b.dataset.spot, 10)));
     });
   }
 
-  function updatePickerCount() {
-    const inGuideCount = items.length;
-    pickerCountEl.textContent = inGuideCount === 1 ? '1 spot' : `${inGuideCount} spots`;
-    const spots = getSpotsForCurrentCity();
-    const allSelected = spots.length > 0 && spots.every(s => selectedSet.has(s.id));
-    pickerSelectAllBtn.textContent = allSelected ? 'Deselect all' : 'Select all';
-    pickerSelectAllBtn.dataset.mode = allSelected ? 'deselect' : 'select';
-  }
-
-  // ---------- Toggle (optimistic) ----------
-  async function toggleSpot(spotId, rowEl) {
-    const wasSelected = selectedSet.has(spotId);
-    if (wasSelected) {
-      const item = items.find(it => it.spot_id === spotId);
-      if (!item) return;
-      selectedSet.delete(spotId);
-      items = items.filter(it => it.id !== item.id);
-      if (rowEl) rowEl.classList.remove('is-selected');
-      updatePickerCount();
-      updateCityButton();
-      showSaveState('Saving…', true);
-      try {
-        await api.delete('/api/guides/' + guideId + '/items/' + item.id);
-        showSaveState('Saved');
-      } catch (err) {
-        selectedSet.add(spotId);
-        items.push(item);
-        if (rowEl) rowEl.classList.add('is-selected');
-        updatePickerCount();
-        updateCityButton();
-        showSaveState('Failed — try again', true);
-      }
-    } else {
-      selectedSet.add(spotId);
-      const placeholder = { id: 'pending-' + spotId, spot_id: spotId, _pending: true };
-      items.push(placeholder);
-      if (rowEl) rowEl.classList.add('is-selected');
-      updatePickerCount();
-      updateCityButton();
-      showSaveState('Saving…', true);
-      try {
-        const data = await api.post('/api/guides/' + guideId + '/items', { spot_id: spotId });
-        const sourceSpot = allSpots.find(s => s.id === spotId);
-        const realItem = {
-          ...data.item,
-          place_name: sourceSpot ? sourceSpot.place_name : null,
-          save_tip: sourceSpot ? sourceSpot.tip : null,
-          category: sourceSpot ? sourceSpot.category : null,
-        };
-        items = items.filter(it => it.id !== placeholder.id);
-        items.push(realItem);
-        showSaveState('Saved');
-      } catch (err) {
-        selectedSet.delete(spotId);
-        items = items.filter(it => it.id !== placeholder.id);
-        if (rowEl) rowEl.classList.remove('is-selected');
-        updatePickerCount();
-        updateCityButton();
-        showSaveState(err.message || 'Failed', true);
-      }
-    }
-  }
-
-  // ---------- Select all / Deselect all ----------
-  pickerSelectAllBtn.addEventListener('click', async () => {
-    const spots = getSpotsForCurrentCity();
-    if (!spots.length) return;
-    const mode = pickerSelectAllBtn.dataset.mode || 'select';
-    pickerSelectAllBtn.disabled = true;
-    showSaveState(mode === 'select' ? 'Adding all…' : 'Removing all…', true);
-
+  async function addSpot(spotId) {
     try {
-      if (mode === 'select') {
-        const toAdd = spots.filter(s => !selectedSet.has(s.id));
-        for (const s of toAdd) {
-          try {
-            const data = await api.post('/api/guides/' + guideId + '/items', { spot_id: s.id });
-            const realItem = {
-              ...data.item,
-              place_name: s.place_name,
-              save_tip: s.tip,
-              category: s.category,
-            };
-            selectedSet.add(s.id);
-            items.push(realItem);
-          } catch (err) {
-            console.warn('selectAll add failed for save', s.id, err.message);
-          }
-        }
-      } else {
-        const toRemove = items.filter(it => spots.some(s => s.id === it.spot_id));
-        for (const it of toRemove) {
-          try {
-            await api.delete('/api/guides/' + guideId + '/items/' + it.id);
-            selectedSet.delete(it.spot_id);
-            items = items.filter(x => x.id !== it.id);
-          } catch (err) {
-            console.warn('selectAll remove failed', it.id, err.message);
-          }
-        }
-      }
+      const r = await api.post('/api/guides/' + guideId + '/items', { spot_id: spotId });
+      const s = allSpots.find(x => x.id === spotId) || {};
+      items.push({
+        id: r.item.id, spot_id: spotId, note: null, position: items.length,
+        place_name: s.place_name, spot_tip: s.tip, category: s.category, city: spotCity(s),
+      });
+      renderGuideSpots();
       renderPicker();
-      updateCityButton();
-      showSaveState('Saved');
-    } finally {
-      pickerSelectAllBtn.disabled = false;
-    }
-  });
-
-  // ---------- Publish ----------
-  function updatePublishButton() {
-    if (guide.status === 'published') {
-      publishBtn.textContent = 'Unpublish';
-      publishBtn.classList.add('is-published');
-    } else {
-      publishBtn.textContent = 'Publish';
-      publishBtn.classList.remove('is-published');
+      flash('Saved');
+    } catch (e) {
+      if (e && e.message && String(e.message).includes('already')) return;
+      alert('Could not add spot');
     }
   }
+
+  pSearch.addEventListener('input', renderPicker);
+  pCity.addEventListener('change', renderPicker);
+  pCat.addEventListener('change', renderPicker);
 
   publishBtn.addEventListener('click', async () => {
-    const newStatus = guide.status === 'published' ? 'draft' : 'published';
-    showSaveState(newStatus === 'published' ? 'Publishing…' : 'Unpublishing…', true);
+    const publishing = guide.status !== 'published';
+    if (publishing && !titleEl.value.trim()) { alert('Give the guide a title before publishing.'); return; }
     try {
-      const data = await api.patch('/api/guides/' + guideId, { status: newStatus });
-      guide = { ...guide, ...data.guide };
-      updatePublishButton();
-      showSaveState(newStatus === 'published' ? 'Published' : 'Unpublished');
-
-      if (newStatus === 'published' && guide.slug) {
-        const publicUrl = location.origin + '/guide/' + guide.slug;
-        const ok = confirm(`Published! Public link:\n\n${publicUrl}\n\nCopy to clipboard?`);
-        if (ok && navigator.clipboard) {
-          navigator.clipboard.writeText(publicUrl).catch(() => {});
-        }
-      }
-    } catch (err) {
-      console.error('publish toggle', err);
-      showSaveState('Failed', true);
-    }
+      const r = await api.patch('/api/guides/' + guideId, { status: publishing ? 'published' : 'draft' });
+      guide.status = r.guide.status;
+      if (r.guide.slug) guide.slug = r.guide.slug;
+      publishBtn.textContent = guide.status === 'published' ? 'Unpublish' : 'Publish';
+      flash(publishing ? 'Published' : 'Unpublished');
+    } catch (e) { alert('Could not update status'); }
   });
 
-  // ---------- Delete ----------
-  deleteBtn.addEventListener('click', async () => {
-    if (!confirm('Delete this guide? Spots stay in your library — only the guide is removed. Cannot be undone.')) return;
+  document.getElementById('delete-btn').addEventListener('click', async () => {
+    if (!confirm('Delete this guide? Spots are not affected.')) return;
     try {
       await api.delete('/api/guides/' + guideId);
       location.href = '/guides/';
-    } catch (err) {
-      console.error('delete', err);
-      alert(err.message || 'Could not delete');
-    }
+    } catch (e) { alert('Could not delete'); }
   });
 
-  // ---------- Preview toggle ----------
-  previewBtn.addEventListener('click', () => {
-    isPreview = !isPreview;
-    if (isPreview) {
-      renderPreview();
-      editorEl.hidden = true;
-      previewEl.hidden = false;
-      previewBtn.textContent = 'Edit';
-    } else {
-      previewEl.hidden = true;
-      editorEl.hidden = false;
-      previewBtn.textContent = 'Preview';
-    }
-  });
-
-  function renderPreview() {
-    const md = (s) => util.safeMarkdown ? util.safeMarkdown(s || '') : util.escapeHtml(s || '').replace(/\n/g, '<br>');
-    previewCity.textContent = guide.city_name || '';
-    previewTitle.textContent = guide.title || 'Untitled guide';
-    previewSubtitle.textContent = guide.subtitle || '';
-    previewSubtitle.hidden = !guide.subtitle;
-    previewIntro.innerHTML = md(guide.intro);
-    previewIntro.hidden = !guide.intro;
-
-    if (!items.length) {
-      previewItems.innerHTML = '<p class="ge-preview__empty">No spots yet — pick some above.</p>';
-      return;
-    }
-    const realItems = items.filter(it => !it._pending);
-    previewItems.innerHTML = `
-      <ol class="ge-preview__items">
-        ${realItems.map(it => {
-          const tip = it.note || it.save_tip || '';
-          const tipLine = tip ? `<p class="ge-preview__item-tip">${util.escapeHtml(tip)}</p>` : '';
-          return `
-            <li class="ge-preview__item">
-              <h3 class="ge-preview__item-name">${util.escapeHtml(it.place_name || '(unnamed)')}</h3>
-              ${tipLine}
-            </li>
-          `;
-        }).join('')}
-      </ol>
-    `;
-  }
+  init();
 })();

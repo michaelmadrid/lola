@@ -49,10 +49,8 @@ async function loadOwnedGuide(req, res) {
     res.status(404).json({ error: 'Guide not found' });
     return null;
   }
-  if (guide.user_id !== req.user.id) {
-    res.status(403).json({ error: 'Forbidden' });
-    return null;
-  }
+  // Shared editorial workspace: any signed-in editor can view/edit any guide.
+  // user_id remains "created by" for attribution only — not an access wall.
   return guide;
 }
 
@@ -129,18 +127,18 @@ router.get('/', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT g.id, g.title, g.subtitle, g.status, g.slug, g.city_id,
+              g.image_url, g.grouping, g.sort_mode,
               g.created_at, g.updated_at, g.published_at,
               c.name AS city_name,
+              u.name AS author_name,
               (SELECT COUNT(*) FROM guide_section_items gsi
-                  JOIN guide_sections gs ON gs.id = gsi.section_id
-                 WHERE gs.guide_id = g.id) AS spot_count,
-              (SELECT COUNT(*) FROM guide_sections gs WHERE gs.guide_id = g.id) AS section_count
+                 WHERE gsi.guide_id = g.id) AS spot_count
          FROM guides g
          LEFT JOIN cities c ON c.id = g.city_id
-        WHERE g.user_id = $1
+         LEFT JOIN users u ON u.id = g.user_id
+        WHERE g.deleted_at IS NULL
           AND g.status <> 'archived'
-        ORDER BY g.updated_at DESC`,
-      [req.user.id]
+        ORDER BY g.updated_at DESC`
     );
     res.json({ guides: result.rows });
   } catch (err) {
@@ -227,7 +225,8 @@ router.patch('/:id', authenticate, async (req, res) => {
     const guide = await loadOwnedGuide(req, res);
     if (!guide) return;
 
-    const allowed = ['title', 'subtitle', 'intro', 'city_id', 'status'];
+    const allowed = ['title', 'subtitle', 'intro', 'city_id', 'status',
+                     'image_url', 'grouping', 'sort_mode'];
     const fields = [];
     const values = [];
     const updates = req.body || {};
@@ -251,22 +250,9 @@ router.patch('/:id', authenticate, async (req, res) => {
       }
     }
 
-    // City lock: changing city_id is only allowed when the guide has no items.
-    // The city anchors the spot list; changing it mid-flight would orphan
-    // items from the wrong city. UX: client can only change after removing items.
-    if ('city_id' in updates && updates.city_id !== guide.city_id) {
-      const itemCount = await pool.query(
-        'SELECT COUNT(*)::int AS n FROM guide_section_items WHERE guide_id = $1',
-        [guide.id]
-      );
-      if (itemCount.rows[0].n > 0) {
-        return res.status(409).json({
-          error: 'Remove all spots from this guide before changing the city.',
-          code: 'city_locked',
-          item_count: itemCount.rows[0].n,
-        });
-      }
-    }
+    // City is an OPTIONAL anchor (picker default + display label), not a
+    // constraint. Guides can span cities (e.g. "Best Film Labs Worldwide"),
+    // so city_id can be set, changed, or cleared freely at any time.
 
     // If transitioning to published and no slug yet, generate one
     let extraSetClauses = [];
@@ -308,7 +294,8 @@ router.delete('/:id', authenticate, async (req, res) => {
   try {
     const guide = await loadOwnedGuide(req, res);
     if (!guide) return;
-    await pool.query('DELETE FROM guides WHERE id = $1', [guide.id]);
+    // Soft delete (matches spots/notes). Hard delete reserved for admin later.
+    await pool.query('UPDATE guides SET deleted_at = NOW() WHERE id = $1', [guide.id]);
     res.json({ ok: true });
   } catch (err) {
     console.error('DELETE /api/guides/:id', err);
@@ -426,15 +413,12 @@ router.post('/:id/sections/:sectionId/items', authenticate, async (req, res) => 
     const spotId = parseInt(spot_id, 10);
     if (!spotId) return res.status(400).json({ error: 'spot_id required' });
 
-    // Verify spot belongs to this user
+    // Verify spot exists (shared workspace — any editor can add any spot)
     const spotCheck = await pool.query(
-      'SELECT id, user_id FROM spots WHERE id = $1',
+      'SELECT id FROM spots WHERE id = $1 AND deleted_at IS NULL',
       [spotId]
     );
     if (!spotCheck.rows.length) return res.status(404).json({ error: 'Spot not found' });
-    if (spotCheck.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Spot belongs to another user' });
-    }
 
     // Default position = end of section
     let pos = position;
@@ -557,21 +541,16 @@ router.post('/:id/items', authenticate, async (req, res) => {
     const spotId = parseInt(spot_id, 10);
     if (!spotId) return res.status(400).json({ error: 'spot_id required' });
 
-    // Verify spot belongs to this user
+    // Verify spot exists (shared workspace — any editor can add any spot)
     const spotCheck = await pool.query(
-      'SELECT id, user_id FROM spots WHERE id = $1',
+      'SELECT id FROM spots WHERE id = $1 AND deleted_at IS NULL',
       [spotId]
     );
     if (!spotCheck.rows.length) return res.status(404).json({ error: 'Spot not found' });
-    if (spotCheck.rows[0].user_id !== req.user.id) {
-      return res.status(403).json({ error: 'Spot belongs to another user' });
-    }
 
-    // Prevent duplicate adds — same spot in the same guide. The schema
-    // doesn't enforce uniqueness (intentional, in case sections later allow
-    // the same spot to appear in multiple sections), so we check here.
+    // Prevent duplicate adds — same spot already in THIS guide.
     const dup = await pool.query(
-      'SELECT id FROM guide_section_items WHERE spot_id = $2 LIMIT 1',
+      'SELECT id FROM guide_section_items WHERE guide_id = $1 AND spot_id = $2 LIMIT 1',
       [guide.id, spotId]
     );
     if (dup.rows.length) {
@@ -694,17 +673,18 @@ router.delete('/:id/items/:itemId', authenticate, async (req, res) => {
 const { softAuthenticate } = require('../auth');
 
 router.get('/_public/:slug', softAuthenticate, async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
   try {
     const slug = req.params.slug;
     if (!slug) return res.status(400).json({ error: 'Slug required' });
 
-    // Only published, non-archived guides
+    // Only published, non-archived, non-deleted guides
     const guideRes = await pool.query(
       `SELECT g.*, c.name AS city_name, u.name AS author_name
          FROM guides g
          LEFT JOIN cities c ON c.id = g.city_id
          LEFT JOIN users u ON u.id = g.user_id
-        WHERE g.slug = $1 AND g.status = 'published'
+        WHERE g.slug = $1 AND g.status = 'published' AND g.deleted_at IS NULL
         LIMIT 1`,
       [slug]
     );
@@ -713,7 +693,6 @@ router.get('/_public/:slug', softAuthenticate, async (req, res) => {
     }
     const guide = guideRes.rows[0];
 
-    // Sections (may be empty in V1.5)
     const sectionsRes = await pool.query(
       `SELECT id, title, intro, position
          FROM guide_sections
@@ -722,23 +701,29 @@ router.get('/_public/:slug', softAuthenticate, async (req, res) => {
       [guide.id]
     );
 
-    // All items, hydrated with spot data
+    // Items hydrated with spot data. spot_tip is returned alongside the
+    // guide-note so the client can fall back (guide note overrides tip).
     const itemsRes = await pool.query(
-      `SELECT gsi.id, gsi.section_id, gsi.note, gsi.position,
-              s.place_name, s.tip AS spot_tip, s.category
+      `SELECT gsi.id, gsi.section_id, gsi.spot_id, gsi.note, gsi.position,
+              s.place_name, s.tip AS spot_tip, s.category, s.website, s.image_url,
+              p.google_place_id, c.name AS city, c.slug AS city_slug
          FROM guide_section_items gsi
          JOIN spots s ON s.id = gsi.spot_id
+         LEFT JOIN cities c ON s.city_id = c.id
+         LEFT JOIN places p ON s.place_id = p.id
         WHERE gsi.guide_id = $1
         ORDER BY gsi.position ASC, gsi.created_at ASC`,
       [guide.id]
     );
 
-    // Strip user_id from public payload — don't leak owner identity beyond name
     const publicGuide = {
       title: guide.title,
       subtitle: guide.subtitle,
       intro: guide.intro,
       slug: guide.slug,
+      image_url: guide.image_url,
+      grouping: guide.grouping,
+      sort_mode: guide.sort_mode,
       city_name: guide.city_name,
       author_name: guide.author_name,
       published_at: guide.published_at,
@@ -752,6 +737,82 @@ router.get('/_public/:slug', softAuthenticate, async (req, res) => {
   } catch (err) {
     console.error('GET /api/guides/_public/:slug', err);
     res.status(500).json({ error: 'Failed to load guide' });
+  }
+});
+
+// PATCH /api/guides/:id/reorder — batch-set item positions after a drag.
+// Body: { order: [itemId, itemId, ...] } in the new visual sequence.
+// This is the single source of truth for manual order (Option A: one master
+// order, viewed flat or grouped).
+router.patch('/:id/reorder', authenticate, async (req, res) => {
+  try {
+    const guide = await loadOwnedGuide(req, res);
+    if (!guide) return;
+
+    const order = Array.isArray(req.body && req.body.order) ? req.body.order : null;
+    if (!order) return res.status(400).json({ error: 'order array required' });
+
+    // Assign positions 0..n in the given order. Only items belonging to this
+    // guide are touched (the WHERE guards against cross-guide ids).
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (let i = 0; i < order.length; i++) {
+        const itemId = parseInt(order[i], 10);
+        if (!itemId) continue;
+        await client.query(
+          'UPDATE guide_section_items SET position = $1 WHERE id = $2 AND guide_id = $3',
+          [i, itemId, guide.id]
+        );
+      }
+      await client.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('PATCH /api/guides/:id/reorder', err);
+    res.status(500).json({ error: 'Failed to reorder' });
+  }
+});
+
+// POST /api/guides/:id/alphabetize — one-shot: rewrite positions A–Z by
+// place name. A starting point you can then drag from (not a locked mode).
+router.post('/:id/alphabetize', authenticate, async (req, res) => {
+  try {
+    const guide = await loadOwnedGuide(req, res);
+    if (!guide) return;
+    const items = await pool.query(
+      `SELECT gsi.id FROM guide_section_items gsi
+         JOIN spots s ON s.id = gsi.spot_id
+        WHERE gsi.guide_id = $1
+        ORDER BY s.place_name ASC`,
+      [guide.id]
+    );
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (let i = 0; i < items.rows.length; i++) {
+        await client.query(
+          'UPDATE guide_section_items SET position = $1 WHERE id = $2',
+          [i, items.rows[i].id]
+        );
+      }
+      await client.query('UPDATE guides SET updated_at = NOW() WHERE id = $1', [guide.id]);
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK'); throw e;
+    } finally {
+      client.release();
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('POST /api/guides/:id/alphabetize', err);
+    res.status(500).json({ error: 'Failed to alphabetize' });
   }
 });
 
