@@ -149,13 +149,14 @@
 }
 .seg__btn.is-active { background: var(--ink); color: var(--bg); }
 
-.guide-cover { margin: var(--space-4, 16px) 0; max-width: 340px; }
+.guide-cover { margin: var(--space-4, 16px) 0; }
 .guide-cover__drop {
   display: flex;
   align-items: center;
   gap: var(--space-2, 8px);
-  width: 100%;
-  padding: var(--space-5, 20px);
+  width: 240px;
+  height: 140px;
+  padding: var(--space-4, 16px);
   border: 1px dashed var(--rule);
   border-radius: var(--r-card, 6px);
   background: var(--surface, #fafafa);
@@ -167,8 +168,19 @@
 }
 .guide-cover__drop:hover { border-color: var(--ink-3); color: var(--ink-2); }
 .guide-cover__plus { font-size: 18px; line-height: 1; }
-.guide-cover__filled { position: relative; }
-.guide-cover__filled img { width: 100%; border-radius: var(--r-card, 6px); display: block; }
+.guide-cover__filled {
+  position: relative;
+  width: 240px;
+  height: 140px;
+  border-radius: var(--r-card, 6px);
+  overflow: hidden;
+}
+.guide-cover__filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .guide-cover__rm {
   position: absolute; top: 8px; right: 8px;
   background: rgba(0,0,0,0.6); color: #fff; border: none;
