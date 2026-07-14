@@ -150,6 +150,8 @@
 .seg__btn.is-active { background: var(--ink); color: var(--bg); }
 
 .guide-cover { margin: var(--space-4, 16px) 0; }
+.guide-cover__drop[hidden],
+.guide-cover__filled[hidden] { display: none !important; }
 .guide-cover__drop {
   display: flex;
   align-items: center;
