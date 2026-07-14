@@ -25,14 +25,26 @@
 
   <div class="admin-table">
     <div class="admin-table__head cats-head">
+      <span></span>
       <span>Label</span>
       <span>Slug</span>
       <span>Favorite</span>
-      <span>Order</span>
       <span>Status</span>
       <span>Actions</span>
     </div>
     <div id="cats-list"><div class="list-empty">Loading…</div></div>
+  </div>
+
+  <div class="cat-reassign">
+    <h2 class="cat-reassign__title">Bulk reassign spots</h2>
+    <p class="cat-reassign__hint">Move every spot from one category slug to another (e.g. clean up a legacy <code>make</code> → <code>filmlab</code>). For splitting one category across several, edit spots individually in Spots instead.</p>
+    <div class="cat-reassign__row">
+      <input type="text" class="spot-fs__input" id="reassign-from" placeholder="from slug (e.g. make)">
+      <span>→</span>
+      <input type="text" class="spot-fs__input" id="reassign-to" placeholder="to slug (e.g. filmlab)">
+      <button class="btn btn--small" id="reassign-btn" type="button">Move spots</button>
+    </div>
+    <p class="cat-reassign__result" id="reassign-result"></p>
   </div>
 
 </main>
@@ -54,7 +66,7 @@
       <div class="spot-fs__field" id="cat-slug-field">
         <label class="spot-fs__label" for="cat-slug">Slug</label>
         <input type="text" class="spot-fs__input" id="cat-slug" placeholder="darkroom">
-        <p class="spot-fs__hint">Lowercase, no spaces. Can't change after creating — it's what spots store.</p>
+        <p class="spot-fs__hint">Lowercase, no spaces. Changing this moves all spots on the old slug to the new one automatically.</p>
       </div>
 
       <div class="spot-fs__field">

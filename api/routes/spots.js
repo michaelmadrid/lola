@@ -667,6 +667,31 @@ router.post('/categories', authenticate, async (req, res) => {
 });
 
 // PATCH /api/spots/categories/:id — update (admin)
+// PATCH /api/spots/categories/reorder — batch-set sort_order after a drag.
+// MUST be declared before /categories/:id so "reorder" isn't read as an id.
+// Body: { order: [id, id, ...] } in the new visual sequence.
+router.patch('/categories/reorder', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const order = Array.isArray(req.body && req.body.order) ? req.body.order : null;
+  if (!order) return res.status(400).json({ error: 'order array required' });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (let i = 0; i < order.length; i++) {
+      const id = parseInt(order[i], 10);
+      if (!id) continue;
+      await client.query('UPDATE spot_categories SET sort_order = $1 WHERE id = $2', [i * 10, id]);
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 router.patch('/categories/:id', authenticate, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const allowed = ['label', 'favorite', 'sort_order', 'active'];
@@ -683,6 +708,51 @@ router.patch('/categories/:id', authenticate, async (req, res) => {
     );
     if (!r.rows[0]) return res.status(404).json({ error: 'not found' });
     res.json({ category: r.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/spots/categories/:id/slug — change a category's slug AND cascade
+// the change to every spot using the old slug (atomic). This is the safe way
+// to rename a slug (e.g. film_lab → filmlab) without orphaning spots.
+router.patch('/categories/:id/slug', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const newSlug = String(req.body.slug || '').trim().toLowerCase().replace(/[^a-z0-9_]+/g, '_');
+  if (!newSlug) return res.status(400).json({ error: 'slug required' });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const cur = await client.query('SELECT slug FROM spot_categories WHERE id = $1', [req.params.id]);
+    if (!cur.rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'not found' }); }
+    const oldSlug = cur.rows[0].slug;
+    if (oldSlug === newSlug) { await client.query('ROLLBACK'); return res.json({ ok: true, unchanged: true }); }
+    // Collision guard
+    const clash = await client.query('SELECT id FROM spot_categories WHERE slug = $1 AND id <> $2', [newSlug, req.params.id]);
+    if (clash.rows.length) { await client.query('ROLLBACK'); return res.status(409).json({ error: 'That slug already exists' }); }
+    await client.query('UPDATE spot_categories SET slug = $1 WHERE id = $2', [newSlug, req.params.id]);
+    const moved = await client.query('UPDATE spots SET category = $1 WHERE category = $2', [newSlug, oldSlug]);
+    await client.query('COMMIT');
+    res.json({ ok: true, old_slug: oldSlug, new_slug: newSlug, spots_moved: moved.rowCount });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// POST /api/spots/categories/reassign — move all spots from one slug to
+// another (e.g. make → filmlab). For cleaning up legacy categories.
+// Body: { from: 'make', to: 'filmlab' }
+router.post('/categories/reassign', authenticate, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
+  const from = String(req.body.from || '').trim().toLowerCase();
+  const to = String(req.body.to || '').trim().toLowerCase();
+  if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+  try {
+    const r = await pool.query('UPDATE spots SET category = $1 WHERE category = $2', [to, from]);
+    res.json({ ok: true, spots_moved: r.rowCount });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
