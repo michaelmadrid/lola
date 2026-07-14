@@ -203,7 +203,7 @@
     // Persistent ANNEX wordmark — brand + way out (present on all screens).
     const mark = document.createElement('a');
     mark.className = 'wall-mark';
-    mark.textContent = 'ANNEX';
+    mark.textContent = 'Annex';
     mark.href = '/';
     mark.setAttribute('aria-label', 'Annex home');
     document.body.appendChild(mark);
