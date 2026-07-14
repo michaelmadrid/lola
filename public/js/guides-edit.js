@@ -140,30 +140,25 @@
     if (sortMode === 'alpha') alphabetize();
   });
 
-  coverBtn.addEventListener('click', () => {
-    const inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = 'image/*';
-    inp.style.display = 'none';
-    document.body.appendChild(inp);
-    inp.onchange = async () => {
-      const file = inp.files[0];
-      if (!file) { inp.remove(); return; }
-      flash('Uploading…');
-      const fd = new FormData(); fd.append('image', file);
-      try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + api.token.get() },
-          body: fd,
-        });
-        if (!res.ok) { flash('Upload failed (' + res.status + ')'); return; }
-        const data = await res.json();
-        if (data.url) { showCover(data.url); patchGuide({ image_url: data.url }, true); }
-        else flash('Upload failed');
-      } catch (e) { flash('Upload failed'); }
-      finally { inp.remove(); }
-    };
-    inp.click();
+  const coverInput = document.getElementById('cover-input');
+  coverBtn.addEventListener('click', () => coverInput.click());
+  coverInput.addEventListener('change', async () => {
+    const file = coverInput.files[0];
+    if (!file) return;
+    flash('Uploading…');
+    const fd = new FormData(); fd.append('image', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + api.token.get() },
+        body: fd,
+      });
+      if (!res.ok) { flash('Upload failed (' + res.status + ')'); return; }
+      const data = await res.json();
+      if (data.url) { showCover(data.url); patchGuide({ image_url: data.url }, true); }
+      else flash('Upload failed');
+    } catch (e) { flash('Upload failed'); }
+    finally { coverInput.value = ''; }  // reset so same file can be re-picked
   });
   coverRm.addEventListener('click', () => {
     coverImg.src = '';
