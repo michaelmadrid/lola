@@ -1,106 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Annex</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;background:#f5f5f2}
-#stage{width:100%;height:100vh;overflow-y:scroll;background:#f5f5f2;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none}
-#stage::-webkit-scrollbar{display:none}
-#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#f5f5f2;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#aaa}
-.row{display:flex;align-items:center;white-space:nowrap;height:52px;overflow:hidden}
-.row-inner{display:flex;align-items:center;white-space:nowrap;will-change:transform}
-.lbl{font-size:11px;font-family:ui-monospace,monospace;color:#aaa;letter-spacing:0.08em;width:24px;flex-shrink:0;padding-left:16px;opacity:0.5}
-.item{font-size:36px;font-weight:500;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;color:#111;letter-spacing:-0.02em;padding:0 14px;cursor:pointer;flex-shrink:0;-webkit-font-smoothing:antialiased;text-decoration:none}
-.item:hover{color:#2a4ed4}
-.dot{font-size:36px;color:#ccc;font-weight:300;flex-shrink:0}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Annex</title>
+  <meta name="description" content="Annex — a curated index of interesting places. By Summer Holiday.">
+  <meta property="og:title" content="Annex">
+  <meta property="og:description" content="A curated index of interesting places.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://annex.site/">
+  <meta property="og:image" content="https://annex.site/og-default.jpg">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      background: #f5f5f2;
+      color: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Times New Roman', Times, serif;
+    }
+    .logo {
+      font-size: 40px;
+      font-weight: bold;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .sub {
+      position: fixed;
+      bottom: 24px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #aaa;
+    }
+  </style>
 </head>
 <body>
-<div id="loading">Loading</div>
-<div id="stage" style="display:none"></div>
-<script>
-(async()=>{
-  try{
-    const res=await fetch('https://studio.annex.site/api/spots/index?category=bookstore');
-    const data=await res.json();
-    const spots=data.spots||[];
-
-    const alpha={};
-    spots.forEach(s=>{
-      if(!s.place_name)return;
-      const l=s.place_name.replace(/^(the |le |la |les )/i,'')[0].toUpperCase();
-      if(!alpha[l])alpha[l]=[];
-      alpha[l].push(s);
-    });
-
-    const letters=Object.keys(alpha).sort();
-    const maxCount=Math.max(...letters.map(l=>alpha[l].length));
-
-    const stage=document.getElementById('stage');
-    const rowEls=[];
-    const allLetters=[...letters,...letters,...letters];
-
-    allLetters.forEach(letter=>{
-      const group=alpha[letter];
-      const row=document.createElement('div');
-      row.className='row';
-
-      const inner=document.createElement('div');
-      inner.className='row-inner';
-
-      const rep=[...group,...group,...group,...group,...group,...group,...group,...group,...group,...group,...group,...group];
-      rep.forEach(spot=>{
-        const a=document.createElement('a');
-        a.className='item';
-        a.textContent=spot.place_name;
-        a.href='#'; // future: /annex/spot/${spot.id}
-        a.addEventListener('click',e=>e.preventDefault());
-        inner.appendChild(a);
-        const d=document.createElement('span');
-        d.className='dot';
-        d.textContent='·';
-        inner.appendChild(d);
-      });
-
-      row.appendChild(inner);
-      stage.appendChild(row);
-      rowEls.push({inner,count:group.length,hOff:0});
-    });
-
-    const ROW_H=52;
-    const BLOCK=letters.length*ROW_H;
-
-    let lastSy=0;
-    stage.addEventListener('scroll',()=>{
-      const sy=stage.scrollTop;
-      const delta=sy-lastSy;
-      lastSy=sy;
-
-      if(sy<BLOCK*0.4)stage.scrollTop=sy+BLOCK;
-      if(sy>BLOCK*1.6)stage.scrollTop=sy-BLOCK;
-
-      rowEls.forEach(r=>{
-        const speed=(r.count/maxCount)*0.55+0.08;
-        r.hOff-=delta*speed;
-        const w=r.inner.scrollWidth/12;
-        if(r.hOff<-w)r.hOff+=w;
-        if(r.hOff>0)r.hOff-=w;
-        r.inner.style.transform=`translateX(${r.hOff}px)`;
-      });
-    },{passive:true});
-
-    stage.scrollTop=BLOCK;
-    document.getElementById('loading').style.display='none';
-    stage.style.display='block';
-
-  }catch(err){
-    document.getElementById('loading').textContent='Failed to load';
-    console.error(err);
-  }
-})();
-</script>
+  <h1 class="logo">Annex</h1>
+  <div class="sub">Coming soon</div>
 </body>
 </html>
