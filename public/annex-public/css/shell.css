@@ -596,7 +596,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 #wall-stage.is-dragging { cursor: grabbing; }
 /* Names are links but the wall is a pan surface — show the grab hand,
    not the link finger, so the drag affordance is always visible. */
-.wall-item { cursor: grab; }
+.wall-item { cursor: grab; user-select: none; -webkit-user-select: none; -webkit-user-drag: none; }
 #wall-stage.is-dragging .wall-item { cursor: grabbing; }
 .wall-track { will-change: transform; }
 
@@ -656,9 +656,9 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 /* Explore affordance — fades on first interaction */
 .wall-hint {
   position: fixed;
-  bottom: 20px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   z-index: 10;
   font-family: var(--sans);
   font-size: 11px;
