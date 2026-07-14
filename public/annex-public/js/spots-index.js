@@ -208,6 +208,16 @@
     mark.setAttribute('aria-label', 'Annex home');
     document.body.appendChild(mark);
 
+    // Subtle affordance so desktop users know it's explorable.
+    const hint = document.createElement('div');
+    hint.className = 'wall-hint';
+    hint.textContent = isTouch ? 'Drag to explore' : 'Scroll or drag to explore';
+    document.body.appendChild(hint);
+    const killHint = () => { hint.classList.add('is-gone'); };
+    stage.addEventListener('pointerdown', killHint, { once: true });
+    stage.addEventListener('wheel', killHint, { once: true });
+    setTimeout(killHint, 4000);
+
     // Measure a single group's width per row (for horizontal wrap).
     rowEls.forEach(r => { r.w = r.inner.scrollWidth / 12; });
 
@@ -217,22 +227,24 @@
     // --- Drag-to-pan (Google-Maps style) with per-row horizontal parallax ---
     let dragging = false, lastX = 0, lastY = 0;
     let velX = 0, velY = 0;                  // for fling inertia
-    let idle = true, idleTimer = null;
+    const SPEED = isTouch ? 1.2 : 1;         // mobile ~20% faster
+
+    // Idle drift only briefly settles the wall into motion on load, then stops.
+    // It never runs perpetually — that reads as broken autoplay.
+    let settleFrames = Math.round(3 * 60);   // ~3s at 60fps, then stop
 
     function applyHorizontal(dx) {
       rowEls.forEach(r => {
-        // Per-row parallax: denser letters drift faster, creating depth.
         const mult = (r.count / maxCount) * 0.9 + 0.35;
         r.hOff += dx * mult;
         if (r.w > 0) {
-          r.hOff = ((r.hOff % r.w) + r.w) % r.w - r.w; // keep in (-w, 0]
+          r.hOff = ((r.hOff % r.w) + r.w) % r.w - r.w;
         }
         r.inner.style.transform = 'translateX(' + r.hOff + 'px)';
       });
     }
     function applyVertical(dy) {
       vOff += dy;
-      // Seamless vertical loop across the 3 stacked copies.
       if (vOff <= -BLOCK * 2) vOff += BLOCK;
       if (vOff > -1) vOff -= BLOCK;
       track.style.transform = 'translateY(' + vOff + 'px)';
@@ -242,13 +254,13 @@
     applyHorizontal(0);
 
     function onDown(x, y) {
-      dragging = true; idle = false;
+      dragging = true; settleFrames = 0;
       lastX = x; lastY = y; velX = 0; velY = 0;
       stage.classList.add('is-dragging');
     }
     function onMove(x, y) {
       if (!dragging) return;
-      const dx = x - lastX, dy = y - lastY;
+      const dx = (x - lastX) * SPEED, dy = (y - lastY) * SPEED;
       lastX = x; lastY = y;
       velX = dx; velY = dy;
       applyHorizontal(dx);
@@ -257,17 +269,26 @@
     function onUp() {
       dragging = false;
       stage.classList.remove('is-dragging');
-      scheduleIdle();
     }
 
-    // Pointer events cover mouse + touch + pen uniformly.
     stage.addEventListener('pointerdown', e => { onDown(e.clientX, e.clientY); });
     window.addEventListener('pointermove', e => { onMove(e.clientX, e.clientY); });
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
 
-    // Suppress click navigation if the pointer actually dragged (so a fling
-    // doesn't accidentally open a spot). Small threshold.
+    // Desktop: wheel / trackpad scroll pans the wall (the instinctive gesture).
+    // Horizontal intent (shift+wheel or trackpad deltaX) pans sideways too.
+    stage.addEventListener('wheel', e => {
+      e.preventDefault();
+      settleFrames = 0;
+      const dy = -e.deltaY;
+      const dx = -e.deltaX;
+      applyVertical(dy);
+      if (Math.abs(dx) > 0.5) applyHorizontal(dx);
+      else applyHorizontal(dy * 0.4); // vertical wheel also nudges horizontal drift
+    }, { passive: false });
+
+    // Suppress click navigation if the pointer actually dragged.
     let downX = 0, downY = 0;
     stage.addEventListener('pointerdown', e => { downX = e.clientX; downY = e.clientY; });
     stage.addEventListener('click', e => {
@@ -275,24 +296,18 @@
       if (moved > 6) { e.preventDefault(); }
     }, true);
 
-    function scheduleIdle() {
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => { idle = true; }, 2600);
-    }
-    scheduleIdle();
-
-    // Animation loop: fling inertia after release, then gentle idle drift.
+    // Animation loop: fling inertia after release, brief settle drift on load.
     function tick() {
       if (!dragging) {
-        // Inertia decay from the last drag velocity.
         if (Math.abs(velX) > 0.05 || Math.abs(velY) > 0.05) {
           applyHorizontal(velX);
           applyVertical(velY);
           velX *= 0.94; velY *= 0.94;
-        } else if (idle) {
-          // Ambient resting drift — slow, leftward + gently up.
-          applyHorizontal(-0.4);
-          applyVertical(-0.15);
+        } else if (settleFrames > 0) {
+          // Brief settle so the wall shows it's alive, then stops.
+          applyHorizontal(-0.5 * SPEED);
+          applyVertical(-0.18 * SPEED);
+          settleFrames--;
         }
       }
       requestAnimationFrame(tick);

@@ -646,3 +646,24 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   .wall-dot { font-size: 20px; }
 }
 
+/* Explore affordance — fades on first interaction */
+.wall-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  background: var(--bg);
+  padding: 6px 14px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  transition: opacity 500ms ease;
+  pointer-events: none;
+}
+.wall-hint.is-gone { opacity: 0; }
+
