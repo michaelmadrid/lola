@@ -231,7 +231,7 @@
 
     // Idle drift only briefly settles the wall into motion on load, then stops.
     // Eased envelope: ramps up, holds, then decays — not a flat linear cut.
-    const SETTLE_TOTAL = Math.round(3.2 * 60);   // ~3.2s at 60fps
+    const SETTLE_TOTAL = Math.round(1.8 * 60);   // ~1.8s at 60fps, snappier
     let settleFrames = SETTLE_TOTAL;
 
     function applyHorizontal(dx) {
@@ -310,7 +310,7 @@
           // peaks mid-way, and eases back to 0 — no abrupt start or stop.
           const t = 1 - (settleFrames / SETTLE_TOTAL);   // 0 → 1 over the window
           const env = Math.sin(t * Math.PI);             // 0 → 1 → 0, smooth
-          const base = 1.6 * SPEED;                      // peak drift speed
+          const base = 3.2 * SPEED;                      // peak drift speed
           applyHorizontal(-base * env);
           applyVertical(-0.35 * SPEED * env);
           settleFrames--;
