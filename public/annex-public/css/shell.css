@@ -625,6 +625,12 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   flex-shrink: 0;
 }
 
+@media (max-width: 640px) {
+  .wall-row { height: 34px; }
+  .wall-item { font-size: 20px; padding: 0 9px; }
+  .wall-dot { font-size: 20px; }
+}
+
 /* Corner dot nav — the quiet seed that (later) expands into filters */
 .wall-nav {
   position: fixed;

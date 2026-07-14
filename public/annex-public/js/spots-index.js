@@ -169,7 +169,16 @@
         const a = document.createElement('a');
         a.className = 'wall-item';
         a.textContent = spot.place_name;
-        a.href = '/spot/' + spot.id;
+        // The wall is an overture: clicking a name drops you into that spot's
+        // city, filtered to the wall's category — the useful browsing view.
+        const citySlug = (spot.city_slug || spot.city || '').toLowerCase();
+        if (citySlug && fCat) {
+          a.href = '/spots?city=' + encodeURIComponent(citySlug) + '&cat=' + encodeURIComponent(fCat);
+        } else if (citySlug) {
+          a.href = '/spots?city=' + encodeURIComponent(citySlug);
+        } else {
+          a.href = '/spot/' + spot.id;
+        }
         inner.appendChild(a);
         const d = document.createElement('span');
         d.className = 'wall-dot';
@@ -195,11 +204,10 @@
     nav.setAttribute('aria-label', 'Index');
     document.body.appendChild(nav);
 
-    const ROW_H = 52;
-    const BLOCK = letters.length * ROW_H;
-
     const isTouch = window.matchMedia('(hover: none)').matches ||
                     ('ontouchstart' in window);
+    const ROW_H = isTouch ? 34 : 52;   // must match .wall-row height in CSS
+    const BLOCK = letters.length * ROW_H;
 
     if (isTouch) {
       // Mobile: autonomous drift. Rows move on their own via rAF; the stage
