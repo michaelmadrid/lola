@@ -355,9 +355,7 @@ margin-bottom:10px;
 /* ── Divider ────────────────────────────────────────────── */
 .divider {
   border: none;
-  /* border-top: 1px solid var(--rule); */
- 
-  margin-bottom:30px;
+  margin-bottom:40px;
 }
 
 /* ── Footer ─────────────────────────────────────────────── */
