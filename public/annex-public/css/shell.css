@@ -393,7 +393,7 @@ body:not(.home-page) { padding-top: 36px; }
      grid-template-areas: 
      "left center"
      "right center";
-     gap: 16px;
+     gap: 32px;
   }
   .col-left  { grid-area: left;   position: static;}
   .col-right { grid-area: right;  position: static;  }
@@ -403,7 +403,7 @@ body:not(.home-page) { padding-top: 36px; }
 }
 @media (max-width: 560px) {
   .home-grid {
-   gap: 10px;
+   gap:32px;
   }
 }
 /* 
