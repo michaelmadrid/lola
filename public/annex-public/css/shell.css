@@ -409,7 +409,7 @@ body:not(.home-page) { padding-top: 36px; }
   }
   .notice-text { font-size: var(--text-medium); }
 
- .cities-list{
+ .cities-list, .categories-list{
    font-size: var(--text-medium); 
  }
   .annex-logo {
