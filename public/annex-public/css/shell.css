@@ -182,6 +182,14 @@ body:not(.home-page) { padding-top: 36px; }
   align-items: start;
 }
 
+/* Desktop: the wrapper dissolves so left/right become direct grid items.
+   Explicit column placement keeps center in the middle regardless of the
+   grouped HTML order (left, right, center). */
+.col-group { display: contents; }
+.col-left   { grid-column: 1; }
+.col-center { grid-column: 2; }
+.col-right  { grid-column: 3; }
+
 /* Sticky outer columns */
 .col-left,
 .col-right {
@@ -386,33 +394,26 @@ body:not(.home-page) { padding-top: 36px; }
      width: 92%;
     }
 
-  /* Two columns: col 1 = left stacked over right, col 2 = center.
-     Use explicit line placement instead of a spanning template area so
-     the tall center column can't stretch the left/right rows apart. */
+  /* Mobile: two columns. col-group turns back ON as a flex column (col 1),
+     stacking left over right tightly; center fills col 2. Because left/right
+     live in a flex container — not grid rows — the tall center can't stretch
+     them apart. */
   .home-grid {
     grid-template-columns: 1fr 1fr;
     grid-template-areas: none;
-    grid-template-rows: min-content min-content auto;
     gap: 32px;
     align-items: start;
   }
-  .col-left  {
+  .col-group {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
     grid-column: 1;
-    grid-row: 1;
-    position: static;
-    align-self: start;
-  }
-  .col-right {
-    grid-column: 1;
-    grid-row: 2;
-    position: static;
-    align-self: start;
   }
   .col-center {
     grid-column: 2;
-    grid-row: 1 / span 3;   /* center spans down the right side, own column */
-    align-self: start;
   }
+  .col-left, .col-right { position: static; grid-column: auto; }
   .notice-text { font-size: var(--text-large); }
 }
 @media (max-width: 560px) {

@@ -48,6 +48,10 @@
   <!-- ── Main 3-col grid ──────────────────────────────── -->
   <div class="home-grid">
 
+    <!-- left + right grouped so they can stack together on mobile;
+         .col-group is display:contents on desktop (dissolves) -->
+    <div class="col-group">
+
     <!-- ── Left col ─────────────────────────────────── -->
     <aside class="col-left">
 
@@ -74,12 +78,6 @@
 
     </aside>
 
-    <!-- ── Center col ────────────────────────────────── -->
-    <!-- Live-fed from /api/board-notes/public (Notes tool in studio).
-         notes-feed.js fetches, sorts pinned-first, renders each note
-         by type. Nothing here is hardcoded once JS runs. -->
-    <main class="col-center" id="notes-feed"></main>
-
     <!-- ── Right col ─────────────────────────────────── -->
     <aside class="col-right">
 
@@ -102,6 +100,14 @@
       </ul>
 
     </aside>
+
+    </div><!-- /col-group -->
+
+    <!-- ── Center col ────────────────────────────────── -->
+    <!-- Live-fed from /api/board-notes/public (Notes tool in studio).
+         notes-feed.js fetches, sorts pinned-first, renders each note
+         by type. Nothing here is hardcoded once JS runs. -->
+    <main class="col-center" id="notes-feed"></main>
 
   </div><!-- /home-grid -->
 
