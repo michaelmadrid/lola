@@ -271,7 +271,7 @@ body:not(.home-page) { padding-top: 36px; }
 
 /* ── Image block (center col) ───────────────────────────── */
 .notice-image {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-3);
 }
 .notice-image img {
   width: 100%;
@@ -291,6 +291,9 @@ body:not(.home-page) { padding-top: 36px; }
 }
 .notice-body a{
   text-decoration: underline;
+}
+.notice-body a:hover{
+  text-decoration: none;
 }
 .notice-body p{
    margin:0px;
