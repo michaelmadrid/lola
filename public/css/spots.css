@@ -610,13 +610,9 @@ body.has-admin-checks .stream__item {
 #note-quill-editor .ql-editor { min-height: 180px; }
 #note-quill-editor .ql-editor.ql-blank::before { color: var(--ink-3); font-style: normal; }
 
-/* Notes editor — permalink "View" link, top-right of the header */
-.spot-fs__head { position: relative; }
+/* Notes editor — permalink "View" link, sits at the right of the header */
 .note-permalink-link {
-  position: absolute;
-  top: 50%;
-  right: 20px;
-  transform: translateY(-50%);
+  margin-left: auto;
   font-family: var(--sans);
   font-size: var(--text-small, 13px);
   color: var(--ink-2);
