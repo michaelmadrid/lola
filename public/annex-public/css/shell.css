@@ -328,10 +328,10 @@ body:not(.home-page) { padding-top: 36px; }
 
 /* pinned: modifier on top of any type — small pin mark, no framing */
 .notice-item.is-pinned .notice-text::before {
-  content: '📌';
+  content: '';
   font-size: 0.5em;
   vertical-align: super;
-  margin-right: 3px;
+  margin-right: 0px;
 }
 
 /* ── Left col extras ────────────────────────────────────── */
