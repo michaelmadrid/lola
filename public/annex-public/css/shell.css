@@ -405,6 +405,8 @@ body:not(.home-page) { padding-top: 36px; }
 @media (max-width: 560px) {
   .home-grid {
    gap:20px;
+   grid-template-rows: min-content min-content;   /* rows only as tall as left/right content */
+   align-items: start;
   }
   .notice-text { font-size: var(--text-medium); }
 
