@@ -47,21 +47,19 @@
   const beenPop   = document.getElementById('been-picker-popover');
   const beenList  = document.getElementById('been-picker-list');
 
-  // Type options — keep in sync with edit drawer Category select
-  const TYPES = [
-    { value: 'all',          label: 'All types' },
-    { value: 'bookstore',    label: 'Bookstore' },
-    { value: 'film_lab',     label: 'Film Lab' },
-    { value: 'record_store', label: 'Record Store' },
-    { value: 'cinema',       label: 'Cinema' },
-    { value: 'gallery',      label: 'Gallery' },
-    { value: 'coffee',       label: 'Coffee' },
-    { value: 'eat',          label: 'Eat' },
-    { value: 'drink',        label: 'Drink' },
-    { value: 'hotel',        label: 'Hotel' },
-    { value: 'shop',         label: 'Shop' },
-    { value: 'other',        label: 'Other' },
-  ];
+  // Type options — loaded from the DB categories endpoint (admin-managed).
+  // Starts with just "All types"; real categories fill in on load.
+  let TYPES = [{ value: 'all', label: 'All types' }];
+
+  async function loadCategories() {
+    try {
+      const data = await api.get('/api/spots/categories');
+      const cats = (data.categories || []).map(c => ({ value: c.value, label: c.label }));
+      TYPES = [{ value: 'all', label: 'All types' }].concat(cats);
+    } catch (e) {
+      // Fallback: leave the minimal list if the fetch fails.
+    }
+  }
 
   // Been-state options — three-tier filter
   const BEEN_STATES = [
@@ -496,5 +494,7 @@
   }
 
   wireBulkActions();
-  checkAdmin().then(loadSpots);
+  checkAdmin()
+    .then(loadCategories)
+    .then(loadSpots);
 })();
