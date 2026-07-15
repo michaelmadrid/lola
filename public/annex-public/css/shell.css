@@ -393,6 +393,10 @@ body:not(.home-page) { padding-top: 36px; }
     .page {
      width: 92%;
     }
+    
+    .annex-logo {
+      font-size: 48px;
+    }
 
   /* Mobile: two columns. col-group turns back ON as a flex column (col 1),
      stacking left over right tightly; center fills col 2. Because left/right
@@ -423,8 +427,8 @@ body:not(.home-page) { padding-top: 36px; }
   }
   
   .home-grid {
-   gap:20px;
-   align-items: start;
+     gap:20px;
+     align-items: start;
   }
   .notice-text { font-size: var(--text-medium); }
 
@@ -432,7 +436,7 @@ body:not(.home-page) { padding-top: 36px; }
    font-size: var(--text-medium); 
  }
   .annex-logo {
-    font-size: 48px;
+    font-size: 42px;
   }
 }
 
