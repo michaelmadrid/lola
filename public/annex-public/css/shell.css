@@ -389,7 +389,7 @@ body:not(.home-page) { padding-top: 36px; }
 }
 @media (max-width: 560px) {
   .home-grid {
-   gap: 10px;
+   gap: 32px;
   }
 }
 /* 
