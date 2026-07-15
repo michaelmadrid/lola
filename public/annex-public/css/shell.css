@@ -243,7 +243,6 @@ body:not(.home-page) { padding-top: 36px; }
 /* ── Notice / phrase (center col) ──────────────────────── */
 .notice-text {
   font-family: var(--serif);
-  
   font-size: var(--text-medium2);
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -400,18 +399,18 @@ body:not(.home-page) { padding-top: 36px; }
   .col-center { grid-area: center; }
   .notice-text { font-size: var(--text-large); }
   
+  
+  
+  
 }
 @media (max-width: 560px) {
   .home-grid {
    gap:20px;
   }
+  .notice-text { font-size: var(--text-small); }
 }
-/* 
-@media (max-width: 560px) {
-  .home-grid { grid-template-columns: 1fr; grid-template-areas: "center" "left" "right"; }
-  .cities-list { font-size: var(--text-medium); }
-  .categories-list { font-size: var(--text-medium); text-align: left; }
-} */
+
+
 
 
 
