@@ -544,7 +544,7 @@ body:not(.home-page) { padding-top: 36px; }
   text-transform: uppercase;
   letter-spacing: 0.01em;
   line-height: 1.2;
-  margin-top: 36px;
+  margin-top: 32px;
 }
 .index-flow__city:first-child { margin-top: 0; }
 .index-flow__item {
