@@ -59,6 +59,9 @@
   /* Type */
   --sans:     'ABC Diatype', 'Helvetica Neue', Arial, sans-serif;
   --serif:    'Times Now','Times New Roman', Times, serif;
+  
+  --logosans: Arial, Helvetica, 'Helvetica Neue', sans-serf;
+  --logosize:64px;
 
   /* Type scale — adjust freely while exploring */
   --text-tiny:    11px;
@@ -118,20 +121,20 @@ img { display: block; max-width: 100%; height: auto; }
   z-index: 50;
 }
 .annex-bar__brand {
-  font-family: var(--sans);
-  font-weight: 500;
+ font-family: var(--logosans);
+  font-weight: bold;
   font-size: 12px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
 }
 .annex-bar__nav { display: flex; gap: 12px; }
 .annex-bar__nav a {
-  font-family: var(--sans);
-  font-weight: 500;
+ font-family: var(--logosans);
+  font-weight: bold;
   font-size: 12px;
- letter-spacing: 0.05em;
+ letter-spacing: 0;
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
@@ -152,8 +155,8 @@ body:not(.home-page) { padding-top: 36px; }
   margin-bottom: var(--space-6);
 }
 .annex-logo {
-  font-family: Arial;
-  font-size: 64px;
+  font-family: var(--logosans);
+  font-size: var(--logosize);
   font-weight: bold;
   letter-spacing: 0;
   text-transform: uppercase;
