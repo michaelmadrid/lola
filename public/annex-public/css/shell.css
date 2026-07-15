@@ -155,7 +155,7 @@ body:not(.home-page) { padding-top: 36px; }
   font-family: 'Times New Roman', Times, serif;
   font-size: 32px;
   font-weight: bold;
-  letter-spacing: 0;
+  letter-spacing: -1px;
   text-transform: uppercase;
   color: var(--ink);
 }
