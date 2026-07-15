@@ -407,7 +407,14 @@ body:not(.home-page) { padding-top: 36px; }
   .home-grid {
    gap:20px;
   }
-  .notice-text { font-size: var(--text-small); }
+  .notice-text { font-size: var(--text-medium); }
+
+ .cities-list{
+   font-size: var(--text-medium); 
+ }
+  .annex-logo {
+    font-size: 48px;
+  }
 }
 
 
