@@ -323,15 +323,27 @@
   flex-direction: column;
   gap: 4px;
 }
+.admin-rail__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 24px 20px;
+}
 .admin-rail__logo {
   font-family: var(--mono);
   font-size: var(--text-tiny);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink);
-  padding: 0 24px 20px;
   text-decoration: none;
 }
+.admin-rail__back {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  color: var(--ink-3);
+  text-decoration: none;
+}
+.admin-rail__back:hover { color: var(--ink); }
 .admin-rail__group { display: flex; flex-direction: column; }
 .admin-rail__link {
   font-size: var(--text-body);
@@ -373,7 +385,7 @@ body.has-admin-rail .head { padding-left: calc(220px + var(--gutter)); }
     width: 260px;
     z-index: 95;
   }
-  .admin-rail__logo { padding-left: 68px; }
+  .admin-rail__brand { padding-left: 68px; }
   .admin-rail.is-open { transform: translateX(0); }
   .admin-rail__sub { display: flex; }
   body.has-admin-rail .page-admin { margin-left: 0; padding-top: 64px; }

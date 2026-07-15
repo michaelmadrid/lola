@@ -18,7 +18,10 @@
     const rail = document.createElement('nav');
     rail.className = 'admin-rail';
     rail.innerHTML =
-      '<a class="admin-rail__logo" href="/admin/">annex studio</a>' +
+      '<div class="admin-rail__brand">' +
+        '<span class="admin-rail__logo">studio admin</span>' +
+        '<a class="admin-rail__back" href="/">&larr; Back to studio</a>' +
+      '</div>' +
       NAV.map(item => {
         const isActive = activeKey === item.key || (item.sub && item.sub.some(s => s.key === activeKey));
         let html = '<div class="admin-rail__group">';
