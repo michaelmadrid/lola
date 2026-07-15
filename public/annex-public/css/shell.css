@@ -417,6 +417,11 @@ body:not(.home-page) { padding-top: 36px; }
   .notice-text { font-size: var(--text-large); }
 }
 @media (max-width: 560px) {
+  
+  .annex-head{
+    margin-bottom:10px;
+  }
+  
   .home-grid {
    gap:20px;
    align-items: start;
