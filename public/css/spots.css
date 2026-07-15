@@ -611,6 +611,7 @@ body.has-admin-checks .stream__item {
 #note-quill-editor .ql-editor.ql-blank::before { color: var(--ink-3); font-style: normal; }
 
 /* Notes editor — permalink "View" link, sits at the right of the header */
+.spot-fs__head .spot-fs__title { margin-left: 12px; }
 .note-permalink-link {
   margin-left: auto;
   font-family: var(--sans);
