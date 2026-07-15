@@ -106,7 +106,18 @@ img { display: block; max-width: 100%; height: auto; }
   width: var(--page-width);
   max-width: 1600px;
   margin: 0 auto;
+  /* Sticky footer: fill at least the viewport, let main grow, footer sits
+     at the bottom when content is short — pushed down when content is long.
+     Subtract the 36px fixed-bar height (added as body padding-top) so the
+     page fills exactly the viewport without a phantom scrollbar. */
+  min-height: calc(100vh - 36px);
+  display: flex;
+  flex-direction: column;
 }
+/* Home page has no fixed bar (its own masthead) — use full height there. */
+body.home-page .page { min-height: 100vh; }
+.page > main { flex: 1 0 auto; }
+.page > [data-include="footer"] { flex-shrink: 0; }
 
 /* ── Top bar (thin, fixed system chrome — not a masthead) ── */
 .annex-bar {
