@@ -141,8 +141,9 @@ img { display: block; max-width: 100%; height: auto; }
 /* Reserve space before the partial injects, so content clears the fixed bar. */
 [data-include="header"] { display: block; min-height: 36px; }
 [data-include="footer"] { display: block; min-height: 80px; }
-/* Push page content below the fixed bar */
-body { padding-top: 36px; }
+/* Push page content below the fixed bar. The homepage opts out with
+   .home-page on <body> (it uses its own centered masthead, no fixed bar). */
+body:not(.home-page) { padding-top: 36px; }
 
 /* ── Legacy centered masthead (kept for homepage if needed) ── */
 .annex-head {
