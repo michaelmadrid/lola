@@ -385,27 +385,39 @@ body:not(.home-page) { padding-top: 36px; }
     .page {
      width: 92%;
     }
-  
+
+  /* Two columns: col 1 = left stacked over right, col 2 = center.
+     Use explicit line placement instead of a spanning template area so
+     the tall center column can't stretch the left/right rows apart. */
   .home-grid {
     grid-template-columns: 1fr 1fr;
-     grid-template-areas: 
-     "left center"
-     "right center";
-     gap: 32px;
+    grid-template-areas: none;
+    grid-template-rows: min-content min-content auto;
+    gap: 32px;
+    align-items: start;
   }
-  .col-left  { grid-area: left;   position: static;}
-  .col-right { grid-area: right;  position: static;  }
-  .col-center { grid-area: center; }
+  .col-left  {
+    grid-column: 1;
+    grid-row: 1;
+    position: static;
+    align-self: start;
+  }
+  .col-right {
+    grid-column: 1;
+    grid-row: 2;
+    position: static;
+    align-self: start;
+  }
+  .col-center {
+    grid-column: 2;
+    grid-row: 1 / span 3;   /* center spans down the right side, own column */
+    align-self: start;
+  }
   .notice-text { font-size: var(--text-large); }
-  
-  
-  
-  
 }
 @media (max-width: 560px) {
   .home-grid {
    gap:20px;
-   grid-template-rows: min-content min-content;   /* rows only as tall as left/right content */
    align-items: start;
   }
   .notice-text { font-size: var(--text-medium); }
