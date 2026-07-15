@@ -56,7 +56,7 @@
   function buildTitle() {
     const bits = [];
     if (fCat) bits.push((CAT_LABELS[fCat] || fCat));
-    let t = bits.length ? bits.join(' ') : 'Spots';
+    let t = bits.length ? bits.join(' ') : (fLayout === 'gazette' ? 'Gazette' : 'Spots');
     if (fCity) t += ' in ' + fCity.charAt(0).toUpperCase() + fCity.slice(1);
     if (fTags.length) t += ' · ' + fTags.join(', ');
     return t;
@@ -99,6 +99,31 @@
             '</a></li>';
         });
         html += '</ul>';
+      } else if (layout === 'gazette') {
+        // Flowing index grouped by CITY. City names are the big headers
+        // (like the letters in the alpha index); spots flow beneath each,
+        // alphabetical by name, spilling across the columns.
+        el.classList.add('spots-index--wide');
+        const sorted = rows.slice().sort((a, b) => {
+          const ca = (a.city || 'zzz').toLowerCase(), cb = (b.city || 'zzz').toLowerCase();
+          if (ca !== cb) return ca.localeCompare(cb);
+          return (a.place_name || '').localeCompare(b.place_name || '', undefined, { sensitivity: 'base' });
+        });
+        html += '<div class="index-flow">';
+        let currentCity = null;
+        sorted.forEach(s => {
+          const city = s.city || 'Elsewhere';
+          if (city !== currentCity) {
+            currentCity = city;
+            html += '<div class="index-flow__letter index-flow__city">' + esc(city) + '</div>';
+          }
+          const meta = CAT_LABELS[s.category] || s.category || '';
+          html += '<div class="index-flow__item"><a href="/spot/' + s.id + '">' +
+            '<span class="index-flow__name">' + esc(s.place_name) + '</span>' +
+            (meta ? '<span class="index-flow__meta">' + esc(meta) + '</span>' : '') +
+            '</a></div>';
+        });
+        html += '</div>';
       } else {
         // index (flowing alphabetical)
         el.classList.add('spots-index--wide');

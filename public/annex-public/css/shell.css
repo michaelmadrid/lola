@@ -535,6 +535,14 @@ body:not(.home-page) { padding-top: 36px; }
   break-inside: avoid;
 }
 .index-flow__letter:first-child { margin-top: 0; }
+/* Gazette: city names as headers — smaller than the big alpha letters,
+   allowed to wrap, tracked-out for that gazetteer feel. */
+.index-flow__city {
+  font-size: var(--text-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
 .index-flow__item {
   margin-bottom: 8px;
   break-inside: avoid;
