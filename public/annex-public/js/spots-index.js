@@ -200,14 +200,6 @@
     el.innerHTML = '';
     el.appendChild(stage);
 
-    // Persistent ANNEX wordmark — brand + way out (present on all screens).
-    const mark = document.createElement('a');
-    mark.className = 'wall-mark';
-    mark.textContent = 'Annex';
-    mark.href = '/';
-    mark.setAttribute('aria-label', 'Annex home');
-    document.body.appendChild(mark);
-
     // Subtle affordance so desktop users know it's explorable.
     const hint = document.createElement('div');
     hint.className = 'wall-hint';
