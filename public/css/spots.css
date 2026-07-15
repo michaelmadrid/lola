@@ -228,6 +228,14 @@
   padding: 12px 14px;
   letter-spacing: -0.005em;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* datetime-local has a wide intrinsic size on mobile — force it to fit */
+input[type="datetime-local"].spot-fs__input {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
 }
 .spot-fs__input:hover, .spot-fs__select:hover { background: var(--surface-2); }
 .spot-fs__input:focus, .spot-fs__select:focus {
