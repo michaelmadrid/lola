@@ -458,16 +458,16 @@ body:not(.home-page) { padding-top: 36px; }
   font-family: var(--serif);
   font-size: var(--text-body);
   line-height: 1.6;
-  color: var(--ink-2);
+  color: var(--ink);
   margin-bottom: var(--space-5);
 }
-.note-detail__body p { margin-bottom: var(--space-4); }
+.note-detail__body p { margin-bottom: 0px; font-family: var(--sans);}
 .note-detail__body a { text-decoration: underline; text-underline-offset: 3px; }
 .note-detail__ref,
 .note-detail__caption {
   font-family: var(--sans);
   font-size: var(--text-small);
-  color: var(--ink-3);
+  color: var(--ink);
   letter-spacing: 0.01em;
   margin-top: var(--space-4);
 }
