@@ -13,7 +13,7 @@
   let searchTerm = '';
 
   const esc = s => util.escapeHtml(String(s || ''));
-  const TYPE_LABELS = { note: 'Note', photograph: 'Photograph', link: 'Link', announcement: 'Announcement' };
+  const TYPE_LABELS = { note: 'Note', photograph: 'Photograph', link: 'Link', article: 'Article' };
 
   let scheduledNotes = [];
 
@@ -201,11 +201,52 @@
   const saveDraftBtn = document.getElementById('note-save-draft');
   const publishBtn = document.getElementById('note-publish');
   const imageRemoveBtn = document.getElementById('note-image-remove');
+  const feedOnBtn = document.getElementById('note-feed-on');
+  const feedOffBtn = document.getElementById('note-feed-off');
+  const richWrap = document.getElementById('note-body-rich');
 
   let editingId = null;
   let editingType = 'note';
   let editingPin = false;
   let editingImageUrl = null;
+  let editingFeed = true;
+  let quill = null;
+
+  // Lazily init Quill once (only when first needed for an Article).
+  function ensureQuill() {
+    if (quill || typeof Quill === 'undefined') return quill;
+    quill = new Quill('#note-quill-editor', {
+      theme: 'snow',
+      placeholder: 'Write the article…',
+      modules: {
+        toolbar: '#note-quill-toolbar',
+        // Only allow the formats we expose (bold, italic, link, blockquote)
+      },
+      formats: ['bold', 'italic', 'link', 'blockquote'],
+    });
+    return quill;
+  }
+
+  // Show rich editor for Article, plain textarea for everything else.
+  function applyBodyMode(type) {
+    const isArticle = type === 'article';
+    if (isArticle) {
+      ensureQuill();
+      richWrap.hidden = false;
+      bodyEl.hidden = true;
+    } else {
+      richWrap.hidden = true;
+      bodyEl.hidden = false;
+    }
+  }
+
+  function setFeed(v) {
+    editingFeed = v;
+    feedOnBtn.dataset.active = String(v);
+    feedOffBtn.dataset.active = String(!v);
+  }
+  feedOnBtn.addEventListener('click', () => setFeed(true));
+  feedOffBtn.addEventListener('click', () => setFeed(false));
 
   function toLocalInput(iso) {
     if (!iso) return '';
@@ -218,6 +259,7 @@
     editingType = t;
     typeRow.querySelectorAll('.spot-fs__been-pill').forEach(b =>
       b.dataset.active = String(b.dataset.type === t));
+    applyBodyMode(t);
   }
   typeRow.querySelectorAll('.spot-fs__been-pill').forEach(b =>
     b.addEventListener('click', () => setType(b.dataset.type)));
@@ -239,6 +281,12 @@
     setType(note ? note.type : 'note');
     headlineEl.value = note ? note.headline : '';
     bodyEl.value = note ? (note.body || '') : '';
+    setFeed(note ? note.show_in_feed !== false : true);
+    // If Article, load body HTML into Quill
+    if ((note ? note.type : 'note') === 'article') {
+      ensureQuill();
+      if (quill) quill.root.innerHTML = note ? (note.body || '') : '';
+    }
     refTitleEl.value = note ? (note.reference_title || '') : '';
     refUrlEl.value = note ? (note.reference_url || '') : '';
     setPin(note ? !!note.pin : false);
@@ -289,15 +337,24 @@
   });
 
   function buildBody(status) {
+    // Article body comes from Quill (HTML); everything else from the textarea.
+    let bodyVal;
+    if (editingType === 'article' && quill) {
+      const html = quill.root.innerHTML;
+      bodyVal = (html && html !== '<p><br></p>') ? html : null;
+    } else {
+      bodyVal = bodyEl.value.trim() || null;
+    }
     return {
       type: editingType,
       headline: headlineEl.value.trim(),
-      body: bodyEl.value.trim() || null,
+      body: bodyVal,
       image_url: editingImageUrl,
       reference_title: refTitleEl.value.trim() || null,
       reference_url: refUrlEl.value.trim() || null,
       status,
       pin: editingPin,
+      show_in_feed: editingFeed,
       publish_date: publishDateEl.value ? new Date(publishDateEl.value).toISOString() : null,
       expires_at: expiresEl.value ? new Date(expiresEl.value).toISOString() : null,
     };

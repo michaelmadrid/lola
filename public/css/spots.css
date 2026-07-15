@@ -592,3 +592,20 @@ body.has-admin-checks .stream__item {
   object-fit: cover;
   flex-shrink: 0;
 }
+
+/* Notes — Quill rich editor (Article body) */
+.note-rich { margin-top: 4px; }
+#note-quill-toolbar {
+  border: 1px solid var(--rule);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+}
+#note-quill-editor {
+  border: 1px solid var(--rule);
+  border-radius: 0 0 4px 4px;
+  min-height: 180px;
+  font-family: var(--serif, 'Times New Roman', serif);
+  font-size: 15px;
+}
+#note-quill-editor .ql-editor { min-height: 180px; }
+#note-quill-editor .ql-editor.ql-blank::before { color: var(--ink-3); font-style: normal; }

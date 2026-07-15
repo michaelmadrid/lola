@@ -9,6 +9,9 @@
   <link rel="stylesheet" href="/css/home.css">
   <link rel="stylesheet" href="/css/spots.css">
   <link rel="stylesheet" href="/css/uploader.css">
+  <!-- Quill rich text editor (for Article note bodies) -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
 </head>
 <body>
 
@@ -97,7 +100,7 @@
           <button type="button" class="spot-fs__been-pill" data-type="note">Note</button>
           <button type="button" class="spot-fs__been-pill" data-type="photograph">Photograph</button>
           <button type="button" class="spot-fs__been-pill" data-type="link">Link</button>
-          <button type="button" class="spot-fs__been-pill" data-type="announcement">Announcement</button>
+          <button type="button" class="spot-fs__been-pill" data-type="article">Article</button>
         </div>
       </div>
 
@@ -109,6 +112,25 @@
       <div class="spot-fs__field">
         <label class="spot-fs__label" for="note-body">Body</label>
         <textarea class="spot-fs__input" id="note-body" rows="4" placeholder="Optional supporting text…" style="resize: vertical; min-height: 90px;"></textarea>
+        <!-- Rich editor for Article type (Quill mounts here) -->
+        <div id="note-body-rich" class="note-rich" hidden>
+          <div id="note-quill-toolbar">
+            <button class="ql-bold"></button>
+            <button class="ql-italic"></button>
+            <button class="ql-link"></button>
+            <button class="ql-blockquote"></button>
+          </div>
+          <div id="note-quill-editor"></div>
+        </div>
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Show in feed</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="note-feed-on" data-active="true">In feed</button>
+          <button type="button" class="spot-fs__been-pill" id="note-feed-off" data-active="false">Off feed (page only)</button>
+        </div>
+        <p class="spot-fs__hint">Off-feed notes still have a shareable permalink — they just don't appear on the homepage feed. Good for articles.</p>
       </div>
 
       <div class="spot-fs__field">
