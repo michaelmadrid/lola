@@ -370,7 +370,7 @@ body:not(.home-page) { padding-top: 36px; }
 
 @media (max-width: 860px) {
     .page {
-     width: 96%;
+     width: 92%;
     }
   
   .home-grid {
