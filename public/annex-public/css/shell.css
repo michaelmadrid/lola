@@ -121,7 +121,7 @@ img { display: block; max-width: 100%; height: auto; }
   font-family: var(--sans);
   font-weight: 500;
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
@@ -131,7 +131,7 @@ img { display: block; max-width: 100%; height: auto; }
   font-family: var(--sans);
   font-weight: 500;
   font-size: 12px;
-  letter-spacing: 0.1em;
+ letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
