@@ -105,22 +105,55 @@ img { display: block; max-width: 100%; height: auto; }
   margin: 0 auto;
 }
 
-/* ── Header / Logo ──────────────────────────────────────── */
+/* ── Top bar (thin, fixed system chrome — not a masthead) ── */
+.annex-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: var(--bg);
+  z-index: 50;
+}
+.annex-bar__brand {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+.annex-bar__nav { display: flex; gap: 12px; }
+.annex-bar__nav a {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+.annex-bar__nav a:hover { color: var(--ink-3); }
+
+/* Reserve space before the partial injects, so content clears the fixed bar. */
+[data-include="header"] { display: block; min-height: 36px; }
+[data-include="footer"] { display: block; min-height: 80px; }
+/* Push page content below the fixed bar */
+body { padding-top: 36px; }
+
+/* ── Legacy centered masthead (kept for homepage if needed) ── */
 .annex-head {
   text-align: center;
   padding: var(--space-7) 0 var(--space-6);
   margin-bottom: var(--space-6);
 }
-
-/* Reserve header space before the partial injects, so no layout shift.
-   Matches the rendered .annex-head height (pad + logo + margin ≈ 152px). */
-[data-include="header"] { display: block; min-height: 152px; }
-[data-include="footer"] { display: block; min-height: 80px; }
 .annex-logo {
   font-family: 'Times New Roman', Times, serif;
   font-size: 32px;
   font-weight: bold;
-  
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--ink);
@@ -572,7 +605,7 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 /* ── Spots layout: WALL (immersive kinetic marquee) ─────── */
-body.wall-mode { overflow: hidden; }
+body.wall-mode { overflow: hidden; padding-top: 0; }
 /* Hide the normal page chrome (header/footer partials) in wall mode */
 body.wall-mode [data-include="header"],
 body.wall-mode [data-include="footer"] { display: none; }
