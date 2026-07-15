@@ -183,12 +183,12 @@ body:not(.home-page) { padding-top: 36px; }
 }
 
 /* Desktop: the wrapper dissolves so left/right become direct grid items.
-   Explicit column placement keeps center in the middle regardless of the
-   grouped HTML order (left, right, center). */
+   Explicit row+column placement keeps all three on row 1 with center in the
+   middle, regardless of the grouped HTML order (left, right, center). */
 .col-group { display: contents; }
-.col-left   { grid-column: 1; }
-.col-center { grid-column: 2; }
-.col-right  { grid-column: 3; }
+.col-left   { grid-column: 1; grid-row: 1; }
+.col-center { grid-column: 2; grid-row: 1; }
+.col-right  { grid-column: 3; grid-row: 1; }
 
 /* Sticky outer columns */
 .col-left,
