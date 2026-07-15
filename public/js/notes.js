@@ -204,6 +204,7 @@
   const feedOnBtn = document.getElementById('note-feed-on');
   const feedOffBtn = document.getElementById('note-feed-off');
   const richWrap = document.getElementById('note-body-rich');
+  const permalinkLink = document.getElementById('note-permalink');
 
   let editingId = null;
   let editingType = 'note';
@@ -294,6 +295,14 @@
     expiresEl.value = note ? toLocalInput(note.expires_at) : '';
     editingImageUrl = note ? note.image_url : null;
     deleteBtn.style.display = note ? '' : 'none';
+
+    // Permalink — only for saved, published notes (drafts have no live page).
+    if (note && note.id && note.status === 'published') {
+      permalinkLink.href = 'https://annex.site/notes/' + note.id;
+      permalinkLink.hidden = false;
+    } else {
+      permalinkLink.hidden = true;
+    }
 
     const preview = document.querySelector('#note-fs-uploader .uploader__preview');
     if (preview) preview.innerHTML = '';
