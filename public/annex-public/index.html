@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <script>
+    // If the visitor has the pass flag set, skip the splash → real homepage.
+    if (localStorage.getItem('annex.pass') === '1') location.replace('/home.html');
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Annex</title>
   <meta name="description" content="Annex — a curated index of interesting places. By Summer Holiday.">
@@ -23,6 +27,7 @@
     }
     .logo {
       font-size: 40px;
+      font-family: arial;
       font-weight: bold;
       letter-spacing: 0.02em;
       text-transform: uppercase;
