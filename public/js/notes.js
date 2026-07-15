@@ -228,17 +228,11 @@
     return quill;
   }
 
-  // Show rich editor for Article, plain textarea for everything else.
+  // Quill is the body editor for all note types now.
   function applyBodyMode(type) {
-    const isArticle = type === 'article';
-    if (isArticle) {
-      ensureQuill();
-      richWrap.hidden = false;
-      bodyEl.hidden = true;
-    } else {
-      richWrap.hidden = true;
-      bodyEl.hidden = false;
-    }
+    ensureQuill();
+    richWrap.hidden = false;
+    bodyEl.hidden = true;
   }
 
   function setFeed(v) {
@@ -283,11 +277,9 @@
     headlineEl.value = note ? note.headline : '';
     bodyEl.value = note ? (note.body || '') : '';
     setFeed(note ? note.show_in_feed !== false : true);
-    // If Article, load body HTML into Quill
-    if ((note ? note.type : 'note') === 'article') {
-      ensureQuill();
-      if (quill) quill.root.innerHTML = note ? (note.body || '') : '';
-    }
+    // Load body HTML into Quill (all note types use it now)
+    ensureQuill();
+    if (quill) quill.root.innerHTML = note ? (note.body || '') : '';
     refTitleEl.value = note ? (note.reference_title || '') : '';
     refUrlEl.value = note ? (note.reference_url || '') : '';
     setPin(note ? !!note.pin : false);
@@ -346,9 +338,9 @@
   });
 
   function buildBody(status) {
-    // Article body comes from Quill (HTML); everything else from the textarea.
-    let bodyVal;
-    if (editingType === 'article' && quill) {
+    // All note bodies come from Quill (HTML) now.
+    let bodyVal = null;
+    if (quill) {
       const html = quill.root.innerHTML;
       bodyVal = (html && html !== '<p><br></p>') ? html : null;
     } else {

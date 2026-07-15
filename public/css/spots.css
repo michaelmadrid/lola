@@ -604,10 +604,10 @@ body.has-admin-checks .stream__item {
   border: 1px solid var(--rule);
   border-radius: 0 0 4px 4px;
   min-height: 180px;
-  font-family: var(--serif, 'Times New Roman', serif);
-  font-size: 15px;
+  font-family: var(--sans);
+  font-size: 14px;
 }
-#note-quill-editor .ql-editor { min-height: 180px; }
+#note-quill-editor .ql-editor { min-height: 180px; font-family: var(--sans); }
 #note-quill-editor .ql-editor.ql-blank::before { color: var(--ink-3); font-style: normal; }
 
 /* Notes editor — permalink "View" link, sits at the right of the header */
