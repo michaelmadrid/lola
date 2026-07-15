@@ -539,10 +539,10 @@ body:not(.home-page) { padding-top: 36px; }
    allowed to wrap, tracked-out for that gazetteer feel. */
 .index-flow__city {
   font-family: var(--sans);
-  font-size: var(--text-body);
-  font-weight: 700;
+  font-size: var(--text-medium);
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   line-height: 1.2;
   margin-top: 32px;
 }
