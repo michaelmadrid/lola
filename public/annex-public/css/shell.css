@@ -152,8 +152,8 @@ body:not(.home-page) { padding-top: 36px; }
   margin-bottom: var(--space-6);
 }
 .annex-logo {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 32px;
+  font-family: Arial;
+  font-size: 64px;
   font-weight: bold;
   letter-spacing: 0;
   text-transform: uppercase;
