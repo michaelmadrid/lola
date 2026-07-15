@@ -285,6 +285,14 @@ body:not(.home-page) { padding-top: 36px; }
   margin-bottom: var(--space-4);
 }
 
+.notice-body{
+    font-family: var(--sans);
+    font-size: var(--text-small);
+}
+.notice-body p{
+   margin:0px;
+}
+
 /* ── Notice types (data-type on .notice-item) ───────────── */
 /* note: no override — this is the default .notice-text voice */
 

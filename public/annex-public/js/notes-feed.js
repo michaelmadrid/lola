@@ -55,7 +55,8 @@
 
     if (n.body) {
       // All note bodies are rich HTML (from Quill) now — render as-is.
-      parts.push('<div class="notice-body" style="font-family:var(--serif);font-size:var(--text-body);line-height:1.5;color:var(--ink-2);margin-bottom:var(--space-5)">' + n.body + '</div>');
+      // Styling lives in shell.css (.notice-body), not inline.
+      parts.push('<div class="notice-body">' + n.body + '</div>');
     }
 
     // Non-photo, non-announcement: show a separate reference line only when
