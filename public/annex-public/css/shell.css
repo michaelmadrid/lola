@@ -403,7 +403,7 @@ body:not(.home-page) { padding-top: 36px; }
 }
 @media (max-width: 560px) {
   .home-grid {
-   gap:16px;
+   gap:20px;
   }
 }
 /* 
