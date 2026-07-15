@@ -287,7 +287,10 @@ body:not(.home-page) { padding-top: 36px; }
 
 .notice-body{
     font-family: var(--sans);
-    font-size: var(--text-small);
+    font-size: var(--text-body);
+}
+.notice-body a{
+  text-decoration: underline;
 }
 .notice-body p{
    margin:0px;
