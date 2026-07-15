@@ -462,6 +462,11 @@ body:not(.home-page) { padding-top: 36px; }
   margin-bottom: var(--space-5);
 }
 .note-detail__body p { margin-bottom: 0px; font-family: var(--sans);}
+/* Quill text-alignment classes — apply wherever note HTML renders
+   (permalink body + homepage feed). */
+.ql-align-center  { text-align: center; }
+.ql-align-right   { text-align: right; }
+.ql-align-justify { text-align: justify; }
 .note-detail__body a { text-decoration: underline; text-underline-offset: 3px; }
 .note-detail__ref,
 .note-detail__caption {

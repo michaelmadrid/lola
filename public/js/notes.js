@@ -223,7 +223,7 @@
         toolbar: '#note-quill-toolbar',
         // Only allow the formats we expose (bold, italic, link, blockquote)
       },
-      formats: ['bold', 'italic', 'link', 'blockquote'],
+      formats: ['bold', 'italic', 'link', 'blockquote', 'align'],
     });
     return quill;
   }
