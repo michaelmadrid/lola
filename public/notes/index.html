@@ -53,8 +53,9 @@
   <input type="text" class="search-input" id="notes-search" placeholder="Search by name…" autocomplete="off">
 
   <div class="spots-filters">
-    <!-- View filter as a picker dropdown, pushed right -->
-    <div class="picker-group picker-group--view">
+    <!-- View filter as a picker dropdown, far left (status is the primary slice
+         for notes; also keeps the popover from overflowing the right edge) -->
+    <div class="picker-group">
       <button class="picker-btn" id="view-picker-btn" type="button" aria-haspopup="true">
         <span class="picker-btn__label" id="view-picker-label">All</span>
         <span class="picker-btn__caret" aria-hidden="true">▾</span>
