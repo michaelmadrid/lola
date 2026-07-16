@@ -6,8 +6,7 @@
 
   const listEl = document.getElementById('notes-list');
   const countEl = document.getElementById('note-count');
-  const viewSwitch = document.getElementById('view-switch');
-  let activeView = 'all'; // all | published | draft | trash
+  let activeView = 'all'; // all | published | draft | scheduled | trash
   let allNotes = [];
   let selected = new Set();
   let searchTerm = '';
@@ -15,14 +14,15 @@
   const esc = s => util.escapeHtml(String(s || ''));
   const TYPE_LABELS = { note: 'Note', photograph: 'Photograph', link: 'Link', article: 'Article' };
 
-  let scheduledNotes = [];
-
-  async function loadScheduled() {
-    try {
-      const data = await api.get('/api/board-notes');
-      scheduledNotes = data.notes || [];
-      renderScheduled();
-    } catch { /* panel just stays empty on failure */ }
+  // Brief publish date, e.g. "Jul 20" — add year only when not the current year.
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    const now = new Date();
+    const opts = { month: 'short', day: 'numeric' };
+    if (d.getFullYear() !== now.getFullYear()) opts.year = '2-digit';
+    return d.toLocaleDateString(undefined, opts).replace(',', '');
   }
 
   async function load() {
@@ -32,17 +32,21 @@
       const data = await api.get('/api/board-notes' + q);
       allNotes = data.notes || [];
       render();
-      if (activeView !== 'trash') { scheduledNotes = allNotes; renderScheduled(); }
-      else loadScheduled();
     } catch (err) {
       listEl.innerHTML = '<div class="stream__empty">Could not load notes.</div>';
     }
   }
 
   function render() {
+    const now = new Date();
     let rows = allNotes;
     if (activeView === 'published') rows = rows.filter(n => n.status === 'published');
     if (activeView === 'draft') rows = rows.filter(n => n.status === 'draft');
+    // Scheduled = has a future publish_date (waiting to go live)
+    if (activeView === 'scheduled') {
+      rows = rows.filter(n => !n.deleted_at && n.publish_date && new Date(n.publish_date) > now)
+                 .sort((a, b) => new Date(a.publish_date) - new Date(b.publish_date));
+    }
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       rows = rows.filter(n =>
@@ -58,66 +62,30 @@
       return;
     }
 
-    listEl.innerHTML = rows.map(n => `
-      <div class="stream__item is-structured" data-id="${n.id}">
-        <input type="checkbox" class="stream__check" data-check="${n.id}" aria-label="Select ${esc(n.headline)}">
-        <div class="stream__body">
-          <div class="stream__body-row">
-            ${n.image_url ? `<img class="stream__thumb" src="${esc(n.image_url)}" alt="">` : ''}
-            <span class="stream__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
-          </div>
-          <span class="stream__meta">${TYPE_LABELS[n.type] || n.type} · ${n.status}</span>
+    listEl.innerHTML = rows.map(n => {
+      const meta = (TYPE_LABELS[n.type] || n.type) + ' · ' + n.status;
+      const thumb = n.image_url
+        ? `<div class="spot-card__thumb"><img src="${esc(n.image_url)}" alt=""></div>`
+        : '';
+      return `<div class="spot-card" data-id="${n.id}">
+        <input type="checkbox" class="spot-card__check" data-check="${n.id}" aria-label="Select ${esc(n.headline)}">
+        ${thumb}
+        <div class="spot-card__body">
+          <span class="spot-card__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
+          <span class="spot-card__meta">${esc(meta)}</span>
         </div>
-        <span class="stream__when">${util.timeAgo(n.created_at)}</span>
-      </div>
-    `).join('');
+        <span class="spot-card__when">${esc(fmtDate(n.publish_date))}</span>
+      </div>`;
+    }).join('');
 
-    listEl.querySelectorAll('.stream__item').forEach(row => {
+    listEl.querySelectorAll('.spot-card').forEach(row => {
       row.addEventListener('click', (e) => {
-        if (e.target.classList.contains('stream__check')) return;
+        if (e.target.classList.contains('spot-card__check')) return;
         const note = allNotes.find(n => n.id === parseInt(row.dataset.id, 10));
         if (note) openEditor(note);
       });
     });
     updateBulkBar();
-  }
-
-  function renderScheduled() {
-    const panel = document.getElementById('notes-scheduled');
-    if (!panel) return;
-    const now = new Date();
-    const upcoming = scheduledNotes
-      .filter(n => !n.deleted_at && n.publish_date && new Date(n.publish_date) > now)
-      .sort((a, b) => new Date(a.publish_date) - new Date(b.publish_date));
-
-    if (!upcoming.length) {
-      panel.innerHTML = '<p class="spot-fs__hint">Nothing scheduled.</p>';
-      return;
-    }
-
-    const groups = new Map();
-    upcoming.forEach(n => {
-      const d = new Date(n.publish_date);
-      const key = d.toLocaleDateString(undefined, { month: 'long', day: 'numeric' });
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(n);
-    });
-
-    let html = '';
-    groups.forEach((notes, dateLabel) => {
-      html += `<div class="notes-scheduled-date">${esc(dateLabel)}</div><ul style="margin:0;padding:0">`;
-      notes.forEach(n => {
-        html += `<li class="notes-scheduled-item" data-id="${n.id}">${esc(n.headline)}</li>`;
-      });
-      html += '</ul>';
-    });
-    panel.innerHTML = html;
-    panel.querySelectorAll('.notes-scheduled-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const note = scheduledNotes.find(n => n.id === parseInt(item.dataset.id, 10));
-        if (note) openEditor(note);
-      });
-    });
   }
 
   function updateBulkBar() {
@@ -141,7 +109,7 @@
   }
 
   listEl.addEventListener('change', (e) => {
-    if (!e.target.classList.contains('stream__check')) return;
+    if (!e.target.classList.contains('spot-card__check')) return;
     const id = parseInt(e.target.dataset.check, 10);
     e.target.checked ? selected.add(id) : selected.delete(id);
     updateBulkBar();
@@ -162,7 +130,7 @@
   });
   document.getElementById('bulk-clear').addEventListener('click', () => {
     selected.clear();
-    document.querySelectorAll('.stream__check').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.spot-card__check').forEach(cb => cb.checked = false);
     updateBulkBar();
   });
 
@@ -174,16 +142,58 @@
     });
   }
 
-  viewSwitch.querySelectorAll('.view-switch__item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const v = btn.dataset.view;
-      if (v === activeView) return;
-      activeView = v;
-      viewSwitch.querySelectorAll('.view-switch__item').forEach(b =>
-        b.classList.toggle('is-active', b.dataset.view === v));
-      load();
+  // View filter as a picker dropdown (matches the Spots pattern)
+  const viewBtn   = document.getElementById('view-picker-btn');
+  const viewLabel = document.getElementById('view-picker-label');
+  const viewPop   = document.getElementById('view-picker-popover');
+  const viewList  = document.getElementById('view-picker-list');
+  const VIEW_STATES = [
+    { value: 'all',       label: 'All' },
+    { value: 'published', label: 'Published' },
+    { value: 'draft',     label: 'Draft' },
+    { value: 'scheduled', label: 'Scheduled' },
+    { value: 'trash',     label: 'Trash', danger: true },
+  ];
+
+  function buildViewPicker() {
+    if (!viewList) return;
+    viewList.innerHTML = VIEW_STATES.map(v =>
+      `<button class="picker-item ${activeView === v.value ? 'is-current' : ''}${v.danger ? ' picker-item--danger' : ''}" data-value="${v.value}">
+         <span>${v.label}</span>
+       </button>`
+    ).join('');
+    viewList.querySelectorAll('.picker-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const v = btn.dataset.value;
+        viewPop.hidden = true;
+        if (v === activeView) return;
+        activeView = v;
+        const found = VIEW_STATES.find(s => s.value === v);
+        if (viewLabel && found) viewLabel.textContent = found.label;
+        selected.clear();
+        // Scheduled filters client-side from the full set; others may hit the
+        // server (trash). load() re-fetches; render() applies the filter.
+        if (v === 'trash' || activeView === 'trash') load();
+        else load();
+        buildViewPicker();
+      });
     });
-  });
+  }
+
+  if (viewBtn) {
+    const init = VIEW_STATES.find(s => s.value === activeView);
+    if (viewLabel && init) viewLabel.textContent = init.label;
+    buildViewPicker();
+    viewBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      viewPop.hidden = !viewPop.hidden;
+    });
+    document.addEventListener('click', (e) => {
+      if (!viewPop.hidden && !viewPop.contains(e.target) && !viewBtn.contains(e.target)) {
+        viewPop.hidden = true;
+      }
+    });
+  }
 
   // -------- Editor --------
   const editor = document.getElementById('note-editor');

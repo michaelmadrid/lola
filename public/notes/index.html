@@ -45,43 +45,39 @@
         <p class="mast__count" id="note-count"></p>
       </div>
       <div class="mast__head-right">
-        <nav class="view-switch" id="view-switch">
-          <button class="view-switch__item is-active" data-view="all" type="button">All</button>
-          <button class="view-switch__item" data-view="published" type="button">Published</button>
-          <button class="view-switch__item" data-view="draft" type="button">Draft</button>
-          <button class="view-switch__item view-switch__item--danger" data-view="trash" type="button">Trash</button>
-        </nav>
         <button class="btn" id="note-add-btn" type="button">+ Add a note</button>
       </div>
     </div>
   </header>
 
-  <div class="notes-layout">
-    <div class="notes-layout__main">
+  <input type="text" class="search-input" id="notes-search" placeholder="Search by name…" autocomplete="off">
 
-      <input type="text" class="admin-search" id="notes-search" placeholder="Search">
-
-      <div class="bulk-bar" id="bulk-bar" hidden>
-        <span class="bulk-bar__count" id="bulk-count">0 selected</span>
-        <div class="bulk-bar__actions">
-          <button class="btn btn--small" id="bulk-publish">Publish</button>
-          <button class="btn btn--small btn--secondary" id="bulk-draft">Make draft</button>
-          <button class="btn btn--small btn--ghost btn--danger" id="bulk-trash">Move to trash</button>
-          <button class="btn btn--small btn--ghost" id="bulk-restore" hidden>Restore</button>
-          <button class="btn btn--small btn--ghost btn--danger" id="bulk-delete-forever" hidden>Delete forever</button>
-          <button class="bulk-bar__cancel" id="bulk-clear">Clear</button>
-        </div>
+  <div class="spots-filters">
+    <!-- View filter as a picker dropdown, pushed right -->
+    <div class="picker-group picker-group--view">
+      <button class="picker-btn" id="view-picker-btn" type="button" aria-haspopup="true">
+        <span class="picker-btn__label" id="view-picker-label">All</span>
+        <span class="picker-btn__caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="picker-popover" id="view-picker-popover" hidden>
+        <div class="picker-list" id="view-picker-list"></div>
       </div>
-
-      <div id="notes-list"><div class="stream__empty">Loading…</div></div>
-
     </div>
-
-    <aside class="notes-layout__side">
-      <div class="notes-scheduled-label">Scheduled</div>
-      <div id="notes-scheduled"><p class="spot-fs__hint">Nothing scheduled.</p></div>
-    </aside>
   </div>
+
+  <div class="bulk-bar" id="bulk-bar" hidden>
+    <span class="bulk-bar__count" id="bulk-count">0 selected</span>
+    <div class="bulk-bar__actions">
+      <button class="btn btn--small" id="bulk-publish">Publish</button>
+      <button class="btn btn--small btn--secondary" id="bulk-draft">Make draft</button>
+      <button class="btn btn--small btn--ghost btn--danger" id="bulk-trash">Move to trash</button>
+      <button class="btn btn--small btn--ghost" id="bulk-restore" hidden>Restore</button>
+      <button class="btn btn--small btn--ghost btn--danger" id="bulk-delete-forever" hidden>Delete forever</button>
+      <button class="bulk-bar__cancel" id="bulk-clear">Clear</button>
+    </div>
+  </div>
+
+  <div class="stream spots-grid" id="notes-list"><div class="stream__empty">Loading…</div></div>
 
 </main>
 
