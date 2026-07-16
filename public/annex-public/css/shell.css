@@ -230,7 +230,7 @@ body:not(.home-page) { padding-top: 36px; }
 }
 .categories-list li a:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 2px;
   text-decoration-thickness: 1px;
 }
 /* EXPLORE: try left-aligned, or smaller --text-medium */
@@ -268,7 +268,7 @@ a .notice-text:hover,
 .notice-text a:hover,
 a.notice-text:hover {
   text-decoration: underline;
-  text-underline-offset: 3px;
+  text-underline-offset: 2px;
   text-decoration-thickness: 1px;
 }
 /* EXPLORE: try --text-large for smaller, --text-hero for bigger */
@@ -334,7 +334,7 @@ a.notice-text:hover {
 }
 .notice-item[data-type="link"] .notice-text:hover {
   text-decoration: underline;
-  text-underline-offset: 4px;
+  text-underline-offset: 2px;
   text-decoration-thickness: 1px;
 }
 .notice-item[data-type="link"] .notice-text::after { content: ''; }
