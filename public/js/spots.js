@@ -24,7 +24,7 @@
   let selected = new Set();
   let activeCity = lsGet(LS_CITY, 'all');
   let activeCat  = lsGet(LS_CAT, 'all');
-  let activeBeen = lsGet(LS_BEEN, 'all'); // 'all' | 'want' | 'been'
+  let activeBeen = lsGet(LS_BEEN, 'want'); // 'all' | 'want' | 'been'
   let searchTerm = '';
 
   const listEl = document.getElementById('spots-list');
@@ -331,23 +331,27 @@
       if (s.category) metaParts.push(s.category);
       if (cityLabel) metaParts.push(cityLabel);
       const metaLine = metaParts.length
-        ? `<span class="stream__meta">${util.escapeHtml(metaParts.join(' · '))}</span>`
+        ? `<span class="spot-card__meta">${util.escapeHtml(metaParts.join(' · '))}</span>`
         : '';
-      const tipLine = s.tip ? `<span class="stream__tip">${util.escapeHtml(s.tip)}</span>` : '';
 
       const catAttr = s.category ? ` data-category="${util.escapeHtml(s.category)}"` : '';
-      const treatment = (parseInt(s.id, 10) % 7);
       const checkboxHtml = isAdmin
-        ? `<input type="checkbox" class="stream__check" data-check="${s.id}" aria-label="Select ${util.escapeHtml(s.place_name)}">`
+        ? `<input type="checkbox" class="spot-card__check" data-check="${s.id}" aria-label="Select ${util.escapeHtml(s.place_name)}">`
         : '';
-      return `<div class="stream__item is-structured${s.been === false ? ' is-want' : ''}" data-id="${s.id}" data-treatment="${treatment}"${catAttr}>
+      // Optional tiny thumbnail — only if the spot has an image (rare for now,
+      // graceful upgrade later). No empty slot when there's no image.
+      const thumbHtml = s.image_url
+        ? `<div class="spot-card__thumb"><img src="${util.escapeHtml(s.image_url)}" alt=""></div>`
+        : '';
+
+      return `<div class="spot-card${s.been === false ? ' is-want' : ''}" data-id="${s.id}"${catAttr}>
         ${checkboxHtml}
-        <div class="stream__body">
-          <span class="stream__name">${util.escapeHtml(s.place_name)}</span>
-          ${tipLine}
+        ${thumbHtml}
+        <div class="spot-card__body">
+          <span class="spot-card__name">${util.escapeHtml(s.place_name)}</span>
           ${metaLine}
         </div>
-        <span class="stream__when">${util.timeAgo(s.created_at)}</span>
+        <span class="spot-card__when">${util.timeAgo(s.created_at)}</span>
       </div>`;
     }).join('');
     updateBulkBar();
@@ -381,8 +385,8 @@
 
   // Click delegation on the spots list
   listEl.addEventListener('click', (e) => {
-    if (e.target.classList.contains('stream__check')) return;
-    const row = e.target.closest('.stream__item');
+    if (e.target.classList.contains('spot-card__check')) return;
+    const row = e.target.closest('.spot-card');
     if (!row) return;
     const id = row.dataset.id;
     if (!id) return;
@@ -457,13 +461,13 @@
     });
     document.getElementById('bulk-clear').addEventListener('click', () => {
       selected.clear();
-      document.querySelectorAll('.stream__check').forEach(cb => cb.checked = false);
+      document.querySelectorAll('.spot-card__check').forEach(cb => cb.checked = false);
       updateBulkBar();
     });
   }
 
   listEl.addEventListener('change', (e) => {
-    if (!e.target.classList.contains('stream__check')) return;
+    if (!e.target.classList.contains('spot-card__check')) return;
     const id = parseInt(e.target.dataset.check, 10);
     e.target.checked ? selected.add(id) : selected.delete(id);
     updateBulkBar();
