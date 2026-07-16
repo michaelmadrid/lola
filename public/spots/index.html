@@ -45,12 +45,6 @@
         <p class="mast__count" id="spot-count"></p>
       </div>
       <div class="mast__head-right">
-        <nav class="view-switch" id="view-switch">
-          <button class="view-switch__item is-active" data-view="all" type="button">All</button>
-          <button class="view-switch__item" data-view="curated" type="button">Curated</button>
-          <button class="view-switch__item" data-view="standard" type="button">Standard</button>
-          <button class="view-switch__item view-switch__item--danger" data-view="trash" type="button">Trash</button>
-        </nav>
         <button class="btn" id="capture-launcher" type="button">+ Add a spot</button>
       </div>
     </div>
@@ -184,6 +178,15 @@
         <div class="picker-list" id="been-picker-list"></div>
       </div>
     </div>
+
+    <!-- Curated/Standard/Trash — demoted from masthead into the filter row,
+         pushed right (it's a workflow filter, not top-level nav). -->
+    <nav class="view-switch view-switch--infilter" id="view-switch">
+      <button class="view-switch__item is-active" data-view="all" type="button">All</button>
+      <button class="view-switch__item" data-view="curated" type="button">Curated</button>
+      <button class="view-switch__item" data-view="standard" type="button">Standard</button>
+      <button class="view-switch__item view-switch__item--danger" data-view="trash" type="button">Trash</button>
+    </nav>
   </div>
 
   <!-- The list -->

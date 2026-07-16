@@ -71,7 +71,6 @@
   align-items: center;
   gap: 10px;
   padding: 14px 0 18px;
-  border-bottom: 1px solid var(--rule);
 }
 
 .picker-group {
@@ -713,4 +712,16 @@ body.has-admin-checks .stream__item {
   background: var(--accent);
   margin-left: 6px;
   vertical-align: middle;
+}
+
+/* View-switch demoted into the filter row — pushed hard right */
+.view-switch--infilter {
+  margin-left: auto;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+@media (max-width: 720px) {
+  /* On narrow screens it wraps to its own line, still right-aligned */
+  .view-switch--infilter { margin-left: auto; }
 }
