@@ -46,6 +46,10 @@
   const beenLabel = document.getElementById('been-picker-label');
   const beenPop   = document.getElementById('been-picker-popover');
   const beenList  = document.getElementById('been-picker-list');
+  const viewBtn   = document.getElementById('view-picker-btn');
+  const viewLabel = document.getElementById('view-picker-label');
+  const viewPop   = document.getElementById('view-picker-popover');
+  const viewList  = document.getElementById('view-picker-list');
 
   // Type options — loaded from the DB categories endpoint (admin-managed).
   // Starts with just "All types"; real categories fill in on load.
@@ -260,13 +264,14 @@
     pop.style.transform = '';
   }
   function closeAllPopovers() {
-    [cityPop, typePop, beenPop].forEach(p => p && closePopover(p));
+    [cityPop, typePop, beenPop, viewPop].forEach(p => p && closePopover(p));
   }
   document.addEventListener('click', (e) => {
     // Close on outside click
     if (cityPop && !cityPop.hidden && !cityPop.contains(e.target) && !cityBtn.contains(e.target)) closePopover(cityPop);
     if (typePop && !typePop.hidden && !typePop.contains(e.target) && !typeBtn.contains(e.target)) closePopover(typePop);
     if (beenPop && !beenPop.hidden && !beenPop.contains(e.target) && !beenBtn.contains(e.target)) closePopover(beenPop);
+    if (viewPop && !viewPop.hidden && !viewPop.contains(e.target) && !viewBtn.contains(e.target)) closePopover(viewPop);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllPopovers();
@@ -474,26 +479,48 @@
   });
 
   // View switcher
-  const viewSwitch = document.getElementById('view-switch');
-  if (viewSwitch) {
-    viewSwitch.querySelectorAll('.view-switch__item').forEach(b =>
-      b.classList.toggle('is-active', b.dataset.view === activeView));
-  }
-  if (viewSwitch) {
-    viewSwitch.querySelectorAll('.view-switch__item').forEach(btn => {
+  // View filter as a picker dropdown (matches city/type/been pills)
+  const VIEW_STATES = [
+    { value: 'all',      label: 'All' },
+    { value: 'curated',  label: 'Curated' },
+    { value: 'standard', label: 'Standard' },
+    { value: 'trash',    label: 'Trash', danger: true },
+  ];
+
+  function buildViewPickerOptions() {
+    if (!viewList) return;
+    viewList.innerHTML = VIEW_STATES.map(v =>
+      `<button class="picker-item ${activeView === v.value ? 'is-current' : ''}${v.danger ? ' picker-item--danger' : ''}" data-value="${v.value}">
+         <span>${v.label}</span>
+       </button>`
+    ).join('');
+    viewList.querySelectorAll('.picker-item').forEach(btn => {
       btn.addEventListener('click', () => {
-        const v = btn.dataset.view;
+        const v = btn.dataset.value;
+        closePopover(viewPop);
         if (v === activeView) return;
         activeView = v;
+        // Reset other filters when switching view (same as the old behavior)
         activeCity = 'all'; activeCat = 'all'; activeBeen = 'all'; searchTerm = '';
         if (searchInput) searchInput.value = '';
         lsSet(LS_CITY, 'all'); lsSet(LS_CAT, 'all'); lsSet(LS_BEEN, 'all');
-        viewSwitch.querySelectorAll('.view-switch__item').forEach(b =>
-          b.classList.toggle('is-active', b.dataset.view === v));
+        const found = VIEW_STATES.find(s => s.value === v);
+        viewLabel.textContent = found ? found.label : 'All';
         selected.clear();
-        // Always reload fresh from the server — simplest, avoids stale-state bugs.
         loadSpots();
       });
+    });
+  }
+
+  if (viewBtn) {
+    // Set initial label
+    const initView = VIEW_STATES.find(s => s.value === activeView);
+    if (viewLabel && initView) viewLabel.textContent = initView.label;
+    buildViewPickerOptions();
+    viewBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (viewPop.classList.contains('is-open')) closePopover(viewPop);
+      else openPopover(viewPop);
     });
   }
 

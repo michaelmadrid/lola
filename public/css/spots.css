@@ -714,14 +714,7 @@ body.has-admin-checks .stream__item {
   vertical-align: middle;
 }
 
-/* View-switch demoted into the filter row — pushed hard right */
-.view-switch--infilter {
-  margin-left: auto;
-  display: flex;
-  gap: 16px;
-  align-items: center;
-}
-@media (max-width: 720px) {
-  /* On narrow screens it wraps to its own line, still right-aligned */
-  .view-switch--infilter { margin-left: auto; }
-}
+/* View filter picker — pushed hard right in the filter row */
+.picker-group--view { margin-left: auto; }
+.picker-item--danger span { color: var(--danger); }
+.picker-item--danger.is-current span { color: var(--danger); }

@@ -179,14 +179,16 @@
       </div>
     </div>
 
-    <!-- Curated/Standard/Trash — demoted from masthead into the filter row,
-         pushed right (it's a workflow filter, not top-level nav). -->
-    <nav class="view-switch view-switch--infilter" id="view-switch">
-      <button class="view-switch__item is-active" data-view="all" type="button">All</button>
-      <button class="view-switch__item" data-view="curated" type="button">Curated</button>
-      <button class="view-switch__item" data-view="standard" type="button">Standard</button>
-      <button class="view-switch__item view-switch__item--danger" data-view="trash" type="button">Trash</button>
-    </nav>
+    <!-- Curated/Standard/Trash — a filter pill like the others, pushed right -->
+    <div class="picker-group picker-group--view">
+      <button class="picker-btn" id="view-picker-btn" type="button" aria-haspopup="true">
+        <span class="picker-btn__label" id="view-picker-label">All</span>
+        <span class="picker-btn__caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="picker-popover" id="view-picker-popover" hidden>
+        <div class="picker-list" id="view-picker-list"></div>
+      </div>
+    </div>
   </div>
 
   <!-- The list -->
