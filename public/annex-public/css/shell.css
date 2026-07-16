@@ -319,7 +319,7 @@ body:not(.home-page) { padding-top: 36px; }
   text-decoration-thickness: 1px;
   cursor: pointer;
 }
-.notice-item[data-type="link"] .notice-text:hover { color: var(--ink); }
+.notice-item[data-type="link"] .notice-text:hover { color: red; text-decoration: none; }
 .notice-item[data-type="link"] .notice-text::after { content: ''; }
 
 
