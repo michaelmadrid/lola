@@ -253,7 +253,7 @@ body:not(.home-page) { padding-top: 36px; }
   font-family: var(--serif);
   font-size: var(--text-medium2);
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: 0em;
   color: var(--ink);
   margin-bottom:10px;
 }
@@ -305,13 +305,8 @@ body:not(.home-page) { padding-top: 36px; }
 /* photograph: image leads, caption goes small + sans underneath.
    The caption reuses reference_title from the Notes editor. */
 .notice-item[data-type="photograph"] .notice-text {
-  font-family: var(--serif);
-font-size: var(--text-medium2);
-line-height: 1.1;
-letter-spacing: -0.02em;
-color: var(--ink);
-margin-bottom:10px;
-
+  display:none;
+  /* no capton */
 }
 
 /* link: muted, underlined, quieter than a plain note — it's
