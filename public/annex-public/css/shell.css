@@ -228,12 +228,10 @@ body:not(.home-page) { padding-top: 36px; }
   color: var(--ink);
   list-style: none;
 }
-.categories-list li a {
-  transition: background 0.12s ease;
-}
 .categories-list li a:hover {
-  background: var(--hl);
-  box-shadow: 2px 0 0 var(--hl), -2px 0 0 var(--hl);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 /* EXPLORE: try left-aligned, or smaller --text-medium */
 
@@ -306,14 +304,12 @@ a.notice-text:hover {
     font-size: var(--text-body);
 }
 .notice-body a{
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: background 0.12s ease;
+  text-decoration: none;
 }
 .notice-body a:hover{
-  text-decoration: none;
-  background: var(--hl);
-  box-shadow: 2px 0 0 var(--hl), -2px 0 0 var(--hl);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
 }
 .notice-body p{
    margin:0px;
@@ -334,17 +330,12 @@ a.notice-text:hover {
 .notice-item[data-type="link"] .notice-text {
   font-size: var(--text-large);
   color: var(--ink);
+  cursor: pointer;
+}
+.notice-item[data-type="link"] .notice-text:hover {
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
-  cursor: pointer;
-  transition: background 0.12s ease;
-}
-/* Outbound link → yellow highlighter swipe on hover ("this goes elsewhere") */
-.notice-item[data-type="link"] .notice-text:hover {
-  text-decoration: none;
-  background: var(--hl);
-  box-shadow: 2px 0 0 var(--hl), -2px 0 0 var(--hl);  /* slight bleed like a marker */
 }
 .notice-item[data-type="link"] .notice-text::after { content: ''; }
 
