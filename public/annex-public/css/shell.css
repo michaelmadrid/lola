@@ -502,7 +502,9 @@ a.notice-text:hover {
   color: var(--ink);
   margin-bottom: var(--space-5);
 }
-.note-detail__body p { margin-bottom: 0px; font-family: var(--sans);}
+.note-detail__body p { margin-bottom: 0px; 
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
 /* Quill text-alignment classes — apply wherever note HTML renders
    (permalink body + homepage feed). */
 .ql-align-center  { text-align: center; }
