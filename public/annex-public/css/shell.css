@@ -62,7 +62,7 @@
   --serif:    'Times Now','Times New Roman', Times, serif;
   
   --logosans: Arial, Helvetica, 'Helvetica Neue', sans-serf;
-  --logosize:64px;
+  --logosize:56px;
 
   /* Type scale — adjust freely while exploring */
   --text-tiny:    11px;
@@ -227,6 +227,7 @@ body:not(.home-page) { padding-top: 36px; }
   text-align: center;
   color: var(--ink);
   list-style: none;
+  margin-top:32px;
 }
 .categories-list li a:hover {
   text-decoration: underline;
