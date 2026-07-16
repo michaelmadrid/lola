@@ -231,7 +231,7 @@ body:not(.home-page) { padding-top: 36px; }
 .categories-list li a:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px;
 }
 /* EXPLORE: try left-aligned, or smaller --text-medium */
 
@@ -269,7 +269,7 @@ a .notice-text:hover,
 a.notice-text:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px;
 }
 /* EXPLORE: try --text-large for smaller, --text-hero for bigger */
 /* EXPLORE: try font-style: italic on some notices */
@@ -309,7 +309,7 @@ a.notice-text:hover {
 .notice-body a:hover{
   text-decoration: underline;
   text-underline-offset: 2px;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px;
 }
 .notice-body p{
    margin:0px;
@@ -335,7 +335,7 @@ a.notice-text:hover {
 .notice-item[data-type="link"] .notice-text:hover {
   text-decoration: underline;
   text-underline-offset: 2px;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px;
 }
 .notice-item[data-type="link"] .notice-text::after { content: ''; }
 
