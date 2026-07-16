@@ -718,3 +718,7 @@ body.has-admin-checks .stream__item {
 .picker-group--view { margin-left: auto; }
 .picker-item--danger span { color: var(--danger); }
 .picker-item--danger.is-current span { color: var(--danger); }
+
+/* Notes drag-to-reorder */
+.page-notes .spot-card[draggable="true"] { cursor: grab; }
+.page-notes .spot-card.is-dragging { opacity: 0.4; cursor: grabbing; }

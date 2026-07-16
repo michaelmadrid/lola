@@ -6,7 +6,11 @@
 
   const listEl = document.getElementById('notes-list');
   const countEl = document.getElementById('note-count');
-  let activeView = 'all'; // all | published | draft | scheduled | trash
+  const LS_VIEW = 'annex.notes.view';
+  function lsGet(k, d) { try { return localStorage.getItem(k) || d; } catch { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
+
+  let activeView = lsGet(LS_VIEW, 'all'); // all | feed | published | draft | scheduled | trash
   let allNotes = [];
   let selected = new Set();
   let searchTerm = '';
@@ -39,9 +43,28 @@
 
   function render() {
     const now = new Date();
-    let rows = allNotes;
+    let rows = allNotes.slice();
+    // Default order everywhere: pinned first, then newest publish_date. This
+    // makes "above = later date" consistent so drag-to-reorder behaves the same
+    // in every view. (Scheduled overrides to oldest-first below.)
+    rows.sort((a, b) => {
+      if (!!b.pin !== !!a.pin) return (b.pin ? 1 : 0) - (a.pin ? 1 : 0);
+      return new Date(b.publish_date) - new Date(a.publish_date);
+    });
     if (activeView === 'published') rows = rows.filter(n => n.status === 'published');
     if (activeView === 'draft') rows = rows.filter(n => n.status === 'draft');
+    // Feed = what actually appears on the homepage: published + show_in_feed,
+    // and not future-dated. Sorted like the real feed (pinned first, newest).
+    if (activeView === 'feed') {
+      rows = rows.filter(n =>
+        n.status === 'published' &&
+        n.show_in_feed !== false &&
+        (!n.publish_date || new Date(n.publish_date) <= now)
+      ).sort((a, b) => {
+        if (!!b.pin !== !!a.pin) return (b.pin ? 1 : 0) - (a.pin ? 1 : 0);
+        return new Date(b.publish_date) - new Date(a.publish_date);
+      });
+    }
     // Scheduled = has a future publish_date (waiting to go live)
     if (activeView === 'scheduled') {
       rows = rows.filter(n => !n.deleted_at && n.publish_date && new Date(n.publish_date) > now)
@@ -78,14 +101,82 @@
       </div>`;
     }).join('');
 
+    // Drag-to-reorder (not in Draft/Trash where order is meaningless, nor in
+    // Scheduled where the date IS the schedule and sorts oldest-first).
+    const orderable = activeView !== 'draft' && activeView !== 'trash' && activeView !== 'scheduled';
+    if (orderable) enableDrag(rows);
+
     listEl.querySelectorAll('.spot-card').forEach(row => {
       row.addEventListener('click', (e) => {
         if (e.target.classList.contains('spot-card__check')) return;
+        if (row.dataset.dragging === '1') return; // ignore click fired after a drag
         const note = allNotes.find(n => n.id === parseInt(row.dataset.id, 10));
         if (note) openEditor(note);
       });
     });
     updateBulkBar();
+  }
+
+  let dragEl = null;
+  function enableDrag(rows) {
+    listEl.querySelectorAll('.spot-card').forEach(card => {
+      card.setAttribute('draggable', 'true');
+      card.addEventListener('dragstart', () => { dragEl = card; card.classList.add('is-dragging'); });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('is-dragging');
+        setTimeout(() => { card.dataset.dragging = '0'; }, 0);
+        dragEl = null;
+      });
+      card.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!dragEl || dragEl === card) return;
+      });
+      card.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (!dragEl || dragEl === card) return;
+        dragEl.dataset.dragging = '1';
+        reorderByDate(
+          parseInt(dragEl.dataset.id, 10),
+          parseInt(card.dataset.id, 10),
+          rows
+        );
+      });
+    });
+  }
+
+  // Set dragged note's publish_date to land just before the target note's,
+  // between the target and the note currently above it (so it sorts in that gap).
+  async function reorderByDate(dragId, targetId, rows) {
+    const drag = allNotes.find(n => n.id === dragId);
+    const target = allNotes.find(n => n.id === targetId);
+    if (!drag || !target) return;
+
+    // Find the note currently displayed just ABOVE the target in this view.
+    const idx = rows.findIndex(n => n.id === targetId);
+    const above = idx > 0 ? rows[idx - 1] : null;
+
+    const targetT = new Date(target.publish_date).getTime();
+    let newT;
+    if (above && above.id !== dragId) {
+      // Land at the midpoint between the note above and the target.
+      const aboveT = new Date(above.publish_date).getTime();
+      newT = Math.floor((aboveT + targetT) / 2);
+      if (newT === targetT || newT === aboveT) newT = targetT + 1000; // fallback
+    } else {
+      // Target is at the top → land 1 minute after it so drag sorts above.
+      newT = targetT + 60 * 1000;
+    }
+
+    const iso = new Date(newT).toISOString();
+    // Optimistic: update locally + re-render, then persist.
+    drag.publish_date = iso;
+    render();
+    try {
+      await api.patch('/api/board-notes/' + dragId, { publish_date: iso });
+    } catch (err) {
+      // On failure, reload to resync
+      load();
+    }
   }
 
   function updateBulkBar() {
@@ -149,6 +240,7 @@
   const viewList  = document.getElementById('view-picker-list');
   const VIEW_STATES = [
     { value: 'all',       label: 'All' },
+    { value: 'feed',      label: 'Feed' },
     { value: 'published', label: 'Published' },
     { value: 'draft',     label: 'Draft' },
     { value: 'scheduled', label: 'Scheduled' },
@@ -168,6 +260,7 @@
         viewPop.hidden = true;
         if (v === activeView) return;
         activeView = v;
+        lsSet(LS_VIEW, v);
         const found = VIEW_STATES.find(s => s.value === v);
         if (viewLabel && found) viewLabel.textContent = found.label;
         selected.clear();
