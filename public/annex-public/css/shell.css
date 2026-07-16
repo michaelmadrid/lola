@@ -55,6 +55,7 @@
   --rule:     #e0e0dc;
   --accent:   #2a4ed4;  /* French blue — reserved for Announcement + pin */
   --accent-bg: #eef1ff;
+  --hl:       #efe86a;  /* highlighter yellow — "this goes elsewhere" on hover */
 
   /* Type */
   --sans:     'ABC Diatype', 'Helvetica Neue', Arial, sans-serif;
@@ -227,7 +228,13 @@ body:not(.home-page) { padding-top: 36px; }
   color: var(--ink);
   list-style: none;
 }
-.categories-list li a:hover { color: var(--ink-2); }
+.categories-list li a {
+  transition: background 0.12s ease;
+}
+.categories-list li a:hover {
+  background: var(--hl);
+  box-shadow: 2px 0 0 var(--hl), -2px 0 0 var(--hl);
+}
 /* EXPLORE: try left-aligned, or smaller --text-medium */
 
 /* ── Pinned links (right col, above categories) ─────────── */
@@ -256,6 +263,15 @@ body:not(.home-page) { padding-top: 36px; }
   letter-spacing: 0em;
   color: var(--ink);
   margin-bottom:10px;
+}
+/* Note titles that link to their permalink — clean at rest, underline on hover.
+   Monochrome; no color shift (that's reserved for outbound links). */
+a .notice-text:hover,
+.notice-text a:hover,
+a.notice-text:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
 }
 /* EXPLORE: try --text-large for smaller, --text-hero for bigger */
 /* EXPLORE: try font-style: italic on some notices */
@@ -291,9 +307,13 @@ body:not(.home-page) { padding-top: 36px; }
 }
 .notice-body a{
   text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: background 0.12s ease;
 }
 .notice-body a:hover{
   text-decoration: none;
+  background: var(--hl);
+  box-shadow: 2px 0 0 var(--hl), -2px 0 0 var(--hl);
 }
 .notice-body p{
    margin:0px;
@@ -318,8 +338,14 @@ body:not(.home-page) { padding-top: 36px; }
   text-underline-offset: 4px;
   text-decoration-thickness: 1px;
   cursor: pointer;
+  transition: background 0.12s ease;
 }
-.notice-item[data-type="link"] .notice-text:hover { color: red; text-decoration: none; }
+/* Outbound link → yellow highlighter swipe on hover ("this goes elsewhere") */
+.notice-item[data-type="link"] .notice-text:hover {
+  text-decoration: none;
+  background: var(--hl);
+  box-shadow: 2px 0 0 var(--hl), -2px 0 0 var(--hl);  /* slight bleed like a marker */
+}
 .notice-item[data-type="link"] .notice-text::after { content: ''; }
 
 
