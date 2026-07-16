@@ -227,7 +227,7 @@ body:not(.home-page) { padding-top: 36px; }
   text-align: center;
   color: var(--ink);
   list-style: none;
-  margin-top:32px;
+  margin-top:64px;
 }
 
 .categories-list li a:hover {
@@ -352,7 +352,7 @@ a.notice-text:hover {
 
 /* ── Left col extras ────────────────────────────────────── */
 .col-left-image {
-  margin-top:64px;
+  margin-top:32px;
   margin-bottom: var(--space-5);
 }
 .col-left-image img {
