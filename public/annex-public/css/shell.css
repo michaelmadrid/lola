@@ -320,7 +320,7 @@ body:not(.home-page) { padding-top: 36px; }
   cursor: pointer;
 }
 .notice-item[data-type="link"] .notice-text:hover { color: var(--ink); }
-.notice-item[data-type="link"] .notice-text::after { content: ' ↗'; }
+.notice-item[data-type="link"] .notice-text::after { content: ''; }
 
 
 /* pinned: modifier on top of any type — small pin mark, no framing */
