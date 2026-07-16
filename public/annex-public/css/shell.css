@@ -352,7 +352,7 @@ a.notice-text:hover {
 
 /* ── Left col extras ────────────────────────────────────── */
 .col-left-image {
-  margin-top:32px;
+  margin-top:64px;
   margin-bottom: var(--space-5);
 }
 .col-left-image img {
