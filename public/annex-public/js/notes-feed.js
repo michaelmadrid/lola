@@ -1,5 +1,5 @@
-/* notes-feed.js — pulls published Notes into the annex.site center column.
-   Talks to studio.annex.site since annex.site is a static-only domain
+/* notes-feed.js — pulls published Notes into the posto.world center column.
+   Talks to studio.annex.site since posto.world is a static-only domain
    (no Node backend on this side). Public, unauthenticated endpoint. */
 (function () {
   const API = 'https://studio.annex.site/api/board-notes/public';

@@ -1,4 +1,4 @@
-/* includes.js — tiny client-side HTML partial loader for annex.site.
+/* includes.js — tiny client-side HTML partial loader for posto.world.
    No build step. Any page drops in:
 
      <div data-include="header"></div>
