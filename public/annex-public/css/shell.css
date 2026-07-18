@@ -241,7 +241,8 @@ body.gazette-mode .index-flow {
 
 
 
-body.gazette-mode #spots-index{
+body.gazette-mode #spots-index,
+body.index-mode #spots-index{
   padding-top:80px;
 }
 
