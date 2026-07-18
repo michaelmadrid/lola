@@ -222,7 +222,7 @@ img { display: block; max-width: 100%; height: auto; }
    trigger is easy to lose against similar-looking words, so the
    subnav starts pre-opened. Pure CSS — no JS flag needed, since
    .posto-mark is always a descendant of <body>. */
-body.gazette-mode .posto-subnav {
+body.gazette-mode .posto-subnavX {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -234,7 +234,7 @@ body.gazette-mode .posto-mark__word {
 /* Content itself also needs room to clear the pre-opened nav stack —
    same body-class hook, just targeting layout instead of the nav. */
 body.gazette-mode .index-flow {
-  padding-top: 160px;
+  padding-top: 60px;
 }
 
 /* ── Legacy centered masthead (kept for homepage if needed) ── */
