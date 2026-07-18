@@ -229,7 +229,10 @@ body.gazette-mode .posto-subnavX {
   transform: translateY(0);
   pointer-events: auto;
 }
-body.gazette-mode .posto-mark__word {
+
+
+body.gazette-mode .posto-mark__word, 
+body.wall-mode .posto-mark__word {
   background-color: #000;
   color: #fff;
 }
@@ -238,8 +241,6 @@ body.gazette-mode .posto-mark__word {
 body.gazette-mode .index-flow {
   padding-top: 60px;
 }
-
-
 
 #spots-index{
   padding-top:80px;
