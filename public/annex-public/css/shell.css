@@ -237,6 +237,12 @@ body.gazette-mode .index-flow {
   padding-top: 60px;
 }
 
+
+
+body.gazette-mode #spots-index{
+  padding-top:80px;
+}
+
 /* ── Legacy centered masthead (kept for homepage if needed) ── */
 .annex-head {
   text-align: center;
