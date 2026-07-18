@@ -137,6 +137,11 @@
         // (like the letters in the alpha index); spots flow beneath each,
         // alphabetical by name, spilling across the columns.
         el.classList.add('spots-index--wide');
+        // Dense multi-column text page — the tiny hover trigger is easy to
+        // miss against similar-looking words, so start the nav pre-opened.
+        // See shell.css .gazette-mode rules. Same convention as wall-mode
+        // above; add more of these per layout as needed.
+        document.body.classList.add('gazette-mode');
         const sorted = rows.slice().sort((a, b) => {
           const ca = (a.city || 'zzz').toLowerCase(), cb = (b.city || 'zzz').toLowerCase();
           if (ca !== cb) return ca.localeCompare(cb);

@@ -212,6 +212,31 @@ img { display: block; max-width: 100%; height: auto; }
 [data-include="header"] { display: block; }
 [data-include="footer"] { display: block; min-height: 80px; }
 
+/* ── Per-section nav overrides ──────────────────────────────
+   The header partial itself never changes — pages opt in via a
+   body class (same convention as .wall-mode below), and these
+   rules key off it. Add more blocks like this per layout/page
+   as needed; never fork partials/header.html itself. */
+
+/* Gazette layout (dense multi-column text index): the tiny hover
+   trigger is easy to lose against similar-looking words, so the
+   subnav starts pre-opened. Pure CSS — no JS flag needed, since
+   .posto-mark is always a descendant of <body>. */
+body.gazette-mode .posto-subnav {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+body.gazette-mode .posto-mark__word {
+  background-color: #000;
+  color: #fff;
+}
+/* Content itself also needs room to clear the pre-opened nav stack —
+   same body-class hook, just targeting layout instead of the nav. */
+body.gazette-mode .index-flow {
+  padding-top: 160px;
+}
+
 /* ── Legacy centered masthead (kept for homepage if needed) ── */
 .annex-head {
   text-align: center;
