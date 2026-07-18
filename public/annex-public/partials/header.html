@@ -1,6 +1,43 @@
-<div class="annex-bar">
-  <a href="/" class="annex-bar__brand" rel="home">Posto</a>
-  <nav class="annex-bar__nav">
-    <!-- <a href="/spots/?layout=wall">Spots</a> -->
+<!-- Fixed brand mark + subnav — styling lives in css/shell.css
+     (.posto-mark / .posto-subnav). Edit labels/links here; every
+     page that includes this partial picks up changes on refresh. -->
+<div class="posto-mark" tabindex="0">
+  <span class="posto-mark__word">POSTO</span>
+  <nav class="posto-subnav">
+    <a class="posto-subnav__item" href="#" data-soon="true">Shelf</a>
+    <a class="posto-subnav__item" href="/spots.html?layout=gazette&cat=bookstore">Bookstores</a>
+    <a class="posto-subnav__item" href="/spots.html?layout=wall">Spots, Spots, Spots</a>
+    <a class="posto-subnav__item" href="/notes/17">4 Memory</a>
+    <a class="posto-subnav__item" href="#">Info</a>
   </nav>
 </div>
+
+<script>
+  /* Click/tap toggle — works identically on desktop and mobile.
+     Hover (CSS only, in shell.css) still works as a bonus on
+     desktop, but this is the reliable path everywhere. Runs once
+     per page since includes.js recreates this <script> fresh
+     after injecting the partial — see js/includes.js. */
+  (function () {
+    var mark = document.querySelector('.posto-mark');
+    var word = document.querySelector('.posto-mark__word');
+    if (!mark || !word) return;
+
+    word.addEventListener('click', function (e) {
+      e.stopPropagation();
+      mark.classList.toggle('is-open');
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!mark.contains(e.target)) mark.classList.remove('is-open');
+    });
+
+    // Items not wired up yet — placeholder confirmation instead of a dead link.
+    mark.querySelectorAll('[data-soon]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        alert('SOON!');
+      });
+    });
+  })();
+</script>

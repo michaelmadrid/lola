@@ -4,21 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>POSTO</title>
+<script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
 <style>
 
 
   :root{
-    /* logo / nav — swap these two to flip the mark light/dark later */
-    --logo-color: #111;
-    --nav-bg:     #111;
-    --nav-fg:     #fff;
-
-    --bg2:  #f5f5f2;
+    /* --logo-color / --nav-bg / --nav-fg / --logo-pad-x/y now live in
+       shell.css :root — shared by the .posto-mark partial on every page. */
     --bg:  #F8F8F8;
     --ink: #111;
-
-    --logo-pad-x: 24px;
-    --logo-pad-y: 20px;
   }
 
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -37,94 +31,9 @@
 
   a{ color:inherit; text-decoration:none; }
 
-  /* ── Fixed logo + subnav (top-left, always on top) ─────── */
-
- 
- .posto-mark{
-   position:fixed;
-   top:0; left:0;
-   z-index:200;
-   padding:var(--logo-pad-y) var(--logo-pad-x);
- }
- 
- .posto-mark__word{
-   display:inline-block;
-   font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
-   font-weight:600;
-   font-size:16px;
-   letter-spacing:0;
-   text-transform:uppercase;
-   color:var(--logo-color);
-   background:transparent;
-   cursor:pointer;
-   user-select:none;
-   
-   color:#000;
-   background-color:transparent;
-   padding:8px;
-   padding-top:6px; padding-bottom:6px;
- }
- 
- /* Stacked subnav — revealed on hover/focus of the mark.
-    Boxes are black/white for now; --nav-bg / --nav-fg above
-    is the single place to recolor them later. */
- .posto-subnav{
-   display:flex;
-   flex-direction:column;
-   align-items:flex-start;  /* each box sizes to its own content, not the widest */
-   margin-top:2px;
-   opacity:0;
-   transform:translateY(-4px);
-   pointer-events:none;
-   transition:opacity 70ms ease, transform 70ms ease;
- }
- 
- .posto-mark:hover .posto-subnav,
- .posto-mark:focus-within .posto-subnav,
- .posto-mark.is-open .posto-subnav{
-   opacity:1;
-   transform:translateY(0);
-   pointer-events:auto;
-  
- }
- 
- .posto-mark:hover {
-   
-
- }
- .posto-mark:hover .posto-mark__word{
-   background-color: black;
-   color:white;
- }
- 
-  
- .posto-subnav__item{
-   display:block;
-  font-size:16px;
-   font-weight:500;
-   text-transform:none;
-   letter-spacing:0;
-   padding:8px 14px;
-   white-space:nowrap;
-   width:max-content; /* box hugs its own label — different widths, like the ref */
-   
-   padding:10px;
-   padding-top:6px; padding-bottom:6px;
-  
-
-   background:#000;
-   color:white;
-   box-sizing: border-box;
-   margin-bottom:2px;
- }
-
- 
- .posto-subnav__item:hover{ 
-   
-   background-color: var(--bg);
-  color:black;
- }
-
+  /* .posto-mark / .posto-subnav now live in shell.css — shared via
+     the header partial (data-include="header" below). Nothing
+     nav-related belongs in this file anymore. */
 
   /* ── Scroll-snap stage container ────────────────────────── */
 
@@ -241,17 +150,10 @@
 </head>
 <body>
 
-  <!-- Fixed brand mark + hover subnav -->
-  <div class="posto-mark" tabindex="0">
-    <span class="posto-mark__word">POSTO</span>
-    <nav class="posto-subnav">
-     <a class="posto-subnav__item" href="javascript:alert('SOON!');">Shelf</a>
-     <a class="posto-subnav__item" href="https://posto.world/spots?layout=gazette&cat=bookstore">Bookstores</a>
-     <a class="posto-subnav__item" href="https://posto.world/spots?layout=wall">Spots, Spots, Spots</a>
-     <a class="posto-subnav__item" href="https://posto.world/notes/17">4 Memory</a>
-     <a class="posto-subnav__item" href="#">Info</a>
-    </nav>
-  </div>
+  <!-- Fixed brand mark + subnav — markup + toggle script live in
+       partials/header.html, shared with spot.html / spots.html /
+       note.html. Edit labels/links there, not here. -->
+  <div data-include="header"></div>
 
   <div class="stage-container" id="stageContainer">
 
@@ -268,26 +170,12 @@
   </div>
 
 <script>
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+
+<script>
 (function(){
-
-  /* ============================================================
-     Subnav toggle — click/tap works identically everywhere.
-     Hover (CSS only, above) still works as a bonus on desktop,
-     but this is the reliable, discoverable path on every device.
-     ============================================================ */
-  var postoMark = document.querySelector('.posto-mark');
-  var postoWord = document.querySelector('.posto-mark__word');
-
-  postoWord.addEventListener('click', function(e){
-    e.stopPropagation();
-    postoMark.classList.toggle('is-open');
-  });
-
-  document.addEventListener('click', function(e){
-    if (!postoMark.contains(e.target)){
-      postoMark.classList.remove('is-open');
-    }
-  });
 
   /* ============================================================
      CONFIG — every tunable knob lives here. Change a number,

@@ -57,7 +57,7 @@
 /* ── Tokens ────────────────────────────────────────────── */
 :root {
   /* Colors */
-  --bg:       #ffffff;
+  --bg:       #F8F8F8;
   --ink:      #111111;
   --ink-2:    #555551;
   --ink-3:    #999994;
@@ -65,6 +65,14 @@
   --accent:   #2a4ed4;  /* French blue — reserved for Announcement + pin */
   --accent-bg: #eef1ff;
   --hl:       #efe86a;  /* highlighter yellow — "this goes elsewhere" on hover */
+
+  /* Fixed brand mark + subnav (see .posto-mark below) — swap these
+     two to flip the mark light/dark later. */
+  --logo-color: #111;
+  --nav-bg:     #111;
+  --nav-fg:     #fff;
+  --logo-pad-x: 24px;
+  --logo-pad-y: 20px;
 
   /* Type */
   --sans:     'ABC Diatype', 'Helvetica Neue', Arial, sans-serif;
@@ -116,58 +124,93 @@ img { display: block; max-width: 100%; height: auto; }
   width: var(--page-width);
   max-width: 1600px;
   margin: 0 auto;
-  /* Sticky footer: fill at least the viewport, let main grow, footer sits
-     at the bottom when content is short — pushed down when content is long.
-     Subtract the 36px fixed-bar height (added as body padding-top) so the
-     page fills exactly the viewport without a phantom scrollbar. */
-  min-height: calc(100vh - 36px);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-/* Home page has no fixed bar (its own masthead) — use full height there. */
-body.home-page .page { min-height: 100vh; }
 .page > main { flex: 1 0 auto; }
 .page > [data-include="footer"] { flex-shrink: 0; }
 
-/* ── Top bar (thin, fixed system chrome — not a masthead) ── */
-.annex-bar {
+/* ── Fixed brand mark + subnav (top-left, always on top) ──
+   Shared across every page via partials/header.html. Resting
+   state is quiet flat text; hover/click reveals the black-box
+   stacked subnav below it. Edit markup in the partial, styling
+   here. */
+
+.posto-mark {
   position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 18px;
-  background: var(--bg);
-  z-index: 50;
+  top: 0; left: 0;
+  z-index: 200;
+  padding: var(--logo-pad-y) var(--logo-pad-x);
 }
-.annex-bar__brand {
-  font-family: var(--logosans);
-  font-weight: bold;
-  font-size: 12px;
+
+.posto-mark__word {
+  display: inline-block;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
   letter-spacing: 0;
   text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
+  color: var(--logo-color);
+  background: transparent;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 8px;
 }
-.annex-bar__nav { display: flex; gap: 12px; }
-.annex-bar__nav a {
- font-family: var(--logosans);
-  font-weight: bold;
-  font-size: 12px;
- letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
-}
-.annex-bar__nav a:hover { color: var(--ink-3); }
 
-/* Reserve space before the partial injects, so content clears the fixed bar. */
-[data-include="header"] { display: block; min-height: 36px; }
+.posto-mark:hover .posto-mark__word {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Stacked subnav — revealed on hover/focus/click of the mark.
+   Boxes are black/white for now; --nav-bg / --nav-fg above
+   is the single place to recolor them later. Zero gap between
+   boxes, each sized to its own label (not the widest). */
+.posto-subnav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 2px;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 70ms ease, transform 70ms ease;
+}
+
+.posto-mark:hover .posto-subnav,
+.posto-mark:focus-within .posto-subnav,
+.posto-mark.is-open .posto-subnav {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.posto-subnav__item {
+  display: block;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+  width: max-content; /* box hugs its own label — different widths */
+  padding: 6px 10px;
+  margin-bottom: 2px;
+  box-sizing: border-box;
+  background: var(--nav-bg);
+  color: var(--nav-fg);
+}
+
+.posto-subnav__item:hover {
+  background-color: var(--bg);
+  color: #000;
+}
+
+/* Partial placeholder before injection — position:fixed content
+   never occupies document flow, so no space-reservation needed
+   here (unlike the old 36px .annex-bar it replaced). */
+[data-include="header"] { display: block; }
 [data-include="footer"] { display: block; min-height: 80px; }
-/* Push page content below the fixed bar. The homepage opts out with
-   .home-page on <body> (it uses its own centered masthead, no fixed bar). */
-body:not(.home-page) { padding-top: 36px; }
 
 /* ── Legacy centered masthead (kept for homepage if needed) ── */
 .annex-head {
