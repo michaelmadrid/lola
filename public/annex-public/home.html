@@ -13,6 +13,15 @@
        shell.css :root — shared by the .posto-mark partial on every page. */
     --bg:  #F8F8F8;
     --ink: #111;
+    
+    --sans: 'ABC Diatype', 'Helvetica Neue', Arial, sans-serif; /* real site loads ABC Diatype — this prototype falls back to system sans since the webfont isn't loaded here */
+    
+    --memory-bg: #151515; /* dark, not pure #000 */
+    --memory-fg: #F8F8F8; /* same off-white as the rest of the site */
+    
+    --memory-size: 64px;
+    --memory-size-mobile: 32px;
+    
   }
 
   *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
@@ -130,19 +139,44 @@
 
   /* ── Stage 2 — info (blank, slogan pinned bottom) ───────── */
 
+  @media (max-width:720px){
+    .slogan{ font-size:var(--memory-size-mobile); max-width:88vw; }
+  }
+  
   #stage-info{
-    background:var(--bg);
+    background:var(--memory-bg);
+    height:100vh;
+    width:100vw;
     display:flex;
-    align-items:flex-end;
+    align-items:center;
     justify-content:center;
+    cursor:pointer;
+    user-select:none;
+
+    color:var(--stage-fg);
+  }
+  
+  .slogan{
+
+    max-width:80vw;
+    text-align:center;
+    font-weight:700;
+    font-size:var(--memory-size);
+    line-height:1.15;
+    letter-spacing:-0.01em;
+    text-transform:uppercase;
+    white-space:pre-line; /* respects intentional line breaks in the data */
+    color:var(--memory-fg);
   }
 
   .info-slogan{
+    display: none;
+    font-family: var(--sans);
     padding-bottom:28px;
     font-size:12px;
-    letter-spacing:0.04em;
+    letter-spacing:0em;
     text-transform:uppercase;
-    color:var(--ink);
+    color:var(--memory-fg);
     text-align:center;
   }
 
@@ -164,6 +198,9 @@
 
     <!-- Stage 2: info, blank except slogan pinned bottom -->
     <section class="stage" id="stage-info">
+      
+      <div class="slogan" id="slogan"></div>
+      
       <p class="info-slogan">A record of attention</p>
     </section>
 
@@ -173,6 +210,7 @@
   fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
     .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
 </script>
+
 
 <script>
 (function(){
@@ -422,6 +460,57 @@
   /* Rollover pause is wired per-item inside buildItem() below —
      hovering a card stops the drift; hovering empty stage space
      does not. Toggle off entirely via CONFIG.pauseOnHover. */
+
+})();
+</script>
+
+<script>
+(function(){
+
+  /* ============================================================
+     Content — preserves your intentional line breaks as-is
+     ============================================================ */
+  var SLOGANS = [
+    "MOOD FOLLOWS ACTION",
+    "SHIT OR GET OFF THE POT",
+    "CHANCE FAVORS THE PREPARED MIND",
+    "THE SECRET TO GETTING AHEAD\nIS GETTING STARTED",
+    "IT'S OK TO EXIST BEYOND THE BORDERS\nOF WHO YOU THINK YOU ARE",
+    "WHO ARE YOU BECOMING?",
+    "MAKE IT ANYWAY",
+    "THE MOST PERSONAL IS THE MOST CREATIVE"
+  ];
+
+  var stageInfo = document.getElementById('stage-info');
+  var slogan = document.getElementById('slogan');
+
+
+  // Random starting point, then walks in order (wrapping) from there —
+  // so the sequence itself stays intact, only the entry point varies.
+  var sIndex = Math.floor(Math.random() * SLOGANS.length);
+
+  function render(){
+    slogan.textContent = SLOGANS[sIndex];
+  }
+
+  function next(){
+    sIndex = (sIndex + 1) % SLOGANS.length;
+    render();
+  }
+
+  stageInfo.addEventListener('click', function(){
+    
+    next();
+  });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === ' '){
+    
+      next();
+    }
+  });
+
+  render();
 
 })();
 </script>
