@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- ── SEO / social ─────────────────────────────────── -->
+  <title>POSTO</title>
+  <meta name="description" content="Posto is an editorial project by Summer Holiday — a growing record of attention">
+  <link rel="canonical" href="https://annex.site/">
+
+  <!-- Open Graph (controls link previews on iMessage, social, etc.) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Posto">
+  <meta property="og:title" content="Posto">
+  <meta property="og:description" content="osto is an editorial project by Summer Holiday">
+  <meta property="og:url" content="https://posto.world/">
+  <meta property="og:image" content="https://posto.world/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- OG_META -->
+
+  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t3=' + Date.now() + '">');</script>
+  <script>
+    // Robust cache-bust: force a network fetch bypassing HTTP cache entirely,
+    // then inject as an inline <style>. The <link> above is a fallback.
+    fetch('/css/shell.css?t=' + Date.now(), { cache: 'no-store' })
+      .then(r => r.text())
+      .then(css => {
+        const tag = document.createElement('style');
+        tag.textContent = css;
+        document.head.appendChild(tag);
+      })
+      .catch(() => {});
+  </script>
+</head>
+<body class="home-page">
+
+<div class="page">
+
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <header class="annex-head">
+    <span class="annex-logo"><a href="/" rel="home">POSTO</a></span>
+  </header>
+
+  <!-- ── Main 3-col grid ──────────────────────────────── -->
+  <div class="home-grid">
+
+    <!-- left + right grouped so they can stack together on mobile;
+         .col-group is display:contents on desktop (dissolves) -->
+    <div class="col-group">
+
+    <!-- ── Left col ─────────────────────────────────── -->
+    <aside class="col-left">
+
+      <!-- Found image -->
+      <div class="col-left-image">
+        <!-- Replace src with real image -->
+        <div class="">
+          <img src="/img/Spots1.jpg" />
+        </div>
+      </div>
+
+      <!-- Cities list — will pull from API, hardcoded for now -->
+      <div class="cities-list">
+        Paris, Melbourne, Austin,
+        Nashville, Rome, London,
+        Taipei, Los Angeles, Bali
+      </div>
+
+      <hr class="divider">
+
+  
+  <!-- Found image -->
+  <div class="col-left-image">
+    <!-- Replace src with real image -->
+    <div class="">
+      <img src="/img/SpotsTest.jpg" />
+    </div>
+  </div>
+  
+  
+    </aside>
+
+    <!-- ── Right col ─────────────────────────────────── -->
+    <aside class="col-right">
+
+      <!-- Pinned links -->
+      <ul class="pinned-links" style="display:none;">
+     
+      </ul>
+
+      <!-- Categories list -->
+      <ul class="categories-list">
+        <li><a href="https://posto.world/spots?layout=gazette&cat=bookstore">Art Bookstores</a></li>
+      <li><a href="https://posto.world/spots/?layout=wall">Spots, Spots, Spots</a></li>
+      <li><a href="https://posto.world/notes/17">4 Memory</a></li>
+        
+        <li>--</li>
+        <li><a href="https://posto.world/notes/9">Travel Sauce</a></li>
+        <li><a href="https://posto.world/notes/19">Indices</a></li>
+    
+    
+      </ul>
+
+    </aside>
+
+    </div><!-- /col-group -->
+
+    <!-- ── Center col ────────────────────────────────── -->
+    <!-- Live-fed from /api/board-notes/public (Notes tool in studio).
+         notes-feed.js fetches, sorts pinned-first, renders each note
+         by type. Nothing here is hardcoded once JS runs. -->
+    <main class="col-center" id="notes-feed"></main>
+
+  </div><!-- /home-grid -->
+
+  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
+  <div data-include="footer"></div>
+
+</div><!-- /page -->
+
+<script>
+  // Header/footer partials — load first
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(code => { (0, eval)(code); })
+    .catch(() => {});
+</script>
+
+<script>
+  fetch('/js/notes-feed.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text())
+    .then(code => { (0, eval)(code); })
+    .catch(() => {});
+</script>
+
+
+
+</body>
+</html>

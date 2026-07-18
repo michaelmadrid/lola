@@ -1,143 +1,498 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POSTO</title>
+<style>
 
-  <!-- ── SEO / social ─────────────────────────────────── -->
-  <title>POSTO</title>
-  <meta name="description" content="Posto is an editorial project by Summer Holiday — a growing record of attention">
-  <link rel="canonical" href="https://annex.site/">
 
-  <!-- Open Graph (controls link previews on iMessage, social, etc.) -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Posto">
-  <meta property="og:title" content="Posto">
-  <meta property="og:description" content="osto is an editorial project by Summer Holiday">
-  <meta property="og:url" content="https://posto.world/">
-  <meta property="og:image" content="https://posto.world/og-default.jpg">
-  <meta name="twitter:card" content="summary_large_image">
-  <!-- OG_META -->
+  :root{
+    /* logo / nav — swap these two to flip the mark light/dark later */
+    --logo-color: #111;
+    --nav-bg:     #111;
+    --nav-fg:     #fff;
 
-  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t3=' + Date.now() + '">');</script>
-  <script>
-    // Robust cache-bust: force a network fetch bypassing HTTP cache entirely,
-    // then inject as an inline <style>. The <link> above is a fallback.
-    fetch('/css/shell.css?t=' + Date.now(), { cache: 'no-store' })
-      .then(r => r.text())
-      .then(css => {
-        const tag = document.createElement('style');
-        tag.textContent = css;
-        document.head.appendChild(tag);
-      })
-      .catch(() => {});
-  </script>
+    --bg:  #fff;
+    --ink: #111;
+
+    --logo-pad-x: 24px;
+    --logo-pad-y: 20px;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+  html,body{
+    height:100%;
+    overscroll-behavior:none;
+  }
+
+  body{
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  /* ── Fixed logo + subnav (top-left, always on top) ─────── */
+
+ 
+ .posto-mark{
+   position:fixed;
+   top:0; left:0;
+   z-index:200;
+   padding:var(--logo-pad-y) var(--logo-pad-x);
+ }
+ 
+ .posto-mark__word{
+   display:inline-block;
+   font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+   font-weight:600;
+   font-size:16px;
+   letter-spacing:0;
+   text-transform:uppercase;
+   color:var(--logo-color);
+   background:transparent;
+   cursor:pointer;
+   user-select:none;
+   
+   color:white;
+   background-color:black;
+   padding:8px;
+   padding-top:6px; padding-bottom:6px;
+ }
+ 
+ /* Stacked subnav — revealed on hover/focus of the mark.
+    Boxes are black/white for now; --nav-bg / --nav-fg above
+    is the single place to recolor them later. */
+ .posto-subnav{
+   display:flex;
+   flex-direction:column;
+   align-items:flex-start;  /* each box sizes to its own content, not the widest */
+   margin-top:6px;
+   opacity:0;
+   transform:translateY(-4px);
+   pointer-events:none;
+   transition:opacity 70ms ease, transform 70ms ease;
+ }
+ 
+ .posto-mark:hover .posto-subnav,
+ .posto-mark:focus-within .posto-subnav{
+   opacity:1;
+   transform:translateY(0);
+   pointer-events:auto;
+ }
+ 
+ .posto-subnav__item{
+   display:block;
+   background:var(--nav-bg);
+   color:var(--nav-fg);
+  font-size:16px;
+   font-weight:500;
+   text-transform:none;
+   letter-spacing:0;
+   padding:8px 14px;
+   white-space:nowrap;
+   width:max-content; /* box hugs its own label — different widths, like the ref */
+   
+   padding:10px;
+   padding-top:6px; padding-bottom:6px;
+ }
+ 
+ .posto-subnav__item:hover{ 
+   background:#000; 
+   color:yellow;
+ }
+
+
+  /* ── Scroll-snap stage container ────────────────────────── */
+
+  .stage-container{
+    height:100vh;
+    width:100vw;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scroll-snap-type:y mandatory;
+  }
+
+  .stage{
+    height:100vh;
+    width:100vw;
+    scroll-snap-align:start;
+    scroll-snap-stop:always;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* ── Stage 1 — horizontal drifting feed ─────────────────── */
+
+  #stage-feed{
+    background:var(--bg);
+  }
+
+  .feed-track{
+    position:absolute;
+    top:0; left:0;
+    height:100%;
+    display:flex;
+    align-items:center;
+    will-change:transform;
+  }
+
+  /* Items scale to the viewport height via JS (--feed-item-h),
+     width follows naturally from aspect ratio. */
+  .feed-item{
+    flex-shrink:0;
+    height:var(--feed-item-h, 70vh);
+    margin-right:28px; /* keep in sync with CONFIG.itemGap in the script below */
+    position:relative;
+    overflow:hidden;
+    background:#eee; /* shows while a real image is still loading */
+  }
+
+  .feed-item__img{
+    height:100%;
+    width:auto;
+    display:block;
+    object-fit:cover;
+    pointer-events:none;
+  }
+
+  /* Placeholder swatch used until real images exist */
+  .feed-item__placeholder{
+    height:100%;
+    width:auto;
+    aspect-ratio:var(--ar, 3 / 4);
+    background:var(--swatch, #ddd);
+    display:flex;
+    align-items:flex-end;
+    padding:14px;
+  }
+  .feed-item__num{
+    font-size:11px;
+    letter-spacing:0.06em;
+    color:rgba(0,0,0,0.35);
+  }
+
+  /* Hover state — placeholder only, direction TBD.
+     Currently: dim + centered label. */
+  .feed-item__hover{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0);
+    transition:background 200ms ease;
+  }
+  .feed-item:hover .feed-item__hover{
+    background:rgba(0,0,0,0.4);
+  }
+  .feed-item__label{
+    font-size:13px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:#fff;
+    opacity:0;
+    transition:opacity 200ms ease;
+  }
+  .feed-item:hover .feed-item__label{ opacity:1; }
+
+  /* ── Stage 2 — info (blank, slogan pinned bottom) ───────── */
+
+  #stage-info{
+    background:var(--bg);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+  }
+
+  .info-slogan{
+    padding-bottom:28px;
+    font-size:12px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--ink);
+    text-align:center;
+  }
+
+</style>
 </head>
-<body class="home-page">
+<body>
 
-<div class="page">
-
-  <!-- ── Header (edit in /partials/header.html) ───────── -->
-  <header class="annex-head">
-    <span class="annex-logo"><a href="/" rel="home">POSTO</a></span>
-  </header>
-
-  <!-- ── Main 3-col grid ──────────────────────────────── -->
-  <div class="home-grid">
-
-    <!-- left + right grouped so they can stack together on mobile;
-         .col-group is display:contents on desktop (dissolves) -->
-    <div class="col-group">
-
-    <!-- ── Left col ─────────────────────────────────── -->
-    <aside class="col-left">
-
-      <!-- Found image -->
-      <div class="col-left-image">
-        <!-- Replace src with real image -->
-        <div class="">
-          <img src="/img/Spots1.jpg" />
-        </div>
-      </div>
-
-      <!-- Cities list — will pull from API, hardcoded for now -->
-      <div class="cities-list">
-        Paris, Melbourne, Austin,
-        Nashville, Rome, London,
-        Taipei, Los Angeles, Bali
-      </div>
-
-      <hr class="divider">
-
-  
-  <!-- Found image -->
-  <div class="col-left-image">
-    <!-- Replace src with real image -->
-    <div class="">
-      <img src="/img/SpotsTest.jpg" />
-    </div>
+  <!-- Fixed brand mark + hover subnav -->
+  <div class="posto-mark" tabindex="0">
+    <span class="posto-mark__word">POSTO</span>
+    <nav class="posto-subnav">
+      <a class="posto-subnav__item" href="#">Shelf</a>
+      <a class="posto-subnav__item" href="#">Bookstores</a>
+      <a class="posto-subnav__item" href="#">Cities</a>
+      <a class="posto-subnav__item" href="#">4 Memory</a>
+      <a class="posto-subnav__item" href="#">Info</a>
+    </nav>
   </div>
-  
-  
-    </aside>
 
-    <!-- ── Right col ─────────────────────────────────── -->
-    <aside class="col-right">
+  <div class="stage-container" id="stageContainer">
 
-      <!-- Pinned links -->
-      <ul class="pinned-links" style="display:none;">
-     
-      </ul>
+    <!-- Stage 1: horizontal drifting feed -->
+    <section class="stage" id="stage-feed">
+      <div class="feed-track" id="feedTrack"></div>
+    </section>
 
-      <!-- Categories list -->
-      <ul class="categories-list">
-        <li><a href="https://posto.world/spots?layout=gazette&cat=bookstore">Art Bookstores</a></li>
-      <li><a href="https://posto.world/spots/?layout=wall">Spots, Spots, Spots</a></li>
-      <li><a href="https://posto.world/notes/17">4 Memory</a></li>
-        
-        <li>--</li>
-        <li><a href="https://posto.world/notes/9">Travel Sauce</a></li>
-        <li><a href="https://posto.world/notes/19">Indices</a></li>
-    
-    
-      </ul>
+    <!-- Stage 2: info, blank except slogan pinned bottom -->
+    <section class="stage" id="stage-info">
+      <p class="info-slogan">A record of attention</p>
+    </section>
 
-    </aside>
-
-    </div><!-- /col-group -->
-
-    <!-- ── Center col ────────────────────────────────── -->
-    <!-- Live-fed from /api/board-notes/public (Notes tool in studio).
-         notes-feed.js fetches, sorts pinned-first, renders each note
-         by type. Nothing here is hardcoded once JS runs. -->
-    <main class="col-center" id="notes-feed"></main>
-
-  </div><!-- /home-grid -->
-
-  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
-  <div data-include="footer"></div>
-
-</div><!-- /page -->
+  </div>
 
 <script>
-  // Header/footer partials — load first
-  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
-    .then(r => r.text())
-    .then(code => { (0, eval)(code); })
-    .catch(() => {});
+(function(){
+
+  /* ============================================================
+     CONFIG — every tunable knob lives here. Change a number,
+     save, refresh. Nothing below this block needs touching for
+     day-to-day tuning.
+     ============================================================ */
+  var CONFIG = {
+    // Drift (auto-scroll)
+    driftSpeed:       1,   // px per frame — was 0.35, feeling was 2x too slow
+    manualPauseMs:      900,  // how long drift pauses after you interrupt it
+
+    // Feed item sizing
+    itemHeightRatio:    0.7,  // fraction of window height, e.g. 0.7 = 70vh
+    itemGap:              28, // px between items (also set in CSS .feed-item margin-right)
+
+    // Interaction sensitivity
+    wheelMultiplier:     1.1, // how far a horizontal wheel tick pans the feed
+
+    // Hover behavior
+    pauseOnHover:        true, // stop the drift while hovering a card (not empty stage space)
+    hoverResumeDelayMs:   200, // pause held for this long after the cursor leaves a card
+
+    // Data source — board_notes public feed
+    apiBase:       'https://studio.annex.site',
+    notesEndpoint: '/api/board-notes/public'
+  };
+
+  /* ============================================================
+     Fallback feed data — used only if the live board_notes fetch
+     below fails or returns nothing publishable with an image.
+     Keeps the page from looking broken while content is thin.
+     ============================================================ */
+  var PLACEHOLDER_ITEMS = [
+    { ar: '3 / 4',  swatch: '#e4e2dd', label: 'Bookstore — Paris'   },
+    { ar: '4 / 3',  swatch: '#d8d4cb', label: 'Notebook — Lisbon'   },
+    { ar: '1 / 1',  swatch: '#efece6', label: 'Shelf — Berlin'      },
+    { ar: '3 / 4',  swatch: '#ddd9d0', label: 'Ephemera — Marseille'},
+    { ar: '4 / 5',  swatch: '#e8e5df', label: 'Print run — Rome'    },
+    { ar: '16 / 9', swatch: '#e0ddd6', label: 'Studio — Porto'      },
+    { ar: '3 / 4',  swatch: '#e6e3dc', label: 'Bookstore — Umbria'  },
+    { ar: '1 / 1',  swatch: '#dedad1', label: 'Object — Tuscany'    }
+  ];
+
+  var track = document.getElementById('feedTrack');
+  var stageFeed = document.getElementById('stage-feed');
+
+  /* Debounced remeasure — real <img> elements have no intrinsic
+     width until they load, so the initial loopWidth measured
+     right after render is a rough guess. Each image nudges a
+     recount as it settles, batched so 8 near-simultaneous loads
+     don't trigger 8 separate layout reads. */
+  var remeasurePending = false;
+  function onImageSettled(){
+    if (remeasurePending) return;
+    remeasurePending = true;
+    requestAnimationFrame(function(){
+      measureLoopWidth();
+      remeasurePending = false;
+    });
+  }
+
+  function imgSrc(url){
+    if (!url) return '';
+    return url.indexOf('http') === 0 ? url : CONFIG.apiBase + url;
+  }
+
+  // board_notes rows → feed items. Only rows with an image qualify
+  // for this horizontal, image-forward feed; text-only notes are
+  // left for wherever the notice-board view eventually lives.
+  // Pinned items sort first.
+  function notesToFeedItems(notes){
+    return notes
+      .filter(function(n){ return !!n.image_url; })
+      .sort(function(a, b){ return (b.pin ? 1 : 0) - (a.pin ? 1 : 0); })
+      .map(function(n){
+        return { image: imgSrc(n.image_url), label: n.headline || '' };
+      });
+  }
+
+  function buildItem(data){
+    var el = document.createElement('div');
+    el.className = 'feed-item';
+
+    if (data.image){
+      var img = document.createElement('img');
+      img.className = 'feed-item__img';
+      img.src = data.image;
+      img.alt = data.label || '';
+      img.addEventListener('load', onImageSettled);
+      img.addEventListener('error', onImageSettled); // don't leave loopWidth stale on a broken image
+      el.appendChild(img);
+    } else {
+      var ph = document.createElement('div');
+      ph.className = 'feed-item__placeholder';
+      ph.style.setProperty('--ar', data.ar);
+      ph.style.setProperty('--swatch', data.swatch);
+
+      var num = document.createElement('span');
+      num.className = 'feed-item__num';
+      num.textContent = data.label;
+      ph.appendChild(num);
+
+      el.appendChild(ph);
+    }
+
+    var hover = document.createElement('div');
+    hover.className = 'feed-item__hover';
+    var label = document.createElement('span');
+    label.className = 'feed-item__label';
+    label.textContent = data.label;
+    hover.appendChild(label);
+
+    el.appendChild(hover);
+
+    if (CONFIG.pauseOnHover){
+      el.addEventListener('pointerenter', function(){
+        isHovering = true;
+      });
+      el.addEventListener('pointerleave', function(){
+        isHovering = false;
+        manualUntil = performance.now() + CONFIG.hoverResumeDelayMs;
+      });
+    }
+
+    return el;
+  }
+
+  // Render a given item set twice back-to-back so the loop can
+  // wrap seamlessly — once offset passes the width of one copy,
+  // we subtract that width and keep drifting.
+  function renderTrack(items){
+    track.innerHTML = '';
+    items.concat(items).forEach(function(data){
+      track.appendChild(buildItem(data));
+    });
+  }
+
+  function loadFeed(){
+    var url = CONFIG.apiBase + CONFIG.notesEndpoint;
+    fetch(url)
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var items = notesToFeedItems(data.notes || []);
+        if (!items.length){
+          console.warn('[POSTO] No published notes with images — showing placeholders.');
+          renderTrack(PLACEHOLDER_ITEMS);
+          return;
+        }
+        renderTrack(items);
+      })
+      .catch(function(err){
+        console.warn('[POSTO] Could not load notes feed — showing placeholders.', err);
+        renderTrack(PLACEHOLDER_ITEMS);
+      });
+  }
+  loadFeed();
+
+  /* ── Scale feed items to viewport height ─────────────────── */
+  function setItemHeight(){
+    var h = Math.round(window.innerHeight * CONFIG.itemHeightRatio);
+    document.documentElement.style.setProperty('--feed-item-h', h + 'px');
+  }
+  setItemHeight();
+
+  /* ============================================================
+     Horizontal drift — continuous, buttery (rAF + easing), with
+     user horizontal scroll / drag able to interrupt it.
+     Vertical wheel movement is left alone so it bubbles up to
+     the scroll-snap container and moves to stage 2 normally.
+     ============================================================ */
+
+  var offset = 0;            // current horizontal offset (px)
+  var userOffset = 0;         // pending offset from drag/wheel
+  var isHovering = false;
+  var resumeTimer = null;
+  var manualUntil = 0;        // timestamp until which auto-drift pauses
+  var loopWidth = 0;
+
+  function measureLoopWidth(){
+    // half of scrollWidth == width of one full (non-duplicated) set
+    loopWidth = track.scrollWidth / 2;
+  }
+  measureLoopWidth();
+
+  /* Single rAF-batched resize pass: write the height var, THEN
+     read scrollWidth on the next frame (after layout has settled)
+     rather than back-to-back — avoids forced-synchronous-layout
+     thrashing while the window is actively being dragged. */
+  var resizePending = false;
+  function onResize(){
+    if (resizePending) return;
+    resizePending = true;
+    requestAnimationFrame(function(){
+      setItemHeight();
+      requestAnimationFrame(function(){
+        measureLoopWidth();
+        resizePending = false;
+      });
+    });
+  }
+  window.addEventListener('resize', onResize);
+
+  function applyTransform(){
+    if (loopWidth > 0){
+      // wrap seamlessly
+      if (offset >= loopWidth) offset -= loopWidth;
+      if (offset < 0) offset += loopWidth;
+    }
+    track.style.transform = 'translateX(' + (-offset) + 'px)';
+  }
+
+  function tick(){
+    var now = performance.now();
+    if (!isHovering && now > manualUntil){
+      offset += CONFIG.driftSpeed;
+    }
+    applyTransform();
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  /* Horizontal wheel / trackpad swipe interrupts + pans directly.
+     Vertical wheel intent (deltaY dominant) is NOT captured here,
+     so it falls through to the scroll-snap container as normal.
+
+     Listener is PASSIVE — overflow-x is already hidden on this
+     stage, so there's nothing native to preventDefault(), and a
+     passive listener lets the browser start its scroll-snap
+     physics immediately instead of waiting on this handler every
+     tick. A non-passive listener here was the main cause of
+     scroll-snap feeling sluggish. */
+  stageFeed.addEventListener('wheel', function(e){
+    var horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+    if (!horizontal) return; // let vertical scroll-snap handle it
+    offset += e.deltaX * CONFIG.wheelMultiplier;
+    manualUntil = performance.now() + CONFIG.manualPauseMs;
+  }, { passive:true });
+
+  /* Rollover pause is wired per-item inside buildItem() below —
+     hovering a card stops the drift; hovering empty stage space
+     does not. Toggle off entirely via CONFIG.pauseOnHover. */
+
+})();
 </script>
-
-<script>
-  fetch('/js/notes-feed.js?t=' + Date.now(), { cache: 'no-store' })
-    .then(r => r.text())
-    .then(code => { (0, eval)(code); })
-    .catch(() => {});
-</script>
-
-
-
 </body>
 </html>
