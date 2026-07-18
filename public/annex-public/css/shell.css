@@ -230,7 +230,7 @@ body.gazette-mode .posto-subnavX {
   pointer-events: auto;
 }
 
-
+/* MAKE SUBNAV BLACK BACKGROUND */
 body.gazette-mode .posto-mark__word, 
 body.wall-mode .posto-mark__word {
   background-color: #000;
