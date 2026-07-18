@@ -79,8 +79,7 @@
  }
  
  .posto-mark:hover .posto-subnav,
- .posto-mark:focus-within .posto-subnav,
- .posto-mark.is-open .posto-subnav{
+ .posto-mark:focus-within .posto-subnav{
    opacity:1;
    transform:translateY(0);
    pointer-events:auto;
@@ -227,11 +226,11 @@
   <div class="posto-mark" tabindex="0">
     <span class="posto-mark__word">POSTO</span>
     <nav class="posto-subnav">
-     <a class="posto-subnav__item" href="javascript:alert('SOON!');">Shelf</a>
-     <a class="posto-subnav__item" href="https://posto.world/spots?layout=gazette&cat=bookstore">Bookstores</a>
-     <a class="posto-subnav__item" href="https://posto.world/spots?layout=wall">Spots, Spots, Spots</a>
-     <a class="posto-subnav__item" href="https://posto.world/notes/17">4 Memory</a>
-     <a class="posto-subnav__item" href="#">Info</a>
+      <a class="posto-subnav__item" href="javascript:alert('SOON!');">Shelf</a>
+      <a class="posto-subnav__item" href="https://posto.world/spots?layout=gazette&cat=bookstore">Bookstores</a>
+      <a class="posto-subnav__item" href="https://posto.world/spots?layout=wall">Spots, Spots, Spots</a>
+      <a class="posto-subnav__item" href="https://posto.world/notes/17">4 Memory</a>
+      <a class="posto-subnav__item" href="#">Info</a>
     </nav>
   </div>
 
@@ -251,25 +250,6 @@
 
 <script>
 (function(){
-
-  /* ============================================================
-     Subnav toggle — click/tap works identically everywhere.
-     Hover (CSS only, above) still works as a bonus on desktop,
-     but this is the reliable, discoverable path on every device.
-     ============================================================ */
-  var postoMark = document.querySelector('.posto-mark');
-  var postoWord = document.querySelector('.posto-mark__word');
-
-  postoWord.addEventListener('click', function(e){
-    e.stopPropagation();
-    postoMark.classList.toggle('is-open');
-  });
-
-  document.addEventListener('click', function(e){
-    if (!postoMark.contains(e.target)){
-      postoMark.classList.remove('is-open');
-    }
-  });
 
   /* ============================================================
      CONFIG — every tunable knob lives here. Change a number,
@@ -385,15 +365,10 @@
     el.appendChild(hover);
 
     if (CONFIG.pauseOnHover){
-      // Touch fires pointerenter on tap with no matching pointerleave
-      // (there's no "hover" to leave) — that was permanently freezing
-      // the drift after the first tap on mobile. Mouse/pen only.
-      el.addEventListener('pointerenter', function(e){
-        if (e.pointerType === 'touch') return;
+      el.addEventListener('pointerenter', function(){
         isHovering = true;
       });
-      el.addEventListener('pointerleave', function(e){
-        if (e.pointerType === 'touch') return;
+      el.addEventListener('pointerleave', function(){
         isHovering = false;
         manualUntil = performance.now() + CONFIG.hoverResumeDelayMs;
       });
