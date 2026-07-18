@@ -12,6 +12,15 @@
    font-display: swap;
  }
  
+ @font-face {
+    font-family: 'ABC Monument Grotesk';
+    src: url('/fonts/ABCMonumentGrotesk-Black-Trial.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+ 
+ 
    @font-face {
      font-family: 'Authentic Sans';
      src: url('/fonts/authentic-sans-pro-condensed-90.woff2') format('woff2');
@@ -61,7 +70,7 @@
   --sans:     'ABC Diatype', 'Helvetica Neue', Arial, sans-serif;
   --serif:    'Times Now','Times New Roman', Times, serif;
   
-  --logosans: Arial, Helvetica, 'Helvetica Neue', sans-serf;
+  --logosans: "ABC Monument Grotesk", 'Helvetica Neue', sans-serf;
   --logosize:56px;
 
   /* Type scale — adjust freely while exploring */
@@ -133,7 +142,7 @@ body.home-page .page { min-height: 100vh; }
   z-index: 50;
 }
 .annex-bar__brand {
- font-family: var(--logosans);
+  font-family: var(--logosans);
   font-weight: bold;
   font-size: 12px;
   letter-spacing: 0;
