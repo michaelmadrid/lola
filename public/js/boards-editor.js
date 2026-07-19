@@ -39,6 +39,14 @@
     try {
       var data = await api.get('/api/boards/' + boardId);
       board = data.board;
+
+      // Apply THIS board's stored aspect ratio to the canvas — read
+      // from the board, not a hardcoded constant, so every board edits
+      // and previews at the exact ratio it was composed against. New
+      // boards get the API's default; old boards keep their own.
+      var aspectW = board.aspect_w || 32;
+      var aspectH = board.aspect_h || 9;
+      document.documentElement.style.setProperty('--board-aspect', aspectW + ' / ' + aspectH);
       ITEMS = data.items.map(function(row){
         return {
           itemId: row.id,

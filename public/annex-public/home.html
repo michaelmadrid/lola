@@ -145,8 +145,6 @@
     background:rgba(0,0,0,0.4);
   }
   .board-frame__label{
-    font-family: "ABC Diatype";
-    font-weight: 500;
     font-size:12px;
     letter-spacing:0.04em;
     text-transform:uppercase;
@@ -304,14 +302,13 @@
     // different here than it did while being built. Height is
     // viewport-relative like everything else (self-scaling), width
     // follows from the aspect ratio.
-    // canvasAspectRatio MUST match the editor's canvas aspect ratio
-    // (boards-editor.css .boards-canvas-frame) or compositions will
-    // render differently here than they were designed. Both are 32/9
-    // — a wide panorama, so one tile is wider than the viewport and
-    // the loop seam stays off-screen.
-    canvasAspectRatio: 32 / 9,
+    // Board-source canvas — aspect ratio is now stored PER BOARD and
+    // read from the API response (data.aspect_w / aspect_h), so
+    // changing the default for new boards never breaks existing ones.
+    // Height/tiles stay global (they're just how much viewport the
+    // frame fills + how many loop copies, not composition-affecting).
     canvasHeightRatio: 0.88,
-    canvasTileCount:   4        // fewer needed now each tile is ~3× viewport width
+    canvasTileCount:   4
   };
 
   /* ============================================================
@@ -481,10 +478,15 @@
      assembly pans). Reuses the SAME drift engine as feed mode
      below; only what fills the track differs.
      ============================================================ */
+  // boardAspect is set from the API response (the board's own stored
+  // ratio) in loadFeed — NOT a global constant, so each board renders
+  // at exactly the ratio it was composed against. Falls back to 32/9.
+  var boardAspect = '32 / 9';
+
   function buildBoardFrame(items){
     var frame = document.createElement('div');
     frame.className = 'board-frame';
-    frame.style.setProperty('--board-aspect', CONFIG.canvasAspectRatio);
+    frame.style.setProperty('--board-aspect', boardAspect);
 
     // API returns items front-first (position DESC) — reverse so
     // the DOM paints back-to-front (later-appended = on top).
@@ -563,6 +565,11 @@
             currentMode = 'feed';
             renderTrack(PLACEHOLDER_ITEMS);
             return;
+          }
+          // Use the board's OWN ratio from the response, so it renders
+          // exactly as composed regardless of what the current default is.
+          if (data.aspect_w && data.aspect_h){
+            boardAspect = data.aspect_w + ' / ' + data.aspect_h;
           }
           currentMode = 'board';
           renderBoardTrack(canvasItems);

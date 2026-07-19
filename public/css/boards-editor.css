@@ -150,7 +150,7 @@
   position: relative;
   flex-shrink: 0;
   width: 100%;
-  aspect-ratio: 32 / 9;
+  aspect-ratio: var(--board-aspect, 32 / 9); /* set per-board by boards-editor.js from the board's stored ratio */
   background: var(--bg);
   box-shadow: 0 0 0 1px var(--rule);
 }
