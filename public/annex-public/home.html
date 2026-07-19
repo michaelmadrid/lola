@@ -213,103 +213,97 @@
   .test-toolbar button.is-active{ font-weight:700; }
 
   /* ── Colophon ────────────────────────────────────────────────
-     A quiet "printed index card" — the whole visual feed is
-     replaced by a small block of type in a lot of empty space, the
-     way Bill magazine tucks a credits card into an all-image issue.
-     Times italic for the warm/editorial parts (title, vibe), small
-     sans for the index data. Soft grey "silver ink", not black. */
+     A left-aligned, sans, information-first index — table-of-
+     contents structure (number column + title) crossed with a
+     dictionary entry (bold lead-in name, roman body flowing after).
+     Deliberately NOT centered/italic/airy — that read as a
+     lifestyle page. This reads as editorial apparatus. */
   #board-colophon{
     position:fixed;
     inset:0;
     z-index:150;
     background:var(--bg);
     display:none;
-    align-items:center;
     justify-content:center;
-    padding:40px;
+    padding:8vh 40px;
     overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
-  #board-colophon.is-open{ display:flex; }
+  #board-colophon.is-open{ display:block; }
 
   .colophon{
-    width:100%;
-    max-width:380px;      /* business-card-ish — small on purpose */
-    color:#8a8a86;         /* soft grey, the "silver ink" */
-  }
-
-  .colophon__mark{
+    max-width:680px;
+    margin:0 auto;
     font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size:11px;
-    letter-spacing:0.18em;
-    text-transform:uppercase;
-    text-align:center;
-    color:#b0b0ac;
-    margin-bottom:20px;
+    color:#111;
   }
 
-  .colophon__title{
-    font-family:"Times New Roman", Times, serif;
-    font-style:italic;
-    font-size:26px;
-    line-height:1.15;
-    text-align:center;
-    color:#57574f;         /* a touch darker than body — the masthead */
-    margin-bottom:14px;
-  }
-
-  .colophon__vibe{
-    font-family:"Times New Roman", Times, serif;
-    font-style:italic;
+  /* Masthead — dictionary style: bold name, roman description
+     flowing right after it in the same block. */
+  .colophon__head{
+    margin-bottom:36px;
     font-size:15px;
     line-height:1.5;
-    text-align:center;
-    color:#8a8a86;
-    margin-bottom:30px;
+  }
+  .colophon__title{
+    font-weight:600;
+    font-size:18px;
+  }
+  .colophon__vibe{
+    font-weight:400;
+    color:#333;
   }
 
-  .colophon__rule{
-    border:none;
-    border-top:1px solid #dcdcd6;
-    margin:0 0 24px;
+  /* Contents label row */
+  .colophon__label{
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:14px;
+    padding-bottom:8px;
+    border-bottom:1px solid #111;
   }
 
+  /* Index — ToC grid: number column + title column */
   .colophon__list{
     list-style:none;
     margin:0; padding:0;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
   }
-
   .colophon__item{
     display:grid;
-    grid-template-columns:24px 1fr;
-    gap:10px;
-    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size:12px;
+    grid-template-columns:38px 1fr;
+    column-gap:14px;
+    padding:5px 0;
+    font-size:14px;
     line-height:1.4;
+    align-items:baseline;
   }
   .colophon__num{
-    color:#b0b0ac;
+    color:#111;
     font-variant-numeric:tabular-nums;
   }
-  .colophon__headline{ color:#57574f; }
-  .colophon__ref{ color:#9a9a95; }
+  .colophon__headline{ color:#111; }
+  .colophon__ref{ color:#777; }
   .colophon__ref a{
-    color:inherit;
+    color:#777;
     text-decoration:none;
-    border-bottom:1px solid #cfcfc9;
   }
-  .colophon__ref a:hover{ color:#57574f; border-bottom-color:#57574f; }
+  .colophon__ref a:hover{ color:#111; text-decoration:underline; }
+
+  /* Two columns once the list is long enough to warrant it */
+  @media (min-width:620px){
+    .colophon__list{
+      column-count:2;
+      column-gap:48px;
+    }
+    .colophon__item{ break-inside:avoid; }
+  }
 
   .colophon__foot{
-    margin-top:34px;
-    text-align:center;
-    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size:10px;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:#c2c2bd;
+    margin-top:40px;
+    padding-top:12px;
+    border-top:1px solid #ddd;
+    font-size:11px;
+    color:#999;
   }
   .feed-item__placeholder{
     height:100%;
@@ -981,29 +975,34 @@
     var abs = /^https?:\/\//i.test(item.url);
     var attrs = abs ? ' target="_blank" rel="noopener"' : '';
     return '<span class="colophon__ref"><a href="' + escHtml(item.url) + '"' + attrs + '>' +
-           escHtml(text) + ' \u2197</a></span>';
+           escHtml(text) + '</a></span>';
   }
 
   function buildColophon(){
     if (!colophonData) return '';
     var html = '<div class="colophon">';
-    html += '<div class="colophon__mark">POSTO — Edition</div>';
-    if (colophonData.title) html += '<div class="colophon__title">' + escHtml(colophonData.title) + '</div>';
-    if (colophonData.vibe)  html += '<div class="colophon__vibe">' + escHtml(colophonData.vibe) + '</div>';
-    html += '<hr class="colophon__rule">';
+
+    // Dictionary-style head: bold name, roman description flowing after.
+    html += '<div class="colophon__head">';
+    if (colophonData.title) html += '<span class="colophon__title">' + escHtml(colophonData.title) + '</span>';
+    if (colophonData.vibe)  html += ' <span class="colophon__vibe">' + escHtml(colophonData.vibe) + '</span>';
+    html += '</div>';
+
+    html += '<div class="colophon__label">Contents</div>';
     html += '<ol class="colophon__list">';
     colophonData.items.forEach(function(item, i){
       var num = (i + 1 < 10 ? '0' : '') + (i + 1);
+      var ref = refLinkHtml(item);
       html += '<li class="colophon__item">' +
                 '<span class="colophon__num">' + num + '</span>' +
                 '<span>' +
                   '<span class="colophon__headline">' + escHtml(item.label || 'Untitled') + '</span>' +
-                  (refLinkHtml(item) ? '<br>' + refLinkHtml(item) : '') +
+                  (ref ? ' &nbsp;' + ref : '') +
                 '</span>' +
               '</li>';
     });
     html += '</ol>';
-    html += '<div class="colophon__foot">A record of attention</div>';
+    html += '<div class="colophon__foot">POSTO — A record of attention</div>';
     html += '</div>';
     return html;
   }
