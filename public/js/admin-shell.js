@@ -12,6 +12,12 @@
     },
     { key: 'cities', label: 'Cities', href: '/admin/cities.html' },
     { key: 'categories', label: 'Categories', href: '/admin/categories.html' },
+    {
+      key: 'notes', label: 'Notes', href: '/notes/',
+      sub: [
+        { key: 'note-categories', label: 'Categories', href: '/admin/note-categories.html' },
+      ],
+    },
   ];
 
   function render(activeKey) {
