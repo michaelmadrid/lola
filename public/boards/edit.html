@@ -4,27 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
-  <title>Boards — annex</title>
+  <title>Board editor — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/spots.css">
   <link rel="stylesheet" href="/css/boards-editor.css">
 </head>
 <body>
 
-<main class="page page-admin page-boards-editor">
+<header class="head">
+  <div class="head__left">
+    <button class="menu-btn" id="menu-btn" aria-label="Toggle menu">
+      <span class="menu-btn__icon" aria-hidden="true">
+        <span class="menu-btn__bar menu-btn__bar--top"></span>
+        <span class="menu-btn__bar menu-btn__bar--bottom"></span>
+      </span>
+    </button>
+    <a href="/" class="logo">annex</a>
+  </div>
+  <nav class="nav" data-nav="primary"></nav>
+  <div class="head__right">
+    <span class="where">Bali</span>
+    <span id="hdr-time">—</span>
+  </div>
+</header>
 
-  <header class="admin-head">
-    <div>
-      <div class="admin-head__breadcrumb"><a href="/admin/">Admin</a> / <a href="/admin/boards.html">Boards</a></div>
-      <h1 class="admin-head__title" id="boardTitle">Loading…</h1>
-    </div>
-    <div class="admin-head__actions">
-      <select class="select select--small" id="statusSelect">
-        <option value="draft">Draft</option>
-        <option value="published">Published</option>
-        <option value="archived">Archived</option>
-      </select>
-      <button class="btn btn--secondary btn--small" id="setHomeBtn" type="button">Set as Home</button>
+<div class="menu-overlay" id="menu-overlay" data-nav="drawer">
+  <div class="menu-overlay__inner"></div>
+</div>
+
+<main class="page page-boards-editor">
+
+  <header class="mast">
+    <div class="mast__head">
+      <div>
+        <p class="mast__crumb"><a href="/boards/">Boards</a> /</p>
+        <h1 class="mast__title" id="boardTitle">Loading…</h1>
+      </div>
+      <div class="mast__head-right boards-editor__topbar">
+        <select class="select select--small" id="statusSelect">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
+        </select>
+        <button class="btn btn--secondary btn--small" id="setHomeBtn" type="button">Set as Home</button>
+      </div>
     </div>
   </header>
 
@@ -63,8 +86,7 @@
 
   </div>
 
-  <!-- Add-notes picker — reuses the same card language as the Spots
-       library so browsing here feels identical to browsing there. -->
+  <!-- Add-notes picker -->
   <div class="modal boards-note-picker" id="notePicker" hidden>
     <div class="modal__head">
       <button class="btn-close-circle" id="notePickerClose" aria-label="Close" type="button">×</button>
@@ -80,7 +102,8 @@
 
 <script src="/js/api.js"></script>
 <script src="/js/util.js"></script>
-<script src="/js/admin-shell.js"></script>
-<script src="/js/admin-boards.js"></script>
+<script src="/js/shell.js"></script>
+<script src="/js/nav.js"></script>
+<script src="/js/boards-editor.js"></script>
 </body>
 </html>

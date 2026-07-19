@@ -1,0 +1,58 @@
+/* =========================================================
+   boards.css — Boards INDEX page (card grid).
+   The editor itself is styled by boards-editor.css.
+   ========================================================= */
+
+.boards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+@media (max-width: 900px) { .boards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .boards-grid { grid-template-columns: 1fr; } }
+
+.board-card {
+  display: block;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  padding: var(--space-4);
+  min-height: 120px;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.board-card:hover { border-color: var(--ink-3); background: var(--surface-2); }
+
+.board-card__title {
+  font-size: var(--text-medium);
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: var(--space-3);
+}
+
+.board-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.board-card__status {
+  font-size: var(--text-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--r-input);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+}
+.board-card__status--published {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.board-card__status--archived { opacity: 0.6; }
+
+.board-card__count {
+  font-size: var(--text-tiny);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
