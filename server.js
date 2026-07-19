@@ -39,6 +39,7 @@ app.use('/api/notes/categories', require('./api/routes/note-categories'));
 app.use('/api/notes',   require('./api/routes/notes'));
 app.use('/api/spots',   require('./api/routes/spots'));
 app.use('/api/board-notes', require('./api/routes/board-notes'));
+app.use('/api/boards', require('./api/routes/boards'));
 app.use('/api/todos',   require('./api/routes/todos'));
 app.use('/api/guides',  require('./api/routes/guides'));
 app.use('/api/upload',  require('./api/routes/upload'));
