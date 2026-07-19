@@ -7,18 +7,18 @@
 
   "primary": [
     { "label": "Home",   "href": "/",        "auth": "any" },
-    { "label": "Spots",  "href": "/spots/",  "auth": "in"  },
     { "label": "Notes",  "href": "/notes/",  "auth": "in"  },
-    { "label": "Guides", "href": "/guides/", "auth": "in"  },
-    { "label": "Boards", "href": "/boards/", "auth": "in"  }
+    { "label": "Boards", "href": "/boards/", "auth": "in"  },
+    { "label": "Spots",  "href": "/spots/",  "auth": "in"  },
+    { "label": "Guides", "href": "/guides/", "auth": "in"  }
   ],
 
   "drawer": [
     { "label": "Home",    "href": "/",           "auth": "any" },
-    { "label": "Spots",   "href": "/spots/",     "auth": "in"  },
     { "label": "Notes",   "href": "/notes/",     "auth": "in"  },
-    { "label": "Guides",  "href": "/guides/",    "auth": "in"  },
     { "label": "Boards",  "href": "/boards/",    "auth": "in"  },
+    { "label": "Spots",   "href": "/spots/",     "auth": "in"  },
+    { "label": "Guides",  "href": "/guides/",    "auth": "in"  },
     { "label": "Sign in", "href": "/login.html", "auth": "out" }
   ]
 }
