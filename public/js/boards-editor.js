@@ -343,6 +343,18 @@
     });
   });
 
+  // Drawer toggle — slide the left panel out of the way to see the
+  // canvas full-width. Overlay style, so the canvas doesn't resize;
+  // no placement recompute needed on toggle.
+  var editorEl = document.getElementById('boardsEditor');
+  var drawerToggle = document.getElementById('drawerToggle');
+  if (editorEl && drawerToggle){
+    drawerToggle.addEventListener('click', function(){
+      var closed = editorEl.classList.toggle('drawer-closed');
+      drawerToggle.textContent = closed ? '›' : '‹';
+    });
+  }
+
   window.addEventListener('resize', function(){
     if (!isPreviewMode){
       var frame = driftTrack.querySelector('.boards-canvas-frame');
