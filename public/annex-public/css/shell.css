@@ -147,7 +147,7 @@ img { display: block; max-width: 100%; height: auto; }
 .posto-mark__word{
   display: inline-block;
   font-family: "ABC Diatype", Helvetica, Arial, sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 16px;
   letter-spacing: 0;
   text-transform: uppercase;
