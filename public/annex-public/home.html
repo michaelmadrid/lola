@@ -20,11 +20,11 @@
     --memory-bg: #151515; /* dark, not pure #000 */
     --memory-fg: #F8F8F8; /* same off-white as the rest of the site */
     
-    --memory-size: 32px;
-    --memory-size-mobile: 26px;
+    --memory-size: 44px;
+    --memory-size-mobile: 32px;
     
     ::selection {
-        color:transparent;
+        color:red;
         
     }
     
@@ -281,8 +281,10 @@
      day-to-day tuning.
      ============================================================ */
   var CONFIG = {
-    // Drift (auto-scroll)
-    driftSpeed:       1.3,   // px per frame — was 0.35, feeling was 2x too slow
+    // Drift (auto-scroll) — driftSpeed is px-per-frame-at-60fps, but
+    // motion is now TIME-BASED (see tick), so this speed is identical
+    // on mobile and desktop regardless of actual frame rate.
+    driftSpeed:       1.3,
     manualPauseMs:      900,  // how long drift pauses after you interrupt it
 
     // Feed item sizing
@@ -291,6 +293,10 @@
 
     // Interaction sensitivity
     wheelMultiplier:     1.1, // how far a horizontal wheel tick pans the feed
+
+    // Touch swipe-throw (mobile)
+    throwFriction:      0.94, // per-frame momentum decay after a fling (lower = stops sooner)
+    throwMax:          6000,  // px/sec cap on a fling, so a wild flick isn't dizzying
 
     // Hover behavior
     pauseOnHover:        true, // stop the drift while hovering a card (not empty stage space)
@@ -662,11 +668,32 @@
     track.style.transform = 'translateX(' + (-offset) + 'px)';
   }
 
-  function tick(){
-    var now = performance.now();
+  var lastFrameTime = 0;
+  var throwVelocity = 0; // px/sec of residual momentum from a swipe throw
+
+  function tick(now){
+    // Time-based motion — distance depends on ELAPSED TIME, not frame
+    // count. A fixed per-frame increment ran slower on mobile (lower/
+    // variable frame rate = fewer increments per second). dt fixes it
+    // so drift speed is identical on every device.
+    if (!lastFrameTime) lastFrameTime = now;
+    var dt = Math.min((now - lastFrameTime) / 1000, 0.05); // seconds, capped so a stutter can't jump huge
+    lastFrameTime = now;
+
     if (!isHovering && now > manualUntil){
-      offset += CONFIG.driftSpeed;
+      // driftSpeed stays authored in px/frame-at-60fps for familiarity;
+      // ×60 → px/sec, ×dt → this frame's step.
+      offset += CONFIG.driftSpeed * 60 * dt;
     }
+
+    // Throw momentum from a swipe — decays exponentially to zero.
+    if (Math.abs(throwVelocity) > 1){
+      offset -= throwVelocity * dt;
+      throwVelocity *= Math.pow(CONFIG.throwFriction, dt * 60);
+    } else {
+      throwVelocity = 0;
+    }
+
     applyTransform();
     requestAnimationFrame(tick);
   }
@@ -686,6 +713,55 @@
     var horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
     if (!horizontal) return; // let vertical scroll-snap handle it
     offset += e.deltaX * CONFIG.wheelMultiplier;
+    manualUntil = performance.now() + CONFIG.manualPauseMs;
+  }, { passive:true });
+
+  /* ── Touch: swipe to pan, release to "throw" ─────────────────
+     Mobile has no wheel, so a horizontal swipe pans the drift
+     directly and, on release, flings it with momentum proportional
+     to flick speed. Vertical swipes are left alone so the page's
+     scroll-snap (down to stage 2) still works. */
+  var touchStartX = 0, touchStartY = 0;
+  var touchLastX = 0, touchLastT = 0;
+  var touchIsHorizontal = null;
+  var touchActive = false;
+
+  stageFeed.addEventListener('touchstart', function(e){
+    var t = e.touches[0];
+    touchStartX = touchLastX = t.clientX;
+    touchStartY = t.clientY;
+    touchLastT = performance.now();
+    touchIsHorizontal = null;
+    touchActive = true;
+    throwVelocity = 0; // grabbing kills any existing throw
+  }, { passive:true });
+
+  stageFeed.addEventListener('touchmove', function(e){
+    if (!touchActive) return;
+    var t = e.touches[0];
+    var dx = t.clientX - touchStartX;
+    var dy = t.clientY - touchStartY;
+
+    if (touchIsHorizontal === null){
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return; // wait for clear intent
+      touchIsHorizontal = Math.abs(dx) > Math.abs(dy);
+    }
+    if (!touchIsHorizontal) return; // vertical → let the page scroll-snap
+
+    var now = performance.now();
+    var moveX = t.clientX - touchLastX;
+    offset -= moveX;
+    var dtms = now - touchLastT;
+    if (dtms > 0) throwVelocity = (moveX / dtms) * 1000; // px/sec, for the throw
+    touchLastX = t.clientX;
+    touchLastT = now;
+    manualUntil = now + CONFIG.manualPauseMs;
+  }, { passive:true });
+
+  stageFeed.addEventListener('touchend', function(){
+    touchActive = false;
+    // Cap the fling so a wild flick isn't dizzying; tick() applies + decays it.
+    throwVelocity = Math.max(-CONFIG.throwMax, Math.min(CONFIG.throwMax, throwVelocity));
     manualUntil = performance.now() + CONFIG.manualPauseMs;
   }, { passive:true });
 
