@@ -145,10 +145,17 @@
 .boards-free-item{
   position: absolute;
   border-radius: 3px;
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
   cursor: grab;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  font-size: 0; /* kill inline-img whitespace gap */
+}
+.boards-free-item img{
+  width: 100%;
+  height: auto; /* natural aspect ratio — width is the only authored dimension */
+  display: block;
+  pointer-events: none;
+  user-select: none;
 }
 .boards-free-item.is-active{ outline: 2px solid var(--accent); outline-offset: 1px; }
 .boards-free-item.is-dragging{ cursor: grabbing; }

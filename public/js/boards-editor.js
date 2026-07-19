@@ -9,8 +9,6 @@
 
 (function(){
 
-  var ASPECT_FALLBACK = 0.75; // used only until an item's real image loads
-
   var boardId = new URLSearchParams(location.search).get('id');
   if (!boardId) {
     document.getElementById('boardTitle').textContent = 'No board selected';
@@ -158,12 +156,19 @@
       el.className = 'boards-free-item';
       el.dataset.id = item.itemId;
       if (item.image){
-        el.style.backgroundImage = 'url(' + item.image + ')';
+        var img = document.createElement('img');
+        img.src = item.image;
+        img.alt = item.label || '';
+        img.draggable = false;
+        el.appendChild(img);
       } else {
         el.style.background = '#ddd';
       }
       if (interactive){
-        el.innerHTML = '<div class="boards-free-item__resize" data-resize="' + item.itemId + '"></div>';
+        var handle = document.createElement('div');
+        handle.className = 'boards-free-item__resize';
+        handle.dataset.resize = item.itemId;
+        el.appendChild(handle);
         el.addEventListener('pointerdown', function(e){
           if (e.target.dataset.resize) return;
           startMove(item, e);
@@ -174,17 +179,19 @@
     return frame;
   }
 
+  // Only WIDTH is authored. Height comes from the image's natural
+  // aspect ratio (the <img> is width:100%, height:auto in CSS) — so
+  // we never set an explicit height on the item box; it wraps its
+  // image. Matches home.html exactly.
   function applyPlacementTo(frame){
     var rect = frame.getBoundingClientRect();
     ITEMS.forEach(function(item){
       var el = frame.querySelector('.boards-free-item[data-id="' + item.itemId + '"]');
       if (!el) return;
-      var wPx = rect.width * (item.w / 100);
-      var hPx = wPx * ASPECT_FALLBACK; // real <img> aspect handled via object-fit in production; fine for placement math here
       el.style.left = (rect.width * (item.x / 100)) + 'px';
       el.style.top = (rect.height * (item.y / 100)) + 'px';
-      el.style.width = wPx + 'px';
-      el.style.height = hPx + 'px';
+      el.style.width = (rect.width * (item.w / 100)) + 'px';
+      el.style.height = 'auto';
     });
   }
 
