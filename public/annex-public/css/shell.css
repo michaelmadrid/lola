@@ -910,6 +910,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 
 /* Explore affordance — fades on first interaction */
 .wall-hint {
+ 
   position: fixed;
   top: 50%;
   left: 50%;
@@ -926,6 +927,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   border-radius: 999px;
   transition: opacity 500ms ease;
   pointer-events: none;
+  display: none;
 }
 .wall-hint.is-gone { opacity: 0; }
 
