@@ -128,29 +128,31 @@
   position: relative;
   overflow: hidden;
   background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
 }
 
 .boards-canvas-drift-track{
-  position: absolute;
-  top: 0; left: 0;
-  height: 100%;
+  position: relative;
   display: flex;
   align-items: center;
   will-change: transform;
+  width: 100%;
 }
 
-/* Frame fills the wrap's height; width follows from the 16/9 ratio.
-   No fixed pixel size — so it scales with the editor panel instead
-   of sitting as a small fixed box in a tall empty area. Height is
-   capped a touch under 100% so there's a little margin around it. */
+/* Frame fits the panel WIDTH so the whole 32:9 panorama is visible
+   at once for composing — height derives from the ratio. (Preview
+   mode swaps to a taller, drifting arrangement via JS.) MUST match
+   home.html's CONFIG.canvasAspectRatio. */
 .boards-canvas-frame{
   position: relative;
   flex-shrink: 0;
-  height: 88%;
-  aspect-ratio: 16 / 9;
+  width: 100%;
+  aspect-ratio: 32 / 9;
   background: var(--bg);
   box-shadow: 0 0 0 1px var(--rule);
-  margin-right: 40px;
 }
 
 /* 12-col reference grid — visual only, never touches data */

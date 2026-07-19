@@ -304,10 +304,12 @@
     // follows from the aspect ratio.
     // canvasAspectRatio MUST match the editor's canvas aspect ratio
     // (boards-editor.css .boards-canvas-frame) or compositions will
-    // render differently here than they were designed. Both are 16/9.
-    canvasAspectRatio: 16 / 9,
-    canvasHeightRatio: 0.88,    // taller frames, closer to filling the viewport
-    canvasTileCount:   6        // more copies = longer loop before the composition visibly repeats
+    // render differently here than they were designed. Both are 32/9
+    // — a wide panorama, so one tile is wider than the viewport and
+    // the loop seam stays off-screen.
+    canvasAspectRatio: 32 / 9,
+    canvasHeightRatio: 0.88,
+    canvasTileCount:   4        // fewer needed now each tile is ~3× viewport width
   };
 
   /* ============================================================
