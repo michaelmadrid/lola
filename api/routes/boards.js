@@ -59,6 +59,14 @@ router.get('/:id', authenticate, requireAdmin, async (req, res) => {
   }
 });
 
+// Default aspect ratio for NEW boards. Change these two numbers to
+// change the default going forward — existing boards keep their own
+// stored ratio and are completely unaffected. Must be kept in sync
+// with the editor's initial canvas (boards-editor.js reads the
+// board's own ratio, so this only sets what new boards start at).
+const DEFAULT_ASPECT_W = 32;
+const DEFAULT_ASPECT_H = 9;
+
 // ── Admin: create a board ───────────────────────────────────────
 router.post('/', authenticate, requireAdmin, async (req, res) => {
   try {
@@ -67,10 +75,10 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'title is required' });
     }
     const { rows } = await pool.query(
-      `INSERT INTO boards (user_id, title, vibe)
-       VALUES ($1, $2, $3)
+      `INSERT INTO boards (user_id, title, vibe, aspect_w, aspect_h)
+       VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      [req.user.id, title.trim(), vibe || null]
+      [req.user.id, title.trim(), vibe || null, DEFAULT_ASPECT_W, DEFAULT_ASPECT_H]
     );
     res.status(201).json({ board: rows[0] });
   } catch (err) {
@@ -82,7 +90,7 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
 // ── Admin: update title / vibe / status ─────────────────────────
 router.patch('/:id', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { title, vibe, status } = req.body;
+    const { title, vibe, status, aspect_w, aspect_h } = req.body;
     const validStatus = ['draft', 'published', 'archived'];
     if (status && !validStatus.includes(status)) {
       return res.status(400).json({ error: 'invalid status' });
@@ -93,12 +101,15 @@ router.patch('/:id', authenticate, requireAdmin, async (req, res) => {
        SET title = COALESCE($1, title),
            vibe = COALESCE($2, vibe),
            status = COALESCE($3, status),
+           aspect_w = COALESCE($6, aspect_w),
+           aspect_h = COALESCE($7, aspect_h),
            published_at = CASE WHEN $3 = 'published' AND status != 'published'
                                 THEN NOW() ELSE published_at END,
            updated_at = NOW()
        WHERE id = $4 AND user_id = $5
        RETURNING *`,
-      [title || null, vibe || null, status || null, req.params.id, req.user.id]
+      [title || null, vibe || null, status || null, req.params.id, req.user.id,
+       aspect_w || null, aspect_h || null]
     );
     if (!rows.length) return res.status(404).json({ error: 'Board not found' });
     res.json({ board: rows[0] });
@@ -291,6 +302,12 @@ router.get('/_home/public', async (req, res) => {
     // Board source — items carry free x/y/width placement.
     // position DESC = highest (front) first, so the client can
     // paint back-to-front simply by reversing once.
+    const boardMeta = await pool.query(
+      `SELECT title, vibe, aspect_w, aspect_h FROM boards WHERE id = $1`,
+      [config.board_id]
+    );
+    const meta = boardMeta.rows[0] || { title: '', vibe: '', aspect_w: 32, aspect_h: 9 };
+
     const { rows } = await pool.query(
       `SELECT bn.id, bn.type, bn.headline, bn.image_url, bn.body,
               bn.reference_title, bn.reference_url,
@@ -301,7 +318,15 @@ router.get('/_home/public', async (req, res) => {
        ORDER BY bi.position DESC`,
       [config.board_id]
     );
-    res.json({ source: 'board', board_id: config.board_id, items: rows });
+    res.json({
+      source: 'board',
+      board_id: config.board_id,
+      title: meta.title,
+      vibe: meta.vibe,
+      aspect_w: meta.aspect_w,
+      aspect_h: meta.aspect_h,
+      items: rows
+    });
   } catch (err) {
     console.error('GET /api/boards/_home/public failed:', err);
     res.status(500).json({ error: 'Could not load home feed' });
