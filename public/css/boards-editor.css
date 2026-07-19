@@ -8,12 +8,31 @@
 
 .page-boards-editor .admin-head{ margin-bottom: var(--space-6); }
 
+/* Status select + Set-as-Home, top-right of the mast. Select is
+   capped so it doesn't stretch full-width; button sits snug beside it. */
+.boards-editor__topbar{
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.boards-editor__topbar .select{
+  width: 150px;
+  max-width: 150px;
+}
+.boards-editor__topbar .btn{
+  white-space: nowrap;
+}
+
 .boards-editor{
   display: grid;
   grid-template-columns: 340px 1fr;
   gap: var(--space-6);
-  height: calc(100vh - 200px);
-  min-height: 500px;
+  /* Fill from the top of this element to the bottom of the viewport,
+     minus a small breathing gap — instead of a fixed calc() guess at
+     header height that overshot and pushed the footer button offscreen. */
+  height: calc(100vh - 260px);
+  min-height: 440px;
+  max-height: 760px;
 }
 
 /* ── LEFT — item list ─────────────────────────────────────── */
@@ -113,15 +132,21 @@
 
 .boards-canvas-drift-track{
   position: absolute;
-  top: 50%; left: 0;
+  top: 0; left: 0;
+  height: 100%;
   display: flex;
+  align-items: center;
   will-change: transform;
 }
 
+/* Frame fills the wrap's height; width follows from the 16/9 ratio.
+   No fixed pixel size — so it scales with the editor panel instead
+   of sitting as a small fixed box in a tall empty area. Height is
+   capped a touch under 100% so there's a little margin around it. */
 .boards-canvas-frame{
   position: relative;
   flex-shrink: 0;
-  width: 800px;
+  height: 88%;
   aspect-ratio: 16 / 9;
   background: var(--bg);
   box-shadow: 0 0 0 1px var(--rule);
