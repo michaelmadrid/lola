@@ -306,6 +306,25 @@
   const imageRemoveBtn = document.getElementById('note-image-remove');
   const feedOnBtn = document.getElementById('note-feed-on');
   const feedOffBtn = document.getElementById('note-feed-off');
+  const categoryEl = document.getElementById('note-category');
+
+  // Load the note-category options once. Active only (the picker is
+  // for assigning, not managing). Keeps the "— none —" default option.
+  let noteCategories = [];
+  (async function loadNoteCategories() {
+    try {
+      const data = await api.get('/api/notes/categories');
+      noteCategories = data.categories || [];
+      noteCategories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.value;      // slug
+        opt.textContent = c.label;
+        categoryEl.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('Could not load note categories', err);
+    }
+  })();
   const richWrap = document.getElementById('note-body-rich');
   const permalinkLink = document.getElementById('note-permalink');
 
@@ -379,7 +398,8 @@
     setType(note ? note.type : 'note');
     headlineEl.value = note ? note.headline : '';
     bodyEl.value = note ? (note.body || '') : '';
-    setFeed(note ? note.show_in_feed !== false : true);
+    setFeed(note ? note.show_in_feed !== false : false); // new notes default OFF feed
+    categoryEl.value = note ? (note.category || '') : ''; // existing note's category, or none
     // Load body HTML into Quill (all note types use it now)
     ensureQuill();
     if (quill) quill.root.innerHTML = note ? (note.body || '') : '';
@@ -459,6 +479,7 @@
       status,
       pin: editingPin,
       show_in_feed: editingFeed,
+      category: categoryEl.value || null,
       publish_date: publishDateEl.value ? new Date(publishDateEl.value).toISOString() : null,
       expires_at: expiresEl.value ? new Date(expiresEl.value).toISOString() : null,
     };

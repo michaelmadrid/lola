@@ -96,7 +96,7 @@ router.get('/types', (req, res) => {
 // POST /api/board-notes — create (draft by default)
 router.post('/', authenticate, async (req, res) => {
   const { type, headline, body, image_url, reference_title, reference_url,
-          status, pin, publish_date, expires_at, show_in_feed } = req.body;
+          status, pin, publish_date, expires_at, show_in_feed, category } = req.body;
   if (!headline || !headline.trim()) return res.status(400).json({ error: 'headline required' });
   if (type && !TYPES.includes(type)) return res.status(400).json({ error: 'invalid type' });
 
@@ -104,12 +104,12 @@ router.post('/', authenticate, async (req, res) => {
     const result = await pool.query(
       `INSERT INTO board_notes
          (user_id, type, headline, body, image_url, reference_title, reference_url,
-          status, pin, publish_date, expires_at, show_in_feed)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,COALESCE($10, NOW()),$11,$12)
+          status, pin, publish_date, expires_at, show_in_feed, category)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,COALESCE($10, NOW()),$11,$12,$13)
        RETURNING *`,
       [req.user.id, type || 'note', headline.trim(), body || null, image_url || null,
        reference_title || null, reference_url || null, status || 'draft', !!pin,
-       publish_date || null, expires_at || null, show_in_feed !== false]
+       publish_date || null, expires_at || null, show_in_feed !== false, category || null]
     );
     res.json({ note: result.rows[0] });
   } catch (err) {
@@ -120,7 +120,7 @@ router.post('/', authenticate, async (req, res) => {
 // PATCH /api/board-notes/:id
 router.patch('/:id', authenticate, async (req, res) => {
   const allowed = ['type', 'headline', 'body', 'image_url', 'reference_title',
-                    'reference_url', 'status', 'pin', 'publish_date', 'expires_at', 'deleted_at', 'show_in_feed'];
+                    'reference_url', 'status', 'pin', 'publish_date', 'expires_at', 'deleted_at', 'show_in_feed', 'category'];
   const sets = [], params = [];
   for (const k of allowed) {
     if (req.body[k] !== undefined) { params.push(req.body[k]); sets.push(`${k} = $${params.length}`); }
