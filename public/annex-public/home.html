@@ -308,9 +308,6 @@
 
   /* ── Stage 2 — info (blank, slogan pinned bottom) ───────── */
 
-  @media (max-width:720px){
-    .slogan{ font-size:var(--memory-size-mobile); max-width:88vw; }
-  }
   
   #stage-info{
     background:var(--memory-bg);
@@ -347,6 +344,14 @@
     text-transform:uppercase;
     color:var(--memory-fg);
     text-align:center;
+  }
+  
+  @media (max-width:720px){
+    .slogan{ 
+      font-size:var(--memory-size-mobile) !important; 
+      max-width:88vw; 
+      
+    }
   }
 
 </style>
