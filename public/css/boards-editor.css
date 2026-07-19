@@ -153,7 +153,39 @@
   aspect-ratio: var(--board-aspect, 32 / 9); /* set per-board by boards-editor.js from the board's stored ratio */
   background: var(--bg);
   box-shadow: 0 0 0 1px var(--rule);
+  /* Buffer above/below the "safe zone" — mirrors the breathing room
+     the homepage leaves at the very top/bottom. Items CAN still be
+     placed into this band (full-bleed is allowed); it's a guide, not
+     a wall. One number to tweak the comfortable margin. */
+  --safe-inset: 10%;
 }
+
+/* Safe-zone guide — faint bands marking the top/bottom buffer. Lines
+   at the inset show where the comfortable margin begins. Visual only. */
+.boards-canvas-safe{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 120ms ease;
+}
+.boards-canvas-safe.is-hidden{ opacity: 0; }
+.boards-canvas-safe::before,
+.boards-canvas-safe::after{
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: var(--safe-inset);
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0,0,0,0.03) 0, rgba(0,0,0,0.03) 6px,
+    transparent 6px, transparent 12px
+  );
+  border-color: rgba(0,0,0,0.12);
+  border-style: dashed;
+}
+.boards-canvas-safe::before{ top: 0; border-bottom-width: 1px; }
+.boards-canvas-safe::after{ bottom: 0; border-top-width: 1px; }
 
 /* 12-col reference grid — visual only, never touches data */
 .boards-canvas-grid{

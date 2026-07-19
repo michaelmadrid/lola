@@ -153,10 +153,19 @@
     return grid;
   }
 
+  // Safe-zone guide — top/bottom buffer bands. Toggled with the grid.
+  function buildSafeZone(){
+    var safe = document.createElement('div');
+    safe.className = 'boards-canvas-safe';
+    if (!gridToggle.checked) safe.classList.add('is-hidden');
+    return safe;
+  }
+
   function buildFrameEl(interactive){
     var frame = document.createElement('div');
     frame.className = 'boards-canvas-frame';
     frame.appendChild(buildGrid());
+    frame.appendChild(buildSafeZone());
 
     var forDom = ITEMS.slice().reverse();
     forDom.forEach(function(item){
@@ -329,7 +338,7 @@
   });
 
   gridToggle.addEventListener('change', function(){
-    document.querySelectorAll('.boards-canvas-grid').forEach(function(g){
+    document.querySelectorAll('.boards-canvas-grid, .boards-canvas-safe').forEach(function(g){
       g.classList.toggle('is-hidden', !gridToggle.checked);
     });
   });

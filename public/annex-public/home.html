@@ -308,6 +308,9 @@
 
   /* ── Stage 2 — info (blank, slogan pinned bottom) ───────── */
 
+  @media (max-width:720px){
+    .slogan{ font-size:var(--memory-size-mobile); max-width:88vw; }
+  }
   
   #stage-info{
     background:var(--memory-bg);
@@ -344,14 +347,6 @@
     text-transform:uppercase;
     color:var(--memory-fg);
     text-align:center;
-  }
-  
-  @media (max-width:720px){
-    .slogan{ 
-      font-size:var(--memory-size-mobile) !important; 
-      max-width:88vw; 
-      
-    }
   }
 
 </style>
@@ -441,7 +436,7 @@
     // changing the default for new boards never breaks existing ones.
     // Height/tiles stay global (they're just how much viewport the
     // frame fills + how many loop copies, not composition-affecting).
-    canvasHeightRatio: 0.88,
+    canvasHeightRatio: 1.0,  // full viewport height — frame = whole screen top to bottom, matching the editor canvas. The editor's safe-zone guide marks comfortable top/bottom margins within this.
     canvasTileCount:   4
   };
 
