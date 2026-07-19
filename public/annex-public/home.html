@@ -113,9 +113,9 @@
     flex-shrink:0;
     height:var(--board-frame-h, 72vh);
     aspect-ratio: var(--board-aspect, 16 / 9);
-    margin-right:28px;
-    overflow:hidden;
-    background:#eee;
+    /* No margin, no background — tiles butt seamlessly so the looped
+       composition reads as one continuous field, and the page bg
+       shows through wherever items don't cover. */
   }
 
   .board-frame__item{
@@ -296,16 +296,18 @@
     // Backend confirmed deployed + migrated, safe to point here now.
     apiBase:       'https://studio.annex.site',
     notesEndpoint: '/api/boards/_home/public',
-  //  notesEndpoint: '/api/board-notes/public',
 
     // Board-source canvas — must match the aspect ratio used in
     // admin-boards.js's editor canvas, or a composition will look
     // different here than it did while being built. Height is
     // viewport-relative like everything else (self-scaling), width
     // follows from the aspect ratio.
+    // canvasAspectRatio MUST match the editor's canvas aspect ratio
+    // (boards-editor.css .boards-canvas-frame) or compositions will
+    // render differently here than they were designed. Both are 16/9.
     canvasAspectRatio: 16 / 9,
-    canvasHeightRatio: 0.72,
-    canvasTileCount:   4   // copies tiled for a comfortable loop — bump if a sparse board loops too fast on wide screens
+    canvasHeightRatio: 0.88,    // taller frames, closer to filling the viewport
+    canvasTileCount:   6        // more copies = longer loop before the composition visibly repeats
   };
 
   /* ============================================================
