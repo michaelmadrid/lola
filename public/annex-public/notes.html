@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Notes — Annex</title>
+  <meta name="description" content="A record of attention.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Annex">
+  <meta property="og:title" content="Notes — Annex">
+  <meta property="og:description" content="A record of attention.">
+  <meta property="og:image" content="https://posto.world/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- OG_META -->
+
+  <script>window.POSTO_PAGE = 'notes';</script>
+  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
+</head>
+<body class="">
+
+<div class="page">
+
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <div data-include="header"></div>
+
+  <main class="notes-index" id="notes-index">
+    <!-- filled by notes-index.js -->
+  </main>
+
+  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
+  <div data-include="footer"></div>
+
+</div><!-- /page -->
+
+<script>
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+<script>
+  fetch('/js/notes-index.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+
+
+</body>
+</html>

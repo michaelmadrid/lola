@@ -67,6 +67,29 @@ router.get('/public', async (req, res) => {
   }
 });
 
+// GET /api/board-notes/public/grid — ALL published notes (feed flag
+// aside) for the public notes grid page. Unlike /public (which is the
+// homepage feed and filters to show_in_feed=true), this shows the full
+// published archive. Includes category for future filtering/layouts.
+router.get('/public/grid', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  try {
+    const result = await pool.query(`
+      SELECT id, type, headline, image_url, reference_title, reference_url,
+             pin, publish_date, category
+      FROM board_notes
+      WHERE status = 'published'
+        AND deleted_at IS NULL
+        AND publish_date <= NOW()
+        AND (expires_at IS NULL OR expires_at > NOW())
+      ORDER BY pin DESC, publish_date DESC
+      LIMIT 200`);
+    res.json({ notes: result.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/board-notes/public/:id — single published note for permalink page
 router.get('/public/:id', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
