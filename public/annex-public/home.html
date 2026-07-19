@@ -20,8 +20,8 @@
     --memory-bg: #151515; /* dark, not pure #000 */
     --memory-fg: #F8F8F8; /* same off-white as the rest of the site */
     
-    --memory-size: 36px;
-    --memory-size-mobile: 24px;
+    --memory-size: 44px;
+    --memory-size-mobile: 32px;
     
     ::selection {
         color:red;
@@ -80,15 +80,15 @@
     top:0; left:0;
     height:100%;
     display:flex;
-    align-items:center;
+    align-items:flex-start; /* was center — per-item vertical position now set inline by JS, see applyItemPlacement() */
     will-change:transform;
   }
 
-  /* Items scale to the viewport height via JS (--feed-item-h),
-     width follows naturally from aspect ratio. */
+  /* Height + top offset are set inline per-item by JS (applyItemPlacement) —
+     both are viewport-relative percentages, same math the old single
+     global --feed-item-h var used, just per-item now. */
   .feed-item{
     flex-shrink:0;
-    height:var(--feed-item-h, 70vh);
     margin-right:28px; /* keep in sync with CONFIG.itemGap in the script below */
     position:relative;
     overflow:hidden;
@@ -242,9 +242,12 @@
     pauseOnHover:        true, // stop the drift while hovering a card (not empty stage space)
     hoverResumeDelayMs:   200, // pause held for this long after the cursor leaves a card
 
-    // Data source — board_notes public feed
+    // Data source — resolves to either the raw feed or a published
+    // board depending on what's set in the admin (home_config).
+    // Response shape is identical either way — notes just carry
+    // height_pct/top_pct when the source is a board, null otherwise.
     apiBase:       'https://studio.annex.site',
-    notesEndpoint: '/api/board-notes/public'
+    notesEndpoint: '/api/boards/_home/public'
   };
 
   /* ============================================================
@@ -286,17 +289,32 @@
     return url.indexOf('http') === 0 ? url : CONFIG.apiBase + url;
   }
 
+  // Postgres NUMERIC columns come back as strings over JSON — parse
+  // to a real number, or null if absent/unparseable (feed source,
+  // or a board item that predates these columns).
+  function toPct(v){
+    var n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  }
+
   // board_notes rows → feed items. Only rows with an image qualify
   // for this horizontal, image-forward feed; text-only notes are
   // left for wherever the notice-board view eventually lives.
-  // Pinned items sort first.
-  function notesToFeedItems(notes){
-    return notes
-      .filter(function(n){ return !!n.image_url; })
-      .sort(function(a, b){ return (b.pin ? 1 : 0) - (a.pin ? 1 : 0); })
-      .map(function(n){
-        return { image: imgSrc(n.image_url), label: n.headline || '' };
-      });
+  // Pinned items sort first (feed source only — board source keeps
+  // its authored position order as-is).
+  function notesToFeedItems(notes, isBoardSource){
+    var list = notes.filter(function(n){ return !!n.image_url; });
+    if (!isBoardSource){
+      list = list.slice().sort(function(a, b){ return (b.pin ? 1 : 0) - (a.pin ? 1 : 0); });
+    }
+    return list.map(function(n){
+      return {
+        image: imgSrc(n.image_url),
+        label: n.headline || '',
+        heightPct: toPct(n.height_pct), // null → buildItem/applyItemPlacement fall back to CONFIG.itemHeightRatio
+        topPct: toPct(n.top_pct)        // null → falls back to 50 (centered), matching today's look
+      };
+    });
   }
 
   function buildItem(data){
@@ -352,13 +370,43 @@
     return el;
   }
 
+  // Elements + their placement data, in render order (both copies of
+  // the loop) — applyItemPlacement() walks this on every render and
+  // every resize.
+  var renderedItems = [];
+
   // Render a given item set twice back-to-back so the loop can
   // wrap seamlessly — once offset passes the width of one copy,
   // we subtract that width and keep drifting.
   function renderTrack(items){
     track.innerHTML = '';
+    renderedItems = [];
     items.concat(items).forEach(function(data){
-      track.appendChild(buildItem(data));
+      var el = buildItem(data);
+      track.appendChild(el);
+      renderedItems.push({ el: el, data: data });
+    });
+    applyItemPlacement();
+  }
+
+  /* ── Per-item viewport-relative placement ────────────────────
+     Same math the old single global --feed-item-h var used, just
+     run per item now. heightPct/topPct come from board data when
+     present; PLACEHOLDER_ITEMS and plain feed notes (no board)
+     don't have them, so both fall back to today's look: global
+     CONFIG ratio, vertically centered. */
+  function applyItemPlacement(){
+    var vh = window.innerHeight;
+    renderedItems.forEach(function(entry){
+      var heightPct = entry.data.heightPct != null ? entry.data.heightPct : CONFIG.itemHeightRatio * 100;
+      var topPct = entry.data.topPct != null ? entry.data.topPct : 50;
+
+      var itemHeight = Math.round(vh * (heightPct / 100));
+      var leftover = vh - itemHeight;
+      var itemTop = Math.round(leftover * (topPct / 100));
+
+      entry.el.style.height = itemHeight + 'px';
+      entry.el.style.marginTop = itemTop + 'px';
     });
   }
 
@@ -367,7 +415,8 @@
     fetch(url)
       .then(function(r){ return r.json(); })
       .then(function(data){
-        var items = notesToFeedItems(data.notes || []);
+        var isBoardSource = data.source === 'board';
+        var items = notesToFeedItems(data.notes || [], isBoardSource);
         if (!items.length){
           console.warn('[POSTO] No published notes with images — showing placeholders.');
           renderTrack(PLACEHOLDER_ITEMS);
@@ -381,13 +430,6 @@
       });
   }
   loadFeed();
-
-  /* ── Scale feed items to viewport height ─────────────────── */
-  function setItemHeight(){
-    var h = Math.round(window.innerHeight * CONFIG.itemHeightRatio);
-    document.documentElement.style.setProperty('--feed-item-h', h + 'px');
-  }
-  setItemHeight();
 
   /* ============================================================
      Horizontal drift — continuous, buttery (rAF + easing), with
@@ -409,7 +451,7 @@
   }
   measureLoopWidth();
 
-  /* Single rAF-batched resize pass: write the height var, THEN
+  /* Single rAF-batched resize pass: recompute placement, THEN
      read scrollWidth on the next frame (after layout has settled)
      rather than back-to-back — avoids forced-synchronous-layout
      thrashing while the window is actively being dragged. */
@@ -418,7 +460,7 @@
     if (resizePending) return;
     resizePending = true;
     requestAnimationFrame(function(){
-      setItemHeight();
+      applyItemPlacement();
       requestAnimationFrame(function(){
         measureLoopWidth();
         resizePending = false;
