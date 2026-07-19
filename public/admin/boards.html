@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
+  <title>Boards — annex</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/boards-editor.css">
+</head>
+<body>
+
+<main class="page page-admin page-boards-editor">
+
+  <header class="admin-head">
+    <div>
+      <div class="admin-head__breadcrumb"><a href="/admin/">Admin</a> / <a href="/admin/boards.html">Boards</a></div>
+      <h1 class="admin-head__title" id="boardTitle">Loading…</h1>
+    </div>
+    <div class="admin-head__actions">
+      <select class="select select--small" id="statusSelect">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+        <option value="archived">Archived</option>
+      </select>
+      <button class="btn btn--secondary btn--small" id="setHomeBtn" type="button">Set as Home</button>
+    </div>
+  </header>
+
+  <div class="boards-editor">
+
+    <div class="boards-editor__left">
+      <div class="boards-editor__left-head">
+        <input type="text" class="input input--small" id="titleInput" placeholder="Edition title">
+        <textarea class="textarea" id="vibeInput" placeholder="Vibe / curatorial note…" rows="2"></textarea>
+      </div>
+
+      <div class="item-list" id="itemList">
+        <div class="stream__empty">Loading…</div>
+      </div>
+
+      <div class="boards-editor__left-foot">
+        <button class="btn" id="addNotesBtn" type="button">+ Add notes from library</button>
+      </div>
+    </div>
+
+    <div class="boards-editor__right">
+      <div class="boards-editor__right-head">
+        <div>
+          <span class="caption">Live placement</span>
+          <div class="boards-editor__hint" id="modeHint">Drag anywhere to move · drag the accent dot to resize · list order (left) is front-to-back stacking</div>
+        </div>
+        <div class="boards-editor__controls">
+          <label class="boards-editor__grid-toggle"><input type="checkbox" id="gridToggle" checked> Grid</label>
+          <button class="btn btn--secondary btn--small" id="modeToggle" type="button">Preview drift ▶</button>
+        </div>
+      </div>
+      <div class="boards-canvas-wrap" id="canvasWrap">
+        <div class="boards-canvas-drift-track" id="driftTrack"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Add-notes picker — reuses the same card language as the Spots
+       library so browsing here feels identical to browsing there. -->
+  <div class="modal boards-note-picker" id="notePicker" hidden>
+    <div class="modal__head">
+      <button class="btn-close-circle" id="notePickerClose" aria-label="Close" type="button">×</button>
+      <h3>Add notes</h3>
+    </div>
+    <div class="modal__body">
+      <input type="text" class="input" id="notePickerSearch" placeholder="Search notes…" autocomplete="off">
+      <div class="boards-note-picker__grid" id="notePickerGrid"></div>
+    </div>
+  </div>
+
+</main>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/admin-shell.js"></script>
+<script src="/js/admin-boards.js"></script>
+</body>
+</html>

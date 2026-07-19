@@ -1,8 +1,10 @@
 // api/routes/boards.js
 //
 // Admin CRUD for boards ("Editions") + the public endpoint the
-// homepage actually fetches from. See migrations/041_boards.sql for
-// schema notes on why placement is percentage-based, not pixel-based.
+// homepage fetches from. Placement is free x/y percentages against
+// a fixed-aspect canvas frame (see migrations/042_boards_free_placement.sql)
+// — the whole composed frame drifts as one rigid unit on the public
+// side; items never move relative to each other ("moving the glass").
 
 const express = require('express');
 const router = express.Router();
@@ -39,12 +41,14 @@ router.get('/:id', authenticate, requireAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Board not found' });
     }
 
+    // position DESC — highest position = front of stack = first in
+    // the list, matching the admin's "top of list = front" convention.
     const itemsResult = await pool.query(
       `SELECT bi.*, bn.image_url, bn.headline, bn.type
        FROM board_items bi
        JOIN board_notes bn ON bn.id = bi.note_id
        WHERE bi.board_id = $1
-       ORDER BY bi.position ASC`,
+       ORDER BY bi.position DESC`,
       [req.params.id]
     );
 
@@ -76,7 +80,7 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
 });
 
 // ── Admin: update title / vibe / status ─────────────────────────
-router.put('/:id', authenticate, requireAdmin, async (req, res) => {
+router.patch('/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const { title, vibe, status } = req.body;
     const validStatus = ['draft', 'published', 'archived'];
@@ -99,7 +103,7 @@ router.put('/:id', authenticate, requireAdmin, async (req, res) => {
     if (!rows.length) return res.status(404).json({ error: 'Board not found' });
     res.json({ board: rows[0] });
   } catch (err) {
-    console.error('PUT /api/boards/:id failed:', err);
+    console.error('PATCH /api/boards/:id failed:', err);
     res.status(500).json({ error: 'Could not update board' });
   }
 });
@@ -127,28 +131,24 @@ router.delete('/:id', authenticate, requireAdmin, async (req, res) => {
 });
 
 // ── Admin: add a note to a board ────────────────────────────────
+// New items default to the front (highest position) so they're
+// visible/selectable immediately rather than buried at the back.
 router.post('/:id/items', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { note_id, position, height_pct, top_pct } = req.body;
+    const { note_id, x_pct, y_pct, width_pct } = req.body;
     if (!note_id) return res.status(400).json({ error: 'note_id is required' });
 
-    // Default new items to the end of the current sequence unless a
-    // position was explicitly given.
-    let resolvedPosition = position;
-    if (resolvedPosition === undefined || resolvedPosition === null) {
-      const { rows } = await pool.query(
-        `SELECT COALESCE(MAX(position), -1) + 1 AS next_position
-         FROM board_items WHERE board_id = $1`,
-        [req.params.id]
-      );
-      resolvedPosition = rows[0].next_position;
-    }
+    const { rows: posRows } = await pool.query(
+      `SELECT COALESCE(MAX(position), -1) + 1 AS next_position
+       FROM board_items WHERE board_id = $1`,
+      [req.params.id]
+    );
 
     const { rows } = await pool.query(
-      `INSERT INTO board_items (board_id, note_id, position, height_pct, top_pct)
-       VALUES ($1, $2, $3, COALESCE($4, 70), COALESCE($5, 50))
+      `INSERT INTO board_items (board_id, note_id, position, x_pct, y_pct, width_pct)
+       VALUES ($1, $2, $3, COALESCE($4, 10), COALESCE($5, 10), COALESCE($6, 20))
        RETURNING *`,
-      [req.params.id, note_id, resolvedPosition, height_pct, top_pct]
+      [req.params.id, note_id, posRows[0].next_position, x_pct, y_pct, width_pct]
     );
     res.status(201).json({ item: rows[0] });
   } catch (err) {
@@ -157,24 +157,62 @@ router.post('/:id/items', authenticate, requireAdmin, async (req, res) => {
   }
 });
 
-// ── Admin: update an item's placement (drag/resize) ─────────────
-router.put('/:id/items/:itemId', authenticate, requireAdmin, async (req, res) => {
+// ── Admin: update an item's placement (drag/resize/z-order) ─────
+router.patch('/:id/items/:itemId', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { position, height_pct, top_pct } = req.body;
+    const { position, x_pct, y_pct, width_pct } = req.body;
     const { rows } = await pool.query(
       `UPDATE board_items
        SET position = COALESCE($1, position),
-           height_pct = COALESCE($2, height_pct),
-           top_pct = COALESCE($3, top_pct)
-       WHERE id = $4 AND board_id = $5
+           x_pct = COALESCE($2, x_pct),
+           y_pct = COALESCE($3, y_pct),
+           width_pct = COALESCE($4, width_pct)
+       WHERE id = $5 AND board_id = $6
        RETURNING *`,
-      [position, height_pct, top_pct, req.params.itemId, req.params.id]
+      [position, x_pct, y_pct, width_pct, req.params.itemId, req.params.id]
     );
     if (!rows.length) return res.status(404).json({ error: 'Item not found' });
     res.json({ item: rows[0] });
   } catch (err) {
-    console.error('PUT /api/boards/:id/items/:itemId failed:', err);
+    console.error('PATCH /api/boards/:id/items/:itemId failed:', err);
     res.status(500).json({ error: 'Could not update item' });
+  }
+});
+
+// ── Admin: bring-to-front / send-to-back — reorders ALL items in
+// one call so position stays a clean dense sequence (0..n-1) rather
+// than drifting into gaps over repeated single-item nudges. ─────
+router.post('/:id/items/:itemId/reorder', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { direction } = req.body; // 'front' | 'back'
+    if (!['front', 'back'].includes(direction)) {
+      return res.status(400).json({ error: "direction must be 'front' or 'back'" });
+    }
+
+    const { rows: items } = await pool.query(
+      `SELECT id FROM board_items WHERE board_id = $1 ORDER BY position ASC`,
+      [req.params.id]
+    );
+    const ids = items.map(r => r.id);
+    const idx = ids.indexOf(parseInt(req.params.itemId, 10));
+    if (idx === -1) return res.status(404).json({ error: 'Item not found' });
+
+    ids.splice(idx, 1);
+    if (direction === 'front') ids.push(parseInt(req.params.itemId, 10));
+    else ids.unshift(parseInt(req.params.itemId, 10));
+
+    // Re-write position for every item as its new index — keeps the
+    // sequence dense and unambiguous after any number of reorders.
+    await Promise.all(
+      ids.map((id, position) =>
+        pool.query(`UPDATE board_items SET position = $1 WHERE id = $2`, [position, id])
+      )
+    );
+
+    res.json({ reordered: true });
+  } catch (err) {
+    console.error('POST /api/boards/:id/items/:itemId/reorder failed:', err);
+    res.status(500).json({ error: 'Could not reorder' });
   }
 });
 
@@ -205,7 +243,7 @@ router.get('/_home/config', authenticate, requireAdmin, async (req, res) => {
 });
 
 // ── Admin: set home source — 'feed' or a specific board ─────────
-router.put('/_home/config', authenticate, requireAdmin, async (req, res) => {
+router.patch('/_home/config', authenticate, requireAdmin, async (req, res) => {
   try {
     const { source, board_id } = req.body;
     if (!['feed', 'board'].includes(source)) {
@@ -224,16 +262,15 @@ router.put('/_home/config', authenticate, requireAdmin, async (req, res) => {
     );
     res.json({ config: rows[0] });
   } catch (err) {
-    console.error('PUT /api/boards/_home/config failed:', err);
+    console.error('PATCH /api/boards/_home/config failed:', err);
     res.status(500).json({ error: 'Could not update home config' });
   }
 });
 
 // ── PUBLIC: what the live homepage actually fetches ──────────────
-// Mirrors board-notes.js's public CORS pattern. Resolves home_config
-// and returns items in ONE consistent shape regardless of source, so
-// home.html's rendering code doesn't need to know or care which mode
-// it's in.
+// Two very different shapes depending on source — home.html branches
+// on `source` to pick a render path (existing flex marquee for
+// 'feed', new drifting-composed-frame for 'board').
 router.get('/_home/public', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   try {
@@ -241,12 +278,9 @@ router.get('/_home/public', async (req, res) => {
     const config = configResult.rows[0];
 
     if (!config || config.source === 'feed' || !config.board_id) {
-      // Today's behavior — raw published notes, no board placement data.
-      // height_pct/top_pct simply come back null; home.html already
-      // needs a fallback path for that (see CONFIG.itemHeightRatio).
       const { rows } = await pool.query(
         `SELECT id, type, headline, image_url, body, reference_title,
-                reference_url, pin, NULL::numeric AS height_pct, NULL::numeric AS top_pct
+                reference_url, pin
          FROM board_notes
          WHERE status = 'published'
          ORDER BY pin DESC, publish_date DESC`
@@ -254,18 +288,20 @@ router.get('/_home/public', async (req, res) => {
       return res.json({ source: 'feed', notes: rows });
     }
 
-    // Board source — items carry their authored placement.
+    // Board source — items carry free x/y/width placement.
+    // position DESC = highest (front) first, so the client can
+    // paint back-to-front simply by reversing once.
     const { rows } = await pool.query(
       `SELECT bn.id, bn.type, bn.headline, bn.image_url, bn.body,
-              bn.reference_title, bn.reference_url, bn.pin,
-              bi.height_pct, bi.top_pct
+              bn.reference_title, bn.reference_url,
+              bi.x_pct, bi.y_pct, bi.width_pct, bi.position
        FROM board_items bi
        JOIN board_notes bn ON bn.id = bi.note_id
        WHERE bi.board_id = $1
-       ORDER BY bi.position ASC`,
+       ORDER BY bi.position DESC`,
       [config.board_id]
     );
-    res.json({ source: 'board', board_id: config.board_id, notes: rows });
+    res.json({ source: 'board', board_id: config.board_id, items: rows });
   } catch (err) {
     console.error('GET /api/boards/_home/public failed:', err);
     res.status(500).json({ error: 'Could not load home feed' });
