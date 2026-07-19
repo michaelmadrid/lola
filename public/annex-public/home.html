@@ -124,6 +124,8 @@
     border-radius:2px;
     pointer-events:auto;
   }
+  /* Linked items are clickable <a> elements */
+  a.board-frame__item--linked{ cursor:pointer; }
   .board-frame__item img{
     width:100%;
     height:auto; /* natural aspect ratio — width_pct is the only authored dimension in the schema */
@@ -145,6 +147,9 @@
     background:rgba(0,0,0,0.4);
   }
   .board-frame__label{
+    /* --board-font controls the board stream's label type — set it in
+       :root at the top of this file (or in shell.css) to restyle. */
+    font-family:var(--board-font, "Helvetica Neue", Helvetica, Arial, sans-serif);
     font-size:12px;
     letter-spacing:0.04em;
     text-transform:uppercase;
@@ -379,6 +384,7 @@
         return {
           image: imgSrc(n.image_url),
           label: n.headline || '',
+          url: n.reference_url || '',
           x: toPct(n.x_pct) || 0,
           y: toPct(n.y_pct) || 0,
           w: toPct(n.width_pct) || 20
@@ -491,8 +497,19 @@
     // API returns items front-first (position DESC) — reverse so
     // the DOM paints back-to-front (later-appended = on top).
     items.slice().reverse().forEach(function(item){
-      var el = document.createElement('div');
-      el.className = 'board-frame__item';
+      // A linked item is an <a>, an unlinked one a plain <div> —
+      // otherwise identical. Absolute (http/https) links open in a
+      // new tab; relative links (internal) stay in the same tab.
+      var hasLink = !!item.url;
+      var el = document.createElement(hasLink ? 'a' : 'div');
+      el.className = 'board-frame__item' + (hasLink ? ' board-frame__item--linked' : '');
+      if (hasLink){
+        el.href = item.url;
+        if (/^https?:\/\//i.test(item.url)){
+          el.target = '_blank';
+          el.rel = 'noopener';
+        }
+      }
       el.style.left = item.x + '%';
       el.style.top = item.y + '%';
       el.style.width = item.w + '%';
@@ -504,13 +521,17 @@
       img.addEventListener('error', onImageSettled);
       el.appendChild(img);
 
-      var hover = document.createElement('div');
-      hover.className = 'board-frame__hover';
-      var label = document.createElement('span');
-      label.className = 'board-frame__label';
-      label.textContent = item.label || '';
-      hover.appendChild(label);
-      el.appendChild(hover);
+      // Hover dim + title only on linked items — an unlinked image
+      // has nowhere to go, so no affordance.
+      if (hasLink){
+        var hover = document.createElement('div');
+        hover.className = 'board-frame__hover';
+        var label = document.createElement('span');
+        label.className = 'board-frame__label';
+        label.textContent = item.label || '';
+        hover.appendChild(label);
+        el.appendChild(hover);
+      }
 
       if (CONFIG.pauseOnHover){
         el.addEventListener('pointerenter', function(e){
