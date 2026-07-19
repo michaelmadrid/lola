@@ -14,25 +14,27 @@
 <script>
   (function () {
 
-    /* ============================================================
-       Nav mode per ?layout= value — the single place to edit as
-       new layouts get added. Static pages without a ?layout=
-       (spot.html, note.html, home.html) just hardcode classes
-       directly on <body> instead — see home.html's <body> tag.
-       ============================================================ */
-    var NAV_MODE_BY_LAYOUT = {
-      wall:      { open: true,  horz: false  },
-      gazette:   { open: true,  horz: true },
-      shelf:     { open: false, horz: false },
-      catalogue: { open: true, horz: false }
+
+    var NAV_MODE = {
+      // static pages, matched via window.POSTO_PAGE
+      home:  { open: true,  horz: false },
+      spot:  { open: false, horz: false },
+      note:  { open: false, horz: false },
+
+      // spots.html layout variants, matched via ?layout=
+      'layout:wall':      { open: true,  horz: true  },
+      'layout:gazette':   { open: true,  horz: false },
+      'layout:shelf':     { open: false, horz: false },
+      'layout:catalogue': { open: false, horz: false }
     };
+    var DEFAULT_MODE = { open: false, horz: false };
 
     var layout = new URLSearchParams(location.search).get('layout');
-    var mode = NAV_MODE_BY_LAYOUT[layout];
-    if (mode) {
-      if (mode.open) document.body.classList.add('nav-open');
-      if (mode.horz) document.body.classList.add('nav-horz');
-    }
+    var key = layout ? ('layout:' + layout) : (window.POSTO_PAGE || null);
+    var mode = (key && NAV_MODE[key]) || DEFAULT_MODE;
+
+    document.body.classList.toggle('nav-open', mode.open);
+    document.body.classList.toggle('nav-horz', mode.horz);
   })();
 </script>
 
@@ -56,12 +58,5 @@
       if (!mark.contains(e.target)) mark.classList.remove('is-open');
     });
 
-    // Items not wired up yet — placeholder confirmation instead of a dead link.
-    mark.querySelectorAll('[data-soon]').forEach(function (el) {
-      el.addEventListener('click', function (e) {
-        e.preventDefault();
-        alert('SOON!');
-      });
-    });
   })();
 </script>
