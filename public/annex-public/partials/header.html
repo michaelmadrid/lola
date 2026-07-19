@@ -12,6 +12,31 @@
 </div>
 
 <script>
+  (function () {
+
+    /* ============================================================
+       Nav mode per ?layout= value — the single place to edit as
+       new layouts get added. Static pages without a ?layout=
+       (spot.html, note.html, home.html) just hardcode classes
+       directly on <body> instead — see home.html's <body> tag.
+       ============================================================ */
+    var NAV_MODE_BY_LAYOUT = {
+      wall:      { open: true,  horz: false  },
+      gazette:   { open: true,  horz: true },
+      shelf:     { open: false, horz: false },
+      catalogue: { open: true, horz: false }
+    };
+
+    var layout = new URLSearchParams(location.search).get('layout');
+    var mode = NAV_MODE_BY_LAYOUT[layout];
+    if (mode) {
+      if (mode.open) document.body.classList.add('nav-open');
+      if (mode.horz) document.body.classList.add('nav-horz');
+    }
+  })();
+</script>
+
+<script>
   /* Click/tap toggle — works identically on desktop and mobile.
      Hover (CSS only, in shell.css) still works as a bonus on
      desktop, but this is the reliable path everywhere. Runs once
