@@ -103,7 +103,56 @@
     pointer-events:none;
   }
 
-  /* Placeholder swatch used until real images exist */
+  /* ── Board-source composition — a fixed-aspect frame containing
+     freely-placed, possibly-overlapping items. The frame itself
+     behaves exactly like a .feed-item as far as the drift engine
+     is concerned (same track, same offset math); what's different
+     is what's INSIDE it. ─────────────────────────────────────── */
+  .board-frame{
+    position:relative;
+    flex-shrink:0;
+    height:var(--board-frame-h, 72vh);
+    aspect-ratio: var(--board-aspect, 16 / 9);
+    margin-right:28px;
+    overflow:hidden;
+    background:#eee;
+  }
+
+  .board-frame__item{
+    position:absolute;
+    overflow:hidden;
+    border-radius:2px;
+    pointer-events:auto;
+  }
+  .board-frame__item img{
+    width:100%;
+    height:auto; /* natural aspect ratio — width_pct is the only authored dimension in the schema */
+    display:block;
+    pointer-events:none;
+  }
+
+  .board-frame__hover{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0);
+    transition:background 200ms ease;
+    pointer-events:none;
+  }
+  .board-frame__item:hover .board-frame__hover{
+    background:rgba(0,0,0,0.4);
+  }
+  .board-frame__label{
+    font-size:12px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:#fff;
+    opacity:0;
+    transition:opacity 200ms ease;
+  }
+  .board-frame__item:hover .board-frame__label{ opacity:1; }
   .feed-item__placeholder{
     height:100%;
     width:auto;
@@ -242,13 +291,20 @@
     pauseOnHover:        true, // stop the drift while hovering a card (not empty stage space)
     hoverResumeDelayMs:   200, // pause held for this long after the cursor leaves a card
 
-    // Data source — board_notes public feed.
-    // NOT YET: swap notesEndpoint to '/api/boards/_home/public' only
-    // once boards.js is deployed, mounted in server.js, and the
-    // migration has run. Until then this MUST stay pointed here —
-    // the boards endpoint doesn't exist in production yet.
+    // Data source — resolves to either the raw feed or a published
+    // board depending on what's set in the admin (home_config).
+    // Backend confirmed deployed + migrated, safe to point here now.
     apiBase:       'https://studio.annex.site',
-    notesEndpoint: '/api/board-notes/public'
+    notesEndpoint: '/api/boards/_home/public',
+
+    // Board-source canvas — must match the aspect ratio used in
+    // admin-boards.js's editor canvas, or a composition will look
+    // different here than it did while being built. Height is
+    // viewport-relative like everything else (self-scaling), width
+    // follows from the aspect ratio.
+    canvasAspectRatio: 16 / 9,
+    canvasHeightRatio: 0.72,
+    canvasTileCount:   4   // copies tiled for a comfortable loop — bump if a sparse board loops too fast on wide screens
   };
 
   /* ============================================================
@@ -298,24 +354,32 @@
     return isNaN(n) ? null : n;
   }
 
-  // board_notes rows → feed items. Only rows with an image qualify
-  // for this horizontal, image-forward feed; text-only notes are
-  // left for wherever the notice-board view eventually lives.
-  // Pinned items sort first (feed source only — board source keeps
-  // its authored position order as-is).
-  function notesToFeedItems(notes, isBoardSource){
-    var list = notes.filter(function(n){ return !!n.image_url; });
-    if (!isBoardSource){
-      list = list.slice().sort(function(a, b){ return (b.pin ? 1 : 0) - (a.pin ? 1 : 0); });
-    }
-    return list.map(function(n){
-      return {
-        image: imgSrc(n.image_url),
-        label: n.headline || '',
-        heightPct: toPct(n.height_pct), // null → buildItem/applyItemPlacement fall back to CONFIG.itemHeightRatio
-        topPct: toPct(n.top_pct)        // null → falls back to 50 (centered), matching today's look
-      };
-    });
+  // board_notes rows → feed items (feed source only — board source
+  // is handled by boardItemsToCanvasItems below, an entirely
+  // separate render path). Only rows with an image qualify; pinned
+  // items sort first.
+  function notesToFeedItems(notes){
+    return notes
+      .filter(function(n){ return !!n.image_url; })
+      .sort(function(a, b){ return (b.pin ? 1 : 0) - (a.pin ? 1 : 0); })
+      .map(function(n){
+        return { image: imgSrc(n.image_url), label: n.headline || '' };
+      });
+  }
+
+  // board_items rows (x_pct/y_pct/width_pct) → canvas placement data.
+  function boardItemsToCanvasItems(items){
+    return items
+      .filter(function(n){ return !!n.image_url; })
+      .map(function(n){
+        return {
+          image: imgSrc(n.image_url),
+          label: n.headline || '',
+          x: toPct(n.x_pct) || 0,
+          y: toPct(n.y_pct) || 0,
+          w: toPct(n.width_pct) || 20
+        };
+      });
   }
 
   function buildItem(data){
@@ -390,34 +454,116 @@
     applyItemPlacement();
   }
 
-  /* ── Per-item viewport-relative placement ────────────────────
-     Same math the old single global --feed-item-h var used, just
-     run per item now. heightPct/topPct come from board data when
-     present; PLACEHOLDER_ITEMS and plain feed notes (no board)
-     don't have them, so both fall back to today's look: global
-     CONFIG ratio, vertically centered. */
+  /* ── Feed-mode placement — global ratio, centered. Board mode
+     uses applyBoardFrameSize() below instead; the two never mix
+     since they're on entirely separate render paths. ──────────── */
   function applyItemPlacement(){
     var vh = window.innerHeight;
+    var itemHeight = Math.round(vh * CONFIG.itemHeightRatio);
     renderedItems.forEach(function(entry){
-      var heightPct = entry.data.heightPct != null ? entry.data.heightPct : CONFIG.itemHeightRatio * 100;
-      var topPct = entry.data.topPct != null ? entry.data.topPct : 50;
-
-      var itemHeight = Math.round(vh * (heightPct / 100));
-      var leftover = vh - itemHeight;
-      var itemTop = Math.round(leftover * (topPct / 100));
-
       entry.el.style.height = itemHeight + 'px';
-      entry.el.style.marginTop = itemTop + 'px';
+      entry.el.style.marginTop = Math.round((vh - itemHeight) / 2) + 'px';
     });
   }
+
+  /* ============================================================
+     Board mode — a fixed-aspect frame with freely-placed,
+     possibly-overlapping items, tiled + drifted as one rigid
+     composition ("moving the glass" over a fixed photograph —
+     items never move relative to each other, only the whole
+     assembly pans). Reuses the SAME drift engine as feed mode
+     below; only what fills the track differs.
+     ============================================================ */
+  function buildBoardFrame(items){
+    var frame = document.createElement('div');
+    frame.className = 'board-frame';
+    frame.style.setProperty('--board-aspect', CONFIG.canvasAspectRatio);
+
+    // API returns items front-first (position DESC) — reverse so
+    // the DOM paints back-to-front (later-appended = on top).
+    items.slice().reverse().forEach(function(item){
+      var el = document.createElement('div');
+      el.className = 'board-frame__item';
+      el.style.left = item.x + '%';
+      el.style.top = item.y + '%';
+      el.style.width = item.w + '%';
+
+      var img = document.createElement('img');
+      img.src = item.image;
+      img.alt = item.label || '';
+      img.addEventListener('load', onImageSettled);
+      img.addEventListener('error', onImageSettled);
+      el.appendChild(img);
+
+      var hover = document.createElement('div');
+      hover.className = 'board-frame__hover';
+      var label = document.createElement('span');
+      label.className = 'board-frame__label';
+      label.textContent = item.label || '';
+      hover.appendChild(label);
+      el.appendChild(hover);
+
+      if (CONFIG.pauseOnHover){
+        el.addEventListener('pointerenter', function(e){
+          if (e.pointerType === 'touch') return;
+          isHovering = true;
+        });
+        el.addEventListener('pointerleave', function(e){
+          if (e.pointerType === 'touch') return;
+          isHovering = false;
+          manualUntil = performance.now() + CONFIG.hoverResumeDelayMs;
+        });
+      }
+
+      frame.appendChild(el);
+    });
+    return frame;
+  }
+
+  function applyBoardFrameSize(){
+    var vh = window.innerHeight;
+    var h = Math.round(vh * CONFIG.canvasHeightRatio);
+    var marginTop = Math.round((vh - h) / 2);
+    document.querySelectorAll('.board-frame').forEach(function(frame){
+      frame.style.height = h + 'px';
+      frame.style.marginTop = marginTop + 'px';
+    });
+  }
+
+  // Same composition tiled canvasTileCount×2 (still doubled for the
+  // seamless wrap, same convention as feed mode) — every tile is
+  // identical, so the loop reads as one continuous photograph.
+  function renderBoardTrack(items){
+    track.innerHTML = '';
+    var totalTiles = CONFIG.canvasTileCount * 2;
+    for (var i = 0; i < totalTiles; i++){
+      track.appendChild(buildBoardFrame(items));
+    }
+    applyBoardFrameSize();
+  }
+
+  var currentMode = 'feed'; // 'feed' | 'board' — read by onResize below to pick the right recompute
 
   function loadFeed(){
     var url = CONFIG.apiBase + CONFIG.notesEndpoint;
     fetch(url)
       .then(function(r){ return r.json(); })
       .then(function(data){
-        var isBoardSource = data.source === 'board';
-        var items = notesToFeedItems(data.notes || [], isBoardSource);
+        if (data.source === 'board'){
+          var canvasItems = boardItemsToCanvasItems(data.items || []);
+          if (!canvasItems.length){
+            console.warn('[POSTO] Board has no items with images — showing placeholders.');
+            currentMode = 'feed';
+            renderTrack(PLACEHOLDER_ITEMS);
+            return;
+          }
+          currentMode = 'board';
+          renderBoardTrack(canvasItems);
+          return;
+        }
+
+        currentMode = 'feed';
+        var items = notesToFeedItems(data.notes || []);
         if (!items.length){
           console.warn('[POSTO] No published notes with images — showing placeholders.');
           renderTrack(PLACEHOLDER_ITEMS);
@@ -427,6 +573,7 @@
       })
       .catch(function(err){
         console.warn('[POSTO] Could not load notes feed — showing placeholders.', err);
+        currentMode = 'feed';
         renderTrack(PLACEHOLDER_ITEMS);
       });
   }
@@ -461,7 +608,8 @@
     if (resizePending) return;
     resizePending = true;
     requestAnimationFrame(function(){
-      applyItemPlacement();
+      if (currentMode === 'board') applyBoardFrameSize();
+      else applyItemPlacement();
       requestAnimationFrame(function(){
         measureLoopWidth();
         resizePending = false;
