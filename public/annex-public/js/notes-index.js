@@ -16,6 +16,7 @@
 
   const params = new URLSearchParams(location.search);
   const layout = (params.get('layout') || 'grid').toLowerCase().trim();
+  const cat = (params.get('cat') || '').toLowerCase().trim();
 
   const mount = document.getElementById('notes-index');
   if (!mount) return;
@@ -71,8 +72,12 @@
   fetch(API)
     .then(r => r.json())
     .then(data => {
+      let notes = data.notes || [];
+      // ?cat=slug — filter to one category (client-side; the grid
+      // endpoint returns category per note).
+      if (cat) notes = notes.filter(n => (n.category || '').toLowerCase() === cat);
       const render = LAYOUTS[layout] || renderGrid;
-      render(data.notes || []);
+      render(notes);
     })
     .catch(err => {
       console.error('[notes] Could not load notes', err);
