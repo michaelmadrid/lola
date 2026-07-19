@@ -190,27 +190,45 @@
 
   /* ── TEMPORARY test toolbar (top-right) — two links to try the
      two views. Replace with real icon(s) once the behavior's settled. */
-  .test-toolbar{
+  /* ── View cycle glyph (bottom-right) ─────────────────────────
+     One quiet mark that cycles Board → Flat-plan → Colophon →
+     Board. The glyph morphs to show the CURRENT view; on desktop
+     hover it whispers the NEXT view's name. Only shown for boards. */
+  .view-cycle{
     position:fixed;
-    top:0; right:0;
+    bottom:0; right:0;
     z-index:200;
     display:flex;
-    gap:14px;
+    align-items:center;
+    gap:8px;
     padding:22px 24px;
-    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size:13px;
-  }
-  .test-toolbar button{
     background:none;
     border:none;
-    padding:0;
     cursor:pointer;
-    font:inherit;
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
     color:var(--ink);
-    text-decoration:underline;
-    text-underline-offset:3px;
+    -webkit-tap-highlight-color:transparent;
   }
-  .test-toolbar button.is-active{ font-weight:700; }
+  .view-cycle__glyph{
+    font-size:15px;
+    line-height:1;
+    letter-spacing:0.05em;
+  }
+  .view-cycle__next{
+    font-size:12px;
+    opacity:0;
+    transform:translateX(4px);
+    transition:opacity 140ms ease, transform 140ms ease;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  /* Desktop only: reveal the next-state hint on hover. */
+  @media (hover:hover){
+    .view-cycle:hover .view-cycle__next{
+      opacity:0.5;
+      transform:translateX(0);
+    }
+  }
 
   /* ── Colophon ────────────────────────────────────────────────
      A small, tight, centered reading column — ABC Diatype, dense,
@@ -357,12 +375,12 @@
        note.html. Edit labels/links there, not here. -->
   <div data-include="header"></div>
 
-  <!-- TEMPORARY test toolbar — two links to try the alternate board
-       views. Flat-plan works now; colophon is the next build. -->
-  <div class="test-toolbar" id="testToolbar" hidden>
-    <button type="button" id="flatplanToggle">Flat-plan</button>
-    <button type="button" id="colophonToggle">Colophon</button>
-  </div>
+  <!-- View cycle — one glyph, cycles Board → Flat-plan → Colophon.
+       Only revealed when home is showing a board. -->
+  <button class="view-cycle" id="viewCycle" hidden aria-label="Change view">
+    <span class="view-cycle__glyph" id="viewCycleGlyph">▦</span>
+    <span class="view-cycle__next" id="viewCycleNext"></span>
+  </button>
 
   <!-- Colophon — quiet printed index card, populated + toggled by JS -->
   <div id="board-colophon" aria-hidden="true"></div>
@@ -737,8 +755,8 @@
             vibe: data.vibe || '',
             items: canvasItems
           };
-          var toolbar = document.getElementById('testToolbar');
-          if (toolbar) toolbar.hidden = false; // flat-plan/colophon only exist for boards
+          var cycleBtn = document.getElementById('viewCycle');
+          if (cycleBtn) cycleBtn.hidden = false; // view cycle only exists for boards
           return;
         }
 
@@ -908,17 +926,6 @@
      hovering a card stops the drift; hovering empty stage space
      does not. Toggle off entirely via CONFIG.pauseOnHover. */
 
-  /* ── Flat-plan toggle (temporary test button) ────────────────
-     Adds/removes .is-flatplan on the feed stage — pure CSS does the
-     image→wireframe swap. Drift keeps running underneath. */
-  var flatplanBtn = document.getElementById('flatplanToggle');
-  if (flatplanBtn){
-    flatplanBtn.addEventListener('click', function(){
-      var on = stageFeed.classList.toggle('is-flatplan');
-      flatplanBtn.classList.toggle('is-active', on);
-    });
-  }
-
   // Colophon — quiet printed index card. Built from colophonData
   // (captured at board load) and toggled over the drifting feed.
   var colophonData = null;
@@ -966,20 +973,56 @@
     return html;
   }
 
-  var colophonBtn = document.getElementById('colophonToggle');
+  /* ── View cycle: Board → Flat-plan → Colophon → Board ────────
+     One glyph. Applies the right state (flat-plan class on the feed,
+     or the colophon overlay), morphs the glyph to the CURRENT view,
+     and sets the hover hint to the NEXT view. */
+  var VIEWS = [
+    { key:'board',    glyph:'▦', next:'Plan'     },
+    { key:'flatplan', glyph:'▢', next:'Index'    },
+    { key:'colophon', glyph:'☰', next:'Board'    }
+  ];
+  var viewIndex = 0;
+
+  var cycleBtn   = document.getElementById('viewCycle');
+  var cycleGlyph = document.getElementById('viewCycleGlyph');
+  var cycleNext  = document.getElementById('viewCycleNext');
   var colophonEl = document.getElementById('board-colophon');
-  if (colophonBtn && colophonEl){
-    colophonBtn.addEventListener('click', function(){
-      var opening = !colophonEl.classList.contains('is-open');
-      if (opening){
+
+  function applyView(){
+    var view = VIEWS[viewIndex].key;
+
+    // Flat-plan = a class on the feed stage (pure CSS wireframe).
+    stageFeed.classList.toggle('is-flatplan', view === 'flatplan');
+
+    // Colophon = the overlay. Build fresh each time it opens.
+    if (colophonEl){
+      if (view === 'colophon'){
         colophonEl.innerHTML = buildColophon();
         colophonEl.classList.add('is-open');
         colophonEl.setAttribute('aria-hidden', 'false');
-        colophonBtn.classList.add('is-active');
       } else {
         colophonEl.classList.remove('is-open');
         colophonEl.setAttribute('aria-hidden', 'true');
-        colophonBtn.classList.remove('is-active');
+      }
+    }
+
+    // Morph the glyph to the current view; hint shows what's next.
+    if (cycleGlyph) cycleGlyph.textContent = VIEWS[viewIndex].glyph;
+    if (cycleNext)  cycleNext.textContent = '→ ' + VIEWS[viewIndex].next;
+  }
+
+  if (cycleBtn){
+    cycleBtn.addEventListener('click', function(){
+      viewIndex = (viewIndex + 1) % VIEWS.length;
+      applyView();
+    });
+    // Desktop accelerator: spacebar cycles too (ignored while typing).
+    document.addEventListener('keydown', function(e){
+      if (e.code === 'Space' && !cycleBtn.hidden && document.activeElement === document.body){
+        e.preventDefault();
+        viewIndex = (viewIndex + 1) % VIEWS.length;
+        applyView();
       }
     });
   }
