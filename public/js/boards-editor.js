@@ -342,7 +342,7 @@
   });
 
   function openNotePicker(){
-    document.getElementById('notePicker').hidden = false;
+    document.getElementById('notePicker').classList.add('is-open');
     document.getElementById('notePickerSearch').value = '';
     api.get('/api/board-notes/public').then(function(data){
       pickerNotes = (data.notes || []).filter(function(n){ return !!n.image_url; });
@@ -350,7 +350,7 @@
     }).catch(function(err){ console.error('Could not load notes', err); });
   }
   function closeNotePicker(){
-    document.getElementById('notePicker').hidden = true;
+    document.getElementById('notePicker').classList.remove('is-open');
   }
   function filterNotes(q){
     q = (q || '').trim().toLowerCase();
