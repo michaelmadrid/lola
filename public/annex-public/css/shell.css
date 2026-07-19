@@ -144,9 +144,9 @@ img { display: block; max-width: 100%; height: auto; }
   padding: var(--logo-pad-y) var(--logo-pad-x);
 }
 
-.posto-mark__word {
+.posto-mark__word{
   display: inline-block;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "ABC Diatype", Helvetica, Arial, sans-serif;
   font-weight: 600;
   font-size: 16px;
   letter-spacing: 0;
@@ -179,6 +179,22 @@ img { display: block; max-width: 100%; height: auto; }
   transition: opacity 70ms ease, transform 70ms ease;
 }
 
+
+/* OPEN NAV COMMAND — body.nav-open forces the subnav visible
+   regardless of hover/click state. (Was missing pointer-events:auto
+   below, so the subnav was visible but unclickable when this was
+   the only thing making it open — fixed.) */
+body.nav-open .posto-mark__word{
+  background-color: #000;
+  color: #fff;
+}
+body.nav-open .posto-subnav {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+
 .posto-mark:hover .posto-subnav,
 .posto-mark:focus-within .posto-subnav,
 .posto-mark.is-open .posto-subnav {
@@ -188,7 +204,7 @@ img { display: block; max-width: 100%; height: auto; }
 }
 
 .posto-subnav__item {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "ABC Diatype", Helvetica, Arial, sans-serif;
   display: block;
   font-size: 16px;
   font-weight: 500;
@@ -208,57 +224,35 @@ img { display: block; max-width: 100%; height: auto; }
   color: #000;
 }
 
+/* HORIZONTAL LAYOUT COMMAND — body.nav-horz lays the same subnav
+   out as a row instead of a stacked column. Independent of
+   body.nav-open — combine both to test open + horizontal together,
+   like on iPad. Wraps if it runs out of width rather than
+   overflowing off-screen. */
+body.nav-horz .posto-subnav {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+body.nav-horz .posto-subnav__item {
+  margin-bottom: 0;
+  margin-right: 2px;
+}
+body.nav-horz .posto-subnav__item:last-child {
+  margin-right: 0;
+}
+
 /* Partial placeholder before injection — position:fixed content
    never occupies document flow, so no space-reservation needed
    here (unlike the old 36px .annex-bar it replaced). */
 [data-include="header"] { display: block; }
 [data-include="footer"] { display: block; min-height: 80px; }
 
-/* ── Per-section nav overrides ──────────────────────────────
-   The header partial itself never changes — pages opt in via a
-   body class (same convention as .wall-mode below), and these
-   rules key off it. Add more blocks like this per layout/page
-   as needed; never fork partials/header.html itself. */
 
-/* Gazette layout (dense multi-column text index): the tiny hover
-   trigger is easy to lose against similar-looking words, so the
-   subnav starts pre-opened. Pure CSS — no JS flag needed, since
-   .posto-mark is always a descendant of <body>. */
-body.gazette-mode .posto-subnavX {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
 
-/* MAKE SUBNAV BLACK BACKGROUND */
-body.gazette-mode .posto-mark__word, 
-body.wall-mode .posto-mark__word {
-  background-color: #000;
-  color: #fff;
-}
-/* Content itself also needs room to clear the pre-opened nav stack —
-   same body-class hook, just targeting layout instead of the nav. */
-body.gazette-mode .index-flow {
-  padding-top: 60px;
-}
+
 
 #spots-index{
   padding-top:80px;
-}
-
-/* ── Legacy centered masthead (kept for homepage if needed) ── */
-.annex-head {
-  text-align: center;
-  padding: var(--space-7) 0 var(--space-6);
-  margin-bottom: var(--space-6);
-}
-.annex-logo {
-  font-family: var(--logosans);
-  font-size: var(--logosize);
-  font-weight: bold;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--ink);
 }
 
 /* ── 3-col grid (3 / 6 / 3) ────────────────────────────── */
