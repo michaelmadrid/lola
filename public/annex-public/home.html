@@ -192,15 +192,13 @@
      two views. Replace with real icon(s) once the behavior's settled. */
   /* ── View cycle glyph (bottom-right) ─────────────────────────
      One quiet mark that cycles Board → Flat-plan → Colophon →
-     Board. The glyph morphs to show the CURRENT view; on desktop
-     hover it whispers the NEXT view's name. Only shown for boards. */
+     Board. The glyph shows the view you'll go to NEXT. Boards only. */
   .view-cycle{
     position:fixed;
     bottom:0; right:0;
     z-index:200;
     display:flex;
     align-items:center;
-    gap:8px;
     padding:22px 24px;
     background:none;
     border:none;
@@ -213,21 +211,6 @@
     font-size:15px;
     line-height:1;
     letter-spacing:0.05em;
-  }
-  .view-cycle__next{
-    font-size:12px;
-    opacity:0;
-    transform:translateX(4px);
-    transition:opacity 140ms ease, transform 140ms ease;
-    white-space:nowrap;
-    pointer-events:none;
-  }
-  /* Desktop only: reveal the next-state hint on hover. */
-  @media (hover:hover){
-    .view-cycle:hover .view-cycle__next{
-      opacity:0.5;
-      transform:translateX(0);
-    }
   }
 
   /* ── Colophon ────────────────────────────────────────────────
@@ -375,11 +358,10 @@
        note.html. Edit labels/links there, not here. -->
   <div data-include="header"></div>
 
-  <!-- View cycle — one glyph, cycles Board → Flat-plan → Colophon.
-       Only revealed when home is showing a board. -->
+  <!-- View cycle — one glyph showing the NEXT view. Cycles
+       Board → Flat-plan → Colophon → Board. Boards only. -->
   <button class="view-cycle" id="viewCycle" hidden aria-label="Change view">
-    <span class="view-cycle__glyph" id="viewCycleGlyph">▦</span>
-    <span class="view-cycle__next" id="viewCycleNext"></span>
+    <span class="view-cycle__glyph" id="viewCycleGlyph">▢</span>
   </button>
 
   <!-- Colophon — quiet printed index card, populated + toggled by JS -->
@@ -974,28 +956,24 @@
   }
 
   /* ── View cycle: Board → Flat-plan → Colophon → Board ────────
-     One glyph. Applies the right state (flat-plan class on the feed,
-     or the colophon overlay), morphs the glyph to the CURRENT view,
-     and sets the hover hint to the NEXT view. */
+     One glyph. It shows the view you'll go to NEXT (like a play
+     button advertises the action, not the current state). Tapping
+     applies that view and advances the glyph to the following one. */
   var VIEWS = [
-    { key:'board',    glyph:'▦', next:'Plan'     },
-    { key:'flatplan', glyph:'▢', next:'Index'    },
-    { key:'colophon', glyph:'☰', next:'Board'    }
+    { key:'board',    glyph:'▦' }, // ▦ = "go to board"
+    { key:'flatplan', glyph:'▢' }, // ▢ = "go to flat-plan"
+    { key:'colophon', glyph:'☰' }  // ☰ = "go to colophon"
   ];
-  var viewIndex = 0;
+  var viewIndex = 0; // currently showing the board (VIEWS[0])
 
   var cycleBtn   = document.getElementById('viewCycle');
   var cycleGlyph = document.getElementById('viewCycleGlyph');
-  var cycleNext  = document.getElementById('viewCycleNext');
   var colophonEl = document.getElementById('board-colophon');
 
   function applyView(){
     var view = VIEWS[viewIndex].key;
-
-    // Flat-plan = a class on the feed stage (pure CSS wireframe).
     stageFeed.classList.toggle('is-flatplan', view === 'flatplan');
 
-    // Colophon = the overlay. Build fresh each time it opens.
     if (colophonEl){
       if (view === 'colophon'){
         colophonEl.innerHTML = buildColophon();
@@ -1007,22 +985,24 @@
       }
     }
 
-    // Morph the glyph to the current view; hint shows what's next.
-    if (cycleGlyph) cycleGlyph.textContent = VIEWS[viewIndex].glyph;
-    if (cycleNext)  cycleNext.textContent = '→ ' + VIEWS[viewIndex].next;
+    // Glyph advertises the NEXT view in the cycle.
+    var nextIndex = (viewIndex + 1) % VIEWS.length;
+    if (cycleGlyph) cycleGlyph.textContent = VIEWS[nextIndex].glyph;
+  }
+
+  function cycle(){
+    viewIndex = (viewIndex + 1) % VIEWS.length;
+    applyView();
   }
 
   if (cycleBtn){
-    cycleBtn.addEventListener('click', function(){
-      viewIndex = (viewIndex + 1) % VIEWS.length;
-      applyView();
-    });
-    // Desktop accelerator: spacebar cycles too (ignored while typing).
+    // Set the initial glyph to whatever comes after "board".
+    applyView();
+    cycleBtn.addEventListener('click', cycle);
     document.addEventListener('keydown', function(e){
       if (e.code === 'Space' && !cycleBtn.hidden && document.activeElement === document.body){
         e.preventDefault();
-        viewIndex = (viewIndex + 1) % VIEWS.length;
-        applyView();
+        cycle();
       }
     });
   }
