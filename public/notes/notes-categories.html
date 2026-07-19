@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>try{if(localStorage.getItem("lola.theme")==="dark"){document.documentElement.classList.add("dark");}}catch(e){}</script>
+  <title>Note Categories · Admin — annex</title>
+  <link rel="stylesheet" href="/css/shell.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/spots.css">
+</head>
+<body>
+
+<main class="page page-admin">
+
+  <header class="admin-head">
+    <div>
+      <div class="admin-head__breadcrumb">Admin / Note Categories</div>
+      <h1 class="admin-head__title">Note Categories</h1>
+    </div>
+    <button class="btn" id="add-cat-btn">+ Add category</button>
+  </header>
+
+  <p class="admin-intro">The notes taxonomy (Shelf, on-the-desk, …). Favorites pin to the top of pickers. Deactivating a category hides it from pickers but never changes notes already using it — reactivate any time.</p>
+
+  <div class="admin-table">
+    <div class="admin-table__head cats-head">
+      <span></span>
+      <span>Label</span>
+      <span>Slug</span>
+      <span>Favorite</span>
+      <span>Status</span>
+      <span>Actions</span>
+    </div>
+    <div id="cats-list"><div class="list-empty">Loading…</div></div>
+  </div>
+
+  <div class="cat-reassign">
+    <h2 class="cat-reassign__title">Bulk reassign notes</h2>
+    <p class="cat-reassign__hint">Move every note from one category slug to another (e.g. clean up a legacy <code>make</code> → <code>filmlab</code>). For splitting one category across several, edit notes individually in Notes instead.</p>
+    <div class="cat-reassign__row">
+      <input type="text" class="spot-fs__input" id="reassign-from" placeholder="from slug (e.g. make)">
+      <span>→</span>
+      <input type="text" class="spot-fs__input" id="reassign-to" placeholder="to slug (e.g. filmlab)">
+      <button class="btn btn--small" id="reassign-btn" type="button">Move notes</button>
+    </div>
+    <p class="cat-reassign__result" id="reassign-result"></p>
+  </div>
+
+</main>
+
+<!-- Editor overlay -->
+<div class="modal spot-fs" id="cat-editor">
+  <div class="modal__head spot-fs__head">
+    <button class="btn-close-circle" id="cat-editor-close" aria-label="Close" type="button">×</button>
+    <h3 class="spot-fs__title" id="cat-editor-title">Add category</h3>
+  </div>
+  <div class="modal__body">
+    <div class="modal__body__inner spot-fs__inner">
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="cat-label">Label</label>
+        <input type="text" class="spot-fs__input" id="cat-label" placeholder="e.g. Shelf">
+      </div>
+
+      <div class="spot-fs__field" id="cat-slug-field">
+        <label class="spot-fs__label" for="cat-slug">Slug</label>
+        <input type="text" class="spot-fs__input" id="cat-slug" placeholder="shelf">
+        <p class="spot-fs__hint">Lowercase, no spaces. Changing this moves all spots on the old slug to the new one automatically.</p>
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Favorite</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="cat-fav-off" data-active="true">Normal</button>
+          <button type="button" class="spot-fs__been-pill" id="cat-fav-on" data-active="false">Pinned to top</button>
+        </div>
+      </div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label" for="cat-sort">Sort order</label>
+        <input type="number" class="spot-fs__input" id="cat-sort" placeholder="100" style="max-width:120px">
+        <p class="spot-fs__hint">Lower numbers appear first (within favorites / non-favorites).</p>
+      </div>
+
+      <div class="spot-fs__field" id="cat-active-field" hidden>
+        <label class="spot-fs__label">Status</label>
+        <div class="spot-fs__been-row">
+          <button type="button" class="spot-fs__been-pill" id="cat-active-on" data-active="true">Active</button>
+          <button type="button" class="spot-fs__been-pill" id="cat-active-off" data-active="false">Inactive</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="modal__foot spot-fs__foot">
+    <span style="flex:1"></span>
+    <button class="btn" id="cat-save">Save</button>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/admin-shell.js"></script>
+<script src="/js/admin-note-categories.js"></script>
+</body>
+</html>
