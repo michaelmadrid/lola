@@ -21,7 +21,7 @@
   var isPreviewMode = false;
   var driftOffset = 0;
   var driftRunning = false;
-  var FRAME_WIDTH = 800 + 40;
+  var frameLoopWidth = 840; // measured dynamically in renderPreview from the real rendered frame
 
   var driftTrack   = document.getElementById('driftTrack');
   var itemList     = document.getElementById('itemList');
@@ -227,7 +227,7 @@
     });
 
     driftTrack.innerHTML = '';
-    driftTrack.style.transform = 'translateY(-50%)';
+    driftTrack.style.transform = 'translateX(0)';
     var frame = buildFrameEl(true);
     driftTrack.appendChild(frame);
     applyPlacementTo(frame);
@@ -283,12 +283,16 @@
 
   function renderPreview(){
     driftTrack.innerHTML = '';
-    driftTrack.style.transform = 'translateY(-50%)';
+    driftTrack.style.transform = 'translateX(0)';
     for (var i = 0; i < 4; i++){
       var frame = buildFrameEl(false);
       driftTrack.appendChild(frame);
       applyPlacementTo(frame);
     }
+    // Measure the real rendered frame (incl. its right margin) so the
+    // loop wraps correctly regardless of the now-dynamic frame size.
+    var firstFrame = driftTrack.querySelector('.boards-canvas-frame');
+    frameLoopWidth = firstFrame ? (firstFrame.getBoundingClientRect().width + 40) : 840;
     driftOffset = 0;
     driftRunning = true;
     requestAnimationFrame(tickDrift);
@@ -297,8 +301,8 @@
   function tickDrift(){
     if (!driftRunning) return;
     driftOffset += 0.6;
-    if (driftOffset >= FRAME_WIDTH) driftOffset -= FRAME_WIDTH;
-    driftTrack.style.transform = 'translateY(-50%) translateX(' + (-driftOffset) + 'px)';
+    if (driftOffset >= frameLoopWidth) driftOffset -= frameLoopWidth;
+    driftTrack.style.transform = 'translateX(' + (-driftOffset) + 'px)';
     requestAnimationFrame(tickDrift);
   }
 
