@@ -242,12 +242,13 @@
     pauseOnHover:        true, // stop the drift while hovering a card (not empty stage space)
     hoverResumeDelayMs:   200, // pause held for this long after the cursor leaves a card
 
-    // Data source — resolves to either the raw feed or a published
-    // board depending on what's set in the admin (home_config).
-    // Response shape is identical either way — notes just carry
-    // height_pct/top_pct when the source is a board, null otherwise.
+    // Data source — board_notes public feed.
+    // NOT YET: swap notesEndpoint to '/api/boards/_home/public' only
+    // once boards.js is deployed, mounted in server.js, and the
+    // migration has run. Until then this MUST stay pointed here —
+    // the boards endpoint doesn't exist in production yet.
     apiBase:       'https://studio.annex.site',
-    notesEndpoint: '/api/boards/_home/public'
+    notesEndpoint: '/api/board-notes/public'
   };
 
   /* ============================================================
