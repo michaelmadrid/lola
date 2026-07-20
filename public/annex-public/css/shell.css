@@ -454,7 +454,7 @@ a.notice-text:hover {
 }
 
 /* ── Footer ─────────────────────────────────────────────── */
-.annex-foot {
+.posto-foot {
   /* border-top: 1px solid var(--rule); */
   padding: var(--space-5) 0;
   margin-top: var(--space-8);
@@ -462,13 +462,16 @@ a.notice-text:hover {
   justify-content: space-between;
   align-items: baseline;
 }
-#annex-info{
+#posto-info{
   font-family: var(--sans);
   font-size: var(--text-small);
   text-align: center;
   text-wrap: pretty;
   max-width:80%;
   margin:0 auto;
+}
+#posto-info a:hover{
+  text-decoration: underline;
 }
 #bioreveal{
   display: none;
