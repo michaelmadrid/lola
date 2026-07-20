@@ -787,6 +787,7 @@ a.notice-text:hover {
   max-width: 640px;
   margin: 0 auto;
   padding: var(--space-6) 0 var(--space-8);
+  margin-top:150px;
 }
 .spot-detail__name {
   font-family: var(--serif);
