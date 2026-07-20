@@ -168,6 +168,18 @@
       <div class="spot-fs__divider"></div>
 
       <div class="spot-fs__field">
+        <label class="spot-fs__label">Related spots</label>
+        <div class="link-picker" id="note-links">
+          <div class="link-picker__chips" id="note-links-chips"></div>
+          <div class="link-picker__search">
+            <input type="text" class="spot-fs__input" id="note-links-search" placeholder="Search spots by name or city…" autocomplete="off">
+            <div class="link-picker__results" id="note-links-results" hidden></div>
+          </div>
+        </div>
+        <p class="spot-fs__hint">Link this note to related spots (e.g. shops that carry it). Saved immediately.</p>
+      </div>
+
+      <div class="spot-fs__field">
         <label class="spot-fs__label">Pin</label>
         <div class="spot-fs__been-row">
           <button type="button" class="spot-fs__been-pill" id="note-pin-off" data-active="true">Normal</button>

@@ -86,6 +86,9 @@
     }
 
     listEl.innerHTML = rows.map(n => {
+      const linkTag = (n.link_count && n.link_count > 0)
+        ? ` · <span class="spot-card__links" title="${n.link_count} linked spot${n.link_count > 1 ? 's' : ''}">⇄ ${n.link_count}</span>`
+        : '';
       const meta = (TYPE_LABELS[n.type] || n.type) + ' · ' + n.status;
       const thumb = n.image_url
         ? `<div class="spot-card__thumb"><img src="${esc(n.image_url)}" alt=""></div>`
@@ -95,7 +98,7 @@
         ${thumb}
         <div class="spot-card__body">
           <span class="spot-card__name">${n.pin ? '📌 ' : ''}${esc(n.headline)}</span>
-          <span class="spot-card__meta">${esc(meta)}</span>
+          <span class="spot-card__meta">${esc(meta)}${linkTag}</span>
         </div>
         <span class="spot-card__when">${esc(fmtDate(n.publish_date))}</span>
       </div>`;
@@ -328,6 +331,103 @@
   const richWrap = document.getElementById('note-body-rich');
   const permalinkLink = document.getElementById('note-permalink');
 
+  // ── Related spots (link picker) ─────────────────────────────
+  // Links are saved immediately (not on note-save), so the note must
+  // already exist. For a brand-new unsaved note the picker is disabled
+  // until the first save gives it an id.
+  const linkChips = document.getElementById('note-links-chips');
+  const linkSearch = document.getElementById('note-links-search');
+  const linkResults = document.getElementById('note-links-results');
+  let linkedSpots = []; // [{id, place_name, city}]
+
+  function drawChips() {
+    if (!linkChips) return;
+    if (!editingId) {
+      linkChips.innerHTML = '<span class="link-picker__empty">Save the note first to link spots.</span>';
+      if (linkSearch) linkSearch.disabled = true;
+      return;
+    }
+    if (linkSearch) linkSearch.disabled = false;
+    if (!linkedSpots.length) {
+      linkChips.innerHTML = '<span class="link-picker__empty">No linked spots yet.</span>';
+      return;
+    }
+    linkChips.innerHTML = linkedSpots.map(function (s) {
+      const label = esc(s.place_name + (s.city ? ' · ' + s.city : ''));
+      return '<span class="link-chip" data-id="' + s.id + '">' + label +
+        '<button type="button" class="link-chip__x" data-id="' + s.id + '" aria-label="Remove">×</button></span>';
+    }).join('');
+    linkChips.querySelectorAll('.link-chip__x').forEach(function (b) {
+      b.addEventListener('click', function () { unlinkSpot(parseInt(b.dataset.id, 10)); });
+    });
+  }
+
+  async function loadLinkedSpots() {
+    linkedSpots = [];
+    if (!editingId) { drawChips(); return; }
+    try {
+      const data = await api.get('/api/links/note/' + editingId);
+      linkedSpots = data.spots || [];
+    } catch (err) { console.error('load links failed', err); }
+    drawChips();
+  }
+
+  async function linkSpot(spot) {
+    if (!editingId) return;
+    if (linkedSpots.some(function (s) { return s.id === spot.id; })) return; // already linked
+    try {
+      await api.post('/api/links', { note_id: editingId, spot_id: spot.id, source: 'manual' });
+      linkedSpots.push(spot);
+      drawChips();
+    } catch (err) { console.error('link failed', err); }
+  }
+
+  async function unlinkSpot(spotId) {
+    if (!editingId) return;
+    try {
+      await api.delete('/api/links?note_id=' + editingId + '&spot_id=' + spotId);
+      linkedSpots = linkedSpots.filter(function (s) { return s.id !== spotId; });
+      drawChips();
+    } catch (err) { console.error('unlink failed', err); }
+  }
+
+  if (linkSearch) {
+    let searchTimer = null;
+    linkSearch.addEventListener('input', function () {
+      clearTimeout(searchTimer);
+      const q = linkSearch.value.trim();
+      if (!q) { linkResults.hidden = true; linkResults.innerHTML = ''; return; }
+      searchTimer = setTimeout(async function () {
+        try {
+          const data = await api.get('/api/links/search-spots?q=' + encodeURIComponent(q));
+          const spots = (data.spots || []).filter(function (s) {
+            return !linkedSpots.some(function (l) { return l.id === s.id; });
+          });
+          if (!spots.length) { linkResults.hidden = true; return; }
+          linkResults.innerHTML = spots.map(function (s) {
+            const label = esc(s.place_name + (s.city ? ' · ' + s.city : ''));
+            return '<button type="button" class="link-result" data-id="' + s.id + '">' + label + '</button>';
+          }).join('');
+          linkResults.hidden = false;
+          linkResults.querySelectorAll('.link-result').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              const spot = spots.find(function (s) { return s.id === parseInt(btn.dataset.id, 10); });
+              linkSpot(spot);
+              linkSearch.value = '';
+              linkResults.hidden = true;
+              linkResults.innerHTML = '';
+            });
+          });
+        } catch (err) { console.error('spot search failed', err); }
+      }, 200);
+    });
+    document.addEventListener('click', function (e) {
+      if (linkResults && !linkResults.hidden && !linkResults.contains(e.target) && e.target !== linkSearch) {
+        linkResults.hidden = true;
+      }
+    });
+  }
+
   // Collapsible body — hidden behind "+ Add body" until needed.
   const bodyToggle = document.getElementById('note-body-toggle');
   const bodyWrap = document.getElementById('note-body-wrap');
@@ -432,6 +532,10 @@
     // Body starts expanded only if this note already has body content;
     // otherwise it's collapsed behind the "+ Add body" toggle.
     setBodyOpen(!!(note && note.body && note.body.trim()));
+
+    // Related spots — load the note's existing links (or show the
+    // "save first" prompt for a brand-new note).
+    loadLinkedSpots();
 
     // Permalink — only for saved, published notes (drafts have no live page).
     if (note && note.id && note.status === 'published') {

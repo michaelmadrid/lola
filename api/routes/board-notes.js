@@ -13,7 +13,8 @@ function shape(row) {
 // ?status=draft|published  ?trashed=true  ?type=note
 router.get('/', authenticate, async (req, res) => {
   try {
-    let sql = `SELECT bn.*, u.name AS author_name
+    let sql = `SELECT bn.*, u.name AS author_name,
+                      (SELECT COUNT(*) FROM note_spot_links l WHERE l.note_id = bn.id) AS link_count
                FROM board_notes bn
                LEFT JOIN users u ON bn.user_id = u.id
                WHERE 1=1`;
