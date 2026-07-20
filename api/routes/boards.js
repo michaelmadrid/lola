@@ -333,4 +333,45 @@ router.get('/_home/public', async (req, res) => {
   }
 });
 
+// ── PUBLIC: one board by id, in homepage shape — for PREVIEW ──────
+// Lets the homepage render any board via ?preview=<id> without
+// touching home_config (so the live board stays live for everyone
+// else). No status gating: board status is currently vestigial, and
+// preview should work on drafts. Same response shape as _home/public
+// board source, so home.html renders it identically.
+router.get('/:id/public', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  try {
+    const meta = await pool.query(
+      `SELECT title, vibe, aspect_w, aspect_h FROM boards WHERE id = $1`,
+      [req.params.id]
+    );
+    if (!meta.rows.length) return res.status(404).json({ error: 'Board not found' });
+    const m = meta.rows[0];
+
+    const { rows } = await pool.query(
+      `SELECT bn.id, bn.type, bn.headline, bn.image_url, bn.body,
+              bn.reference_title, bn.reference_url,
+              bi.x_pct, bi.y_pct, bi.width_pct, bi.position
+       FROM board_items bi
+       JOIN board_notes bn ON bn.id = bi.note_id
+       WHERE bi.board_id = $1
+       ORDER BY bi.position DESC`,
+      [req.params.id]
+    );
+    res.json({
+      source: 'board',
+      board_id: parseInt(req.params.id, 10),
+      title: m.title,
+      vibe: m.vibe,
+      aspect_w: m.aspect_w,
+      aspect_h: m.aspect_h,
+      items: rows
+    });
+  } catch (err) {
+    console.error('GET /api/boards/:id/public failed:', err);
+    res.status(500).json({ error: 'Could not load board' });
+  }
+});
+
 module.exports = router;

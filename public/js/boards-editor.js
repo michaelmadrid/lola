@@ -32,6 +32,7 @@
   var vibeInput    = document.getElementById('vibeInput');
   var statusSelect = document.getElementById('statusSelect');
   var setHomeBtn   = document.getElementById('setHomeBtn');
+  var previewBtn   = document.getElementById('previewBtn');
   var boardTitleEl = document.getElementById('boardTitle');
 
   /* ── Load ─────────────────────────────────────────────────── */
@@ -103,6 +104,16 @@
       .then(function(){ setHomeBtn.textContent = '✓ This is Home'; })
       .catch(function(err){ console.error('Set-home failed', err); alert('Could not set as home — see console.'); });
   });
+
+  // Preview this board on the REAL homepage without changing what's
+  // live — opens posto.world/?preview=<id> in a new tab. Lets you
+  // test a draft board in its true setting (drift, nav, bg, timing)
+  // while the current live board stays live for everyone else.
+  if (previewBtn){
+    previewBtn.addEventListener('click', function(){
+      window.open('https://posto.world/?preview=' + encodeURIComponent(boardId), '_blank', 'noopener');
+    });
+  }
 
   /* ── Debounced per-item placement saves — fires while dragging
      but only actually PATCHes ~150ms after movement stops, so a

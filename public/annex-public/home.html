@@ -712,7 +712,14 @@
   var currentMode = 'feed'; // 'feed' | 'board' — read by onResize below to pick the right recompute
 
   function loadFeed(){
-    var url = CONFIG.apiBase + CONFIG.notesEndpoint;
+    // ?preview=<id> — render a specific board on the real homepage
+    // without touching home_config (the live board stays live for
+    // everyone else). Used by the editor's "Preview on homepage"
+    // button to test a draft in a real setting.
+    var previewId = new URLSearchParams(location.search).get('preview');
+    var url = previewId
+      ? CONFIG.apiBase + '/api/boards/' + encodeURIComponent(previewId) + '/public'
+      : CONFIG.apiBase + CONFIG.notesEndpoint;
     fetch(url)
       .then(function(r){ return r.json(); })
       .then(function(data){
