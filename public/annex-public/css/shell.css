@@ -713,6 +713,18 @@ a.notice-text:hover {
   letter-spacing: 0.02em;
 }
 
+/* Filtered-category view (e.g. Bookstores): name is plain text (the
+   category label is redundant when every row shares it), and the meta
+   row holds the spot's own website + Google Maps links instead. */
+.index-flow__name--plain { display: block; }
+.index-flow__meta--links a {
+  color: var(--ink-3);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+.index-flow__meta--links a:hover { color: var(--ink); }
+.index-flow__linksep { border: none; }
+
 @media (max-width: 1100px) { .index-flow { column-count: 4; } }
 @media (max-width: 640px)  { .index-flow { column-count: 2; column-gap: 14px; } }
 

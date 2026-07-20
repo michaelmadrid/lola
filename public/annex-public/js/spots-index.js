@@ -34,6 +34,21 @@
     return d.innerHTML;
   }
 
+  // Website + Google Maps links for a spot, as small underlined <a>s.
+  // Mirrors the single-spot page (spot.js). Returns '' if neither exists.
+  function spotLinks(s) {
+    const links = [];
+    const site = s.website || s.url;
+    if (site) {
+      links.push('<a href="' + esc(site) + '" target="_blank" rel="noopener">Website</a>');
+    }
+    if (s.google_place_id) {
+      const maps = 'https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(s.google_place_id);
+      links.push('<a href="' + maps + '" target="_blank" rel="noopener">Map</a>');
+    }
+    return links.join('<span class="index-flow__linksep"> · </span>');
+  }
+
   function matches(s) {
     if (fCat && (s.category || '').toLowerCase() !== fCat) return false;
     if (fCity) {
@@ -155,11 +170,24 @@
             currentCity = city;
             html += '<div class="index-flow__letter index-flow__city">' + esc(city) + '</div>';
           }
-          const meta = CAT_LABELS[s.category] || s.category || '';
-          html += '<div class="index-flow__item"><a href="/spot/' + s.id + '">' +
-            '<span class="index-flow__name">' + esc(s.place_name) + '</span>' +
-            (meta ? '<span class="index-flow__meta">' + esc(meta) + '</span>' : '') +
-            '</a></div>';
+          if (fCat) {
+            // Filtered to one category (e.g. Bookstores): the category
+            // label under every name is redundant, so drop it AND the
+            // name's link. Instead surface the useful links — the spot's
+            // own website + Google Maps — as small <a>s in the meta row.
+            const links = spotLinks(s);
+            html += '<div class="index-flow__item">' +
+              '<span class="index-flow__name index-flow__name--plain">' + esc(s.place_name) + '</span>' +
+              (links ? '<span class="index-flow__meta index-flow__meta--links">' + links + '</span>' : '') +
+              '</div>';
+          } else {
+            // Unfiltered: keep the category label + linked name as before.
+            const meta = CAT_LABELS[s.category] || s.category || '';
+            html += '<div class="index-flow__item"><a href="/spot/' + s.id + '">' +
+              '<span class="index-flow__name">' + esc(s.place_name) + '</span>' +
+              (meta ? '<span class="index-flow__meta">' + esc(meta) + '</span>' : '') +
+              '</a></div>';
+          }
         });
         html += '</div>';
       } else {
