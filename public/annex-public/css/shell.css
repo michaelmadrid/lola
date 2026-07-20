@@ -1,5 +1,5 @@
 /* =========================================================
-   posto — shell.css
+   annex — shell.css
    Base tokens, grid, typography, primitives
    ========================================================= */
 
@@ -961,7 +961,10 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 .notes-index {
   max-width: 1400px;
   margin: 0 auto;
-  /* padding: 48px 40px 96px; */
+  padding: 48px 40px 96px;
+  box-sizing: border-box; /* padding stays INSIDE the width, never adds to it */
+  width: 100%;
+  overflow-x: hidden;     /* belt-and-suspenders: nothing bleeds sideways */
 }
 
 .notes-index__empty {
@@ -986,6 +989,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 @media (max-width: 460px) {
   .notes-index { padding: 32px 16px 64px; }
   .notes-grid { column-gap: 14px; row-gap: 28px; }
+  .note-card__thumb { height: 190px; } /* smaller box so 2-up cards fit the phone */
 }
 
 .note-card {
@@ -994,15 +998,16 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   text-decoration: none;
 }
 
-/* Image sits in a fixed-ratio box, centered, no crop — like a
-   product/catalogue shot floating in space (Mousse reference). */
+/* Image sits in a fixed-height box, centered, no crop — like a
+   product/catalogue shot floating in space (Mousse reference).
+   Fixed height defines the box; no aspect-ratio (the two conflict and
+   can force the cell wider than its column on mobile). */
 .note-card__thumb {
-  aspect-ratio: 3 / 4;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 0px;
-  height:280px;
+  height: 280px;
 }
 .note-card__thumb img {
   max-width: 100%;
