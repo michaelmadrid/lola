@@ -236,8 +236,8 @@
   #board-colophon.is-open{ display:flex; }
 
   .colophon{
-    width:100%;
-    max-width:380px;
+    width:80%;
+    max-width:360px;
     margin:0 auto;
     font-family:"ABC Diatype", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size:15px;
@@ -250,6 +250,7 @@
   /* Title + vibe: flowing intro paragraph, like a bio. */
   .colophon__intro{
     margin-bottom:1.4em;
+    margin-top:100px;
   }
   .colophon__title{ font-weight:600; }
   .colophon__vibe{ font-weight:400; }
@@ -947,7 +948,7 @@
     if (colophonData.title || colophonData.vibe){
       html += '<div class="colophon__intro">';
       if (colophonData.title) html += '<span class="colophon__title">' + escHtml(colophonData.title) + '</span>';
-      if (colophonData.vibe)  html += (colophonData.title ? ' ' : '') + '<span class="colophon__vibe">' + escHtml(colophonData.vibe) + '</span>';
+      if (colophonData.vibe)  html += (colophonData.title ? ' ' : '') + '<br><span class="colophon__vibe">' + escHtml(colophonData.vibe) + '</span>';
       html += '</div>';
     }
 
@@ -956,7 +957,7 @@
     colophonData.items.forEach(function(item){
       var ref = refLinkHtml(item);
       html += '<li class="colophon__item">' +
-                '<span class="colophon__headline">' + escHtml(item.label || 'Untitled') + '</span>' +
+                '<span class="colophon__headline">' + escHtml(item.label || 'Untitled') + '</span><br>' +
                 (ref ? ' ' + ref : '') +
               '</li>';
     });
