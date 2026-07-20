@@ -466,6 +466,7 @@ a.notice-text:hover {
   font-family: var(--sans);
   font-size: var(--text-small);
   text-align: center;
+  text-wrap: pretty;
   max-width:80%;
   margin:0 auto;
 }
