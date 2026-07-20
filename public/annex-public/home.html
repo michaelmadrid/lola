@@ -361,6 +361,17 @@
     color:var(--memory-fg);
     text-align:center;
   }
+  
+  #hidden-footer{
+    position: absolute;
+    bottom:30px;
+    margin:0 auto;
+    text-wrap:pretty;
+    width:80%;
+    max-width:360px;
+    color:white;
+    
+  }
 
 </style>
 </head>
@@ -392,7 +403,9 @@
       
       <div class="slogan" id="slogan"></div>
       
-      <p class="info-slogan">A record of attention</p>
+      <div class="hidden-footer">
+        POSTO is a curated selection of places, objects and guides by <a href="https://summer-holiday.com" target="_blank">Summer Holiday</a> 
+      </div>
     </section>
 
   </div>
@@ -407,9 +420,7 @@
 (function(){
 
   /* ============================================================
-     CONFIG — every tunable knob lives here. Change a number,
-     save, refresh. Nothing below this block needs touching for
-     day-to-day tuning.
+     CONFIG
      ============================================================ */
   var CONFIG = {
     // Drift (auto-scroll) — driftSpeed is px-per-frame-at-60fps, but
@@ -431,12 +442,13 @@
 
     // Hover behavior
     pauseOnHover:        true, // stop the drift while hovering a card (not empty stage space)
-    hoverResumeDelayMs:   200, // pause held for this long after the cursor leaves a card
+    hoverResumeDelayMs:   100, // pause held for this long after the cursor leaves a card
 
     // Data source — resolves to either the raw feed or a published
     // board depending on what's set in the admin (home_config).
     // Backend confirmed deployed + migrated, safe to point here now.
-    apiBase:       'https://studio.annex.site',
+  //  apiBase:       'https://studio.annex.site',
+    apiBase:       'https://studio.posto.world',
     notesEndpoint: '/api/boards/_home/public',
 
     // Board-source canvas — must match the aspect ratio used in
@@ -1041,12 +1053,10 @@
      ============================================================ */
   var SLOGANS = [
     "MOOD FOLLOWS ACTION",
-    "SHIT OR GET OFF THE POT",
+    "MAKE IT ANYWAY",
     "CHANCE FAVORS THE PREPARED MIND",
     "THE SECRET TO GETTING AHEAD\nIS GETTING STARTED",
-    "IT'S OK TO EXIST BEYOND THE BORDERS\nOF WHO YOU THINK YOU ARE",
     "WHO ARE YOU BECOMING?",
-    "MAKE IT ANYWAY",
     "THE MOST PERSONAL IS THE MOST CREATIVE"
   ];
 
