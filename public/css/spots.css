@@ -722,3 +722,32 @@ body.has-admin-checks .stream__item {
 /* Notes drag-to-reorder */
 .page-notes .spot-card[draggable="true"] { cursor: grab; }
 .page-notes .spot-card.is-dragging { opacity: 0.4; cursor: grabbing; }
+
+/* ── Note editor: split row (image left, url/caption/category right) ── */
+.note-split {
+  display: flex;
+  gap: var(--space-5, 24px);
+  align-items: flex-start;
+}
+.note-split__media { flex: 0 0 auto; width: 42%; }
+.note-split__fields { flex: 1 1 auto; min-width: 0; }
+.note-split__fields .spot-fs__field:first-child { margin-top: 0; }
+/* Phone: stack (editing on mobile works, just not side-by-side) */
+@media (max-width: 640px) {
+  .note-split { flex-direction: column; gap: 0; }
+  .note-split__media { width: 100%; }
+}
+
+/* ── Note editor: collapsible body ── */
+.note-body-toggle {
+  background: none;
+  border: none;
+  padding: 6px 0;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: var(--text-small, 13px);
+  color: var(--ink-2);
+  text-align: left;
+}
+.note-body-toggle:hover { color: var(--ink); }
+.note-body-toggle.is-open { color: var(--ink); }

@@ -7,13 +7,10 @@
   const listEl = document.getElementById('notes-list');
   const countEl = document.getElementById('note-count');
   const LS_VIEW = 'annex.notes.view';
-  const LS_CAT = 'annex.notes.cat';
   function lsGet(k, d) { try { return localStorage.getItem(k) || d; } catch { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch {} }
 
-  let activeView = lsGet(LS_VIEW, 'all'); // all | published | draft | scheduled | trash
-  if (activeView === 'feed') activeView = 'all'; // feed view retired — homepage is boards now
-  let activeCat = lsGet(LS_CAT, ''); // '' = all categories; otherwise a category slug
+  let activeView = lsGet(LS_VIEW, 'all'); // all | feed | published | draft | scheduled | trash
   let allNotes = [];
   let selected = new Set();
   let searchTerm = '';
@@ -56,9 +53,6 @@
     });
     if (activeView === 'published') rows = rows.filter(n => n.status === 'published');
     if (activeView === 'draft') rows = rows.filter(n => n.status === 'draft');
-
-    // Category filter — independent of view. '' = all.
-    if (activeCat) rows = rows.filter(n => (n.category || '') === activeCat);
     // Feed = what actually appears on the homepage: published + show_in_feed,
     // and not future-dated. Sorted like the real feed (pinned first, newest).
     if (activeView === 'feed') {
@@ -246,6 +240,7 @@
   const viewList  = document.getElementById('view-picker-list');
   const VIEW_STATES = [
     { value: 'all',       label: 'All' },
+    { value: 'feed',      label: 'Feed' },
     { value: 'published', label: 'Published' },
     { value: 'draft',     label: 'Draft' },
     { value: 'scheduled', label: 'Scheduled' },
@@ -293,67 +288,6 @@
     });
   }
 
-  // -------- Category filter picker --------
-  const catBtn   = document.getElementById('cat-picker-btn');
-  const catLabel = document.getElementById('cat-picker-label');
-  const catPop   = document.getElementById('cat-picker-popover');
-  const catList  = document.getElementById('cat-picker-list');
-  let catStates = [{ value: '', label: 'All categories' }]; // filled from API
-
-  function buildCatPicker() {
-    if (!catList) return;
-    catList.innerHTML = catStates.map(c =>
-      `<button class="picker-item ${activeCat === c.value ? 'is-current' : ''}" data-value="${c.value}">
-         <span>${c.label}</span>
-       </button>`
-    ).join('');
-    catList.querySelectorAll('.picker-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const v = btn.dataset.value;
-        catPop.hidden = true;
-        if (v === activeCat) return;
-        activeCat = v;
-        lsSet(LS_CAT, v);
-        const found = catStates.find(s => s.value === v);
-        if (catLabel && found) catLabel.textContent = found.label;
-        render();
-        buildCatPicker();
-      });
-    });
-  }
-
-  async function loadCatFilterOptions() {
-    try {
-      const data = await api.get('/api/notes/categories');
-      const cats = (data.categories || []).map(c => ({ value: c.value, label: c.label }));
-      catStates = [{ value: '', label: 'All categories' }].concat(cats);
-      // A stale saved slug (category since deleted) falls back to All.
-      if (activeCat && !catStates.some(s => s.value === activeCat)) {
-        activeCat = '';
-        lsSet(LS_CAT, '');
-      }
-      const cur = catStates.find(s => s.value === activeCat);
-      if (catLabel && cur) catLabel.textContent = cur.label;
-      buildCatPicker();
-    } catch (err) {
-      console.error('Could not load note categories for filter', err);
-    }
-  }
-
-  if (catBtn) {
-    buildCatPicker();
-    loadCatFilterOptions();
-    catBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      catPop.hidden = !catPop.hidden;
-    });
-    document.addEventListener('click', (e) => {
-      if (!catPop.hidden && !catPop.contains(e.target) && !catBtn.contains(e.target)) {
-        catPop.hidden = true;
-      }
-    });
-  }
-
   // -------- Editor --------
   const editor = document.getElementById('note-editor');
   const closeBtn = document.getElementById('note-editor-close');
@@ -393,6 +327,21 @@
   })();
   const richWrap = document.getElementById('note-body-rich');
   const permalinkLink = document.getElementById('note-permalink');
+
+  // Collapsible body — hidden behind "+ Add body" until needed.
+  const bodyToggle = document.getElementById('note-body-toggle');
+  const bodyWrap = document.getElementById('note-body-wrap');
+  function setBodyOpen(open) {
+    if (!bodyWrap || !bodyToggle) return;
+    bodyWrap.hidden = !open;
+    bodyToggle.classList.toggle('is-open', open);
+    bodyToggle.textContent = open ? '− Body' : '+ Add body';
+  }
+  if (bodyToggle) {
+    bodyToggle.addEventListener('click', function () {
+      setBodyOpen(bodyWrap.hidden); // toggle
+    });
+  }
 
   let editingId = null;
   let editingType = 'note';
@@ -465,7 +414,10 @@
     headlineEl.value = note ? note.headline : '';
     bodyEl.value = note ? (note.body || '') : '';
     setFeed(note ? note.show_in_feed !== false : false); // new notes default OFF feed
-    categoryEl.value = note ? (note.category || '') : ''; // existing note's category, or none
+    // New notes inherit the list's active category filter (so adding
+    // while filtered to "Shelf" pre-selects Shelf). Existing notes keep
+    // their own saved category.
+    categoryEl.value = note ? (note.category || '') : (activeCat || '');
     // Load body HTML into Quill (all note types use it now)
     ensureQuill();
     if (quill) quill.root.innerHTML = note ? (note.body || '') : '';
@@ -476,6 +428,10 @@
     expiresEl.value = note ? toLocalInput(note.expires_at) : '';
     editingImageUrl = note ? note.image_url : null;
     deleteBtn.style.display = note ? '' : 'none';
+
+    // Body starts expanded only if this note already has body content;
+    // otherwise it's collapsed behind the "+ Add body" toggle.
+    setBodyOpen(!!(note && note.body && note.body.trim()));
 
     // Permalink — only for saved, published notes (drafts have no live page).
     if (note && note.id && note.status === 'published') {

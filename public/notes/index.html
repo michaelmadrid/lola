@@ -64,18 +64,6 @@
         <div class="picker-list" id="view-picker-list"></div>
       </div>
     </div>
-
-    <!-- Category filter — mirrors the view picker. Populated from
-         /api/notes/categories; selection persists in localStorage. -->
-    <div class="picker-group">
-      <button class="picker-btn" id="cat-picker-btn" type="button" aria-haspopup="true">
-        <span class="picker-btn__label" id="cat-picker-label">All categories</span>
-        <span class="picker-btn__caret" aria-hidden="true">▾</span>
-      </button>
-      <div class="picker-popover" id="cat-picker-popover" hidden>
-        <div class="picker-list" id="cat-picker-list"></div>
-      </div>
-    </div>
   </div>
 
   <div class="bulk-bar" id="bulk-bar" hidden>
@@ -120,52 +108,61 @@
       </div>
 
       <div class="spot-fs__field">
-        <label class="spot-fs__label" for="note-body">Body</label>
-        <textarea class="spot-fs__input" id="note-body" rows="4" placeholder="Optional supporting text…" style="resize: vertical; min-height: 90px;"></textarea>
-        <!-- Rich editor for Article type (Quill mounts here) -->
-        <div id="note-body-rich" class="note-rich" hidden>
-          <div id="note-quill-toolbar">
-            <button class="ql-bold"></button>
-            <button class="ql-italic"></button>
-            <button class="ql-link"></button>
-            <button class="ql-blockquote"></button>
-            <select class="ql-align">
-              <option selected></option>
-              <option value="center"></option>
-              <option value="right"></option>
-              <option value="justify"></option>
-            </select>
+        <button type="button" class="note-body-toggle" id="note-body-toggle">+ Add body</button>
+        <div class="note-body-wrap" id="note-body-wrap" hidden>
+          <label class="spot-fs__label" for="note-body">Body</label>
+          <textarea class="spot-fs__input" id="note-body" rows="4" placeholder="Optional supporting text…" style="resize: vertical; min-height: 90px;"></textarea>
+          <!-- Rich editor for Article type (Quill mounts here) -->
+          <div id="note-body-rich" class="note-rich" hidden>
+            <div id="note-quill-toolbar">
+              <button class="ql-bold"></button>
+              <button class="ql-italic"></button>
+              <button class="ql-link"></button>
+              <button class="ql-blockquote"></button>
+              <select class="ql-align">
+                <option selected></option>
+                <option value="center"></option>
+                <option value="right"></option>
+                <option value="justify"></option>
+              </select>
+            </div>
+            <div id="note-quill-editor"></div>
           </div>
-          <div id="note-quill-editor"></div>
         </div>
       </div>
 
-      <div class="spot-fs__field">
-        <label class="spot-fs__label">Image</label>
-        <div class="uploader" id="note-fs-uploader">
-          <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
-          <div class="uploader__preview"></div>
-          <button type="button" class="uploader__btn">Upload image</button>
-          <button type="button" class="uploader__btn uploader__btn--remove" id="note-image-remove" hidden>Remove image</button>
+      <div class="note-split">
+        <div class="note-split__media">
+          <div class="spot-fs__field">
+            <label class="spot-fs__label">Image</label>
+            <div class="uploader" id="note-fs-uploader">
+              <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+              <div class="uploader__preview"></div>
+              <button type="button" class="uploader__btn">Upload image</button>
+              <button type="button" class="uploader__btn uploader__btn--remove" id="note-image-remove" hidden>Remove image</button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="spot-fs__field">
-        <label class="spot-fs__label" for="note-ref-url">URL (optional)</label>
-        <input type="url" class="spot-fs__input" id="note-ref-url" placeholder="https://…">
-      </div>
+        <div class="note-split__fields">
+          <div class="spot-fs__field">
+            <label class="spot-fs__label" for="note-ref-url">URL (optional)</label>
+            <input type="url" class="spot-fs__input" id="note-ref-url" placeholder="https://…">
+          </div>
 
-      <div class="spot-fs__field">
-        <label class="spot-fs__label" for="note-ref-title">Optional caption / reference</label>
-        <input type="text" class="spot-fs__input" id="note-ref-title" placeholder="Caption or source name">
-      </div>
+          <div class="spot-fs__field">
+            <label class="spot-fs__label" for="note-ref-title">Optional caption / reference</label>
+            <input type="text" class="spot-fs__input" id="note-ref-title" placeholder="Caption or source name">
+          </div>
 
-      <div class="spot-fs__field">
-        <label class="spot-fs__label" for="note-category">Category</label>
-        <select class="spot-fs__select" id="note-category">
-          <option value="">— none —</option>
-        </select>
-        <p class="spot-fs__hint">Manage the list in Studio Admin → Notes → Categories.</p>
+          <div class="spot-fs__field">
+            <label class="spot-fs__label" for="note-category">Category</label>
+            <select class="spot-fs__select" id="note-category">
+              <option value="">— none —</option>
+            </select>
+            <p class="spot-fs__hint">Manage the list in Studio Admin → Notes → Categories.</p>
+          </div>
+        </div>
       </div>
 
       <div class="spot-fs__divider"></div>
