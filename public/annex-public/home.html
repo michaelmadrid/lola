@@ -365,7 +365,7 @@
   <!-- View cycle — one glyph showing the NEXT view. Cycles
        Board → Flat-plan → Colophon → Board. Boards only. -->
   <button class="view-cycle" id="viewCycle" hidden aria-label="Change view">
-    <span class="view-cycle__glyph" id="viewCycleGlyph">▢</span>
+    <span class="view-cycle__glyph" id="viewCycleGlyph">⋯</span>
   </button>
 
   <!-- Colophon — quiet printed index card, populated + toggled by JS -->
@@ -970,10 +970,13 @@
      One glyph. It shows the view you'll go to NEXT (like a play
      button advertises the action, not the current state). Tapping
      applies that view and advances the glyph to the following one. */
+  // The glyph shows what tapping does NEXT. From the board, ⋯ = "there's
+  // more here" (invites the info views). Once in an info view, the glyph
+  // advances to the next one, and the last one returns you to the board.
   var VIEWS = [
-    { key:'board',    glyph:'▦' }, // ▦ = "go to board"
-    { key:'flatplan', glyph:'▢' }, // ▢ = "go to flat-plan"
-    { key:'colophon', glyph:'☰' }  // ☰ = "go to colophon"
+    { key:'board',    glyph:'⋯' }, // board showing → ⋯ "more"
+    { key:'flatplan', glyph:'⋯' }, // flat-plan showing → still more to see
+    { key:'colophon', glyph:'×' }  // colophon showing → × back to the board
   ];
   var viewIndex = 0; // currently showing the board (VIEWS[0])
 
@@ -996,9 +999,9 @@
       }
     }
 
-    // Glyph advertises the NEXT view in the cycle.
-    var nextIndex = (viewIndex + 1) % VIEWS.length;
-    if (cycleGlyph) cycleGlyph.textContent = VIEWS[nextIndex].glyph;
+    // Glyph reflects the CURRENT view: ⋯ while there's more to peel
+    // back, × on the last info view to return to the board.
+    if (cycleGlyph) cycleGlyph.textContent = VIEWS[viewIndex].glyph;
   }
 
   function cycle(){
@@ -1007,7 +1010,7 @@
   }
 
   if (cycleBtn){
-    // Set the initial glyph to whatever comes after "board".
+    // Set the initial glyph to the board (current) view.
     applyView();
     cycleBtn.addEventListener('click', cycle);
     document.addEventListener('keydown', function(e){
