@@ -146,7 +146,7 @@ img { display: block; max-width: 100%; height: auto; }
 
 .posto-mark__word{
   display: inline-block;
-  font-family: "ABC Diatype", Helvetica, Arial, sans-serif;
+ font-family:var(--sans);
   font-weight: 500;
   font-size: 16px;
   letter-spacing: 0;
@@ -204,7 +204,7 @@ body.nav-open .posto-subnav {
 }
 
 .posto-subnav__item {
-  font-family: "ABC Diatype", Helvetica, Arial, sans-serif;
+ font-family:var(--sans);
   display: block;
   font-size: 16px;
   font-weight: 500;
@@ -587,7 +587,7 @@ a.notice-text:hover {
   margin-bottom: var(--space-5);
 }
 .note-detail__body p { margin-bottom: 0px; 
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:var(--sans);
 }
 /* Quill text-alignment classes — apply wherever note HTML renders
    (permalink body + homepage feed). */
@@ -972,7 +972,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   padding: 80px 0;
   text-align: center;
   color: var(--ink-3, #999);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+ font-family:var(--sans);
   font-size: 14px;
 }
 
@@ -1015,7 +1015,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 }
 
 .note-card__title {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:var(--sans);
   font-size: 15px;
   line-height: 1.3;
   color: var(--ink, #111);
@@ -1023,7 +1023,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 }
 
 .note-card__sub {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+ font-family:var(--sans);
   font-size: 14px;
   line-height: 1.3;
   color: var(--ink-3, #888);
