@@ -945,7 +945,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 .notes-index {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 48px 40px 96px;
+  /* padding: 48px 40px 96px; */
 }
 
 .notes-index__empty {
