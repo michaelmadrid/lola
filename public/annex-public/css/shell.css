@@ -961,7 +961,6 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   grid-template-columns: repeat(4, 1fr);
   column-gap: 40px;
   row-gap: 56px;
-  border-top:2px red solid;
   margin-top:30px;
 }
 @media (max-width: 1100px) { .notes-grid { grid-template-columns: repeat(3, 1fr); } }
