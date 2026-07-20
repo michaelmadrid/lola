@@ -986,11 +986,6 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 @media (max-width: 760px)  { .notes-grid { grid-template-columns: repeat(2, 1fr); column-gap: 24px; row-gap: 40px; } }
 /* Phones: keep 2 columns, but tighten the container padding + gap so
    they aren't cramped against the screen edges. */
-@media (max-width: 460px) {
-  .notes-index { padding: 32px 16px 64px; }
-  .notes-grid { column-gap: 14px; row-gap: 28px; }
-  .note-card__thumb { height: 190px; } /* smaller box so 2-up cards fit the phone */
-}
 
 .note-card {
   display: block;
@@ -1032,6 +1027,13 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   line-height: 1.3;
   color: var(--ink-3, #888);
 }
+
+@media (max-width: 460px) {
+  .notes-index { padding: 32px 16px 64px; }
+  .notes-grid { column-gap: 14px; row-gap: 28px; }
+  .note-card__thumb { height: 190px; } /* smaller box so 2-up cards fit the phone */
+}
+
 
 /* Linked cards get a subtle affordance on hover — the image lifts
    in opacity, nothing heavy. */
