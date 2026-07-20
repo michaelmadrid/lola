@@ -260,7 +260,7 @@
       var startW = item.w;
       function move(ev){
         var dxPct = ((ev.clientX - startX) / rect.width) * 100;
-        item.w = Math.max(6, Math.min(70, startW + dxPct));
+        item.w = Math.max(3, Math.min(70, startW + dxPct));
         applyPlacementTo(frame);
       }
       function up(){
