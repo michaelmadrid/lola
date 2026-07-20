@@ -479,7 +479,7 @@
 
     // Permalink — only for saved, published notes (drafts have no live page).
     if (note && note.id && note.status === 'published') {
-      permalinkLink.href = 'https://annex.site/notes/' + note.id;
+      permalinkLink.href = 'https://posto.world/note/' + note.id;
       permalinkLink.hidden = false;
     } else {
       permalinkLink.hidden = true;

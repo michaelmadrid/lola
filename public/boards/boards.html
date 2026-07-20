@@ -97,7 +97,12 @@
       <h3>Add notes</h3>
     </div>
     <div class="modal__body">
-      <input type="text" class="input" id="notePickerSearch" placeholder="Search notes…" autocomplete="off">
+      <div class="boards-note-picker__filters">
+        <input type="text" class="input" id="notePickerSearch" placeholder="Search notes…" autocomplete="off">
+        <select class="select" id="notePickerCat">
+          <option value="">All categories</option>
+        </select>
+      </div>
       <div class="boards-note-picker__grid" id="notePickerGrid"></div>
     </div>
   </div>

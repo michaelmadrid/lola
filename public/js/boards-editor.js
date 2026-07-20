@@ -369,34 +369,58 @@
   }
 
   /* ── Add-notes picker ────────────────────────────────────────
-     Uses the public board-notes endpoint (confirmed working) and
-     filters client-side, rather than assuming the admin list
-     supports a ?status= query param. Search box filters in-browser
-     too — no extra requests per keystroke. */
-  var pickerNotes = []; // cached full list for client-side search
+     Pulls ALL published notes (the /public/grid endpoint), not just
+     feed notes — since notes default off-feed now, the feed endpoint
+     would be nearly empty. Filterable by search text AND category,
+     both client-side (no extra requests). */
+  var pickerNotes = [];   // cached full list
+  var pickerCat = '';     // active category filter ('' = all)
 
   document.getElementById('addNotesBtn').addEventListener('click', openNotePicker);
   document.getElementById('notePickerClose').addEventListener('click', closeNotePicker);
-  document.getElementById('notePickerSearch').addEventListener('input', function(e){
-    renderNotePicker(filterNotes(e.target.value));
+  document.getElementById('notePickerSearch').addEventListener('input', function(){
+    renderNotePicker(filterNotes());
   });
 
   function openNotePicker(){
     document.getElementById('notePicker').classList.add('is-open');
     document.getElementById('notePickerSearch').value = '';
-    api.get('/api/board-notes/public').then(function(data){
+    api.get('/api/board-notes/public/grid').then(function(data){
       pickerNotes = (data.notes || []).filter(function(n){ return !!n.image_url; });
-      renderNotePicker(pickerNotes);
+      buildPickerCatFilter();
+      renderNotePicker(filterNotes());
     }).catch(function(err){ console.error('Could not load notes', err); });
   }
   function closeNotePicker(){
     document.getElementById('notePicker').classList.remove('is-open');
   }
-  function filterNotes(q){
-    q = (q || '').trim().toLowerCase();
-    if (!q) return pickerNotes;
+
+  // Build the category dropdown from whatever categories actually
+  // appear in the fetched notes (only shows cats that have notes).
+  function buildPickerCatFilter(){
+    var sel = document.getElementById('notePickerCat');
+    if (!sel) return;
+    var slugs = {};
+    pickerNotes.forEach(function(n){ if (n.category) slugs[n.category] = true; });
+    var opts = '<option value="">All categories</option>';
+    Object.keys(slugs).sort().forEach(function(slug){
+      var selected = slug === pickerCat ? ' selected' : '';
+      opts += '<option value="' + esc(slug) + '"' + selected + '>' + esc(slug) + '</option>';
+    });
+    sel.innerHTML = opts;
+    sel.onchange = function(){
+      pickerCat = sel.value;
+      renderNotePicker(filterNotes());
+    };
+  }
+
+  // Combined search + category filter.
+  function filterNotes(){
+    var q = (document.getElementById('notePickerSearch').value || '').trim().toLowerCase();
     return pickerNotes.filter(function(n){
-      return (n.headline || '').toLowerCase().indexOf(q) > -1;
+      if (pickerCat && (n.category || '') !== pickerCat) return false;
+      if (q && (n.headline || '').toLowerCase().indexOf(q) === -1) return false;
+      return true;
     });
   }
   function renderNotePicker(notes){

@@ -266,6 +266,14 @@
 
 /* ── Add-notes picker — reuses .spot-card grid language ────── */
 
+.boards-note-picker__filters{
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.boards-note-picker__filters .input{ flex: 1; }
+.boards-note-picker__filters .select{ width: 180px; flex-shrink: 0; }
+
 .boards-note-picker__grid{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
