@@ -980,7 +980,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   margin-bottom: 0px;
-  height:300px; // testing?
+  height:280px;
 }
 .note-card__thumb img {
   max-width: 100%;
