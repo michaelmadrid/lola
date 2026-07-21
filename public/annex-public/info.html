@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Info — POSTO</title>
+  <script>window.POSTO_PAGE = 'info';</script>
+  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
+
+  <style>
+    /* Center one line of text in the viewport, footer-style */
+    .info-wrap {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px;
+    }
+    .info-line {
+      font-family: var(--sans);
+      font-size: var(--text-small, 13px);
+      line-height: 1.6;
+      color: var(--ink);
+      max-width: 640px;
+    }
+    .info-line a { text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</head>
+<body class="">
+
+<div class="page">
+
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <div data-include="header"></div>
+
+  <main class="info-wrap">
+    <p class="info-line">
+      POSTO is a curated selection of places, objects and guides by <a href="https://summer-holiday.com" target="_blank" rel="noopener">Summer Holiday</a>.
+    </p>
+  </main>
+
+  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
+  <div data-include="footer"></div>
+
+</div><!-- /page -->
+
+<script>
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+
+</body>
+</html>
