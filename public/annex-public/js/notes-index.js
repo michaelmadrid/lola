@@ -16,7 +16,12 @@
 
   const params = new URLSearchParams(location.search);
   const layout = (params.get('layout') || 'grid').toLowerCase().trim();
-  const cat = (params.get('cat') || '').toLowerCase().trim();
+  // Category comes from ?cat=slug OR from a masked pretty path like
+  // /shelf (nginx serves notes.html but the query string is empty).
+  // Map known pretty paths to their category slug here.
+  const PATH_CATS = { '/shelf': 'shelf' };
+  const pathKey = location.pathname.replace(/\/+$/, ''); // strip trailing slash
+  const cat = ((params.get('cat') || PATH_CATS[pathKey] || '')).toLowerCase().trim();
 
   const mount = document.getElementById('notes-index');
   if (!mount) return;
