@@ -1035,8 +1035,8 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 
 @media (max-width: 460px) {
   .notes-index { padding: 32px 16px 64px; }
-  .notes-grid { column-gap: 14px; row-gap: 28px; }
-  .note-card__thumb { height: 190px; } /* smaller box so 2-up cards fit the phone */
+  .notes-grid { column-gap: 14px; row-gap: 20px; }
+  .note-card__thumb { height: 130px; } /* smaller box so 2-up cards fit the phone */
 }
 
 
