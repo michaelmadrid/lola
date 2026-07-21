@@ -28,7 +28,7 @@
       'layout:shelf':     { open: false, horz: false },
       'layout:catalogue': { open: false, horz: false }
     };
-    var DEFAULT_MODE = { open: false, horz: false };
+    var DEFAULT_MODE = { open: true, horz: false };
 
     var layout = new URLSearchParams(location.search).get('layout');
     var key = layout ? ('layout:' + layout) : (window.POSTO_PAGE || null);
