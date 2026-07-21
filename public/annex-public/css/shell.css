@@ -984,11 +984,11 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   column-gap: 40px;
-  row-gap: 56px;
+  row-gap: 30px;
   margin-top:30px;
 }
 @media (max-width: 1100px) { .notes-grid { grid-template-columns: repeat(5, 1fr); } }
-@media (max-width: 760px)  { .notes-grid { grid-template-columns: repeat(3, 1fr); column-gap: 24px; row-gap: 40px; } }
+@media (max-width: 760px)  { .notes-grid { grid-template-columns: repeat(3, 1fr); column-gap: 24px; row-gap: 30px; } }
 /* Phones: keep 2 columns, but tighten the container padding + gap so
    they aren't cramped against the screen edges. */
 
@@ -1007,7 +1007,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   margin-bottom: 0px;
-  height: 280px;
+  height:180px;
 }
 .note-card__thumb img {
   max-width: 90%;
