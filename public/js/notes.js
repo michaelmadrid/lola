@@ -198,6 +198,8 @@
     document.getElementById('bulk-publish').hidden = inTrash;
     document.getElementById('bulk-draft').hidden = inTrash;
     document.getElementById('bulk-trash').hidden = inTrash;
+    const bulkCatEl = document.getElementById('bulk-cat');
+    if (bulkCatEl) bulkCatEl.hidden = inTrash;
     document.getElementById('bulk-restore').hidden = !inTrash;
     document.getElementById('bulk-delete-forever').hidden = !inTrash;
   }
@@ -228,6 +230,29 @@
     selected.clear();
     load();
   });
+
+  // Bulk category — set the category on all selected notes at once.
+  // "" option is a no-op prompt; picking a real category (incl. "None")
+  // applies it. Populated from the same category list as the filter.
+  const bulkCat = document.getElementById('bulk-cat');
+  function populateBulkCat() {
+    if (!bulkCat) return;
+    // catStates comes from the filter picker's loadCatFilterOptions.
+    const opts = ['<option value="">Set category…</option>', '<option value="__none__">— None —</option>']
+      .concat((catStates || [])
+        .filter(c => c.value) // skip the "All categories" pseudo-entry
+        .map(c => `<option value="${esc(c.value)}">${esc(c.label)}</option>`));
+    bulkCat.innerHTML = opts.join('');
+  }
+  if (bulkCat) {
+    bulkCat.addEventListener('change', async () => {
+      const v = bulkCat.value;
+      if (!v) return;
+      const category = v === '__none__' ? null : v;
+      await bulkPatch({ category });
+      bulkCat.value = '';
+    });
+  }
   document.getElementById('bulk-clear').addEventListener('click', () => {
     selected.clear();
     document.querySelectorAll('.spot-card__check').forEach(cb => cb.checked = false);
@@ -339,6 +364,7 @@
       const cur = catStates.find(s => s.value === activeCat);
       if (catLabel && cur) catLabel.textContent = cur.label;
       buildCatPicker();
+      populateBulkCat(); // bulk-bar select uses the same category list
     } catch (err) {
       console.error('Could not load note categories for filter', err);
     }

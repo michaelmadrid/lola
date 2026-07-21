@@ -786,3 +786,16 @@ body.has-admin-checks .stream__item {
 }
 .link-result:hover { background: var(--surface, #ebeae5); }
 .spot-card__links { color: var(--accent, #2a4ed4); font-variant-numeric: tabular-nums; }
+
+/* Bulk category select in the selection bar (surface bg, ink text) */
+.bulk-bar__cat {
+  font-family: var(--sans);
+  font-size: var(--text-small, 13px);
+  padding: 6px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-input, 4px);
+  background: var(--bg);
+  color: var(--ink);
+  cursor: pointer;
+}
+.bulk-bar__cat[hidden] { display: none !important; }
