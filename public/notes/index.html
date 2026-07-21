@@ -64,6 +64,18 @@
         <div class="picker-list" id="view-picker-list"></div>
       </div>
     </div>
+
+    <!-- Category filter — mirrors the view picker. Populated from
+         /api/notes/categories; selection persists in localStorage. -->
+    <div class="picker-group">
+      <button class="picker-btn" id="cat-picker-btn" type="button" aria-haspopup="true">
+        <span class="picker-btn__label" id="cat-picker-label">All categories</span>
+        <span class="picker-btn__caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="picker-popover" id="cat-picker-popover" hidden>
+        <div class="picker-list" id="cat-picker-list"></div>
+      </div>
+    </div>
   </div>
 
   <div class="bulk-bar" id="bulk-bar" hidden>
