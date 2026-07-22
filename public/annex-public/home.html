@@ -24,6 +24,7 @@
     
     --sans: 'ABC Diatype', 'Helvetica Neue', Arial, sans-serif; /* real site loads ABC Diatype — this prototype falls back to system sans since the webfont isn't loaded here */
     
+    --board-font:'ABC Diatype';
     --memory-bg: #151515; /* dark, not pure #000 */
     --memory-fg: #F8F8F8; /* same off-white as the rest of the site */
     
@@ -165,6 +166,9 @@
     color:#fff;
     opacity:0;
     transition:opacity 200ms ease;
+    max-width:80%;
+    text-wrap: pretty;
+    text-wrap: center;
   }
   .board-frame__item:hover .board-frame__label{ opacity:1; }
 
