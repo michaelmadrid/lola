@@ -711,7 +711,10 @@
         el.appendChild(cap);
       }
 
-      if (CONFIG.pauseOnHover){
+      // Only linked items pause the drift on hover — an unlinked
+      // background/mood image has nothing to click, so rolling over it
+      // shouldn't interrupt the auto-drift.
+      if (CONFIG.pauseOnHover && hasLink){
         el.addEventListener('pointerenter', function(e){
           if (e.pointerType === 'touch') return;
           isHovering = true;
