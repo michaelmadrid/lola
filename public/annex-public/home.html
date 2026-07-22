@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
- <!-- META PAGE -->
+ <!-- 
+ POSTO is an editorial project by Summer Holiday
+ summer-holiday.com
+-->
 <title>POSTO</title>
 <script>window.POSTO_PAGE = 'home';</script>
 
@@ -16,7 +18,8 @@
   :root{
     /* --logo-color / --nav-bg / --nav-fg / --logo-pad-x/y now live in
        shell.css :root — shared by the .posto-mark partial on every page. */
-    --bg:  #F8F8F8;
+    --bg:  #f5f4ef;
+    
     --ink: #111;
     
     --sans: 'ABC Diatype', 'Helvetica Neue', Arial, sans-serif; /* real site loads ABC Diatype — this prototype falls back to system sans since the webfont isn't loaded here */
@@ -77,7 +80,7 @@
 
   #stage-feed{
     background:var(--bg);
-    background-color: #f5f3ec;
+
   }
 
   .feed-track{
@@ -1062,15 +1065,15 @@
 (function(){
 
   /* ============================================================
-     Content — preserves your intentional line breaks as-is
+     slogans 
+     "MOOD FOLLOWS ACTION",
+     "THE MOST PERSONAL IS THE MOST CREATIVE",
      ============================================================ */
   var SLOGANS = [
-    "MOOD FOLLOWS ACTION",
-    "MAKE IT ANYWAY",
     "CHANCE FAVORS THE PREPARED MIND",
     "THE SECRET TO GETTING AHEAD\nIS GETTING STARTED",
-    "WHO ARE YOU BECOMING?",
-    "THE MOST PERSONAL IS THE MOST CREATIVE"
+    "WHO ARE YOU BECOMING?"
+
   ];
 
   var stageInfo = document.getElementById('stage-info');
