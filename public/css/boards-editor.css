@@ -25,6 +25,7 @@
 
 .boards-editor{
   position: relative; /* anchor for the overlay drawer + toggle */
+  margin-top: var(--space-5); /* breathing room under the status/preview row */
   height: calc(100vh - 260px);
   min-height: 440px;
   max-height: 760px;
@@ -197,6 +198,7 @@
 .boards-canvas-safe{
   position: absolute;
   inset: 0;
+  z-index: 5;
   pointer-events: none;
   opacity: 1;
   transition: opacity 120ms ease;
@@ -220,9 +222,13 @@
 .boards-canvas-safe::after{ bottom: 0; border-top-width: 1px; }
 
 /* 12-col reference grid — visual only, never touches data */
+/* Guides sit ABOVE the items so they stay visible over images (they're
+   pointer-events:none, so dragging is unaffected). The existing Grid
+   checkbox still toggles them on/off. */
 .boards-canvas-grid{
   position: absolute;
   inset: 0;
+  z-index: 5;
   display: grid;
   grid-template-columns: repeat(12, 1fr);
   gap: 1px;
@@ -266,14 +272,6 @@
 
 /* ── Add-notes picker — reuses .spot-card grid language ────── */
 
-.boards-note-picker__filters{
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-.boards-note-picker__filters .input{ flex: 1; }
-.boards-note-picker__filters .select{ width: 180px; flex-shrink: 0; }
-
 .boards-note-picker__grid{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -291,3 +289,12 @@
 .boards-note-picker__item.is-added{ opacity: 0.4; pointer-events: none; }
 .boards-note-picker__item img{ width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
 .boards-note-picker__item span{ display: block; padding: var(--space-2); font-size: var(--text-tiny); }
+
+/* Note picker: search + category filter side by side */
+.boards-note-picker__filters{
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.boards-note-picker__filters .input{ flex: 1; }
+.boards-note-picker__filters .select{ width: 180px; flex-shrink: 0; }
