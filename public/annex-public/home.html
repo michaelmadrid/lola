@@ -173,6 +173,39 @@
   }
   .board-frame__item:hover .board-frame__label{ opacity:1; }
 
+  /* ── Board presentation (set per board in the editor) ────────
+     Background image sits under the items, over the colour ground.
+     Borders + running numbers give the flat "catalogue vitrine". */
+  .board-frame__bg{
+    position:absolute;
+    inset:0;
+    z-index:0;
+    background-size:cover;
+    background-position:center;
+    pointer-events:none;
+  }
+  .board-frame__item{ z-index:1; }
+
+  .board-frame.has-borders .board-frame__item{
+    outline:1px solid rgba(0,0,0,0.55);
+    outline-offset:0;
+  }
+  .board-frame__num{
+    position:absolute;
+    left:0;
+    top:100%;
+    margin-top:4px;
+    font-family:var(--board-font, "Helvetica Neue", Helvetica, Arial, sans-serif);
+    font-size:11px;
+    line-height:1;
+    color:rgba(0,0,0,0.65);
+    pointer-events:none;
+    display:none;
+  }
+  .board-frame.has-numbers .board-frame__num{ display:block; }
+  /* Numbers print outside the item box, so it mustn't clip them. */
+  .board-frame.has-numbers .board-frame__item{ overflow:visible; }
+
   /* ── Flat-plan mode ──────────────────────────────────────────
      Toggled by .is-flatplan on #stage-feed. Every image hides and
      its box becomes a white-fill / black-border schematic frame at
@@ -659,11 +692,35 @@
   // ratio) in loadFeed — NOT a global constant, so each board renders
   // at exactly the ratio it was composed against. Falls back to 32/9.
   var boardAspect = '32 / 9';
+  // Board presentation from the API (see loadFeed).
+  var boardStyle = { background_color: null, background_image: null, show_borders: false, show_numbers: false };
+
+  // Running numbers follow reading order (top-to-bottom, then
+  // left-to-right) — matches the editor so they don't disagree.
+  function boardNumberMap(items){
+    var map = new Map(); // keyed by the item object — canvas items have no id
+    items.slice()
+      .sort(function(a, b){ return (a.y - b.y) || (a.x - b.x); })
+      .forEach(function(it, i){ map.set(it, i + 1); });
+    return map;
+  }
 
   function buildBoardFrame(items){
     var frame = document.createElement('div');
     frame.className = 'board-frame';
     frame.style.setProperty('--board-aspect', boardAspect);
+    if (boardStyle.show_borders) frame.classList.add('has-borders');
+    if (boardStyle.show_numbers) frame.classList.add('has-numbers');
+    if (boardStyle.background_color) frame.style.background = boardStyle.background_color;
+
+    if (boardStyle.background_image){
+      var bgEl = document.createElement('div');
+      bgEl.className = 'board-frame__bg';
+      bgEl.style.backgroundImage = 'url("' + imgSrc(boardStyle.background_image) + '")';
+      frame.appendChild(bgEl);
+    }
+
+    var nums = boardStyle.show_numbers ? boardNumberMap(items) : null;
 
     // API returns items front-first (position DESC) — reverse so
     // the DOM paints back-to-front (later-appended = on top).
@@ -691,6 +748,13 @@
       img.addEventListener('load', onImageSettled);
       img.addEventListener('error', onImageSettled);
       el.appendChild(img);
+
+      if (nums){
+        var numEl = document.createElement('span');
+        numEl.className = 'board-frame__num';
+        numEl.textContent = nums.get(item);
+        el.appendChild(numEl);
+      }
 
       // Hover dim + title only on linked items — an unlinked image
       // has nowhere to go, so no affordance.
@@ -785,6 +849,14 @@
           if (data.aspect_w && data.aspect_h){
             boardAspect = data.aspect_w + ' / ' + data.aspect_h;
           }
+          // Board-level presentation (colour ground, background image,
+          // borders, running numbers) — composed in the editor.
+          boardStyle = {
+            background_color: data.background_color || null,
+            background_image: data.background_image || null,
+            show_borders: !!data.show_borders,
+            show_numbers: !!data.show_numbers
+          };
           currentMode = 'board';
           renderBoardTrack(canvasItems);
           // Stash board data for the colophon view.
