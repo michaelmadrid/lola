@@ -30,6 +30,15 @@
   var gridToggle   = document.getElementById('gridToggle');
   var titleInput   = document.getElementById('titleInput');
   var vibeInput    = document.getElementById('vibeInput');
+  // Board styling controls (Settings tab)
+  var bgColorInput    = document.getElementById('bgColorInput');
+  var bgColorHex      = document.getElementById('bgColorHex');
+  var bgColorClear    = document.getElementById('bgColorClear');
+  var bgImageRemove   = document.getElementById('bgImageRemove');
+  var showBordersInput = document.getElementById('showBordersInput');
+  var showNumbersInput = document.getElementById('showNumbersInput');
+  // Current styling state, mirrored from the board record.
+  var STYLE = { background_color: null, background_image: null, show_borders: false, show_numbers: false };
   var statusSelect = document.getElementById('statusSelect');
   var setHomeBtn   = document.getElementById('setHomeBtn');
   var previewBtn   = document.getElementById('previewBtn');
@@ -63,6 +72,18 @@
       boardTitleEl.textContent = board.title;
       titleInput.value = board.title;
       vibeInput.value = board.vibe || '';
+
+      // Styling → Settings tab controls
+      STYLE.background_color = board.background_color || null;
+      STYLE.background_image = board.background_image || null;
+      STYLE.show_borders = !!board.show_borders;
+      STYLE.show_numbers = !!board.show_numbers;
+      if (bgColorInput && STYLE.background_color) bgColorInput.value = STYLE.background_color;
+      if (bgColorHex) bgColorHex.value = STYLE.background_color || '';
+      if (showBordersInput) showBordersInput.checked = STYLE.show_borders;
+      if (showNumbersInput) showNumbersInput.checked = STYLE.show_numbers;
+      initBgUploader();
+
       statusSelect.value = board.status;
       setHomeBtn.textContent = board.status === 'published' ? 'Set as Home' : 'Publish to set as Home';
       setHomeBtn.disabled = board.status !== 'published';
@@ -89,6 +110,75 @@
   }
   titleInput.addEventListener('input', saveFields);
   vibeInput.addEventListener('input', saveFields);
+
+  /* ── Board styling (Settings tab) ────────────────────────────
+     Saves debounced, then re-renders the canvas so the change is
+     visible immediately. Empty string clears a nullable field. */
+  var styleSaveTimer = null;
+  function saveStyle(patch, immediate){
+    Object.keys(patch).forEach(function(k){ STYLE[k] = patch[k]; });
+    renderEditFrame();
+    clearTimeout(styleSaveTimer);
+    var fire = function(){
+      api.patch('/api/boards/' + boardId, patch)
+        .catch(function(err){ console.error('Style save failed', err); });
+    };
+    if (immediate) fire(); else styleSaveTimer = setTimeout(fire, 400);
+  }
+
+  if (bgColorInput){
+    bgColorInput.addEventListener('input', function(){
+      if (bgColorHex) bgColorHex.value = bgColorInput.value;
+      saveStyle({ background_color: bgColorInput.value });
+    });
+  }
+  if (bgColorHex){
+    bgColorHex.addEventListener('input', function(){
+      var v = bgColorHex.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)){
+        if (bgColorInput) bgColorInput.value = v;
+        saveStyle({ background_color: v });
+      } else if (v === ''){
+        saveStyle({ background_color: '' });
+      }
+    });
+  }
+  if (bgColorClear){
+    bgColorClear.addEventListener('click', function(){
+      if (bgColorHex) bgColorHex.value = '';
+      saveStyle({ background_color: '' }, true);
+    });
+  }
+  if (showBordersInput){
+    showBordersInput.addEventListener('change', function(){
+      saveStyle({ show_borders: showBordersInput.checked }, true);
+    });
+  }
+  if (showNumbersInput){
+    showNumbersInput.addEventListener('change', function(){
+      saveStyle({ show_numbers: showNumbersInput.checked }, true);
+    });
+  }
+  if (bgImageRemove){
+    bgImageRemove.addEventListener('click', function(){
+      saveStyle({ background_image: '' }, true);
+      var prev = document.querySelector('#bgUploader .uploader__preview');
+      if (prev) prev.innerHTML = '';
+      bgImageRemove.hidden = true;
+    });
+  }
+
+  function initBgUploader(){
+    if (!window.Uploader) return;
+    Uploader.attach('#bgUploader', {
+      initialUrl: STYLE.background_image ? imgSrc(STYLE.background_image) : null,
+      onUploaded: function(result){
+        saveStyle({ background_image: result.url }, true);
+        if (bgImageRemove) bgImageRemove.hidden = false;
+      }
+    });
+    if (bgImageRemove) bgImageRemove.hidden = !STYLE.background_image;
+  }
 
   statusSelect.addEventListener('change', function(){
     api.patch('/api/boards/' + boardId, { status: statusSelect.value })
@@ -172,17 +262,47 @@
     return safe;
   }
 
+  // Running numbers follow READING order (top-to-bottom, then
+  // left-to-right) rather than layer order — so changing what's in
+  // front doesn't renumber the whole board.
+  function numberMap(){
+    var map = {};
+    ITEMS.slice()
+      .sort(function(a, b){ return (a.y - b.y) || (a.x - b.x); })
+      .forEach(function(item, i){ map[item.itemId] = i + 1; });
+    return map;
+  }
+
   function buildFrameEl(interactive){
     var frame = document.createElement('div');
     frame.className = 'boards-canvas-frame';
+    if (STYLE.show_borders) frame.classList.add('has-borders');
+    if (STYLE.show_numbers) frame.classList.add('has-numbers');
+    if (STYLE.background_color) frame.style.background = STYLE.background_color;
+
+    // Background image layer — under items, over the colour.
+    if (STYLE.background_image){
+      var bg = document.createElement('div');
+      bg.className = 'boards-canvas-frame__bg';
+      bg.style.backgroundImage = 'url("' + imgSrc(STYLE.background_image) + '")';
+      frame.appendChild(bg);
+    }
+
     frame.appendChild(buildGrid());
     frame.appendChild(buildSafeZone());
 
+    var nums = STYLE.show_numbers ? numberMap() : null;
     var forDom = ITEMS.slice().reverse();
     forDom.forEach(function(item){
       var el = document.createElement('div');
       el.className = 'boards-free-item';
       el.dataset.id = item.itemId;
+      if (nums){
+        var num = document.createElement('span');
+        num.className = 'boards-free-item__num';
+        num.textContent = nums[item.itemId];
+        el.appendChild(num);
+      }
       if (item.image){
         var img = document.createElement('img');
         img.src = item.image;
@@ -358,8 +478,33 @@
   // canvas full-width. Overlay style, so the canvas doesn't resize;
   // no placement recompute needed on toggle.
   var editorEl = document.getElementById('boardsEditor');
+  // Left-panel tabs — Items | Settings
+  document.querySelectorAll('.boards-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      var name = tab.dataset.tab;
+      document.querySelectorAll('.boards-tab').forEach(function(t){
+        t.classList.toggle('is-active', t === tab);
+      });
+      document.querySelectorAll('.boards-tabpanel').forEach(function(p){
+        p.classList.toggle('is-active', p.dataset.panel === name);
+      });
+    });
+  });
+
   var drawerToggle = document.getElementById('drawerToggle');
   if (editorEl && drawerToggle){
+    // Spacebar toggles the panel — but never while typing in a field.
+    document.addEventListener('keydown', function(e){
+      if (e.code !== 'Space') return;
+      var t = e.target;
+      var typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+                         t.tagName === 'SELECT' || t.isContentEditable);
+      if (typing) return;
+      e.preventDefault();
+      var closed = editorEl.classList.toggle('drawer-closed');
+      drawerToggle.textContent = closed ? '›' : '‹';
+    });
+
     drawerToggle.addEventListener('click', function(){
       var closed = editorEl.classList.toggle('drawer-closed');
       drawerToggle.textContent = closed ? '›' : '‹';

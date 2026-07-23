@@ -90,26 +90,44 @@ router.post('/', authenticate, requireAdmin, async (req, res) => {
 // ── Admin: update title / vibe / status ─────────────────────────
 router.patch('/:id', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { title, vibe, status, aspect_w, aspect_h } = req.body;
+    const { status } = req.body;
     const validStatus = ['draft', 'published', 'archived'];
     if (status && !validStatus.includes(status)) {
       return res.status(400).json({ error: 'invalid status' });
     }
 
+    // Build SET dynamically from whichever fields were actually sent.
+    // (A COALESCE approach can't express "set this boolean to false" or
+    // "clear this background" — `false || null` and `'' || null` both
+    // collapse to null, so the field would never change.)
+    const allowed = ['title', 'vibe', 'status', 'aspect_w', 'aspect_h',
+                     'background_color', 'background_image',
+                     'show_borders', 'show_numbers'];
+    const sets = [], params = [];
+    for (const k of allowed) {
+      if (req.body[k] === undefined) continue;
+      let v = req.body[k];
+      // Empty string on a nullable text field means "clear it".
+      if (v === '' && (k === 'background_color' || k === 'background_image' || k === 'vibe')) v = null;
+      params.push(v);
+      sets.push(`${k} = $${params.length}`);
+    }
+    if (!sets.length) return res.status(400).json({ error: 'no fields to update' });
+
+    if (status === 'published') {
+      sets.push(`published_at = CASE WHEN status != 'published' THEN NOW() ELSE published_at END`);
+    }
+    sets.push('updated_at = NOW()');
+
+    params.push(req.params.id);
+    const idIdx = params.length;
+    params.push(req.user.id);
+
     const { rows } = await pool.query(
-      `UPDATE boards
-       SET title = COALESCE($1, title),
-           vibe = COALESCE($2, vibe),
-           status = COALESCE($3, status),
-           aspect_w = COALESCE($6, aspect_w),
-           aspect_h = COALESCE($7, aspect_h),
-           published_at = CASE WHEN $3 = 'published' AND status != 'published'
-                                THEN NOW() ELSE published_at END,
-           updated_at = NOW()
-       WHERE id = $4 AND user_id = $5
+      `UPDATE boards SET ${sets.join(', ')}
+       WHERE id = $${idIdx} AND user_id = $${params.length}
        RETURNING *`,
-      [title || null, vibe || null, status || null, req.params.id, req.user.id,
-       aspect_w || null, aspect_h || null]
+      params
     );
     if (!rows.length) return res.status(404).json({ error: 'Board not found' });
     res.json({ board: rows[0] });
@@ -303,7 +321,9 @@ router.get('/_home/public', async (req, res) => {
     // position DESC = highest (front) first, so the client can
     // paint back-to-front simply by reversing once.
     const boardMeta = await pool.query(
-      `SELECT title, vibe, aspect_w, aspect_h FROM boards WHERE id = $1`,
+      `SELECT title, vibe, aspect_w, aspect_h,
+              background_color, background_image, show_borders, show_numbers
+       FROM boards WHERE id = $1`,
       [config.board_id]
     );
     const meta = boardMeta.rows[0] || { title: '', vibe: '', aspect_w: 32, aspect_h: 9 };
@@ -325,6 +345,10 @@ router.get('/_home/public', async (req, res) => {
       vibe: meta.vibe,
       aspect_w: meta.aspect_w,
       aspect_h: meta.aspect_h,
+      background_color: meta.background_color,
+      background_image: meta.background_image,
+      show_borders: meta.show_borders,
+      show_numbers: meta.show_numbers,
       items: rows
     });
   } catch (err) {
@@ -343,7 +367,9 @@ router.get('/:id/public', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   try {
     const meta = await pool.query(
-      `SELECT title, vibe, aspect_w, aspect_h FROM boards WHERE id = $1`,
+      `SELECT title, vibe, aspect_w, aspect_h,
+              background_color, background_image, show_borders, show_numbers
+       FROM boards WHERE id = $1`,
       [req.params.id]
     );
     if (!meta.rows.length) return res.status(404).json({ error: 'Board not found' });
@@ -366,6 +392,10 @@ router.get('/:id/public', async (req, res) => {
       vibe: m.vibe,
       aspect_w: m.aspect_w,
       aspect_h: m.aspect_h,
+      background_color: m.background_color,
+      background_image: m.background_image,
+      show_borders: m.show_borders,
+      show_numbers: m.show_numbers,
       items: rows
     });
   } catch (err) {

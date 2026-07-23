@@ -298,3 +298,97 @@
 }
 .boards-note-picker__filters .input{ flex: 1; }
 .boards-note-picker__filters .select{ width: 180px; flex-shrink: 0; }
+
+/* ── Left panel tabs (Items | Settings) ───────────────────────── */
+.boards-tabs{
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--rule);
+}
+.boards-tab{
+  flex: 1;
+  padding: var(--space-3) var(--space-2);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  color: var(--ink-3);
+}
+.boards-tab:hover{ color: var(--ink); }
+.boards-tab.is-active{ color: var(--ink); border-bottom-color: var(--ink); }
+
+.boards-tabpanel{
+  display: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+.boards-tabpanel.is-active{ display: flex; }
+
+/* ── Settings tab fields ──────────────────────────────────────── */
+.boards-settings{
+  padding: var(--space-4);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.boards-field{ display: block; }
+.boards-field__label{
+  display: block;
+  margin-bottom: var(--space-2);
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.boards-color-row{ display: flex; gap: var(--space-2); align-items: center; }
+.boards-color{
+  width: 38px; height: 32px; padding: 0;
+  border: 1px solid var(--rule); border-radius: var(--r-input);
+  background: none; cursor: pointer; flex-shrink: 0;
+}
+.boards-color-row .input{ flex: 1; min-width: 0; }
+.boards-check{
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--sans); font-size: var(--text-small);
+  color: var(--ink); cursor: pointer; padding: 3px 0;
+}
+
+/* ── Canvas: board background, item borders, running numbers ──── */
+/* Background image sits under the items but above the colour. */
+.boards-canvas-frame__bg{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+}
+/* Items must sit above the background layer. */
+.boards-free-item{ z-index: 1; }
+
+.boards-canvas-frame.has-borders .boards-free-item{
+  box-shadow: none;
+  outline: 1px solid rgba(0,0,0,0.55);
+  outline-offset: 0;
+}
+.boards-free-item__num{
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 3px;
+  font-family: var(--sans);
+  font-size: 10px;
+  line-height: 1;
+  color: rgba(0,0,0,0.65);
+  pointer-events: none;
+  display: none;
+}
+.boards-canvas-frame.has-numbers .boards-free-item__num{ display: block; }
+/* Numbers print outside the item box, so the item can't clip them. */
+.boards-canvas-frame.has-numbers .boards-free-item{ overflow: visible; }

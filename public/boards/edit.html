@@ -7,6 +7,7 @@
   <title>Board editor — annex</title>
   <link rel="stylesheet" href="/css/shell.css">
   <link rel="stylesheet" href="/css/spots.css">
+  <link rel="stylesheet" href="/css/uploader.css">
   <link rel="stylesheet" href="/css/boards-editor.css">
 </head>
 <body>
@@ -59,17 +60,70 @@
     <button class="boards-drawer-toggle" id="drawerToggle" type="button" aria-label="Toggle panel">‹</button>
 
     <div class="boards-editor__left">
-      <div class="boards-editor__left-head">
-        <input type="text" class="input input--small" id="titleInput" placeholder="Edition title">
-        <textarea class="textarea" id="vibeInput" placeholder="Vibe / curatorial note…" rows="2"></textarea>
+      <!-- Two kinds of content live here: items you reference WHILE
+           dragging, and settings you set once. Tabs keep both without
+           one burying the other. Spacebar toggles the whole panel. -->
+      <div class="boards-tabs" role="tablist">
+        <button class="boards-tab is-active" data-tab="items" type="button">Items</button>
+        <button class="boards-tab" data-tab="settings" type="button">Settings</button>
       </div>
 
-      <div class="item-list" id="itemList">
-        <div class="stream__empty">Loading…</div>
+      <!-- ITEMS -->
+      <div class="boards-tabpanel is-active" data-panel="items">
+        <div class="item-list" id="itemList">
+          <div class="stream__empty">Loading…</div>
+        </div>
+        <div class="boards-editor__left-foot">
+          <button class="btn" id="addNotesBtn" type="button">+ Add notes from library</button>
+        </div>
       </div>
 
-      <div class="boards-editor__left-foot">
-        <button class="btn" id="addNotesBtn" type="button">+ Add notes from library</button>
+      <!-- SETTINGS -->
+      <div class="boards-tabpanel" data-panel="settings">
+        <div class="boards-settings">
+
+          <label class="boards-field">
+            <span class="boards-field__label">Title</span>
+            <input type="text" class="input input--small" id="titleInput" placeholder="Edition title">
+          </label>
+
+          <label class="boards-field">
+            <span class="boards-field__label">Vibe / curatorial note</span>
+            <textarea class="textarea" id="vibeInput" placeholder="Vibe / curatorial note…" rows="3"></textarea>
+          </label>
+
+          <div class="boards-field">
+            <span class="boards-field__label">Background colour</span>
+            <div class="boards-color-row">
+              <input type="color" id="bgColorInput" class="boards-color" value="#f2f1ec">
+              <input type="text" class="input input--small" id="bgColorHex" placeholder="#f2f1ec" spellcheck="false">
+              <button type="button" class="btn btn--small btn--ghost" id="bgColorClear">Clear</button>
+            </div>
+          </div>
+
+          <div class="boards-field">
+            <span class="boards-field__label">Background image</span>
+            <div class="uploader" id="bgUploader">
+              <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+              <div class="uploader__preview"></div>
+              <button type="button" class="uploader__btn">Upload background</button>
+              <button type="button" class="uploader__btn uploader__btn--remove" id="bgImageRemove" hidden>Remove background</button>
+            </div>
+          </div>
+
+          <div class="boards-field">
+            <span class="boards-field__label">Presentation</span>
+            <label class="boards-check">
+              <input type="checkbox" id="showBordersInput">
+              <span>Borders around items</span>
+            </label>
+            <label class="boards-check">
+              <input type="checkbox" id="showNumbersInput">
+              <span>Running numbers</span>
+            </label>
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -114,6 +168,7 @@
 <script src="/js/util.js"></script>
 <script src="/js/shell.js"></script>
 <script src="/js/nav.js"></script>
+<script src="/js/uploader.js"></script>
 <script src="/js/boards-editor.js"></script>
 </body>
 </html>
