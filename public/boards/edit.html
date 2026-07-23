@@ -93,6 +93,23 @@
           </label>
 
           <div class="boards-field">
+            <span class="boards-field__label">Aspect ratio</span>
+            <div class="boards-aspect-presets">
+              <button type="button" class="boards-preset" data-aspect="32:9">32:9</button>
+              <button type="button" class="boards-preset" data-aspect="21:9">21:9</button>
+              <button type="button" class="boards-preset" data-aspect="16:9">16:9</button>
+              <button type="button" class="boards-preset" data-aspect="4:5">4:5</button>
+              <button type="button" class="boards-preset" data-aspect="1:1">1:1</button>
+            </div>
+            <div class="boards-aspect-row">
+              <input type="number" class="input input--small" id="aspectWInput" min="1" max="200" step="1">
+              <span class="boards-aspect-sep">:</span>
+              <input type="number" class="input input--small" id="aspectHInput" min="1" max="200" step="1">
+            </div>
+            <p class="boards-field__hint">Changing this reshapes the frame — items keep their relative positions, so an already-composed board will shift.</p>
+          </div>
+
+          <div class="boards-field">
             <span class="boards-field__label">Background colour</span>
             <div class="boards-color-row">
               <input type="color" id="bgColorInput" class="boards-color" value="#f2f1ec">

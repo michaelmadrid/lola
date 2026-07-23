@@ -37,6 +37,8 @@
   var bgImageRemove   = document.getElementById('bgImageRemove');
   var showBordersInput = document.getElementById('showBordersInput');
   var showNumbersInput = document.getElementById('showNumbersInput');
+  var aspectWInput = document.getElementById('aspectWInput');
+  var aspectHInput = document.getElementById('aspectHInput');
   // Current styling state, mirrored from the board record.
   var STYLE = { background_color: null, background_image: null, show_borders: false, show_numbers: false };
   var statusSelect = document.getElementById('statusSelect');
@@ -57,6 +59,9 @@
       var aspectW = board.aspect_w || 32;
       var aspectH = board.aspect_h || 9;
       document.documentElement.style.setProperty('--board-aspect', aspectW + ' / ' + aspectH);
+      if (aspectWInput) aspectWInput.value = aspectW;
+      if (aspectHInput) aspectHInput.value = aspectH;
+      markActivePreset(aspectW, aspectH);
       ITEMS = data.items.map(function(row){
         return {
           itemId: row.id,
@@ -167,6 +172,50 @@
       bgImageRemove.hidden = true;
     });
   }
+
+  /* ── Aspect ratio ────────────────────────────────────────────
+     Reshapes the frame live and saves. Item x/y/width are stored as
+     percentages of the frame, so they keep their relative placement —
+     but the frame's shape changes, so a composed board will shift.
+     That's why the ratio is stored per board: existing boards are
+     never touched by someone else's change. */
+  function markActivePreset(w, h){
+    var key = w + ':' + h;
+    document.querySelectorAll('.boards-preset').forEach(function(b){
+      b.classList.toggle('is-active', b.dataset.aspect === key);
+    });
+  }
+
+  function applyAspect(w, h, save){
+    w = parseInt(w, 10); h = parseInt(h, 10);
+    if (!w || !h || w < 1 || h < 1) return;
+    document.documentElement.style.setProperty('--board-aspect', w + ' / ' + h);
+    markActivePreset(w, h);
+    renderEditFrame();
+    if (save){
+      api.patch('/api/boards/' + boardId, { aspect_w: w, aspect_h: h })
+        .catch(function(err){ console.error('Aspect save failed', err); });
+    }
+  }
+
+  document.querySelectorAll('.boards-preset').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var parts = btn.dataset.aspect.split(':');
+      if (aspectWInput) aspectWInput.value = parts[0];
+      if (aspectHInput) aspectHInput.value = parts[1];
+      applyAspect(parts[0], parts[1], true);
+    });
+  });
+
+  var aspectTimer = null;
+  function onAspectInput(){
+    clearTimeout(aspectTimer);
+    aspectTimer = setTimeout(function(){
+      applyAspect(aspectWInput.value, aspectHInput.value, true);
+    }, 500);
+  }
+  if (aspectWInput) aspectWInput.addEventListener('input', onAspectInput);
+  if (aspectHInput) aspectHInput.addEventListener('input', onAspectInput);
 
   function initBgUploader(){
     if (!window.Uploader) return;

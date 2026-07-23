@@ -392,3 +392,28 @@
 .boards-canvas-frame.has-numbers .boards-free-item__num{ display: block; }
 /* Numbers print outside the item box, so the item can't clip them. */
 .boards-canvas-frame.has-numbers .boards-free-item{ overflow: visible; }
+
+/* Aspect ratio control */
+.boards-aspect-presets{ display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: var(--space-2); }
+.boards-preset{
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-input);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  color: var(--ink-2);
+}
+.boards-preset:hover{ color: var(--ink); border-color: var(--ink-3); }
+.boards-preset.is-active{ background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.boards-aspect-row{ display: flex; align-items: center; gap: var(--space-2); }
+.boards-aspect-row .input{ width: 64px; flex: 0 0 auto; }
+.boards-aspect-sep{ color: var(--ink-3); font-family: var(--sans); }
+.boards-field__hint{
+  margin-top: var(--space-2);
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  line-height: 1.4;
+  color: var(--ink-3);
+}
