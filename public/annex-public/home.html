@@ -93,6 +93,15 @@
     will-change:transform;
     mix-blend-mode: multiply;
   }
+  /* Static board (frame narrower than the viewport): one centred stage,
+     no tiling, no drift — see computeBoardStatic(). */
+  .feed-track.is-static{
+    position:absolute;
+    left:0; right:0;
+    width:100%;
+    justify-content:center;
+    will-change:auto;
+  }
 
   /* Height + top offset are set inline per-item by JS (applyItemPlacement) —
      both are viewport-relative percentages, same math the old single
@@ -131,6 +140,7 @@
   .board-frame__item{
     position:absolute;
     overflow:hidden;
+    border-radius:2px;
     pointer-events:auto;
   }
   /* Linked items are clickable <a> elements */
@@ -186,7 +196,7 @@
   .board-frame__item{ z-index:1; }
 
   .board-frame.has-borders .board-frame__item{
-    outline:2px solid rgba(0,0,0,1);
+    outline:1px solid rgba(0,0,0,0.55);
     outline-offset:0;
   }
   .board-frame__num{
@@ -196,7 +206,6 @@
     margin-top:4px;
     font-family:var(--board-font, "Helvetica Neue", Helvetica, Arial, sans-serif);
     font-size:11px;
-    font-weight:500;
     line-height:1;
     color:rgba(0,0,0,0.65);
     pointer-events:none;
@@ -810,14 +819,40 @@
     });
   }
 
-  // Same composition tiled canvasTileCount×2 (still doubled for the
-  // seamless wrap, same convention as feed mode) — every tile is
-  // identical, so the loop reads as one continuous photograph.
+  /* A board only drifts if its frame is WIDER than the viewport —
+     that's what makes the tiled loop read as one continuous panorama.
+     A narrow board (4:5, 1:1, or any ratio whose frame is narrower
+     than the screen) can't drift without visibly repeating, so it
+     renders as a single centered, still stage instead. The behaviour
+     follows from the composition; no extra setting needed. */
+  var boardIsStatic = false;
+  var currentBoardItems = null; // kept so a resize can re-render if the mode flips
+
+  function computeBoardStatic(){
+    var parts = String(boardAspect).split('/');
+    var ar = parseFloat(parts[0]) / parseFloat(parts[1]);
+    if (!ar || !isFinite(ar)) return false;
+    var frameW = (window.innerHeight * CONFIG.canvasHeightRatio) * ar;
+    return frameW < window.innerWidth;
+  }
+
   function renderBoardTrack(items){
     track.innerHTML = '';
-    var totalTiles = CONFIG.canvasTileCount * 2;
-    for (var i = 0; i < totalTiles; i++){
+    currentBoardItems = items;
+    boardIsStatic = computeBoardStatic();
+
+    if (boardIsStatic){
+      track.classList.add('is-static');
       track.appendChild(buildBoardFrame(items));
+      offset = 0;
+      throwVelocity = 0;
+      loopWidth = 0;
+    } else {
+      track.classList.remove('is-static');
+      var totalTiles = CONFIG.canvasTileCount * 2;
+      for (var i = 0; i < totalTiles; i++){
+        track.appendChild(buildBoardFrame(items));
+      }
     }
     applyBoardFrameSize();
   }
@@ -916,7 +951,16 @@
     if (resizePending) return;
     resizePending = true;
     requestAnimationFrame(function(){
-      if (currentMode === 'board') applyBoardFrameSize();
+      if (currentMode === 'board'){
+        // A resize can push the frame across the "wider than viewport"
+        // threshold — re-render so it switches between drifting and
+        // static rather than tiling into visible repeats.
+        if (currentBoardItems && computeBoardStatic() !== boardIsStatic){
+          renderBoardTrack(currentBoardItems);
+        } else {
+          applyBoardFrameSize();
+        }
+      }
       else applyItemPlacement();
       requestAnimationFrame(function(){
         measureLoopWidth();
@@ -927,6 +971,10 @@
   window.addEventListener('resize', onResize);
 
   function applyTransform(){
+    if (boardIsStatic){
+      track.style.transform = 'none';
+      return;
+    }
     if (loopWidth > 0){
       // wrap seamlessly
       if (offset >= loopWidth) offset -= loopWidth;
