@@ -16,7 +16,7 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB — the cap is on the INPUT file; originals get resized + converted to WebP on save, so large inputs are fine
   fileFilter: (req, file, cb) => {
     const ok = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(file.mimetype);
     cb(ok ? null : new Error('Unsupported file type'), ok);
