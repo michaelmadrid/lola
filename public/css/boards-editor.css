@@ -181,8 +181,13 @@
    home.html's CONFIG.canvasAspectRatio. */
 .boards-canvas-frame{
   position: relative;
-  flex-shrink: 0;
+  /* Fit inside the wrapper on BOTH axes. Wide ratios are limited by
+     width, tall ratios by height — without this a 4:5 frame grows
+     taller than the panel and gets clipped, so items land on a stage
+     you can't fully see. */
   width: 100%;
+  max-width: 100%;
+  max-height: 100%;
   aspect-ratio: var(--board-aspect, 32 / 9); /* set per-board by boards-editor.js from the board's stored ratio */
   background: var(--bg);
   box-shadow: 0 0 0 1px var(--rule);
