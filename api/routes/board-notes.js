@@ -76,14 +76,25 @@ router.get('/public/grid', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   try {
     const result = await pool.query(`
-      SELECT id, type, headline, image_url, reference_title, reference_url,
-             pin, publish_date, category
-      FROM board_notes
-      WHERE status = 'published'
-        AND deleted_at IS NULL
-        AND publish_date <= NOW()
-        AND (expires_at IS NULL OR expires_at > NOW())
-      ORDER BY pin DESC, publish_date DESC
+      SELECT bn.id, bn.type, bn.headline, bn.image_url, bn.reference_title,
+             bn.reference_url, bn.pin, bn.publish_date, bn.category,
+             -- Linked spots, for the provenance line ("From X, City").
+             -- Null when a note isn't linked to anywhere; the client
+             -- falls back to reference_title in that case.
+             (SELECT json_agg(json_build_object(
+                        'name', s.place_name,
+                        'city', c.name
+                      ) ORDER BY s.place_name)
+                FROM note_spot_links l
+                JOIN spots s ON s.id = l.spot_id
+                LEFT JOIN cities c ON c.id = s.city_id
+               WHERE l.note_id = bn.id) AS spots
+      FROM board_notes bn
+      WHERE bn.status = 'published'
+        AND bn.deleted_at IS NULL
+        AND bn.publish_date <= NOW()
+        AND (bn.expires_at IS NULL OR bn.expires_at > NOW())
+      ORDER BY bn.pin DESC, bn.publish_date DESC
       LIMIT 200`);
     res.json({ notes: result.rows });
   } catch (err) {

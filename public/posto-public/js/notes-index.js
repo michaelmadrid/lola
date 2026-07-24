@@ -69,8 +69,64 @@
     mount.innerHTML = `<div class="notes-grid">${cards}</div>`;
   }
 
+  // ── Finds layout ───────────────────────────────────────────
+  // Chronological, newest first, with a provenance line under each
+  // item: the linked spot if there is one, otherwise the note's own
+  // reference_title. Pinned notes are NOT floated to the top here —
+  // this view is about recency, so pins would undercut it.
+  function renderFinds(notes) {
+    const withImages = notes.filter(n => !!n.image_url);
+    if (!withImages.length) {
+      mount.innerHTML = '<div class="notes-index__empty">Nothing here yet.</div>';
+      return;
+    }
+
+    const sorted = withImages.slice().sort(
+      (a, b) => new Date(b.publish_date) - new Date(a.publish_date)
+    );
+
+    const cards = sorted.map(n => {
+      const hasLink = !!n.reference_url;
+      const abs = hasLink && /^https?:\/\//i.test(n.reference_url);
+      const openAttrs = abs ? ' target="_blank" rel="noopener"' : '';
+      const tag = hasLink ? 'a' : 'div';
+      const hrefAttr = hasLink ? ` href="${esc(n.reference_url)}"${openAttrs}` : '';
+
+      // Provenance: a linked spot wins, else the reference title.
+      const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
+      const source = spot
+        ? esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '')
+        : (n.reference_title ? esc(n.reference_title) : '');
+      const from = source
+        ? `<div class="find-card__from">From ${source}</div>`
+        : '';
+
+      return `
+        <${tag} class="find-card${hasLink ? ' find-card--linked' : ''}"${hrefAttr}>
+          <div class="find-card__date">${esc(fmtDate(n.publish_date))}</div>
+          <div class="find-card__thumb">
+            <img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">
+          </div>
+          <div class="find-card__title">${esc(n.headline || 'Untitled')}</div>
+          ${from}
+        </${tag}>`;
+    }).join('');
+
+    mount.innerHTML = `<div class="finds-grid">${cards}</div>`;
+  }
+
+  // Deadpan tabular date — no "3 weeks ago".
+  function fmtDate(d) {
+    if (!d) return '';
+    const dt = new Date(d);
+    if (isNaN(dt)) return '';
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[dt.getMonth()] + ' ' + dt.getFullYear();
+  }
+
   const LAYOUTS = {
     grid: renderGrid,
+    finds: renderFinds,
     // future: list, wall, etc.
   };
 
