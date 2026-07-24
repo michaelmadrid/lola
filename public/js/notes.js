@@ -435,11 +435,6 @@
 
   function drawChips() {
     if (!linkChips) return;
-    if (!editingId) {
-      linkChips.innerHTML = '<span class="link-picker__empty">Save the note first to link spots.</span>';
-      if (linkSearch) linkSearch.disabled = true;
-      return;
-    }
     if (linkSearch) linkSearch.disabled = false;
     if (!linkedSpots.length) {
       linkChips.innerHTML = '<span class="link-picker__empty">No linked spots yet.</span>';
@@ -457,7 +452,7 @@
 
   async function loadLinkedSpots() {
     linkedSpots = [];
-    if (!editingId) { drawChips(); return; }
+    if (!editingId) { drawChips(); return; } // new note — nothing saved to load
     try {
       const data = await api.get('/api/links/note/' + editingId);
       linkedSpots = data.spots || [];
@@ -465,9 +460,13 @@
     drawChips();
   }
 
+  // On a saved note, links persist immediately. On a NEW note there's no
+  // id yet, so picks are staged in linkedSpots and flushed by save() once
+  // the note exists — see flushStagedLinks().
   async function linkSpot(spot) {
-    if (!editingId) return;
     if (linkedSpots.some(function (s) { return s.id === spot.id; })) return; // already linked
+    if (!editingId) { linkedSpots.push(spot); drawChips(); return; }
+
     try {
       await api.post('/api/links', { note_id: editingId, spot_id: spot.id, source: 'manual' });
       linkedSpots.push(spot);
@@ -476,12 +475,27 @@
   }
 
   async function unlinkSpot(spotId) {
-    if (!editingId) return;
+    // Staged pick on an unsaved note — just drop it from the array.
+    if (!editingId) {
+      linkedSpots = linkedSpots.filter(function (s) { return s.id !== spotId; });
+      drawChips();
+      return;
+    }
     try {
       await api.delete('/api/links?note_id=' + editingId + '&spot_id=' + spotId);
       linkedSpots = linkedSpots.filter(function (s) { return s.id !== spotId; });
       drawChips();
     } catch (err) { console.error('unlink failed', err); }
+  }
+
+  // Called by save() right after a brand-new note gets its id, so the
+  // spots picked before it existed become real rows.
+  async function flushStagedLinks(noteId) {
+    if (!noteId || !linkedSpots.length) return;
+    await Promise.all(linkedSpots.map(function (s) {
+      return api.post('/api/links', { note_id: noteId, spot_id: s.id, source: 'manual' })
+        .catch(function (err) { console.error('staged link failed for spot ' + s.id, err); });
+    }));
   }
 
   if (linkSearch) {
@@ -708,8 +722,15 @@
     const body = buildBody(status);
     if (!body.headline) { alert('Headline required'); return; }
     try {
-      if (editingId) await api.patch('/api/board-notes/' + editingId, body);
-      else await api.post('/api/board-notes', body);
+      if (editingId) {
+        await api.patch('/api/board-notes/' + editingId, body);
+      } else {
+        // New note: capture the id the server hands back, then persist
+        // any spots that were picked while the note didn't exist yet.
+        const res = await api.post('/api/board-notes', body);
+        const newId = res && res.note && res.note.id;
+        await flushStagedLinks(newId);
+      }
       closeEditor();
       load();
     } catch (err) {
