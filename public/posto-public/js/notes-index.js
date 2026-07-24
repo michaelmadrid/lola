@@ -93,17 +93,24 @@
       const hrefAttr = hasLink ? ` href="${esc(n.reference_url)}"${openAttrs}` : '';
 
       // Provenance: a linked spot wins, else the reference title.
+      // The date rides quietly at the end of the same line rather than
+      // leading the card — chronological order already says "recent",
+      // so a big date on every card is doing work nobody asked for.
+      // Delete the `when` bits below to drop dates entirely.
       const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
       const source = spot
         ? esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '')
         : (n.reference_title ? esc(n.reference_title) : '');
-      const from = source
-        ? `<div class="find-card__from">From ${source}</div>`
+      const when = fmtDate(n.publish_date);
+      const metaBits = [];
+      if (source) metaBits.push('From ' + source);
+      if (when) metaBits.push('<span class="find-card__date">' + esc(when) + '</span>');
+      const from = metaBits.length
+        ? `<div class="find-card__from">${metaBits.join(' · ')}</div>`
         : '';
 
       return `
         <${tag} class="find-card${hasLink ? ' find-card--linked' : ''}"${hrefAttr}>
-          <div class="find-card__date">${esc(fmtDate(n.publish_date))}</div>
           <div class="find-card__thumb">
             <img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">
           </div>
