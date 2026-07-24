@@ -40,15 +40,31 @@
 
   // Website + Google Maps links for a spot, as small underlined <a>s.
   // Mirrors the single-spot page (spot.js). Returns '' if neither exists.
+  // Instagram is stored as either "@handle" or a full URL (the editor
+  // accepts both), so normalise before linking.
+  function igUrl(value) {
+    const v = String(value || '').trim();
+    if (!v) return null;
+    if (/^https?:\/\//i.test(v)) return v;
+    return 'https://instagram.com/' + v.replace(/^@/, '');
+  }
+
+  // Site / Map / IG as small text links — no icons, and short labels
+  // because these repeat on every row of a dense multi-column index.
+  // Only what exists is shown, so a row doubles as a completeness cue.
   function spotLinks(s) {
     const links = [];
     const site = s.website || s.url;
     if (site) {
-      links.push('<a href="' + esc(site) + '" target="_blank" rel="noopener">Website</a>');
+      links.push('<a href="' + esc(site) + '" target="_blank" rel="noopener">Site</a>');
     }
     if (s.google_place_id) {
       const maps = 'https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(s.google_place_id);
       links.push('<a href="' + maps + '" target="_blank" rel="noopener">Map</a>');
+    }
+    const ig = igUrl(s.instagram);
+    if (ig) {
+      links.push('<a href="' + esc(ig) + '" target="_blank" rel="noopener">IG</a>');
     }
     return links.join('<span class="index-flow__linksep"> · </span>');
   }
