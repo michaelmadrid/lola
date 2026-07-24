@@ -1100,6 +1100,4 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 .find-card--linked:hover .find-card__thumb img { opacity: 0.82; transition: opacity 140ms ease; }
 .find-card--linked:hover .find-card__title { text-decoration: underline; text-underline-offset: 2px; }
 
-.find-card__date { color: var(--ink-3); }
-
 @media (max-width: 460px) { .find-card__thumb { height: 150px; } }

@@ -93,20 +93,14 @@
       const hrefAttr = hasLink ? ` href="${esc(n.reference_url)}"${openAttrs}` : '';
 
       // Provenance: a linked spot wins, else the reference title.
-      // The date rides quietly at the end of the same line rather than
-      // leading the card — chronological order already says "recent",
-      // so a big date on every card is doing work nobody asked for.
-      // Delete the `when` bits below to drop dates entirely.
+      // No date — the chronological order already says "recent", and a
+      // date on every card was noise (and lived inside the link).
       const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
       const source = spot
         ? esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '')
         : (n.reference_title ? esc(n.reference_title) : '');
-      const when = fmtDate(n.publish_date);
-      const metaBits = [];
-      if (source) metaBits.push('From ' + source);
-      if (when) metaBits.push('<span class="find-card__date">' + esc(when) + '</span>');
-      const from = metaBits.length
-        ? `<div class="find-card__from">${metaBits.join(' · ')}</div>`
+      const from = source
+        ? `<div class="find-card__from">From ${source}</div>`
         : '';
 
       return `
@@ -120,15 +114,6 @@
     }).join('');
 
     mount.innerHTML = `<div class="finds-grid">${cards}</div>`;
-  }
-
-  // Deadpan tabular date — no "3 weeks ago".
-  function fmtDate(d) {
-    if (!d) return '';
-    const dt = new Date(d);
-    if (isNaN(dt)) return '';
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return months[dt.getMonth()] + ' ' + dt.getFullYear();
   }
 
   const LAYOUTS = {
