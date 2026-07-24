@@ -2,7 +2,7 @@
    Shows: place name (headline), city, website + Google Maps as underlined
    text links (not icons), and an image if one exists. */
 (function () {
-  const API = 'https://studio.annex.site/api/spots/public/';
+  const API = 'https://studio.posto.world/api/spots/public/';
   const el = document.getElementById('spot-detail');
   if (!el) return;
 
@@ -21,7 +21,7 @@
   }
   function imgSrc(url) {
     if (!url) return '';
-    return url.startsWith('http') ? url : 'https://studio.annex.site' + url;
+    return url.startsWith('http') ? url : 'https://studio.posto.world' + url;
   }
 
   fetch(API + encodeURIComponent(id))

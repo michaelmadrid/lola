@@ -41,7 +41,7 @@
         html += '</div>';
         return html;
       }).join('') +
-      '<a class="admin-rail__back" href="/">← Back to annex</a>';
+      '<a class="admin-rail__back" href="/">← Back to POSTO</a>';
 
     document.body.insertBefore(rail, document.body.firstChild);
     document.body.classList.add('has-admin-rail');

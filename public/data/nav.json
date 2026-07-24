@@ -1,7 +1,7 @@
 {
   "_meta": {
     "version": 5,
-    "brand": "annex",
+    "brand": "posto",
     "note": "Single source of truth for navigation + logo. Editing this file updates every page that uses nav.js."
   },
 

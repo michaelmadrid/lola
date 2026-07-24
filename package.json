@@ -1,7 +1,7 @@
 {
-  "name": "kit.summer-holiday.com",
+  "name": "posto.world",
   "version": "0.5.0",
-  "description": "Lola — travel companion + curated index, by Summer Holiday",
+  "description": "POSTO \u2014 an editorial collection by Summer Holiday",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

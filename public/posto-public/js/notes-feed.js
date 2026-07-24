@@ -1,8 +1,8 @@
 /* notes-feed.js — pulls published Notes into the posto.world center column.
-   Talks to studio.annex.site since posto.world is a static-only domain
+   Talks to studio.posto.world since posto.world is a static-only domain
    (no Node backend on this side). Public, unauthenticated endpoint. */
 (function () {
-  const API = 'https://studio.annex.site/api/board-notes/public';
+  const API = 'https://studio.posto.world/api/board-notes/public';
   const feed = document.getElementById('notes-feed');
   if (!feed) return;
 
@@ -14,7 +14,7 @@
 
   function imgSrc(url) {
     if (!url) return '';
-    return url.startsWith('http') ? url : 'https://studio.annex.site' + url;
+    return url.startsWith('http') ? url : 'https://studio.posto.world' + url;
   }
 
   function renderNote(n) {

@@ -11,7 +11,7 @@
    Combine: /spots?cat=bookstore&layout=wall
    Source: curated, non-trashed spots from studio. */
 (function () {
-  const API = 'https://studio.annex.site/api/spots/index';
+  const API = 'https://studio.posto.world/api/spots/index';
   const el = document.getElementById('spots-index');
   if (!el) return;
 

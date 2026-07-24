@@ -51,10 +51,10 @@ app.get('/guide/:slug', (req, res) => {
 });
 
 // ============ ANNEX PUBLIC ============
-// The public site (annex.site) is served by Nginx directly from
-// public/annex-public/. This route is a fallback for local/testing.
-app.get('/annex-public', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'annex-public', 'index.html'));
+// The public site (posto.world) is served by Nginx directly from
+// public/posto-public/. This route is a fallback for local/testing.
+app.get('/posto-public', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'posto-public', 'index.html'));
 });
 
 // ============ FALLBACK ============

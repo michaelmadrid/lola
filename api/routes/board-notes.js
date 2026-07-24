@@ -46,7 +46,7 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
-// GET /api/board-notes/public — annex.site front page feed. No auth.
+// GET /api/board-notes/public — posto.world front page feed. No auth.
 // Published, not trashed, not expired. Pinned float to top.
 router.get('/public', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');

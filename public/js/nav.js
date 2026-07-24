@@ -144,7 +144,7 @@
     const currentNorm = currentPath();
     loadNavConfig().then(config => {
       // Centralized logo — single source of truth.
-      const brand = (config._meta && config._meta.brand) || 'annex';
+      const brand = (config._meta && config._meta.brand) || 'posto';
       document.querySelectorAll('.logo').forEach(logo => {
         logo.textContent = brand;
         if (!logo.getAttribute('href')) logo.setAttribute('href', '/');

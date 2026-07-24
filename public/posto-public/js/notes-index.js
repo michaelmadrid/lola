@@ -1,6 +1,6 @@
 /* =========================================================
    notes-index.js
-   Public notes grid for /notes (annex-public). Mirrors the
+   Public notes grid for /notes (posto-public). Mirrors the
    shape of spots-index.js: reads ?layout=, fetches the public
    grid endpoint, renders into #notes-index.
 
@@ -12,7 +12,7 @@
    page shell.
    ========================================================= */
 (function () {
-  const API = 'https://studio.annex.site/api/board-notes/public/grid';
+  const API = 'https://studio.posto.world/api/board-notes/public/grid';
 
   const params = new URLSearchParams(location.search);
   const layout = (params.get('layout') || 'grid').toLowerCase().trim();
@@ -34,7 +34,7 @@
 
   function imgSrc(url) {
     if (!url) return '';
-    return url.indexOf('http') === 0 ? url : 'https://studio.annex.site' + url;
+    return url.indexOf('http') === 0 ? url : 'https://studio.posto.world' + url;
   }
 
   // ── Grid layout — the only one for now ─────────────────────

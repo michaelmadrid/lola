@@ -2,7 +2,7 @@
    Reads the id from the path, fetches the published note, renders it.
    body is rendered as HTML (trusted — only editors publish notes). */
 (function () {
-  const API = 'https://studio.annex.site/api/board-notes/public/';
+  const API = 'https://studio.posto.world/api/board-notes/public/';
   const el = document.getElementById('note-permalink');
   if (!el) return;
 
@@ -22,7 +22,7 @@
   }
   function imgSrc(url) {
     if (!url) return '';
-    return url.startsWith('http') ? url : 'https://studio.annex.site' + url;
+    return url.startsWith('http') ? url : 'https://studio.posto.world' + url;
   }
 
   fetch(API + encodeURIComponent(id))
