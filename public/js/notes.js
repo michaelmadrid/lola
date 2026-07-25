@@ -557,6 +557,79 @@
   let editingFeed = true;
   let quill = null;
 
+  // ── Fast capture: paste a URL → prefill ──────────────────────
+  const captureUrl    = document.getElementById('capture-url');
+  const captureGo     = document.getElementById('capture-go');
+  const captureStatus = document.getElementById('capture-status');
+
+  function setCaptureStatus(msg, kind) {
+    if (!captureStatus) return;
+    captureStatus.textContent = msg || '';
+    captureStatus.hidden = !msg;
+    captureStatus.className = 'capture-quick__status' + (kind ? ' is-' + kind : '');
+  }
+
+  function setEditorImage(url) {
+    editingImageUrl = url;
+    const preview = document.querySelector('#note-fs-uploader .uploader__preview');
+    if (preview) preview.innerHTML = url ? '<img src="' + esc(url) + '" alt="">' : '';
+    if (imageRemoveBtn) imageRemoveBtn.hidden = !url;
+  }
+
+  async function runCapture() {
+    const url = (captureUrl.value || '').trim();
+    if (!/^https?:\/\//i.test(url)) { setCaptureStatus('Paste a full http(s) link first.', 'warn'); return; }
+    setCaptureStatus('Fetching…', 'busy');
+    captureGo.disabled = true;
+    try {
+      const data = await api.post('/api/extract', { url });
+      const s = data.suggestion || {};
+
+      // Only fill EMPTY fields — never clobber something already typed.
+      if (s.headline && !headlineEl.value.trim()) headlineEl.value = s.headline;
+      if (!refUrlEl.value.trim()) refUrlEl.value = url;
+      if (s.reference_title && !refTitleEl.value.trim()) refTitleEl.value = s.reference_title;
+
+      // Auto-link the matched spot (staged if the note is new).
+      if (data.matched_spot) {
+        linkSpot({ id: data.matched_spot.id,
+                   place_name: data.matched_spot.place_name,
+                   city: data.matched_spot.city });
+      }
+
+      // Pull the og:image onto Spaces as WebP, unless one's already set.
+      let imgMsg = '';
+      if (s.image_url && !editingImageUrl) {
+        setCaptureStatus('Fetching image…', 'busy');
+        try {
+          const up = await api.post('/api/upload/from-url', { url: s.image_url });
+          if (up && up.url) setEditorImage(up.url);
+        } catch (imgErr) {
+          imgMsg = ' (image couldn’t be pulled — add manually)';
+        }
+      }
+
+      const bits = [];
+      if (data.matched_spot) bits.push('linked ' + data.matched_spot.place_name);
+      if (data.fetch_error) bits.push(data.fetch_error);
+      setCaptureStatus(
+        (data.fetch_error ? 'Partly filled — ' : 'Filled') +
+        (bits.length ? ' · ' + bits.join(' · ') : '') + imgMsg,
+        data.fetch_error ? 'warn' : 'ok'
+      );
+    } catch (err) {
+      setCaptureStatus('Couldn’t read that link: ' + err.message, 'warn');
+    } finally {
+      captureGo.disabled = false;
+    }
+  }
+
+  if (captureGo)  captureGo.addEventListener('click', runCapture);
+  if (captureUrl) captureUrl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); runCapture(); }
+  });
+
+
   // Lazily init Quill once (only when first needed for an Article).
   function ensureQuill() {
     if (quill || typeof Quill === 'undefined') return quill;
@@ -617,6 +690,8 @@
 
   function openEditor(note) {
     editingId = note ? note.id : null;
+    if (captureUrl) captureUrl.value = '';
+    setCaptureStatus('', null);
     setType(note ? note.type : 'note');
     headlineEl.value = note ? note.headline : '';
     bodyEl.value = note ? (note.body || '') : '';

@@ -130,4 +130,68 @@ router.post('/', authenticate, upload.single('image'), async (req, res) => {
   }
 });
 
+// POST /api/upload/from-url  { url }
+// Fetches a remote image (e.g. an og:image from the extractor) and runs
+// it through the SAME resize → WebP → Spaces pipeline as a file upload,
+// so captured images live on the CDN as WebP like everything else — not
+// as hotlinks to someone's server that could rot or block.
+router.post('/from-url', authenticate, async (req, res) => {
+  const src = (req.body.url || '').trim();
+  if (!/^https?:\/\//i.test(src)) {
+    return res.status(400).json({ error: 'A full http(s) image URL is required' });
+  }
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const resp = await fetch(src, {
+      redirect: 'follow',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; POSTO/1.0; +https://posto.world)' },
+    });
+    clearTimeout(timer);
+    if (!resp.ok) return res.status(422).json({ error: 'Image fetch returned ' + resp.status });
+
+    const type = (resp.headers.get('content-type') || '').toLowerCase();
+    if (!type.startsWith('image/')) {
+      return res.status(422).json({ error: 'That URL is not an image (' + (type || 'unknown') + ')' });
+    }
+
+    const inputBuf = Buffer.from(await resp.arrayBuffer());
+    if (inputBuf.length > 25 * 1024 * 1024) {
+      return res.status(413).json({ error: 'Remote image too large' });
+    }
+
+    const isGif = type === 'image/gif';
+    const ext = isGif ? 'gif' : 'webp';
+    const contentType = isGif ? 'image/gif' : 'image/webp';
+    const id = crypto.randomBytes(8).toString('hex');
+
+    const mainBuf = isGif
+      ? inputBuf
+      : await sharp(inputBuf)
+          .rotate()
+          .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+          .webp({ quality: 82 })
+          .toBuffer();
+
+    const url = await store(`${id}.${ext}`, mainBuf, contentType);
+
+    let thumbUrl = null;
+    if (req.query.thumb !== 'false' && !isGif) {
+      const thumbBuf = await sharp(inputBuf)
+        .rotate()
+        .resize(400, 400, { fit: 'cover' })
+        .webp({ quality: 78 })
+        .toBuffer();
+      thumbUrl = await store(`${id}-thumb.${ext}`, thumbBuf, contentType);
+    }
+
+    res.json({ url, thumb_url: thumbUrl });
+  } catch (err) {
+    const msg = err.name === 'AbortError' ? 'Timed out fetching the image' : err.message;
+    console.error('[upload/from-url] failed:', msg);
+    res.status(500).json({ error: msg });
+  }
+});
+
 module.exports = router;

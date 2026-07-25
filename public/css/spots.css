@@ -799,3 +799,22 @@ body.has-admin-checks .stream__item {
   cursor: pointer;
 }
 .bulk-bar__cat[hidden] { display: none !important; }
+
+/* ── Fast capture box (note editor) ─────────────────────────── */
+.capture-quick {
+  margin-bottom: var(--space-5, 24px);
+  padding-bottom: var(--space-4, 16px);
+  border-bottom: 1px solid var(--rule);
+}
+.capture-quick__row { display: flex; gap: 8px; align-items: stretch; }
+.capture-quick__row .spot-fs__input { flex: 1; }
+.capture-quick__status {
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: var(--text-tiny, 12px);
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+.capture-quick__status.is-busy { color: var(--ink-2); }
+.capture-quick__status.is-ok   { color: var(--ink-2); }
+.capture-quick__status.is-warn { color: var(--danger, #c0392b); }

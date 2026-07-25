@@ -44,6 +44,7 @@ app.use('/api/links', require('./api/routes/links'));
 app.use('/api/todos',   require('./api/routes/todos'));
 app.use('/api/guides',  require('./api/routes/guides'));
 app.use('/api/upload',  require('./api/routes/upload'));
+app.use('/api/extract', require('./api/routes/extract'));
 
 // ============ PUBLIC GUIDE VIEW ============
 app.get('/guide/:slug', (req, res) => {

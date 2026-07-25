@@ -107,6 +107,18 @@
   <div class="modal__body">
     <div class="modal__body__inner spot-fs__inner">
 
+      <!-- Fast capture: paste a URL, pull title/image/description and
+           auto-match the domain to a spot. Fills the fields below;
+           you confirm. Non-fatal if the page can't be read. -->
+      <div class="capture-quick" id="capture-quick">
+        <div class="capture-quick__row">
+          <input type="url" class="spot-fs__input" id="capture-url"
+                 placeholder="Paste a link to auto-fill…" autocomplete="off">
+          <button type="button" class="btn btn--small" id="capture-go">Fetch</button>
+        </div>
+        <div class="capture-quick__status" id="capture-status" hidden></div>
+      </div>
+
       <div class="spot-fs__field">
         <label class="spot-fs__label">Type</label>
         <div class="spot-fs__been-row" id="note-type-row">
