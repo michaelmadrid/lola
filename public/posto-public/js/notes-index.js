@@ -96,7 +96,7 @@
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
     bri:     -0.02,             // brightness
-    matte:   16,                // 0–44 — lifts blacks / caps whites
+    matte:   40,                // 0–44 — lifts blacks / caps whites
     split:   0.07,              // split-tone strength (0–0.25)
     warm:    [255, 238, 214],   // highlight tint (cream) — #ffeed6
     cool:    [46, 58, 86],      // shadow tint (navy)    — #2e3a56
