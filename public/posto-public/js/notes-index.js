@@ -91,7 +91,7 @@
   // roll. Pipeline: desaturate → normalize → contrast/bright → matte
   // → split-tone → grain. Edit these freely; they're the only knobs.
   const GRADE = {
-    on:      true,
+    on:      false,
     sat:     0.8,               // 0 = greyscale, 1 = full colour
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
