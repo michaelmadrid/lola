@@ -153,19 +153,34 @@
       const C = SHELF.cols, G = SHELF.gutter;
       const W = grid.clientWidth;
       const colW = (W - G * (C - 1)) / C;
-      const titleH = 40;
 
       grid.style.gridTemplateColumns = 'repeat(' + C + ',1fr)';
       grid.style.columnGap = G + 'px';
       grid.style.gridAutoFlow = 'dense';
 
+      // Pass 1: set each frame's height and column span.
       cells.forEach(function (cell, i) {
         const s = Math.min(spanFor(i, C), C);
         const w = s * colW + (s - 1) * G;
         const h = Math.round(w * SHELF.ratio);
         cell.style.gridColumn = 'span ' + s;
         cell.querySelector('.find-frame').style.height = h + 'px';
-        cell.style.gridRowEnd = 'span ' + Math.round(h + titleH + G);
+        cell.dataset.frameH = h;
+      });
+
+      // Pass 2: measure the actual text block height per cell (frame
+      // height is known) and set the row span from their sum. Measuring
+      // the cell box directly is unreliable here because grid-auto-rows
+      // constrains it — so we sum the known frame + the real text height.
+      cells.forEach(function (cell) {
+        const frameH = parseFloat(cell.dataset.frameH) || 0;
+        let textH = 0;
+        Array.prototype.forEach.call(cell.children, function (child) {
+          if (!child.classList.contains('find-frame')) {
+            textH += child.getBoundingClientRect().height;
+          }
+        });
+        cell.style.gridRowEnd = 'span ' + Math.round(frameH + textH + G);
         cell.style.marginBottom = G + 'px';
       });
     }
