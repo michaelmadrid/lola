@@ -76,11 +76,20 @@ router.get('/public/grid', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   try {
     const result = await pool.query(`
-      SELECT bn.id, bn.type, bn.headline, bn.image_url, bn.reference_title,
+      SELECT bn.id, bn.type, bn.headline, bn.reference_title,
              bn.reference_url, bn.pin, bn.publish_date, bn.category,
+             -- Cover resolution: gallery's first image wins when a gallery
+             -- exists, else the note's own hero image_url. So a note with a
+             -- gallery never shows a heroless card on the shelf, and deleting
+             -- the gallery cleanly falls back to the hero (nothing lost).
+             COALESCE(
+               (SELECT ni.image_url FROM note_images ni
+                 WHERE ni.note_id = bn.id
+                 ORDER BY ni.position ASC, ni.id ASC
+                 LIMIT 1),
+               bn.image_url
+             ) AS image_url,
              -- Linked spots, for the provenance line ("From X, City").
-             -- Null when a note isn't linked to anywhere; the client
-             -- falls back to reference_title in that case.
              (SELECT json_agg(json_build_object(
                         'name', s.place_name,
                         'city', c.name
