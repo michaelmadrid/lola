@@ -80,7 +80,7 @@
   // gridRowEnd is set so tiles pack tight (grid-auto-rows:1px).
   const SHELF = {
     ratio: 1.25,     // 4:5 (height/width). 1=1:1, 1.3333=3:4, 1.5=2:3, 0.6667=3:2
-    cols: 6,         // columns
+    cols: 9,         // columns
     gutter: 10,      // px
     heroSpan: 2,     // span for the hero tile in hero/rhythm patterns
     pattern: 'rhythm', // 'none' | 'hero' | 'rhythm' | 'chaos'
