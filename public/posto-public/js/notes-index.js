@@ -222,26 +222,19 @@
   const LUM = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
 
   function gradeCanvas(img, canvas) {
-    // Canvas matches the image's TRUE aspect ratio (longest side capped at
-    // GRADE_RES). object-fit:cover crops it into the 4:5 frame at rest,
-    // contain shows true proportions on hover.
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    const scale = GRADE_RES / Math.max(iw, ih);
-    const cw = Math.max(1, Math.round(iw * scale));
-    const ch = Math.max(1, Math.round(ih * scale));
+    const cw = GRADE_RES, ch = GRADE_RES;
     canvas.width = cw; canvas.height = ch;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(img, 0, 0, iw, ih, 0, 0, cw, ch);
+    // cover-fit the source into the square sample buffer
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const side = Math.min(iw, ih);
+    const sx = (iw - side) / 2, sy = (ih - side) / 2;
+    ctx.drawImage(img, sx, sy, side, side, 0, 0, cw, ch);
 
     if (!GRADE.on) return;
 
-    // getImageData throws if the canvas is CORS-tainted. If so, we keep the
-    // ungraded drawImage result above (still visible) rather than blanking.
-    let id;
-    try { id = ctx.getImageData(0, 0, cw, ch); }
-    catch (e) { return; }
-    const d = id.data, n = cw * ch;
+    const id = ctx.getImageData(0, 0, cw, ch), d = id.data, n = cw * ch;
     const R = new Float32Array(n), Gc = new Float32Array(n), B = new Float32Array(n), L = new Float32Array(n);
     for (let i = 0; i < n; i++) {
       let r = d[i*4]/255, g = d[i*4+1]/255, b = d[i*4+2]/255;
