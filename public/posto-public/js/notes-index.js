@@ -283,15 +283,9 @@
 
 
   // ── Finds v2 (?layout=findsv2) ───────────────────────────────
-  // Uniform grid of fixed 4:5 slots. Each image sits at its TRUE ratio,
-  // contained inside the slot and bottom-aligned — so every item shares
-  // a baseline like specimens standing on a shelf. Varied heights, common
-  // floor. No crop, no canvas grade — cleaner and calmer than v1's wall.
-  const FINDSV2 = {
-    cols: 5,        // columns
-    gutter: 16,     // px between slots
-  };
-
+  // Same masonry engine as finds (cols/heroSpan/rhythm all from SHELF),
+  // but NO colour grade and images shown at their TRUE ratio, bottom-
+  // aligned on a baseline inside each slot — specimens on a shelf.
   function renderFindsV2(notes) {
     const withImages = notes.filter(n => !!n.image_url);
     if (!withImages.length) {
@@ -309,27 +303,77 @@
       const sourceName = spot ? spot.name : (n.reference_title || '');
       const cityName = spot ? spot.city : null;
 
+      // Plain <img>, no canvas/grade. object-fit:contain + bottom align.
       const img = `<img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">`;
-      const slot = imgLink
-        ? `<a class="fv2-slot" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
-        : `<div class="fv2-slot">${img}</div>`;
+      const frame = imgLink
+        ? `<a class="fv2-frame" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
+        : `<div class="fv2-frame">${img}</div>`;
 
       const parts = [];
       if (sourceName) parts.push(`From <a class="find-source" href="#">${esc(sourceName)}</a>`);
       if (cityName)   parts.push(`<a class="find-city" href="#">${esc(cityName)}</a>`);
       const sub = parts.length ? `<div class="find-sub">${parts.join(', ')}</div>` : '';
 
-      return `<div class="fv2-cell">
-        ${slot}
+      return `<div class="find-cell">
+        ${frame}
         <div class="find-t">${esc(n.headline || 'Untitled')}</div>
         ${sub}
       </div>`;
     }).join('');
 
-    mount.innerHTML =
-      `<div class="fv2-grid" style="` +
-      `--fv2-cols:${FINDSV2.cols};` +
-      `--fv2-gutter:${FINDSV2.gutter}px">${cards}</div>`;
+    mount.innerHTML = `<div class="finds-grid fv2" id="findsGrid">${cards}</div>`;
+
+    const grid = document.getElementById('findsGrid');
+    const cells = Array.prototype.slice.call(grid.children);
+
+    function spanFor(i, C) {
+      const H = Math.min(SHELF.heroSpan, C);
+      if (SHELF.pattern === 'none')   return 1;
+      if (SHELF.pattern === 'hero')   return i === 0 ? H : 1;
+      if (SHELF.pattern === 'rhythm') return i === 0 ? H : (i % 7 === 0 ? 2 : 1);
+      if (SHELF.pattern === 'chaos') {
+        const r = hashStr(sorted[i].headline || String(i));
+        return r > 0.88 ? Math.min(3, C) : r > 0.68 ? 2 : 1;
+      }
+      return 1;
+    }
+
+    function layout() {
+      const C = SHELF.cols, G = SHELF.gutter;
+      const W = grid.clientWidth;
+      const colW = (W - G * (C - 1)) / C;
+
+      grid.style.gridTemplateColumns = 'repeat(' + C + ',1fr)';
+      grid.style.columnGap = G + 'px';
+      grid.style.gridAutoFlow = 'dense';
+
+      cells.forEach(function (cell, i) {
+        const s = Math.min(spanFor(i, C), C);
+        const w = s * colW + (s - 1) * G;
+        const h = Math.round(w * SHELF.ratio);   // 4:5 slot height
+        cell.style.gridColumn = 'span ' + s;
+        cell.querySelector('.fv2-frame').style.height = h + 'px';
+        cell.dataset.frameH = h;
+      });
+
+      cells.forEach(function (cell) {
+        const frameH = parseFloat(cell.dataset.frameH) || 0;
+        let textH = 0;
+        Array.prototype.forEach.call(cell.children, function (child) {
+          if (!child.classList.contains('fv2-frame')) {
+            textH += child.getBoundingClientRect().height;
+          }
+        });
+        cell.style.gridRowEnd = 'span ' + Math.round(frameH + textH + G);
+        cell.style.marginBottom = G + 'px';
+      });
+    }
+
+    layout();
+    let rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt); rt = setTimeout(layout, 120);
+    });
   }
 
   const LAYOUTS = {
