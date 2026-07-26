@@ -222,15 +222,18 @@
   const LUM = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
 
   function gradeCanvas(img, canvas) {
-    const cw = GRADE_RES, ch = GRADE_RES;
+    // Canvas matches the image's TRUE aspect ratio (longest side capped at
+    // GRADE_RES). This way object-fit:cover crops it into the 4:5 frame at
+    // rest, and object-fit:contain shows the object at its real proportions
+    // on hover — no square letterbox, nothing bleeding behind it.
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const scale = GRADE_RES / Math.max(iw, ih);
+    const cw = Math.max(1, Math.round(iw * scale));
+    const ch = Math.max(1, Math.round(ih * scale));
     canvas.width = cw; canvas.height = ch;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, cw, ch);
-    // cover-fit the source into the square sample buffer
-    const iw = img.naturalWidth, ih = img.naturalHeight;
-    const side = Math.min(iw, ih);
-    const sx = (iw - side) / 2, sy = (ih - side) / 2;
-    ctx.drawImage(img, sx, sy, side, side, 0, 0, cw, ch);
+    ctx.drawImage(img, 0, 0, iw, ih, 0, 0, cw, ch);
 
     if (!GRADE.on) return;
 
@@ -273,7 +276,11 @@
       if (!img || !canvas) return;
       function run() {
         try { gradeCanvas(img, canvas); }
-        catch (e) { /* CORS-tainted or not ready — leave blank, img fallback */ }
+        catch (e) { /* CORS-tainted — leave canvas blank */ }
+        // Remove the source image from the DOM entirely once the canvas
+        // has its pixels, so there is physically nothing behind the canvas
+        // to bleed through on hover.
+        if (img.parentNode) img.parentNode.removeChild(img);
       }
       if (img.complete && img.naturalWidth) run();
       else img.addEventListener('load', run, { once: true });

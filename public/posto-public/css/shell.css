@@ -1071,13 +1071,18 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 }
 a.find-frame { cursor: pointer; }
 
-/* The graded canvas is the visible image. Cover-fills the frame at rest. */
+/* Source <img> is only a pixel source for the canvas — never shown. */
+.find-src { display: none !important; }
+
+/* The graded canvas is the visible image. Cover-fills the frame at rest.
+   Explicit inset:0 + absolute keeps an unsized/loading canvas from ever
+   sitting in flow as a stray 300×150 grey box. */
 .find-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;      /* canvas honours object-fit like an img */
+  object-fit: cover;
   object-position: center;
   display: block;
 }
