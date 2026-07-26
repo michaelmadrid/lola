@@ -82,21 +82,7 @@
     cols: 6,          // grid columns
     heroEvery: 7,     // every Nth position...
     heroSpan: 2,      // ...spans this many columns
-    // Future public routes — 404 until the pages exist, by design.
-    spotBase: '/place/',
-    cityBase: '/city/',
   };
-
-  // Normalize a free-text source into a stable slug, so "AO hatabooks"
-  // and "AO Hata Bookstore" don't diverge. Only used for the unlinked
-  // fallback — a linked spot already carries its own canonical slug.
-  function slugify(s) {
-    return String(s || '')
-      .toLowerCase()
-      .replace(/&/g, ' and ')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
 
   function renderFinds(notes) {
     const withImages = notes.filter(n => !!n.image_url);
@@ -113,16 +99,11 @@
       const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
 
       // ── Three independent link targets (unwrapped card) ──
-      // 1. image → the shop/reference link (outward)
+      // Image points at the real shop link; source + city are stubbed
+      // to "#" for now (real routes come later, no slugs needed yet).
       const imgLink = n.reference_url && /^https?:\/\//i.test(n.reference_url)
         ? n.reference_url : null;
-      // 2. source → the spot page
-      const spotSlug = spot ? (spot.slug || slugify(spot.name))
-                            : (n.reference_title ? slugify(n.reference_title) : null);
-      const spotHref = spotSlug ? SHELF.spotBase + spotSlug : null;
       const sourceName = spot ? spot.name : (n.reference_title || '');
-      // 3. city → the city page
-      const citySlug = spot ? (spot.city_slug || (spot.city ? slugify(spot.city) : null)) : null;
       const cityName = spot ? spot.city : null;
 
       const img = `<img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">`;
@@ -130,17 +111,13 @@
         ? `<a class="find-card__img" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
         : `<span class="find-card__img">${img}</span>`;
 
-      // Provenance line: "From <source>, <city>" — each part its own link.
+      // Provenance: "From <source>, <city>" — source + city each a stub link.
       const parts = [];
       if (sourceName) {
-        parts.push(spotHref
-          ? `From <a class="find-card__source" href="${esc(spotHref)}">${esc(sourceName)}</a>`
-          : `From ${esc(sourceName)}`);
+        parts.push(`From <a class="find-card__source" href="#">${esc(sourceName)}</a>`);
       }
       if (cityName) {
-        parts.push(citySlug
-          ? `<a class="find-card__city" href="${esc(SHELF.cityBase + citySlug)}">${esc(cityName)}</a>`
-          : esc(cityName));
+        parts.push(`<a class="find-card__city" href="#">${esc(cityName)}</a>`);
       }
       const from = parts.length ? `<div class="find-card__from">${parts.join(', ')}</div>` : '';
 
