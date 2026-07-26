@@ -80,18 +80,37 @@
   // gridRowEnd is set so tiles pack tight (grid-auto-rows:1px).
   const SHELF = {
     ratio: 1.25,     // 4:5 (height/width). 1=1:1, 1.3333=3:4, 1.5=2:3, 0.6667=3:2
-    cols: 7,         // columns
-    gutter: 12,      // px
+    cols: 7,         // columns — desktop default
+    gutter: 10,      // px
     heroSpan: 2,     // span for the hero tile in hero/rhythm patterns
     pattern: 'rhythm', // 'none' | 'hero' | 'rhythm' | 'chaos'
+    // Responsive column counts. Widest matching max-width wins; above the
+    // largest breakpoint, `cols` is used. Edit freely — the shelf re-lays
+    // out on resize so you can test by dragging the window narrow.
+    breakpoints: [
+      { maxWidth: 1100, cols: 5 },
+      { maxWidth: 820,  cols: 4 },
+      { maxWidth: 640,  cols: 3 },
+      { maxWidth: 460,  cols: 3 },
+    ],
   };
+
+  // Pick the column count for the current viewport width. The narrowest
+  // matching breakpoint (smallest maxWidth that's still >= viewport) wins;
+  // above all breakpoints, SHELF.cols is used.
+  function shelfCols() {
+    const w = window.innerWidth;
+    const matches = SHELF.breakpoints.filter(function (bp) { return w <= bp.maxWidth; });
+    if (!matches.length) return SHELF.cols;
+    return matches.reduce(function (a, b) { return a.maxWidth < b.maxWidth ? a : b; }).cols;
+  }
 
   // ── Colour grade (ported from bill-tool-color) ──────────────
   // Runs once per image on a canvas so disparate photos read as one
   // roll. Pipeline: desaturate → normalize → contrast/bright → matte
   // → split-tone → grain. Edit these freely; they're the only knobs.
   const GRADE = {
-    on:      false,
+    on:      true,
     sat:     0.8,               // 0 = greyscale, 1 = full colour
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
@@ -171,7 +190,7 @@
     }
 
     function layout() {
-      const C = SHELF.cols, G = SHELF.gutter;
+      const C = shelfCols(), G = SHELF.gutter;
       const W = grid.clientWidth;
       const colW = (W - G * (C - 1)) / C;
 
@@ -339,7 +358,7 @@
     }
 
     function layout() {
-      const C = SHELF.cols, G = SHELF.gutter;
+      const C = shelfCols(), G = SHELF.gutter;
       const W = grid.clientWidth;
       const colW = (W - G * (C - 1)) / C;
 
@@ -370,7 +389,6 @@
     }
 
     layout();
-    
     let rt;
     window.addEventListener('resize', function () {
       clearTimeout(rt); rt = setTimeout(layout, 120);
