@@ -1070,7 +1070,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   background: #e6e5e0;
   /* hover tuning — all editable here */
   --hero-scale: 0.8;         /* product sits at 80% inside the frame */
-  --dim: 0.8;                /* darkness of the ground behind hero (0–1) */
+  --dim: 0.2;                /* darkness of the ground behind hero (0–1) */
 }
 a.find-frame { cursor: pointer; }
 
