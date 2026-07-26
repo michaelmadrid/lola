@@ -113,10 +113,18 @@
       const sourceName = spot ? spot.name : (n.reference_title || '');
       const cityName = spot ? spot.city : null;
 
-      const img = `<img src="${imgSrc(n.image_url)}" alt="" loading="lazy">`;
+      // Two layers: cover (gallery[0] or hero) fills the frame at rest;
+      // hero (image_url) fades in on top, at its own ratio, on hover.
+      // When there's no gallery both are the same image_url, so hover
+      // just reveals the full uncropped shot over a dimmed crop of itself.
+      const coverSrc = imgSrc(n.image_url);            // resting cover
+      const heroSrc  = imgSrc(n.hero_url || n.image_url); // hover reveal
+      const layers =
+        `<img class="find-cover" src="${coverSrc}" alt="" loading="lazy">` +
+        `<img class="find-hero" src="${heroSrc}" alt="${esc(n.headline || '')}" loading="lazy">`;
       const frame = imgLink
-        ? `<a class="find-frame" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
-        : `<div class="find-frame">${img}</div>`;
+        ? `<a class="find-frame" href="${esc(imgLink)}" target="_blank" rel="noopener">${layers}</a>`
+        : `<div class="find-frame">${layers}</div>`;
 
       const parts = [];
       if (sourceName) parts.push(`From <a class="find-source" href="#">${esc(sourceName)}</a>`);

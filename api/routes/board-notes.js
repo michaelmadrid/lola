@@ -78,17 +78,21 @@ router.get('/public/grid', async (req, res) => {
     const result = await pool.query(`
       SELECT bn.id, bn.type, bn.headline, bn.reference_title,
              bn.reference_url, bn.pin, bn.publish_date, bn.category,
-             -- Cover resolution: gallery's first image wins when a gallery
-             -- exists, else the note's own hero image_url. So a note with a
-             -- gallery never shows a heroless card on the shelf, and deleting
-             -- the gallery cleanly falls back to the hero (nothing lost).
+             -- Two images for the shelf's hover swap:
+             --   cover = gallery's first image (the evocative/abstract one)
+             --           shown at rest; falls back to the hero when there's
+             --           no gallery.
+             --   hero  = the note's own image_url (the legible/product shot)
+             --           revealed on hover.
+             -- The client shows cover at rest and fades hero in on top.
              COALESCE(
                (SELECT ni.image_url FROM note_images ni
                  WHERE ni.note_id = bn.id
                  ORDER BY ni.position ASC, ni.id ASC
                  LIMIT 1),
                bn.image_url
-             ) AS image_url,
+             ) AS image_url,           -- resting cover (name kept for compat)
+             bn.image_url AS hero_url,  -- hover reveal
              -- Linked spots, for the provenance line ("From X, City").
              (SELECT json_agg(json_build_object(
                         'name', s.place_name,

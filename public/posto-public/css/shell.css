@@ -966,7 +966,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 .notes-index {
   max-width: 1400px;
   margin: 0 auto;
-  /* padding: 48px 40px 96px; */
+  padding: 48px 40px 96px;
   box-sizing: border-box; /* padding stays INSIDE the width, never adds to it */
   width: 100%;
   overflow-x: hidden;     /* belt-and-suspenders: nothing bleeds sideways */
@@ -1068,8 +1068,13 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   width: 100%;
   overflow: hidden;
   background: #e6e5e0;
+  /* dim the resting cover retains on hover — 0 = black-out, 1 = no dim */
+  --cover-hover-opacity: 0.3;
 }
-.find-frame img {
+a.find-frame { cursor: pointer; }
+
+/* Layer 1 · cover (gallery[0] or hero) — fills frame at rest, cropped. */
+.find-cover {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1077,15 +1082,28 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   object-fit: cover;
   object-position: center;
   filter: saturate(var(--sat, 0.8)) contrast(var(--con, 1));
-  transition: filter 200ms ease;
+  transition: filter 200ms ease, opacity 200ms ease;
 }
-a.find-frame { cursor: pointer; }
-
-/* Hover: grade off + full image resurfaces (object-fit:contain). */
-.find-cell:hover .find-frame img {
-  filter: none;
+/* Layer 2 · hero (image_url) — hidden at rest, own ratio, on top. */
+.find-hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  background: var(--bg);
+  object-position: center;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+/* Hover: cover dims and recedes to a ground; hero fades in over it. */
+.find-cell:hover .find-cover {
+  filter: none;
+  opacity: var(--cover-hover-opacity, 0.3);
+}
+.find-cell:hover .find-hero {
+  opacity: 1;
 }
 
 .find-t {
