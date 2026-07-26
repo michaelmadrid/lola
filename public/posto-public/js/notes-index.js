@@ -80,7 +80,7 @@
   // gridRowEnd is set so tiles pack tight (grid-auto-rows:1px).
   const SHELF = {
     ratio: 1.25,     // 4:5 (height/width). 1=1:1, 1.3333=3:4, 1.5=2:3, 0.6667=3:2
-    cols: 7,         // columns
+    cols: 6,         // columns
     gutter: 10,      // px
     heroSpan: 2,     // span for the hero tile in hero/rhythm patterns
     pattern: 'rhythm', // 'none' | 'hero' | 'rhythm' | 'chaos'
@@ -91,7 +91,7 @@
   // roll. Pipeline: desaturate → normalize → contrast/bright → matte
   // → split-tone → grain. Edit these freely; they're the only knobs.
   const GRADE = {
-    on:      true,
+    on:      false,
     sat:     0.8,               // 0 = greyscale, 1 = full colour
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
@@ -370,7 +370,7 @@
     }
 
     layout();
-    gradeAll(grid);   // paint the graded canvases once images load
+    
     let rt;
     window.addEventListener('resize', function () {
       clearTimeout(rt); rt = setTimeout(layout, 120);
