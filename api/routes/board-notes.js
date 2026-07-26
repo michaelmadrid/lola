@@ -83,7 +83,9 @@ router.get('/public/grid', async (req, res) => {
              -- falls back to reference_title in that case.
              (SELECT json_agg(json_build_object(
                         'name', s.place_name,
-                        'city', c.name
+                        'slug', s.slug,
+                        'city', c.name,
+                        'city_slug', c.slug
                       ) ORDER BY s.place_name)
                 FROM note_spot_links l
                 JOIN spots s ON s.id = l.spot_id

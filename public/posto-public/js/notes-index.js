@@ -74,6 +74,30 @@
   // item: the linked spot if there is one, otherwise the note's own
   // reference_title. Pinned notes are NOT floated to the top here —
   // this view is about recency, so pins would undercut it.
+  // ── Shelf view config ───────────────────────────────────────
+  // Tunable inline. Rhythm is POSITION-keyed: every Nth slot spans,
+  // so heroes shift as new items are added (fine for now).
+  const SHELF = {
+    ratio: '4 / 5',   // crop frame — object-fit:cover kills the product-shot feel
+    cols: 6,          // grid columns
+    heroEvery: 7,     // every Nth position...
+    heroSpan: 2,      // ...spans this many columns
+    // Future public routes — 404 until the pages exist, by design.
+    spotBase: '/place/',
+    cityBase: '/city/',
+  };
+
+  // Normalize a free-text source into a stable slug, so "AO hatabooks"
+  // and "AO Hata Bookstore" don't diverge. Only used for the unlinked
+  // fallback — a linked spot already carries its own canonical slug.
+  function slugify(s) {
+    return String(s || '')
+      .toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   function renderFinds(notes) {
     const withImages = notes.filter(n => !!n.image_url);
     if (!withImages.length) {
@@ -85,36 +109,60 @@
       (a, b) => new Date(b.publish_date) - new Date(a.publish_date)
     );
 
-    const cards = sorted.map(n => {
-      const hasLink = !!n.reference_url;
-      const abs = hasLink && /^https?:\/\//i.test(n.reference_url);
-      const openAttrs = abs ? ' target="_blank" rel="noopener"' : '';
-      const tag = hasLink ? 'a' : 'div';
-      const hrefAttr = hasLink ? ` href="${esc(n.reference_url)}"${openAttrs}` : '';
-
-      // Provenance: a linked spot wins, else the reference title.
-      // No date — the chronological order already says "recent", and a
-      // date on every card was noise (and lived inside the link).
+    const cards = sorted.map((n, i) => {
       const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
-      const source = spot
-        ? esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '')
-        : (n.reference_title ? esc(n.reference_title) : '');
-      const from = source
-        ? `<div class="find-card__from">From ${source}</div>`
-        : '';
+
+      // ── Three independent link targets (unwrapped card) ──
+      // 1. image → the shop/reference link (outward)
+      const imgLink = n.reference_url && /^https?:\/\//i.test(n.reference_url)
+        ? n.reference_url : null;
+      // 2. source → the spot page
+      const spotSlug = spot ? (spot.slug || slugify(spot.name))
+                            : (n.reference_title ? slugify(n.reference_title) : null);
+      const spotHref = spotSlug ? SHELF.spotBase + spotSlug : null;
+      const sourceName = spot ? spot.name : (n.reference_title || '');
+      // 3. city → the city page
+      const citySlug = spot ? (spot.city_slug || (spot.city ? slugify(spot.city) : null)) : null;
+      const cityName = spot ? spot.city : null;
+
+      const img = `<img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">`;
+      const imageEl = imgLink
+        ? `<a class="find-card__img" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
+        : `<span class="find-card__img">${img}</span>`;
+
+      // Provenance line: "From <source>, <city>" — each part its own link.
+      const parts = [];
+      if (sourceName) {
+        parts.push(spotHref
+          ? `From <a class="find-card__source" href="${esc(spotHref)}">${esc(sourceName)}</a>`
+          : `From ${esc(sourceName)}`);
+      }
+      if (cityName) {
+        parts.push(citySlug
+          ? `<a class="find-card__city" href="${esc(SHELF.cityBase + citySlug)}">${esc(cityName)}</a>`
+          : esc(cityName));
+      }
+      const from = parts.length ? `<div class="find-card__from">${parts.join(', ')}</div>` : '';
+
+      // Position-keyed hero: every heroEvery-th slot spans heroSpan cols.
+      const isHero = ((i + 1) % SHELF.heroEvery === 0);
+      const spanStyle = isHero ? ` style="grid-column: span ${SHELF.heroSpan}"` : '';
 
       return `
-        <${tag} class="find-card${hasLink ? ' find-card--linked' : ''}"${hrefAttr}>
-          <div class="find-card__thumb">
-            <img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">
-          </div>
+        <div class="find-card${isHero ? ' find-card--hero' : ''}"${spanStyle}>
+          <div class="find-card__frame">${imageEl}</div>
           <div class="find-card__title">${esc(n.headline || 'Untitled')}</div>
           ${from}
-        </${tag}>`;
+        </div>`;
     }).join('');
 
-    mount.innerHTML = `<div class="finds-grid">${cards}</div>`;
+    // Config drives the grid via CSS custom properties.
+    mount.innerHTML =
+      `<div class="finds-grid" style="` +
+      `--shelf-cols:${SHELF.cols};` +
+      `--shelf-ratio:${SHELF.ratio}">${cards}</div>`;
   }
+
 
   const LAYOUTS = {
     grid: renderGrid,
