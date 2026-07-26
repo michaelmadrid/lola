@@ -1082,8 +1082,11 @@ a.find-frame { cursor: pointer; }
   display: block;
 }
 
-/* Hover: same graded image, just uncropped — contain over white. */
-.find-cell:hover .find-frame { background: #fff; }
+/* Hover: same graded image, uncropped (contain). Frame goes to the page
+   background so there's no second-image bleed behind it — just the object
+   floating on the shelf's own ground. Swap 'transparent' for #fff or a
+   token if you want a hard white card instead. */
+.find-cell:hover .find-frame { background: transparent; }
 .find-cell:hover .find-canvas { object-fit: contain; }
 
 .find-t {
