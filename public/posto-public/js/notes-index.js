@@ -92,7 +92,7 @@
   // → split-tone → grain. Edit these freely; they're the only knobs.
   const GRADE = {
     on:      true,
-    sat:     0.7,               // 0 = greyscale, 1 = full colour
+    sat:     0.9,               // 0 = greyscale, 1 = full colour
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
     bri:     -0.02,             // brightness
