@@ -688,6 +688,137 @@
     expiresEl.value = '';
   });
 
+  // ── Gallery (note_images) ────────────────────────────────────
+  // Supporting images, separate from the hero. Requires a saved note
+  // (needs an id), same as links — the hint tells the user to save first.
+  const galleryGrid   = document.getElementById('note-gallery-grid');
+  const galleryFile   = document.getElementById('note-gallery-file');
+  const galleryBtn    = document.getElementById('note-gallery-btn');
+  const galleryStatus = document.getElementById('note-gallery-status');
+  let galleryImages = []; // [{id, image_url, thumb_url, position}]
+
+  function galleryStatusMsg(m) { if (galleryStatus) galleryStatus.textContent = m || ''; }
+
+  function drawGallery() {
+    if (!galleryGrid) return;
+    if (!editingId) {
+      galleryGrid.innerHTML = '<span class="note-gallery__empty">Save the note first to add gallery images.</span>';
+      if (galleryBtn) galleryBtn.disabled = true;
+      return;
+    }
+    if (galleryBtn) galleryBtn.disabled = false;
+    if (!galleryImages.length) {
+      galleryGrid.innerHTML = '<span class="note-gallery__empty">No gallery images.</span>';
+      return;
+    }
+    galleryGrid.innerHTML = galleryImages.map(function (img) {
+      const src = img.thumb_url || img.image_url;
+      return '<div class="note-gallery__item" draggable="true" data-id="' + img.id + '">' +
+        '<img src="' + esc(src) + '" alt="">' +
+        '<button type="button" class="note-gallery__x" data-id="' + img.id + '" aria-label="Remove">×</button>' +
+        '</div>';
+    }).join('');
+    galleryGrid.querySelectorAll('.note-gallery__x').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        removeGalleryImage(parseInt(b.dataset.id, 10));
+      });
+    });
+    wireGalleryDrag();
+  }
+
+  async function loadGallery() {
+    galleryImages = [];
+    if (!editingId) { drawGallery(); return; }
+    try {
+      const data = await api.get('/api/board-notes/' + editingId + '/images');
+      galleryImages = data.images || [];
+    } catch (err) { console.error('load gallery failed', err); }
+    drawGallery();
+  }
+
+  // Direct multipart POST — mirrors uploader.js (there's no api.upload).
+  async function uploadFile(file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    const token = localStorage.getItem('lola.token') || localStorage.getItem('lola_token');
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: token ? { Authorization: 'Bearer ' + token } : {},
+      body: fd,
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(function () { return {}; });
+      throw new Error(e.error || 'Upload failed');
+    }
+    return res.json(); // { url, thumb_url }
+  }
+
+  async function addGalleryFiles(files) {
+    if (!editingId || !files || !files.length) return;
+    galleryStatusMsg('Uploading…');
+    for (let i = 0; i < files.length; i++) {
+      try {
+        const up = await uploadFile(files[i]);
+        const res = await api.post('/api/board-notes/' + editingId + '/images', {
+          image_url: up.url, thumb_url: up.thumb_url || null,
+        });
+        if (res && res.image) galleryImages.push(res.image);
+        drawGallery();
+      } catch (err) {
+        console.error('gallery upload failed', err);
+        galleryStatusMsg('One image failed — try again');
+      }
+    }
+    galleryStatusMsg('');
+  }
+
+  async function removeGalleryImage(imageId) {
+    if (!editingId) return;
+    try {
+      await api.delete('/api/board-notes/' + editingId + '/images/' + imageId);
+      galleryImages = galleryImages.filter(function (g) { return g.id !== imageId; });
+      drawGallery();
+    } catch (err) { console.error('gallery remove failed', err); }
+  }
+
+  async function saveGalleryOrder() {
+    if (!editingId) return;
+    try {
+      await api.patch('/api/board-notes/' + editingId + '/images/order', {
+        ids: galleryImages.map(function (g) { return g.id; }),
+      });
+    } catch (err) { console.error('gallery reorder failed', err); }
+  }
+
+  // Minimal HTML5 drag-reorder within the gallery grid.
+  let dragId = null;
+  function wireGalleryDrag() {
+    galleryGrid.querySelectorAll('.note-gallery__item').forEach(function (el) {
+      el.addEventListener('dragstart', function () { dragId = parseInt(el.dataset.id, 10); el.classList.add('is-dragging'); });
+      el.addEventListener('dragend', function () { el.classList.remove('is-dragging'); });
+      el.addEventListener('dragover', function (e) { e.preventDefault(); });
+      el.addEventListener('drop', function (e) {
+        e.preventDefault();
+        const targetId = parseInt(el.dataset.id, 10);
+        if (dragId == null || dragId === targetId) return;
+        const from = galleryImages.findIndex(function (g) { return g.id === dragId; });
+        const to = galleryImages.findIndex(function (g) { return g.id === targetId; });
+        if (from < 0 || to < 0) return;
+        const moved = galleryImages.splice(from, 1)[0];
+        galleryImages.splice(to, 0, moved);
+        drawGallery();
+        saveGalleryOrder();
+      });
+    });
+  }
+
+  if (galleryBtn) galleryBtn.addEventListener('click', function () { galleryFile.click(); });
+  if (galleryFile) galleryFile.addEventListener('change', function () {
+    addGalleryFiles(galleryFile.files);
+    galleryFile.value = '';
+  });
+
   function openEditor(note) {
     editingId = note ? note.id : null;
     if (captureUrl) captureUrl.value = '';
@@ -718,6 +849,7 @@
     // Related spots — load the note's existing links (or show the
     // "save first" prompt for a brand-new note).
     loadLinkedSpots();
+    loadGallery();
 
     // Permalink — only for saved, published notes (drafts have no live page).
     if (note && note.id && note.status === 'published') {

@@ -186,4 +186,80 @@ router.delete('/:id', authenticate, async (req, res) => {
   }
 });
 
+// ── Gallery (note_images) — optional supporting images, separate from
+//    the hero image_url. All under /api/board-notes/:id/images. ──
+
+// GET /api/board-notes/:id/images — ordered gallery for a note
+router.get('/:id/images', authenticate, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, image_url, thumb_url, position
+         FROM note_images WHERE note_id = $1
+        ORDER BY position ASC, id ASC`,
+      [req.params.id]
+    );
+    res.json({ images: rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/board-notes/:id/images  { image_url, thumb_url? }
+// Appends to the end of the gallery.
+router.post('/:id/images', authenticate, async (req, res) => {
+  const { image_url, thumb_url } = req.body;
+  if (!image_url) return res.status(400).json({ error: 'image_url required' });
+  try {
+    const { rows: pos } = await pool.query(
+      `SELECT COALESCE(MAX(position) + 1, 0) AS next FROM note_images WHERE note_id = $1`,
+      [req.params.id]
+    );
+    const { rows } = await pool.query(
+      `INSERT INTO note_images (note_id, image_url, thumb_url, position)
+       VALUES ($1, $2, $3, $4) RETURNING id, image_url, thumb_url, position`,
+      [req.params.id, image_url, thumb_url || null, pos[0].next]
+    );
+    res.json({ image: rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/board-notes/:id/images/:imageId
+router.delete('/:id/images/:imageId', authenticate, async (req, res) => {
+  try {
+    await pool.query(
+      `DELETE FROM note_images WHERE id = $1 AND note_id = $2`,
+      [req.params.imageId, req.params.id]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/board-notes/:id/images/order  { ids: [imageId, ...] }
+// Rewrites position from array order.
+router.patch('/:id/images/order', authenticate, async (req, res) => {
+  const ids = Array.isArray(req.body.ids) ? req.body.ids : null;
+  if (!ids) return res.status(400).json({ error: 'ids array required' });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (let i = 0; i < ids.length; i++) {
+      await client.query(
+        `UPDATE note_images SET position = $1 WHERE id = $2 AND note_id = $3`,
+        [i, ids[i], req.params.id]
+      );
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

@@ -206,6 +206,21 @@
         <p class="spot-fs__hint">Link this note to related spots (e.g. shops that carry it).</p>
       </div>
 
+      <div class="spot-fs__divider"></div>
+
+      <div class="spot-fs__field">
+        <label class="spot-fs__label">Gallery <span class="spot-fs__label-note">— supporting images, separate from the cover above</span></label>
+        <div class="note-gallery" id="note-gallery">
+          <div class="note-gallery__grid" id="note-gallery-grid"></div>
+          <div class="note-gallery__add" id="note-gallery-add">
+            <input type="file" accept="image/jpeg,image/png,image/gif,image/webp" id="note-gallery-file" hidden multiple>
+            <button type="button" class="btn btn--small" id="note-gallery-btn">+ Add images</button>
+            <span class="note-gallery__status" id="note-gallery-status"></span>
+          </div>
+        </div>
+        <p class="spot-fs__hint">Optional extra images. Drag to reorder. Save the note first to add gallery images.</p>
+      </div>
+
       <div class="spot-fs__field">
         <label class="spot-fs__label">Pin</label>
         <div class="spot-fs__been-row">
