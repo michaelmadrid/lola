@@ -966,7 +966,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 .notes-index {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 48px 40px 96px;
+  /* padding: 48px 40px 96px; */
   box-sizing: border-box; /* padding stays INSIDE the width, never adds to it */
   width: 100%;
   overflow-x: hidden;     /* belt-and-suspenders: nothing bleeds sideways */
