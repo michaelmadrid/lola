@@ -1072,7 +1072,17 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 a.find-frame { cursor: pointer; }
 
 /* Source <img> is only a pixel source for the canvas — never shown. */
-.find-src { display: none !important; }
+/* Source <img> feeds the canvas — hidden but NOT display:none, because
+   display:none can stop the image loading (naturalWidth stays 0 and the
+   grade never runs). Zero-size + absolute keeps it invisible and out of
+   flow while still loading. */
+.find-src {
+  position: absolute;
+  width: 1px; height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
 
 /* The graded canvas is the visible image. Cover-fills the frame at rest.
    Explicit inset:0 + absolute keeps an unsized/loading canvas from ever
