@@ -1068,51 +1068,23 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   width: 100%;
   overflow: hidden;
   background: #e6e5e0;
-  /* hover tuning — all editable here */
-  --hero-scale: 0.8;         /* product sits at 80% inside the frame */
-  --dim: 0.2;                /* darkness of the ground behind hero (0–1) */
 }
 a.find-frame { cursor: pointer; }
 
-/* Dark ground layer — sits between cover and hero, invisible at rest. */
-.find-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Layer 1 · cover (gallery[0] or hero) — fills frame at rest, cropped. */
-.find-cover {
+/* The graded canvas is the visible image. Cover-fills the frame at rest. */
+.find-canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover;      /* canvas honours object-fit like an img */
   object-position: center;
-  filter: saturate(var(--sat, 0.8)) contrast(var(--con, 1));
-}
-/* Layer 2 · hero (image_url) — hidden at rest, own ratio, scaled, on top. */
-.find-hero {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  transform: scale(var(--hero-scale, 0.8));
-  opacity: 0;
-  pointer-events: none;
-  z-index: 2;
+  display: block;
 }
 
-/* Hover: INSTANT swap — no fade. Cover stays as a darkened ground
-   (black overlay at --dim), hero pops in at scale on top. */
-.find-cell:hover .find-frame::after { opacity: var(--dim, 0.8); }
-.find-cell:hover .find-hero { opacity: 1; }
+/* Hover: same graded image, just uncropped — contain over white. */
+.find-cell:hover .find-frame { background: #fff; }
+.find-cell:hover .find-canvas { object-fit: contain; }
 
 .find-t {
   padding-top: 7px;
