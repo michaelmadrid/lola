@@ -91,16 +91,16 @@
   // roll. Pipeline: desaturate → normalize → contrast/bright → matte
   // → split-tone → grain. Edit these freely; they're the only knobs.
   const GRADE = {
-    on:      false,
-    sat:     0.8,               // 0 = greyscale, 1 = full colour
+    on:      true,
+    sat:     0.5,               // 0 = greyscale, 1 = full colour
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
     bri:     -0.02,             // brightness
-    matte:   16,                // 0–44 — lifts blacks / caps whites
+    matte:   44,                // 0–44 — lifts blacks / caps whites
     split:   0.07,              // split-tone strength (0–0.25)
     warm:    [255, 238, 214],   // highlight tint (cream) — #ffeed6
     cool:    [46, 58, 86],      // shadow tint (navy)    — #2e3a56
-    grain:   6,                 // 0–24
+    grain:   0,                 // 0–24
   };
 
   function hashStr(s) {
