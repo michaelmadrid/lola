@@ -370,6 +370,7 @@
     }
 
     layout();
+    gradeAll(grid);   // paint the graded canvases once images load
     let rt;
     window.addEventListener('resize', function () {
       clearTimeout(rt); rt = setTimeout(layout, 120);
