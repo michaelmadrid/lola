@@ -223,9 +223,8 @@
 
   function gradeCanvas(img, canvas) {
     // Canvas matches the image's TRUE aspect ratio (longest side capped at
-    // GRADE_RES). This way object-fit:cover crops it into the 4:5 frame at
-    // rest, and object-fit:contain shows the object at its real proportions
-    // on hover — no square letterbox, nothing bleeding behind it.
+    // GRADE_RES). object-fit:cover crops it into the 4:5 frame at rest,
+    // contain shows true proportions on hover.
     const iw = img.naturalWidth, ih = img.naturalHeight;
     const scale = GRADE_RES / Math.max(iw, ih);
     const cw = Math.max(1, Math.round(iw * scale));
@@ -237,7 +236,12 @@
 
     if (!GRADE.on) return;
 
-    const id = ctx.getImageData(0, 0, cw, ch), d = id.data, n = cw * ch;
+    // getImageData throws if the canvas is CORS-tainted. If so, we keep the
+    // ungraded drawImage result above (still visible) rather than blanking.
+    let id;
+    try { id = ctx.getImageData(0, 0, cw, ch); }
+    catch (e) { return; }
+    const d = id.data, n = cw * ch;
     const R = new Float32Array(n), Gc = new Float32Array(n), B = new Float32Array(n), L = new Float32Array(n);
     for (let i = 0; i < n; i++) {
       let r = d[i*4]/255, g = d[i*4+1]/255, b = d[i*4+2]/255;
@@ -276,11 +280,7 @@
       if (!img || !canvas) return;
       function run() {
         try { gradeCanvas(img, canvas); }
-        catch (e) { /* CORS-tainted — leave canvas blank */ }
-        // Remove the source image from the DOM entirely once the canvas
-        // has its pixels, so there is physically nothing behind the canvas
-        // to bleed through on hover.
-        if (img.parentNode) img.parentNode.removeChild(img);
+        catch (e) { /* CORS-tainted — canvas stays blank; see fallback note */ }
       }
       if (img.complete && img.naturalWidth) run();
       else img.addEventListener('load', run, { once: true });
