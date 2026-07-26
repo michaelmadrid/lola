@@ -75,14 +75,24 @@
   // reference_title. Pinned notes are NOT floated to the top here —
   // this view is about recency, so pins would undercut it.
   // ── Shelf view config ───────────────────────────────────────
-  // Tunable inline. Rhythm is POSITION-keyed: every Nth slot spans,
-  // so heroes shift as new items are added (fine for now).
+  // Ported from shelf-crop-tester-2. JS masonry: frame heights are
+  // computed from measured column width × ratio, then each cell's
+  // gridRowEnd is set so tiles pack tight (grid-auto-rows:1px).
   const SHELF = {
-    ratio: '4 / 5',   // crop frame — object-fit:cover kills the product-shot feel
-    cols: 6,          // grid columns
-    heroEvery: 7,     // every Nth position...
-    heroSpan: 2,      // ...spans this many columns
+    ratio: 1.25,     // 4:5 (height/width). 1=1:1, 1.3333=3:4, 1.5=2:3, 0.6667=3:2
+    cols: 6,         // columns
+    gutter: 10,      // px
+    heroSpan: 3,     // span for the hero tile in hero/rhythm patterns
+    pattern: 'rhythm', // 'none' | 'hero' | 'rhythm' | 'chaos'
+    sat: 0.8,        // grade — saturation
+    con: 1,          // grade — contrast
   };
+
+  function hashStr(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return ((h >>> 0) % 1000) / 1000;
+  }
 
   function renderFinds(notes) {
     const withImages = notes.filter(n => !!n.image_url);
@@ -95,50 +105,78 @@
       (a, b) => new Date(b.publish_date) - new Date(a.publish_date)
     );
 
-    const cards = sorted.map((n, i) => {
+    // Grade lives on the container as CSS vars (cleared on hover in CSS).
+    const cards = sorted.map(n => {
       const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
-
-      // ── Three independent link targets (unwrapped card) ──
-      // Image points at the real shop link; source + city are stubbed
-      // to "#" for now (real routes come later, no slugs needed yet).
       const imgLink = n.reference_url && /^https?:\/\//i.test(n.reference_url)
         ? n.reference_url : null;
       const sourceName = spot ? spot.name : (n.reference_title || '');
       const cityName = spot ? spot.city : null;
 
-      const img = `<img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">`;
-      const imageEl = imgLink
-        ? `<a class="find-card__img" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
-        : `<span class="find-card__img">${img}</span>`;
+      const img = `<img src="${imgSrc(n.image_url)}" alt="" loading="lazy">`;
+      const frame = imgLink
+        ? `<a class="find-frame" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
+        : `<div class="find-frame">${img}</div>`;
 
-      // Provenance: "From <source>, <city>" — source + city each a stub link.
       const parts = [];
-      if (sourceName) {
-        parts.push(`From <a class="find-card__source" href="#">${esc(sourceName)}</a>`);
-      }
-      if (cityName) {
-        parts.push(`<a class="find-card__city" href="#">${esc(cityName)}</a>`);
-      }
-      const from = parts.length ? `<div class="find-card__from">${parts.join(', ')}</div>` : '';
+      if (sourceName) parts.push(`From <a class="find-source" href="#">${esc(sourceName)}</a>`);
+      if (cityName)   parts.push(`<a class="find-city" href="#">${esc(cityName)}</a>`);
+      const sub = parts.length ? `<div class="find-sub">${parts.join(', ')}</div>` : '';
 
-      // Position-keyed hero: every heroEvery-th slot spans heroSpan cols.
-      const isHero = ((i + 1) % SHELF.heroEvery === 0);
-      const spanStyle = isHero ? ` style="grid-column: span ${SHELF.heroSpan}"` : '';
-
-      return `
-        <div class="find-card${isHero ? ' find-card--hero' : ''}"${spanStyle}>
-          <div class="find-card__frame">${imageEl}</div>
-          <div class="find-card__title">${esc(n.headline || 'Untitled')}</div>
-          ${from}
-        </div>`;
+      return `<div class="find-cell">
+        ${frame}
+        <div class="find-t">${esc(n.headline || 'Untitled')}</div>
+        ${sub}
+      </div>`;
     }).join('');
 
-    // Config drives the grid via CSS custom properties.
     mount.innerHTML =
-      `<div class="finds-grid" style="` +
-      `--shelf-cols:${SHELF.cols};` +
-      `--shelf-ratio:${SHELF.ratio}">${cards}</div>`;
+      `<div class="finds-grid" id="findsGrid" ` +
+      `style="--sat:${SHELF.sat};--con:${SHELF.con}">${cards}</div>`;
+
+    const grid = document.getElementById('findsGrid');
+    const cells = Array.prototype.slice.call(grid.children);
+
+    function spanFor(i, C) {
+      const H = Math.min(SHELF.heroSpan, C);
+      if (SHELF.pattern === 'none')   return 1;
+      if (SHELF.pattern === 'hero')   return i === 0 ? H : 1;
+      if (SHELF.pattern === 'rhythm') return i === 0 ? H : (i % 7 === 0 ? 2 : 1);
+      if (SHELF.pattern === 'chaos') {
+        const r = hashStr(sorted[i].headline || String(i));
+        return r > 0.88 ? Math.min(3, C) : r > 0.68 ? 2 : 1;
+      }
+      return 1;
+    }
+
+    function layout() {
+      const C = SHELF.cols, G = SHELF.gutter;
+      const W = grid.clientWidth;
+      const colW = (W - G * (C - 1)) / C;
+      const titleH = 40;
+
+      grid.style.gridTemplateColumns = 'repeat(' + C + ',1fr)';
+      grid.style.columnGap = G + 'px';
+      grid.style.gridAutoFlow = 'dense';
+
+      cells.forEach(function (cell, i) {
+        const s = Math.min(spanFor(i, C), C);
+        const w = s * colW + (s - 1) * G;
+        const h = Math.round(w * SHELF.ratio);
+        cell.style.gridColumn = 'span ' + s;
+        cell.querySelector('.find-frame').style.height = h + 'px';
+        cell.style.gridRowEnd = 'span ' + Math.round(h + titleH + G);
+        cell.style.marginBottom = G + 'px';
+      });
+    }
+
+    layout();
+    let rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt); rt = setTimeout(layout, 120);
+    });
   }
+
 
 
   const LAYOUTS = {

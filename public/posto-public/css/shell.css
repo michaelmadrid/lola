@@ -1049,70 +1049,61 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 
 
 /* ── Shelf / finds layout (/notes?layout=finds) ─────────────────
-   Retail → editorial: images are CROPPED into a fixed frame (kills the
-   product-shot feel); the uncropped original resurfaces on hover.
-   Grid + ratio come from CSS vars set inline by renderFinds (SHELF config). */
+   JS-driven masonry (see renderFinds). Cell heights are computed from
+   measured column width × ratio and packed via grid-auto-rows:1px, so
+   tiles sit tight with no vertical gaps. Grade (saturation/contrast)
+   lives on the grid as CSS vars and clears on hover, where the full
+   uncropped image also resurfaces. */
 .finds-grid {
   display: grid;
-  grid-template-columns: repeat(var(--shelf-cols, 6), 1fr);
-  gap: 10px;
+  grid-auto-rows: 1px;
+  row-gap: 0;
   margin-top: 30px;
-  grid-auto-flow: dense; /* let spanned heroes backfill gaps */
 }
-@media (max-width: 1100px) { .finds-grid { grid-template-columns: repeat(4, 1fr); } }
-@media (max-width: 760px)  { .finds-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; } }
-@media (max-width: 460px)  { .finds-grid { grid-template-columns: repeat(2, 1fr); } }
+.find-cell { position: relative; }
 
-.find-card { display: block; color: inherit; }
-
-/* 1 · CROP — fixed 4:5 frame, cover, centred. */
-.find-card__frame {
+.find-frame {
   position: relative;
-  aspect-ratio: var(--shelf-ratio, 4 / 5);
+  display: block;
+  width: 100%;
   overflow: hidden;
-  background: var(--surface, #ebeae5);
+  background: #e6e5e0;
 }
-.find-card__img { display: block; width: 100%; height: 100%; }
-.find-card__img img {
+.find-frame img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
-  display: block;
-  transition: object-fit 0s, opacity 160ms ease;
+  filter: saturate(var(--sat, 0.8)) contrast(var(--con, 1));
+  transition: filter 200ms ease;
 }
-a.find-card__img { cursor: pointer; }
+a.find-frame { cursor: pointer; }
 
-/* 3 · HOVER REVEAL — whole card. Uncropped original resurfaces:
-   object-fit flips to contain, frame lets it breathe. */
-.find-card:hover .find-card__img img {
+/* Hover: grade off + full image resurfaces (object-fit:contain). */
+.find-cell:hover .find-frame img {
+  filter: none;
   object-fit: contain;
-}
-.find-card:hover .find-card__frame {
   background: var(--bg);
 }
 
-.find-card__title {
+.find-t {
+  padding-top: 7px;
   font-family: var(--sans);
-  font-size: var(--text-small);
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.25;
   color: var(--ink);
-  margin-top: 8px;
 }
-.find-card__from {
+.find-sub {
   font-family: var(--sans);
-  font-size: var(--text-tiny);
-  line-height: 1.35;
+  font-size: 12px;
+  line-height: 1.25;
   color: var(--ink-3);
-  margin-top: 2px;
 }
-/* Split link targets — source + city are their own links now. */
-.find-card__source, .find-card__city {
+.find-source, .find-city {
   color: var(--ink-3);
   text-decoration: none;
   border-bottom: 1px solid var(--rule);
 }
-.find-card__source:hover, .find-card__city:hover { color: var(--ink); }
-
-/* 4 · hero span — the frame keeps its ratio, just wider. */
-.find-card--hero { /* grid-column span set inline from config */ }
+.find-source:hover, .find-city:hover { color: var(--ink); }
