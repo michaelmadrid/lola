@@ -1123,3 +1123,41 @@ a.find-frame { cursor: pointer; }
   border-bottom: 1px solid var(--rule);
 }
 .find-source:hover, .find-city:hover { color: var(--ink); }
+
+/* ── Finds v2 (?layout=findsv2) ─────────────────────────────────
+   Uniform grid of fixed 4:5 slots. Image sits at its true ratio,
+   contained and BOTTOM-ALIGNED, so all items share a baseline —
+   specimens standing on a shelf. No crop, no grade. */
+.fv2-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--fv2-cols, 5), 1fr);
+  gap: 34px var(--fv2-gutter, 16px);
+  margin-top: 30px;
+}
+@media (max-width: 1100px) { .fv2-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .fv2-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.fv2-cell { display: block; }
+
+/* The 4:5 slot. Image contained, pinned to the bottom = the baseline. */
+.fv2-slot {
+  display: flex;
+  align-items: flex-end;      /* bottom-align → shared baseline */
+  justify-content: center;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  overflow: hidden;
+}
+.fv2-slot img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+a.fv2-slot { cursor: pointer; }
+a.fv2-slot:hover img { opacity: 0.85; transition: opacity 140ms ease; }
+
+/* v2 reuses .find-t / .find-sub / .find-source / .find-city from v1. */
+.fv2-cell .find-t { padding-top: 9px; }

@@ -91,16 +91,16 @@
   // roll. Pipeline: desaturate → normalize → contrast/bright → matte
   // → split-tone → grain. Edit these freely; they're the only knobs.
   const GRADE = {
-    on:      false,
-    sat:     1,               // 0 = greyscale, 1 = full colour
+    on:      true,
+    sat:     0.8,               // 0 = greyscale, 1 = full colour
     norm:    true,              // normalize luminance (stretch levels)
     con:     1.0,               // contrast
     bri:     -0.02,             // brightness
-    matte:   40,                // 0–44 — lifts blacks / caps whites
+    matte:   16,                // 0–44 — lifts blacks / caps whites
     split:   0.07,              // split-tone strength (0–0.25)
     warm:    [255, 238, 214],   // highlight tint (cream) — #ffeed6
     cool:    [46, 58, 86],      // shadow tint (navy)    — #2e3a56
-    grain:   0,                 // 0–24
+    grain:   6,                 // 0–24
   };
 
   function hashStr(s) {
@@ -282,9 +282,60 @@
 
 
 
+  // ── Finds v2 (?layout=findsv2) ───────────────────────────────
+  // Uniform grid of fixed 4:5 slots. Each image sits at its TRUE ratio,
+  // contained inside the slot and bottom-aligned — so every item shares
+  // a baseline like specimens standing on a shelf. Varied heights, common
+  // floor. No crop, no canvas grade — cleaner and calmer than v1's wall.
+  const FINDSV2 = {
+    cols: 5,        // columns
+    gutter: 16,     // px between slots
+  };
+
+  function renderFindsV2(notes) {
+    const withImages = notes.filter(n => !!n.image_url);
+    if (!withImages.length) {
+      mount.innerHTML = '<div class="notes-index__empty">Nothing here yet.</div>';
+      return;
+    }
+    const sorted = withImages.slice().sort(
+      (a, b) => new Date(b.publish_date) - new Date(a.publish_date)
+    );
+
+    const cards = sorted.map(n => {
+      const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
+      const imgLink = n.reference_url && /^https?:\/\//i.test(n.reference_url)
+        ? n.reference_url : null;
+      const sourceName = spot ? spot.name : (n.reference_title || '');
+      const cityName = spot ? spot.city : null;
+
+      const img = `<img src="${imgSrc(n.image_url)}" alt="${esc(n.headline || '')}" loading="lazy">`;
+      const slot = imgLink
+        ? `<a class="fv2-slot" href="${esc(imgLink)}" target="_blank" rel="noopener">${img}</a>`
+        : `<div class="fv2-slot">${img}</div>`;
+
+      const parts = [];
+      if (sourceName) parts.push(`From <a class="find-source" href="#">${esc(sourceName)}</a>`);
+      if (cityName)   parts.push(`<a class="find-city" href="#">${esc(cityName)}</a>`);
+      const sub = parts.length ? `<div class="find-sub">${parts.join(', ')}</div>` : '';
+
+      return `<div class="fv2-cell">
+        ${slot}
+        <div class="find-t">${esc(n.headline || 'Untitled')}</div>
+        ${sub}
+      </div>`;
+    }).join('');
+
+    mount.innerHTML =
+      `<div class="fv2-grid" style="` +
+      `--fv2-cols:${FINDSV2.cols};` +
+      `--fv2-gutter:${FINDSV2.gutter}px">${cards}</div>`;
+  }
+
   const LAYOUTS = {
     grid: renderGrid,
     finds: renderFinds,
+    findsv2: renderFindsV2,
     // future: list, wall, etc.
   };
 
