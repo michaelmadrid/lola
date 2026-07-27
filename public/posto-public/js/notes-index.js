@@ -81,8 +81,8 @@
   // =========================================================
   const SHELF = {
     ratio: 1.25,      // fallback image ratio (h/w) if a real one can't be read
-    gutter: 12,       // px between cells
-    ghostHeight: .85, // ghost cell height as a ratio of one column's width
+    gutter: 10,       // px between cells
+    ghostHeight: 0.9, // ghost cell height as a ratio of one column's width
     fixedRatio: false,// true = force every frame to `ratio` (uniform crop)
 
     // Per-breakpoint column counts AND span patterns. Widest first.
@@ -91,11 +91,11 @@
     // a `0` is a one-column ghost (empty breath). Patterns are authored per
     // column count because a 2-span means something different at 2 vs 7 cols.
     breakpoints: [
-      { maxWidth: 460,  cols: 2, pattern: [1,1,1,2,1,1,0,1] },
+      { maxWidth: 460,  cols: 2, pattern: [0,1,1,2,1,1,0,1] },
       { maxWidth: 640,  cols: 3, pattern: [1,1,2,1,0,1,1,2,0,1] },
       { maxWidth: 820,  cols: 4, pattern: [1,2,1,1,0,1,2,1,1,0,1] },
-      { maxWidth: 1100, cols: 5, pattern: [0,1,1,2,1,1,0,1,2,1,0,1,1] },
-      { maxWidth: null, cols: 7, pattern: [0,1,1,2,1,1,1,0,2,1,1,0,1,1] }, // desktop
+      { maxWidth: 1100, cols: 5, pattern: [0,1,1,2,1,1,1,2,1,0,1,1] },
+      { maxWidth: null, cols: 7, pattern: [0,1,1,2,1,1,1,1,2,1,1,0,1,1] }, // desktop
     ],
   };
 
@@ -294,6 +294,35 @@
     // rebuilt on that, every scroll would jump back to top. Track width and
     // bail when only height changed.
     //
+    // Live-tuning handle for the console. Lets you experiment without a
+    // redeploy, e.g.:
+    //   POSTO_SHELF.setCols(6)                 // desktop breakpoint cols
+    //   POSTO_SHELF.setCols(6, 1100)           // cols for a given breakpoint
+    //   POSTO_SHELF.setPattern([0,1,1,2,1,1])  // desktop pattern
+    //   POSTO_SHELF.config                      // inspect current SHELF
+    //   POSTO_SHELF.relayout()                  // force a redraw
+    // These are session-only — edit the SHELF config in the source to persist.
+    window.POSTO_SHELF = {
+      config: SHELF,
+      relayout: function () { if (window.__shelfRelayout) window.__shelfRelayout(); },
+      setCols: function (n, maxWidth) {
+        const bp = maxWidth == null
+          ? SHELF.breakpoints[SHELF.breakpoints.length - 1]   // desktop default
+          : SHELF.breakpoints.find(function (b) { return b.maxWidth === maxWidth; });
+        if (!bp) { console.warn('no breakpoint with maxWidth', maxWidth); return; }
+        bp.cols = n;
+        this.relayout();
+      },
+      setPattern: function (arr, maxWidth) {
+        const bp = maxWidth == null
+          ? SHELF.breakpoints[SHELF.breakpoints.length - 1]
+          : SHELF.breakpoints.find(function (b) { return b.maxWidth === maxWidth; });
+        if (!bp) { console.warn('no breakpoint with maxWidth', maxWidth); return; }
+        bp.pattern = arr;
+        this.relayout();
+      },
+    };
+
     // Always keep the global re-layout hook pointing at THIS render's draw,
     // so a listener bound on the first render still calls the current draw.
     window.__shelfRelayout = function () {
