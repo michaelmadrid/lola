@@ -51,7 +51,7 @@
   // whole card is a single outward <a>; nested anchors wouldn't fire.
   function provenanceText(n) {
     const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
-    if (spot) return 'From ' + esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '');
+    if (spot) return  esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '');
     if (n.reference_title) return 'From ' + esc(n.reference_title);
     return '';
   }
