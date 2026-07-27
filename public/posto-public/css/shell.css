@@ -971,6 +971,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   box-sizing: border-box; /* padding stays INSIDE the width, never adds to it */
   width: 100%;
   overflow-x: hidden;     /* belt-and-suspenders: nothing bleeds sideways */
+  mix-blend-mode: multiply;
 }
 
 .notes-index__empty {
