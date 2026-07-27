@@ -251,9 +251,16 @@
       im.src = imgSrc(key);
     });
 
-    // Re-layout on resize (re-picks breakpoint → cols + pattern).
+    // Re-layout only when the WIDTH changes. On mobile, scrolling shows/
+    // hides the address bar, which fires resize with a new HEIGHT — if we
+    // rebuilt on that, every scroll would jump back to top. Track width and
+    // bail when only height changed.
     let rt;
+    let lastW = window.innerWidth;
     window.addEventListener('resize', function () {
+      const w = window.innerWidth;
+      if (w === lastW) return;   // height-only change (address bar) — ignore
+      lastW = w;
       clearTimeout(rt);
       rt = setTimeout(function () {
         const grid = document.getElementById('shelfGrid');
