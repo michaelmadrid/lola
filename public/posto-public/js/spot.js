@@ -44,8 +44,15 @@
 
       out.push('<h1 class="spot-detail__name">' + esc(s.place_name) + '</h1>');
 
-      const place = [s.neighborhood, s.city].filter(Boolean).join(', ');
-      if (place) out.push('<p class="spot-detail__city">' + esc(place) + '</p>');
+      // City line — city name links to /city/:slug; neighborhood (if any)
+      // stays plain text before it.
+      if (s.city) {
+        const cityLink = s.city_slug
+          ? '<a href="/city/' + encodeURIComponent(s.city_slug) + '">' + esc(s.city) + '</a>'
+          : esc(s.city);
+        const line = s.neighborhood ? esc(s.neighborhood) + ', ' + cityLink : cityLink;
+        out.push('<p class="spot-detail__city">' + line + '</p>');
+      }
 
       const links = [];
       if (s.website) {
