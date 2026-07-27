@@ -49,14 +49,21 @@
         out.push('<div class="city-finds">');
         finds.forEach(function (n) {
           const href = n.reference_url && /^https?:\/\//i.test(n.reference_url) ? n.reference_url : null;
-          const thumb = n.image_url
+          const imgInner = n.image_url
             ? '<div class="city-find__thumb"><img src="' + esc(imgSrc(n.image_url)) + '" alt="' + esc(n.headline || '') + '"></div>'
             : '';
-          const title = '<div class="city-find__t">' + esc(n.headline || 'Untitled') + '</div>';
-          const inner = thumb + title;
-          out.push(href
-            ? '<a class="city-find" href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' + inner + '</a>'
-            : '<div class="city-find">' + inner + '</div>');
+          // Thumb + title link out to the reference; the From-spot link is
+          // a SEPARATE sibling (no nested anchors) so both are clickable.
+          const linkedThumb = href
+            ? '<a class="city-find__link" href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' +
+                imgInner + '<div class="city-find__t">' + esc(n.headline || 'Untitled') + '</div></a>'
+            : '<div class="city-find__link">' + imgInner +
+                '<div class="city-find__t">' + esc(n.headline || 'Untitled') + '</div></div>';
+          const from = n.spot_name
+            ? '<div class="city-find__from">From <a href="/spot/' +
+                encodeURIComponent(n.spot_slug || '') + '">' + esc(n.spot_name) + '</a></div>'
+            : '';
+          out.push('<div class="city-find">' + linkedThumb + from + '</div>');
         });
         out.push('</div>');
       }

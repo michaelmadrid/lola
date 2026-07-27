@@ -207,18 +207,25 @@ router.get('/public/:idOrSlug', async (req, res) => {
     if (!city) return res.status(404).json({ error: 'City not found' });
 
     // Recent finds — published notes linked to a spot in this city.
+    // DISTINCT ON dedupes a note linked to multiple spots in the city;
+    // the outer query restores newest-first ordering.
     const finds = await pool.query(`
-      SELECT DISTINCT bn.id, bn.headline, bn.image_url, bn.reference_title,
-             bn.reference_url, bn.publish_date
-        FROM board_notes bn
-        JOIN note_spot_links l ON l.note_id = bn.id
-        JOIN spots s ON s.id = l.spot_id
-       WHERE s.city_id = $1
-         AND bn.status = 'published'
-         AND bn.deleted_at IS NULL
-         AND bn.publish_date <= NOW()
-       ORDER BY bn.publish_date DESC
-       LIMIT 60`, [city.id]);
+      SELECT * FROM (
+        SELECT DISTINCT ON (bn.id)
+               bn.id, bn.headline, bn.image_url, bn.reference_title,
+               bn.reference_url, bn.publish_date,
+               s.place_name AS spot_name, s.slug AS spot_slug
+          FROM board_notes bn
+          JOIN note_spot_links l ON l.note_id = bn.id
+          JOIN spots s ON s.id = l.spot_id
+         WHERE s.city_id = $1
+           AND bn.status = 'published'
+           AND bn.deleted_at IS NULL
+           AND bn.publish_date <= NOW()
+         ORDER BY bn.id, bn.publish_date DESC
+      ) d
+      ORDER BY d.publish_date DESC
+      LIMIT 60`, [city.id]);
 
     // Curated spots in this city, for the "Also" list (grouped client-side
     // by category).
