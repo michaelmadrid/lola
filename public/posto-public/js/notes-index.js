@@ -271,13 +271,21 @@
     }
 
     // Read true image ratios first (so heights match uploads), then draw.
+    // We null the Image handlers + src after reading so the browser can
+    // garbage-collect the full-res decode — otherwise every shelf image
+    // stays decoded in memory for the life of the page, which adds up over
+    // a long session (especially alongside other heavy tabs).
     let pending = sorted.length;
     if (!pending) { draw(); return; }
     sorted.forEach(function (n) {
-      const im = new Image();
+      let im = new Image();
       const key = n.image_url;
-      im.onload = function () { ratios[key] = im.naturalHeight / im.naturalWidth; if (!--pending) draw(); };
-      im.onerror = function () { ratios[key] = SHELF.ratio; if (!--pending) draw(); };
+      const done = function () {
+        if (im) { im.onload = im.onerror = null; im = null; }
+        if (!--pending) draw();
+      };
+      im.onload = function () { ratios[key] = im.naturalHeight / im.naturalWidth; done(); };
+      im.onerror = function () { ratios[key] = SHELF.ratio; done(); };
       im.src = imgSrc(key);
     });
 
@@ -285,18 +293,31 @@
     // hides the address bar, which fires resize with a new HEIGHT — if we
     // rebuilt on that, every scroll would jump back to top. Track width and
     // bail when only height changed.
-    let rt;
-    let lastW = window.innerWidth;
-    window.addEventListener('resize', function () {
-      const w = window.innerWidth;
-      if (w === lastW) return;   // height-only change (address bar) — ignore
-      lastW = w;
-      clearTimeout(rt);
-      rt = setTimeout(function () {
-        const grid = document.getElementById('shelfGrid');
-        if (grid) draw();
-      }, 140);
-    });
+    //
+    // Always keep the global re-layout hook pointing at THIS render's draw,
+    // so a listener bound on the first render still calls the current draw.
+    window.__shelfRelayout = function () {
+      const grid = document.getElementById('shelfGrid');
+      if (grid) draw();
+    };
+
+    // Registered ONCE per page via a global guard: if renderShelf ever runs
+    // again (re-fetch, soft nav), we don't stack a second listener — each
+    // stacked listener would trigger another full grid rebuild on resize.
+    if (!window.__shelfResizeBound) {
+      window.__shelfResizeBound = true;
+      let rt;
+      let lastW = window.innerWidth;
+      window.addEventListener('resize', function () {
+        const w = window.innerWidth;
+        if (w === lastW) return;   // height-only change (address bar) — ignore
+        lastW = w;
+        clearTimeout(rt);
+        rt = setTimeout(function () {
+          if (window.__shelfRelayout) window.__shelfRelayout();
+        }, 140);
+      });
+    }
   }
 
   const LAYOUTS = {
