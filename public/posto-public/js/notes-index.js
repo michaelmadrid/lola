@@ -52,7 +52,7 @@
   function provenanceText(n) {
     const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
     if (spot) return  esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '');
-    if (n.reference_title) return 'From ' + esc(n.reference_title);
+    if (n.reference_title) return  esc(n.reference_title);
     return '';
   }
 
@@ -65,9 +65,9 @@
       const cityLink = spot.city
         ? ', <a href="/city/' + slug(spot.city) + '">' + esc(spot.city) + '</a>'
         : '';
-      return 'From ' + spotLink + cityLink;
+      return  spotLink + cityLink;
     }
-    if (n.reference_title) return 'From ' + esc(n.reference_title);
+    if (n.reference_title) return esc(n.reference_title);
     return '';
   }
 
