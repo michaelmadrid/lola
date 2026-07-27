@@ -82,7 +82,7 @@
   const SHELF = {
     ratio: 1.25,      // fallback image ratio (h/w) if a real one can't be read
     gutter: 12,       // px between cells
-    ghostHeight: 0.9, // ghost cell height as a ratio of one column's width
+    ghostHeight: .45, // ghost cell height as a ratio of one column's width
     fixedRatio: false,// true = force every frame to `ratio` (uniform crop)
 
     // Per-breakpoint column counts AND span patterns. Widest first.
