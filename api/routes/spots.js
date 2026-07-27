@@ -804,25 +804,47 @@ router.get('/index', async (req, res) => {
 
 // =============================================================
 // GET /api/spots/public/:id — single curated spot for permalink page
-router.get('/public/:id', async (req, res) => {
+router.get('/public/:idOrSlug', async (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   try {
+    // Accept either a numeric id (legacy /spot/:id links) or a slug
+    // (/spot/:slug). Numeric-looking → match id, else → match slug.
+    const key = req.params.idOrSlug;
+    const isNumeric = /^\d+$/.test(key);
+    const where = isNumeric ? 's.id = $1' : 's.slug = $1';
+    const arg = isNumeric ? parseInt(key, 10) : key;
+
     const result = await pool.query(`
       SELECT
-        s.id, s.place_name, s.tip, s.neighborhood, s.country,
+        s.id, s.slug, s.place_name, s.tip, s.neighborhood, s.country,
         s.category, s.website, s.instagram, s.tags, s.image_url, s.been,
         p.google_place_id, p.lat, p.lng, p.address,
         c.name AS city, c.slug AS city_slug
       FROM spots s
       LEFT JOIN cities c ON s.city_id = c.id
       LEFT JOIN places p ON s.place_id = p.id
-      WHERE s.id = $1
+      WHERE ${where}
         AND s.curated = true
         AND s.deleted_at IS NULL
         AND s.place_name IS NOT NULL
-      LIMIT 1`, [req.params.id]);
-    if (!result.rows[0]) return res.status(404).json({ error: 'Spot not found' });
-    res.json({ spot: result.rows[0] });
+      LIMIT 1`, [arg]);
+
+    const spot = result.rows[0];
+    if (!spot) return res.status(404).json({ error: 'Spot not found' });
+
+    // Notes linked to this spot (published only), for the detail page.
+    const notes = await pool.query(`
+      SELECT bn.id, bn.headline, bn.image_url, bn.reference_title,
+             bn.reference_url, bn.publish_date
+        FROM note_spot_links l
+        JOIN board_notes bn ON bn.id = l.note_id
+       WHERE l.spot_id = $1
+         AND bn.status = 'published'
+         AND bn.deleted_at IS NULL
+         AND bn.publish_date <= NOW()
+       ORDER BY bn.publish_date DESC`, [spot.id]);
+
+    res.json({ spot: spot, notes: notes.rows });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

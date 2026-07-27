@@ -1146,3 +1146,26 @@ a.find-frame { cursor: pointer; }
 }
 a.fv2-frame { cursor: pointer; }
 a.fv2-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
+
+/* ── Spot detail — bare-bones wireframe ─────────────────────────
+   Small image + linked notes list. Design comes later. */
+.spot-detail__image--small { max-width: 240px; margin: 20px 0; }
+.spot-detail__image--small img { width: 100%; height: auto; display: block; }
+.spot-detail__notes { margin-top: 32px; }
+.spot-detail__notes-label {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 12px;
+}
+.spot-detail__notes-list { list-style: none; padding: 0; margin: 0; }
+.spot-detail__note {
+  font-family: var(--sans);
+  font-size: var(--text-body);
+  line-height: 1.4;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+}
+.spot-detail__note a { text-decoration: underline; text-underline-offset: 2px; }

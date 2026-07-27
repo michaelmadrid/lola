@@ -1,16 +1,18 @@
-/* spot.js — renders a single spot permalink at /spot/:id
-   Shows: place name (headline), city, website + Google Maps as underlined
-   text links (not icons), and an image if one exists. */
+/* spot.js — single spot permalink at /spot/:slug (also accepts /spot/:id).
+   Bare-bones: name, Site · Map · IG, small image if present, and the list
+   of notes linked to this spot. A wireframe to prove the data flow; design
+   comes later. */
 (function () {
   const API = 'https://studio.posto.world/api/spots/public/';
   const el = document.getElementById('spot-detail');
   if (!el) return;
 
+  // Last path segment is the id or slug: /spot/ao-hata-bookstore or /spot/488
   const parts = location.pathname.split('/').filter(Boolean);
-  const id = parts[parts.length - 1];
-  if (!id || isNaN(parseInt(id, 10))) {
+  const key = parts[parts.length - 1];
+  if (!key || key === 'spot') {
     el.innerHTML = '<p class="notice-caption">Spot not found.</p>';
-    document.title = 'Not found — Annex';
+    document.title = 'Not found — POSTO';
     return;
   }
 
@@ -23,42 +25,62 @@
     if (!url) return '';
     return url.startsWith('http') ? url : 'https://studio.posto.world' + url;
   }
+  function igUrl(v) {
+    v = String(v || '').trim();
+    if (!v) return null;
+    if (/^https?:\/\//i.test(v)) return v;
+    return 'https://instagram.com/' + v.replace(/^@/, '');
+  }
 
-  fetch(API + encodeURIComponent(id))
+  fetch(API + encodeURIComponent(key))
     .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
     .then(data => {
       const s = data.spot;
-      document.title = (s.place_name || 'Spot') + ' — Annex';
+      const notes = Array.isArray(data.notes) ? data.notes : [];
+      document.title = (s.place_name || 'Spot') + ' — POSTO';
 
       const out = [];
       out.push('<article class="spot-detail__inner">');
 
-      // Headline — place name
       out.push('<h1 class="spot-detail__name">' + esc(s.place_name) + '</h1>');
 
-      // City (+ neighborhood if present)
       const place = [s.neighborhood, s.city].filter(Boolean).join(', ');
       if (place) out.push('<p class="spot-detail__city">' + esc(place) + '</p>');
 
-      // Image
-      if (s.image_url) {
-        out.push('<div class="spot-detail__image"><img src="' + esc(imgSrc(s.image_url)) + '" alt="' + esc(s.place_name) + '"></div>');
-      }
-
-      // Tip / description
-      if (s.tip) out.push('<p class="spot-detail__tip">' + esc(s.tip) + '</p>');
-
-      // Links — website + Google Maps, underlined text (not icons)
       const links = [];
       if (s.website) {
-        links.push('<a href="' + esc(s.website) + '" target="_blank" rel="noopener">Website</a>');
+        links.push('<a href="' + esc(s.website) + '" target="_blank" rel="noopener">Site</a>');
       }
       if (s.google_place_id) {
         const maps = 'https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(s.google_place_id);
-        links.push('<a href="' + maps + '" target="_blank" rel="noopener">Google Maps</a>');
+        links.push('<a href="' + maps + '" target="_blank" rel="noopener">Map</a>');
       }
+      const ig = igUrl(s.instagram);
+      if (ig) links.push('<a href="' + esc(ig) + '" target="_blank" rel="noopener">IG</a>');
       if (links.length) {
         out.push('<p class="spot-detail__links">' + links.join('<span class="spot-detail__sep">·</span>') + '</p>');
+      }
+
+      if (s.image_url) {
+        out.push('<div class="spot-detail__image spot-detail__image--small"><img src="' +
+          esc(imgSrc(s.image_url)) + '" alt="' + esc(s.place_name) + '"></div>');
+      }
+
+      if (s.tip) out.push('<p class="spot-detail__tip">' + esc(s.tip) + '</p>');
+
+      if (notes.length) {
+        out.push('<div class="spot-detail__notes">');
+        out.push('<h2 class="spot-detail__notes-label">Notes</h2>');
+        out.push('<ul class="spot-detail__notes-list">');
+        notes.forEach(function (n) {
+          const href = n.reference_url && /^https?:\/\//i.test(n.reference_url) ? n.reference_url : null;
+          const title = esc(n.headline || 'Untitled');
+          const inner = href
+            ? '<a href="' + esc(n.reference_url) + '" target="_blank" rel="noopener">' + title + '</a>'
+            : title;
+          out.push('<li class="spot-detail__note">' + inner + '</li>');
+        });
+        out.push('</ul></div>');
       }
 
       out.push('</article>');
@@ -66,6 +88,6 @@
     })
     .catch(() => {
       el.innerHTML = '<p class="notice-caption">Spot not found.</p>';
-      document.title = 'Not found — Annex';
+      document.title = 'Not found — POSTO';
     });
 })();
