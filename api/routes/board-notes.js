@@ -96,7 +96,9 @@ router.get('/public/grid', async (req, res) => {
              -- Linked spots, for the provenance line ("From X, City").
              (SELECT json_agg(json_build_object(
                         'name', s.place_name,
-                        'city', c.name
+                        'slug', s.slug,
+                        'city', c.name,
+                        'city_slug', c.slug
                       ) ORDER BY s.place_name)
                 FROM note_spot_links l
                 JOIN spots s ON s.id = l.spot_id

@@ -51,8 +51,8 @@
   // whole card is a single outward <a>; nested anchors wouldn't fire.
   function provenanceText(n) {
     const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
-    if (spot) return  esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '');
-    if (n.reference_title) return  esc(n.reference_title);
+    if (spot) return esc(spot.name) + (spot.city ? ', ' + esc(spot.city) : '');
+    if (n.reference_title) return esc(n.reference_title);
     return '';
   }
 
@@ -61,11 +61,16 @@
   function provenanceHtml(n) {
     const spot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
     if (spot) {
-      const spotLink = '<a href="/spot/' + slug(spot.name) + '">' + esc(spot.name) + '</a>';
+      // Use the REAL stored slug from the API. Only derive as a last resort
+      // (old rows without a slug), since deriving can't know how the server
+      // handled '&', accents, or collision suffixes — that was the bug.
+      const spotSlug = spot.slug || slug(spot.name);
+      const spotLink = '<a href="/spot/' + spotSlug + '">' + esc(spot.name) + '</a>';
+      const citySlug = spot.city_slug || (spot.city ? slug(spot.city) : '');
       const cityLink = spot.city
-        ? ', <a href="/city/' + slug(spot.city) + '">' + esc(spot.city) + '</a>'
+        ? ', <a href="/city/' + citySlug + '">' + esc(spot.city) + '</a>'
         : '';
-      return  spotLink + cityLink;
+      return spotLink + cityLink;
     }
     if (n.reference_title) return esc(n.reference_title);
     return '';
