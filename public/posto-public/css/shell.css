@@ -1081,13 +1081,13 @@ a.shelf-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
 .shelf-t {
   padding-top: 7px;
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.28;
   color: var(--ink);
 }
 .shelf-sub {
   font-family: var(--sans);
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.28;
   color: var(--ink-3);
 }
