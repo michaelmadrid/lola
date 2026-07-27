@@ -81,7 +81,7 @@
   // =========================================================
   const SHELF = {
     ratio: 1.25,      // fallback image ratio (h/w) if a real one can't be read
-    gutter: 18,       // px between cells
+    gutter: 14,       // px between cells
     ghostHeight: 0.9, // ghost cell height as a ratio of one column's width
     fixedRatio: false,// true = force every frame to `ratio` (uniform crop)
 
