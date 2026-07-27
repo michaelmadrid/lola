@@ -189,4 +189,52 @@ router.delete('/:id', authenticate, async (req, res) => {
   }
 });
 
+// GET /api/cities/public/:idOrSlug — city detail for the public page.
+// Returns the city, recent finds (notes whose linked spot is in this city),
+// and the city's curated spots grouped by category. No auth.
+router.get('/public/:idOrSlug', async (req, res) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  try {
+    const key = req.params.idOrSlug;
+    const isNumeric = /^\d+$/.test(key);
+    const cityRes = await pool.query(
+      isNumeric
+        ? `SELECT id, name, slug, country FROM cities WHERE id = $1 LIMIT 1`
+        : `SELECT id, name, slug, country FROM cities WHERE slug = $1 LIMIT 1`,
+      [isNumeric ? parseInt(key, 10) : key]
+    );
+    const city = cityRes.rows[0];
+    if (!city) return res.status(404).json({ error: 'City not found' });
+
+    // Recent finds — published notes linked to a spot in this city.
+    const finds = await pool.query(`
+      SELECT DISTINCT bn.id, bn.headline, bn.image_url, bn.reference_title,
+             bn.reference_url, bn.publish_date
+        FROM board_notes bn
+        JOIN note_spot_links l ON l.note_id = bn.id
+        JOIN spots s ON s.id = l.spot_id
+       WHERE s.city_id = $1
+         AND bn.status = 'published'
+         AND bn.deleted_at IS NULL
+         AND bn.publish_date <= NOW()
+       ORDER BY bn.publish_date DESC
+       LIMIT 60`, [city.id]);
+
+    // Curated spots in this city, for the "Also" list (grouped client-side
+    // by category).
+    const spots = await pool.query(`
+      SELECT s.id, s.slug, s.place_name, s.category
+        FROM spots s
+       WHERE s.city_id = $1
+         AND s.curated = true
+         AND s.deleted_at IS NULL
+         AND s.place_name IS NOT NULL
+       ORDER BY s.category NULLS LAST, s.place_name`, [city.id]);
+
+    res.json({ city: city, finds: finds.rows, spots: spots.rows });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

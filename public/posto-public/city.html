@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+ <!-- META PAGE -->
+  <title>POSTO - City</title>
+  <script>window.POSTO_PAGE = 'city';</script>
+
+
+  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <div data-include="header"></div>
+
+  <main class="city-detail" id="city-detail">
+    <!-- filled by city.js -->
+  </main>
+
+  <!-- ── Footer (edit in /partials/footer.html) ───────── -->
+  <div data-include="footer"></div>
+
+</div><!-- /page -->
+
+<script>
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+<script>
+  fetch('/js/city.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+
+
+</body>
+</html>

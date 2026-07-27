@@ -1169,3 +1169,52 @@ a.fv2-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
   border-top: 1px solid var(--rule);
 }
 .spot-detail__note a { text-decoration: underline; text-underline-offset: 2px; }
+
+/* ── City detail — bare-bones wireframe ─────────────────────────
+   Recent finds as small thumbs + spots grouped by category. */
+.city-detail__label {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 32px 0 14px;
+}
+.city-finds {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 18px;
+}
+@media (max-width: 900px) { .city-finds { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 560px) { .city-finds { grid-template-columns: repeat(3, 1fr); } }
+.city-find { display: block; color: inherit; text-decoration: none; }
+.city-find__thumb {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: var(--surface, #ebeae5);
+  margin-bottom: 6px;
+}
+.city-find__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.city-find__t {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  line-height: 1.3;
+  color: var(--ink);
+}
+.city-find:hover .city-find__t { text-decoration: underline; }
+
+.city-spots__group { margin-bottom: 20px; }
+.city-spots__cat {
+  font-family: var(--sans);
+  font-size: var(--text-small);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+.city-spots__list { list-style: none; padding: 0; margin: 0; }
+.city-spots__item {
+  font-family: var(--sans);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+.city-spots__item a { text-decoration: none; color: var(--ink-2); }
+.city-spots__item a:hover { color: var(--ink); text-decoration: underline; }
