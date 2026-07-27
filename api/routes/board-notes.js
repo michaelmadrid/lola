@@ -53,7 +53,7 @@ router.get('/public', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT id, type, headline, body, image_url, reference_title, reference_url,
-             pin, publish_date, show_in_feed
+             pin, featured, publish_date, show_in_feed
       FROM board_notes
       WHERE status = 'published'
         AND deleted_at IS NULL
@@ -77,7 +77,7 @@ router.get('/public/grid', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT bn.id, bn.type, bn.headline, bn.reference_title,
-             bn.reference_url, bn.pin, bn.publish_date, bn.category,
+             bn.reference_url, bn.pin, bn.featured, bn.publish_date, bn.category,
              -- Two images for the shelf's hover swap:
              --   cover = gallery's first image (the evocative/abstract one)
              --           shown at rest; falls back to the hero when there's
@@ -121,7 +121,7 @@ router.get('/public/:id', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT id, type, headline, body, image_url, reference_title, reference_url,
-             pin, publish_date, show_in_feed
+             pin, featured, publish_date, show_in_feed
       FROM board_notes
       WHERE id = $1
         AND status = 'published'
@@ -144,7 +144,7 @@ router.get('/types', (req, res) => {
 // POST /api/board-notes — create (draft by default)
 router.post('/', authenticate, async (req, res) => {
   const { type, headline, body, image_url, reference_title, reference_url,
-          status, pin, publish_date, expires_at, show_in_feed, category } = req.body;
+          status, pin, featured, publish_date, expires_at, show_in_feed, category } = req.body;
   if (!headline || !headline.trim()) return res.status(400).json({ error: 'headline required' });
   if (type && !TYPES.includes(type)) return res.status(400).json({ error: 'invalid type' });
 
@@ -152,11 +152,11 @@ router.post('/', authenticate, async (req, res) => {
     const result = await pool.query(
       `INSERT INTO board_notes
          (user_id, type, headline, body, image_url, reference_title, reference_url,
-          status, pin, publish_date, expires_at, show_in_feed, category)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,COALESCE($10, NOW()),$11,$12,$13)
+          status, pin, featured, publish_date, expires_at, show_in_feed, category)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11, NOW()),$12,$13,$14)
        RETURNING *`,
       [req.user.id, type || 'note', headline.trim(), body || null, image_url || null,
-       reference_title || null, reference_url || null, status || 'draft', !!pin,
+       reference_title || null, reference_url || null, status || 'draft', !!pin, !!featured,
        publish_date || null, expires_at || null, show_in_feed !== false, category || null]
     );
     res.json({ note: result.rows[0] });
@@ -168,7 +168,7 @@ router.post('/', authenticate, async (req, res) => {
 // PATCH /api/board-notes/:id
 router.patch('/:id', authenticate, async (req, res) => {
   const allowed = ['type', 'headline', 'body', 'image_url', 'reference_title',
-                    'reference_url', 'status', 'pin', 'publish_date', 'expires_at', 'deleted_at', 'show_in_feed', 'category'];
+                    'reference_url', 'status', 'pin', 'featured', 'publish_date', 'expires_at', 'deleted_at', 'show_in_feed', 'category'];
   const sets = [], params = [];
   for (const k of allowed) {
     if (req.body[k] !== undefined) { params.push(req.body[k]); sets.push(`${k} = $${params.length}`); }

@@ -394,6 +394,8 @@
   const refUrlEl = document.getElementById('note-ref-url');
   const pinOffBtn = document.getElementById('note-pin-off');
   const pinOnBtn = document.getElementById('note-pin-on');
+  const featOffBtn = document.getElementById('note-feat-off');
+  const featOnBtn = document.getElementById('note-feat-on');
   const publishDateEl = document.getElementById('note-publish-date');
   const expiresEl = document.getElementById('note-expires');
   const deleteBtn = document.getElementById('note-delete');
@@ -553,6 +555,7 @@
   let editingId = null;
   let editingType = 'note';
   let editingPin = false;
+  let editingFeatured = false;
   let editingImageUrl = null;
   let editingFeed = true;
   let quill = null;
@@ -683,6 +686,14 @@
   }
   pinOffBtn.addEventListener('click', () => setPin(false));
   pinOnBtn.addEventListener('click', () => setPin(true));
+
+  function setFeatured(v) {
+    editingFeatured = v;
+    featOffBtn.dataset.active = String(!v);
+    featOnBtn.dataset.active = String(v);
+  }
+  featOffBtn.addEventListener('click', () => setFeatured(false));
+  featOnBtn.addEventListener('click', () => setFeatured(true));
 
   document.getElementById('note-expires-clear').addEventListener('click', () => {
     expiresEl.value = '';
@@ -837,6 +848,7 @@
     refTitleEl.value = note ? (note.reference_title || '') : '';
     refUrlEl.value = note ? (note.reference_url || '') : '';
     setPin(note ? !!note.pin : false);
+    setFeatured(note ? !!note.featured : false);
     publishDateEl.value = note ? toLocalInput(note.publish_date) : toLocalInput(new Date().toISOString());
     expiresEl.value = note ? toLocalInput(note.expires_at) : '';
     editingImageUrl = note ? note.image_url : null;
@@ -918,6 +930,7 @@
       reference_url: refUrlEl.value.trim() || null,
       status,
       pin: editingPin,
+      featured: editingFeatured,
       show_in_feed: editingFeed,
       category: categoryEl.value || null,
       publish_date: publishDateEl.value ? new Date(publishDateEl.value).toISOString() : null,

@@ -151,23 +151,41 @@
     const ratios = {};
 
     // Build the display list by walking the active pattern across the item
-    // stream. Ghost slots (0) emit an empty cell and consume NO item; real
-    // slots consume the next item and carry its span.
+    // stream. Ghost slots (0) emit an empty cell and consume NO item.
+    //
+    // Featured behaviour (i, with fallback): as we walk chronologically, a
+    // hero slot (span > 1) is filled by the NEXT FEATURED item still waiting,
+    // if one exists; otherwise it falls back to the next item in order.
+    // Single slots take the next non-hero item. Overflow featured items
+    // (more featured than hero slots) just flow as normal singles. Nothing
+    // reorders — featured only changes which existing item lands in a big
+    // slot, so recency (newest-first) is preserved.
     let cells = []; // [{ghost:true} | {item, span}]
     function buildCells() {
       const bp = activeBP();
       const p = bp.pattern && bp.pattern.length ? bp.pattern : [1];
       cells = [];
-      let pi = 0, ii = 0;
-      while (ii < sorted.length) {
+
+      // A single ordered queue; we pull from the front for normal slots, but
+      // for hero slots we pull the earliest FEATURED item still in the queue.
+      const queue = sorted.slice();
+
+      function takeNext() { return queue.shift(); }
+      function takeFeaturedOrNext() {
+        const fi = queue.findIndex(function (n) { return !!n.featured; });
+        if (fi === -1) return queue.shift();      // fallback: next in order
+        return queue.splice(fi, 1)[0];            // the earliest featured
+      }
+
+      let pi = 0;
+      while (queue.length) {
         const s = p[pi % p.length];
-        if (s === 0) {
-          cells.push({ ghost: true });
-        } else {
-          cells.push({ item: sorted[ii], span: Math.min(s, bp.cols) });
-          ii++;
-        }
         pi++;
+        if (s === 0) { cells.push({ ghost: true }); continue; }
+        const span = Math.min(s, bp.cols);
+        const item = span > 1 ? takeFeaturedOrNext() : takeNext();
+        if (!item) break;
+        cells.push({ item: item, span: span });
       }
     }
 
