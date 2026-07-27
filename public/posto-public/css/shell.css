@@ -1032,6 +1032,8 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
   line-height: 1.3;
   color: var(--ink-3, #888);
 }
+.note-card__sub a { color: var(--ink-3, #888); text-decoration: none; }
+.note-card__sub a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 
 @media (max-width: 460px) {
   .notes-index { padding: 32px 16px 64px; }
@@ -1048,95 +1050,22 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 
 
 
-/* ── Shelf / finds layout (/notes?layout=finds) ─────────────────
-   JS-driven masonry (see renderFinds). Cell heights are computed from
-   measured column width × ratio and packed via grid-auto-rows:1px, so
-   tiles sit tight with no vertical gaps. Grade (saturation/contrast)
-   lives on the grid as CSS vars and clears on hover, where the full
-   uncropped image also resurfaces. */
-.finds-grid {
-  display: grid;
-  grid-auto-rows: 1px;
-  row-gap: 0;
-  margin-top: 30px;
-}
-.find-cell { position: relative; }
+/* ── Shelf layout (default /shelf, /notes) ──────────────────────
+   Masonry with authored span patterns + ghost breaths. True-ratio
+   images (no crop, no grade). All tuning is in notes-index.js SHELF. */
+.shelf-grid { display: grid; grid-auto-rows: 1px; row-gap: 0; margin-top: 30px; }
+.shelf-cell { position: relative; }
+.shelf-cell--ghost { background: none; pointer-events: none; }
 
-.find-frame {
-  position: relative;
-  display: block;
-  width: 100%;
-  overflow: hidden;
-  background: #e6e5e0;
-}
-a.find-frame { cursor: pointer; }
-
-/* Source <img> is only a pixel source for the canvas — never shown. */
-/* Source <img> feeds the canvas — hidden but NOT display:none, because
-   display:none can stop the image loading (naturalWidth stays 0 and the
-   grade never runs). Zero-size + absolute keeps it invisible and out of
-   flow while still loading. */
-.find-src {
-  position: absolute;
-  width: 1px; height: 1px;
-  opacity: 0;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* The graded canvas is the visible image. Cover-fills the frame at rest.
-   Explicit inset:0 + absolute keeps an unsized/loading canvas from ever
-   sitting in flow as a stray 300×150 grey box. */
-.find-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-/* Hover: same graded image, uncropped (contain). Frame goes to the page
-   background so there's no second-image bleed behind it — just the object
-   floating on the shelf's own ground. Swap 'transparent' for #fff or a
-   token if you want a hard white card instead. */
-.find-cell:hover .find-frame { background: transparent; }
-.find-cell:hover .find-canvas { object-fit: contain; }
-
-.find-t {
-  padding-top: 7px;
-  font-family: var(--sans);
-  font-size: 12px;
-  line-height: 1.25;
-  color: var(--ink);
-}
-.find-sub {
-  font-family: var(--sans);
-  font-size: 12px;
-  line-height: 1.25;
-  color: var(--ink-3);
-}
-.find-source, .find-city {
-  color: var(--ink-3);
-  text-decoration: none;
-  border-bottom: 1px solid var(--rule);
-}
-.find-source:hover, .find-city:hover { color: var(--ink); }
-
-/* ── Finds v2 (?layout=findsv2) ─────────────────────────────────
-   Same masonry as finds, but images at TRUE ratio, bottom-aligned on a
-   baseline inside each 4:5 slot. No colour grade. */
-.finds-grid.fv2 { row-gap: 0; }
-.fv2-frame {
+.shelf-frame {
   position: relative;
   display: flex;
-  align-items: flex-end;      /* baseline: images sit on the slot floor */
+  align-items: flex-end;      /* baseline: images stand on the cell floor */
   justify-content: center;
   width: 100%;
   overflow: hidden;
 }
-.fv2-frame img {
+.shelf-frame img {
   max-width: 100%;
   max-height: 100%;
   width: auto;
@@ -1144,9 +1073,24 @@ a.find-frame { cursor: pointer; }
   object-fit: contain;
   display: block;
 }
-a.fv2-frame { cursor: pointer; }
-a.fv2-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
+a.shelf-frame { cursor: pointer; }
+a.shelf-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
 
+.shelf-t {
+  padding-top: 7px;
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.28;
+  color: var(--ink);
+}
+.shelf-sub {
+  font-family: var(--sans);
+  font-size: 12px;
+  line-height: 1.28;
+  color: var(--ink-3);
+}
+.shelf-sub a { color: var(--ink-3); text-decoration: none; }
+.shelf-sub a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
 /* ── Spot detail — bare-bones wireframe ─────────────────────────
    Small image + linked notes list. Design comes later. */
 .spot-detail__image--small { max-width: 240px; margin: 20px 0; }
