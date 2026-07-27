@@ -170,7 +170,14 @@
       // for hero slots we pull the earliest FEATURED item still in the queue.
       const queue = sorted.slice();
 
-      function takeNext() { return queue.shift(); }
+      function takeNext() {
+        // Prefer the next NON-featured item, so a single slot doesn't eat a
+        // featured item that a coming hero slot wants. Only fall back to a
+        // featured item if that's all that's left.
+        const ni = queue.findIndex(function (n) { return !n.featured; });
+        if (ni === -1) return queue.shift();
+        return queue.splice(ni, 1)[0];
+      }
       function takeFeaturedOrNext() {
         const fi = queue.findIndex(function (n) { return !!n.featured; });
         if (fi === -1) return queue.shift();      // fallback: next in order
