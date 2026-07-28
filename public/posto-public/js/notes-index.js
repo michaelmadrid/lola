@@ -95,7 +95,7 @@
       { maxWidth: 640,  cols: 3, pattern: [1,1,2,0,1,1,1,2,0,1] },
       { maxWidth: 820,  cols: 4, pattern: [1,2,1,1,0,1,2,1,1,0,1] },
       { maxWidth: 1100, cols: 5, pattern: [1,0,2,0,1,1,0,1,2,1,0,1,1] },
-      { maxWidth: null, cols: 7, pattern: [1,1,2,1,0,1,1,1,0,2,1,1,0,1,1] }, // desktop
+      { maxWidth: null, cols: 6, pattern: [1,1,0,2,1,1,1,1,0,2,1,1,0,1,1] }, // desktop
     ],
   };
 
