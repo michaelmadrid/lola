@@ -151,13 +151,14 @@ img { display: block; max-width: 100%; height: auto; }
   top: 0; left: 0;
   z-index: 200;
   padding: var(--logo-pad-y) var(--logo-pad-x);
+  padding:0px;
 }
 
 .posto-mark__word{
   display: inline-block;
  font-family:var(--sans);
   font-weight: 500;
-  font-size: 16px;
+  font-size: 20px;
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--logo-color);
@@ -165,6 +166,7 @@ img { display: block; max-width: 100%; height: auto; }
   cursor: pointer;
   user-select: none;
   padding: 6px 8px;
+  padding: 10px 14px;
 }
 
 .posto-mark:hover .posto-mark__word {
@@ -215,13 +217,13 @@ body.nav-open .posto-subnav {
 .posto-subnav__item {
  font-family:var(--sans);
   display: block;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 500;
   text-transform: none;
   letter-spacing: 0;
   white-space: nowrap;
   width: max-content; /* box hugs its own label — different widths */
-  padding: 6px 10px;
+  padding: 8px 12px;
   margin-bottom: 2px;
   box-sizing: border-box;
   background: var(--nav-bg);
@@ -262,6 +264,7 @@ body.nav-horz .posto-subnav__item:last-child {
 .posto-burger {
   display: none;              /* enabled per-page in the media query */
   padding: 6px 8px;           /* matches .posto-mark__word */
+  padding: 10px 14px;
   background: var(--nav-bg);
   border: 0;
   cursor: pointer;
