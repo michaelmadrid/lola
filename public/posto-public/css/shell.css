@@ -166,7 +166,7 @@ img { display: block; max-width: 100%; height: auto; }
   cursor: pointer;
   user-select: none;
   padding: 6px 8px;
-  padding: 10px 14px;
+  padding: 8px 12px;
 }
 
 .posto-mark:hover .posto-mark__word {
@@ -224,6 +224,7 @@ body.nav-open .posto-subnav {
   white-space: nowrap;
   width: max-content; /* box hugs its own label — different widths */
   padding: 8px 12px;
+  
   margin-bottom: 2px;
   box-sizing: border-box;
   background: var(--nav-bg);
