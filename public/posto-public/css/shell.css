@@ -1367,3 +1367,158 @@ a.shelf-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
    caption, not a link. Hover is the only affordance. */
 .spot-detail__city a { color: inherit; text-decoration: none; }
 .spot-detail__city a:hover { color: var(--ink); }
+
+/* ── ARCHIVE (/archive/) ──────────────────────────────────
+   A second view of the shelf data. The list is the surface you
+   read; the objects sit on a track pinned to the bottom edge that
+   pans sideways as you scroll, so the whole collection stays in
+   peripheral vision.
+
+   Deliberately immersive — body doesn't scroll, the list does. No
+   footer on this page. The nav still works because .posto-mark is
+   fixed and sits above everything.
+
+   Live tuning:
+     document.documentElement.style.setProperty('--arc-h','220px')
+     POSTO_ARCHIVE.smooth = 0.01     // track lag
+*/
+:root {
+  --arc-band:  260px;   /* height of the bottom band the objects live in */
+  --arc-h:     190px;   /* tallest an object can be */
+  --arc-w:     260px;   /* widest an object can be */
+  --arc-gap:   26px;    /* space between objects */
+  --arc-edge:  6vw;     /* left/right inset for track and list */
+  --arc-overlap: 90px;  /* how far list text runs under the objects */
+}
+
+body.archive-mode { overflow: hidden; }
+/* No .page wrapper here, so the footer partial has nothing to sit in. */
+body.archive-mode [data-include="footer"] { display: none; }
+
+.archive { position: fixed; inset: 0; }
+
+/* ── The list ──────────────────────────────────────────── */
+.archive__list {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Top clears the nav. Bottom is the band MINUS the overlap, so the
+     last rows pass behind the objects rather than stopping short of
+     them — that overlap is most of the effect. */
+  padding: 150px var(--arc-edge) calc(var(--arc-band) - var(--arc-overlap));
+  z-index: 1;
+}
+
+.archive-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7em;
+  padding: 7px 0;
+  line-height: 1.05;
+}
+.archive-row__title {
+  font-family: var(--sans);
+  font-size: 34px;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.archive-row__title a { color: inherit; text-decoration: none; }
+.archive-row__src {
+  flex: 0 0 auto;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.archive-row__src a { color: inherit; text-decoration: none; }
+.archive-row__src a:hover { color: var(--ink); }
+
+/* Hovered pair, and — on touch, where there is no hover — the row
+   nearest the current scroll position. */
+.archive-row.is-active .archive-row__src,
+.archive-row.is-current .archive-row__src { color: var(--ink); }
+.archive-row.is-active .archive-row__title a { text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── The track ─────────────────────────────────────────── */
+.archive__shelf {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--arc-band);
+  overflow: hidden;
+  z-index: 5;
+  /* Transparent, no rule — the list text passes underneath. Only the
+     objects themselves are hit-testable. */
+  pointer-events: none;
+}
+.archive__track {
+  position: absolute;
+  bottom: 0; left: 0;
+  display: flex;
+  align-items: flex-end;   /* everything sits on one baseline */
+  gap: var(--arc-gap);
+  padding: 0 var(--arc-edge);
+  will-change: transform;
+}
+
+.archive-thumb {
+  flex: 0 0 auto;
+  transform-origin: bottom center;
+  transition: transform var(--ease-medium, 200ms cubic-bezier(0.2,0.8,0.2,1));
+  cursor: pointer;
+  pointer-events: auto;
+}
+.archive-thumb img {
+  display: block;
+  max-height: var(--arc-h);
+  max-width: var(--arc-w);
+}
+/* Before load an image has no intrinsic size, which would collapse the
+   track and break the pan distance. Reserve a 3:4 box; the true ratio
+   takes over the moment [data-ready] lands. Caps on BOTH axes mean a
+   portrait hits the height cap and a landscape hits the width cap —
+   that's what gives the ragged top edge. */
+.archive-thumb img:not([data-ready]) {
+  height: var(--arc-h);
+  aspect-ratio: 3 / 4;
+  background: var(--rule);
+}
+.archive-thumb--blank { display: none; }
+
+.archive-thumb.is-active { transform: scale(1.25); z-index: 10; }
+.archive-thumb.is-current img { outline: 1px solid var(--ink); outline-offset: 3px; }
+
+/* ── Readout ───────────────────────────────────────────── */
+.archive__readout {
+  position: fixed;
+  top: 20px; right: var(--arc-edge);
+  z-index: 6;
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+.archive__empty {
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+@media (max-width: 860px) {
+  :root {
+    --arc-band: 190px;
+    --arc-h: 130px;
+    --arc-w: 180px;
+    --arc-gap: 16px;
+    --arc-overlap: 60px;
+  }
+  .archive-row__title { font-size: 20px; }
+  .archive__list { padding-top: 120px; }
+  /* Scale-on-hover is a pointer affordance; it just jitters on touch. */
+  .archive-thumb.is-active { transform: none; }
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- META PAGE -->
+  <title>POSTO - Archive</title>
+  <meta name="description" content="POSTO archive — everything, as a list.">
+  <script>window.POSTO_PAGE = 'archive';</script>
+
+  <script>document.write('<link rel="stylesheet" href="/css/shell.css?t=' + Date.now() + '">');</script>
+</head>
+<body class="archive-mode">
+
+  <!-- ── Header (edit in /partials/header.html) ───────── -->
+  <div data-include="header"></div>
+
+  <!-- Immersive: no .page wrapper, no footer. The list is its own
+       scroller and the shelf track is fixed to the bottom edge. -->
+  <div class="archive" id="archive">
+    <div class="archive__list" id="archive-list"></div>
+    <div class="archive__shelf" aria-hidden="true">
+      <div class="archive__track" id="archive-track"></div>
+    </div>
+    <div class="archive__readout" id="archive-readout"></div>
+  </div>
+
+<script>
+  fetch('/js/includes.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+<script>
+  fetch('/js/archive.js?t=' + Date.now(), { cache: 'no-store' })
+    .then(r => r.text()).then(code => { (0, eval)(code); }).catch(() => {});
+</script>
+
+</body>
+</html>
