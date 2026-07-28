@@ -53,12 +53,28 @@
     return bits.join(', ');
   }
 
+  /* The fetch catch is scoped to the FETCH only. Chaining render()
+     inside it meant any render-time exception got reported as a
+     network failure and wiped the list — while the thumbs, appended
+     to a different node, survived. Images but no text. */
   fetch(API)
-    .then(r => r.json())
-    .then(data => render(data.notes || []))
-    .catch(err => {
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .catch(function (err) {
       console.error('[archive] Could not load notes', err);
       listEl.innerHTML = '<div class="archive__empty">Could not load the archive.</div>';
+      return null;
+    })
+    .then(function (data) {
+      if (!data) return;
+      try {
+        render(data.notes || []);
+      } catch (err) {
+        // Real stack, clearly labelled, and the DOM is left alone.
+        console.error('[archive] Render failed', err);
+      }
     });
 
   function render(notes) {
@@ -107,6 +123,24 @@
       thumbs.push(thumb);
     });
 
+    /* ── Pairing state ────────────────────────────────────
+       Hover lights both halves. On touch there is no hover, so the
+       item nearest the scroll position carries .is-current instead —
+       otherwise the track would be inert on a phone.
+
+       Declared UP HERE deliberately: onScroll() below calls
+       setCurrent() during setup, and a `let` read before its
+       declaration throws (temporal dead zone). */
+    let currentIdx = -1;
+    function setCurrent(i) {
+      if (i === currentIdx) return;
+      if (thumbs[currentIdx]) thumbs[currentIdx].classList.remove('is-current');
+      if (rows[currentIdx])   rows[currentIdx].classList.remove('is-current');
+      currentIdx = i;
+      if (thumbs[i]) thumbs[i].classList.add('is-current');
+      if (rows[i])   rows[i].classList.add('is-current');
+    }
+
     /* ── Pan the track from the list's scroll position ──── */
     let target = 0, current = 0, maxX = 0, last = performance.now();
 
@@ -134,20 +168,6 @@
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
-
-    /* ── Pairing ──────────────────────────────────────────
-       Hover lights both halves. On touch there is no hover, so the
-       item nearest the scroll position carries .is-current instead —
-       otherwise the track would be inert on a phone. */
-    let currentIdx = -1;
-    function setCurrent(i) {
-      if (i === currentIdx) return;
-      if (thumbs[currentIdx]) thumbs[currentIdx].classList.remove('is-current');
-      if (rows[currentIdx])   rows[currentIdx].classList.remove('is-current');
-      currentIdx = i;
-      if (thumbs[i]) thumbs[i].classList.add('is-current');
-      if (rows[i])   rows[i].classList.add('is-current');
-    }
 
     function setActive(i, on) {
       if (thumbs[i]) thumbs[i].classList.toggle('is-active', on);
