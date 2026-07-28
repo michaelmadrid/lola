@@ -1174,7 +1174,7 @@ body.wall-mode .spots-index { max-width: none; margin: 0; padding: 0; }
 .shelf-cell { position: relative; }
 .shelf-cell--ghost { background: none; pointer-events: none; }
 
-@media (max-width: 560px) { .shelf-grid  { margin-top:30px; } }
+@media (max-width: 720px) { .shelf-grid  { margin-top:30px; } }
 
 .shelf-frame {
   position: relative;
