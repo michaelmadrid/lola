@@ -2,13 +2,15 @@
      (.posto-mark / .posto-subnav). Edit labels/links here; every
      page that includes this partial picks up changes on refresh. -->
 <div class="posto-mark" tabindex="0">
-  <a href="/"><span class="posto-mark__word">POSTO</span></a>
+  
   <!-- Mobile-only burger block. Hidden at >720px (see shell.css
        "MOBILE NAV"). Sits flush beside the POSTO block, stretched to
        its exact height by the flex row. Tap toggles .is-open. -->
   <button class="posto-burger" type="button" aria-label="Menu" aria-expanded="false">
     <span class="posto-burger__bars" aria-hidden="true"><i></i><i></i><i></i></span>
   </button>
+  <a href="/"><span class="posto-mark__word">POSTO</span></a>
+  
   <nav class="posto-subnav">
     <a class="posto-subnav__item" href="/shelf">Shelf</a>
     <a class="posto-subnav__item" href="/bookstores?layout=gazette">Bookstores</a>
