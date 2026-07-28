@@ -272,7 +272,6 @@ body.nav-horz .posto-subnav__item:last-child {
   width: 100%;
   height: 1.5px;
   background: var(--nav-fg);
-  transition: transform 120ms ease, opacity 120ms ease;
 }
 .posto-burger__bars i:nth-child(1) { top: 0; }
 .posto-burger__bars i:nth-child(2) { top: 50%; transform: translateY(-50%); }
