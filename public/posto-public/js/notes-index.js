@@ -91,11 +91,11 @@
     // a `0` is a one-column ghost (empty breath). Patterns are authored per
     // column count because a 2-span means something different at 2 vs 7 cols.
     breakpoints: [
-      { maxWidth: 460,  cols: 2, pattern: [0,1,1,2,1,1,0,1] },
+      { maxWidth: 460,  cols: 2, pattern: [1,1,1,0,2,1,1,0,1] },
       { maxWidth: 640,  cols: 3, pattern: [1,1,2,1,0,1,1,2,0,1] },
       { maxWidth: 820,  cols: 4, pattern: [1,2,1,1,0,1,2,1,1,0,1] },
-      { maxWidth: 1100, cols: 5, pattern: [0,1,1,2,1,1,1,2,1,0,1,1] },
-      { maxWidth: null, cols: 7, pattern: [0,1,1,2,1,1,1,1,2,1,1,0,1,1] }, // desktop
+      { maxWidth: 1100, cols: 5, pattern: [1,1,1,0,2,1,0,1,2,1,0,1,1] },
+      { maxWidth: null, cols: 7, pattern: [1,1,0,2,1,1,1,0,2,1,1,0,1,1] }, // desktop
     ],
   };
 
