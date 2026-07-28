@@ -72,8 +72,8 @@
   --logo-color: #111;
   --nav-bg:     #111;
   --nav-fg:     #fff;
-  --logo-pad-x: 14px;
-  --logo-pad-y: 10px;
+  --logo-pad-x: 0px;
+  --logo-pad-y:24px;
 
   /* Mobile burger geometry. Kept as whole pixels on purpose — fractional
      bar heights or positions land off the device pixel grid and each bar
