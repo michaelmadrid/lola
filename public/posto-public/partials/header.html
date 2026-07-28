@@ -21,9 +21,15 @@
   (function () {
 
 
+    /* open   — subnav forced visible (desktop + non-burger mobile)
+       horz   — subnav lays out as a row instead of a stack
+       burger — MOBILE ONLY (<=720px). true: subnav hides behind a burger
+                block beside the wordmark. false: subnav stays open on
+                phones exactly as it does on desktop, no burger shown.
+                Omitted = true. */
     var NAV_MODE = {
       // static pages, matched via window.POSTO_PAGE
-      home:  { open: true,  horz: false },
+      home:  { open: true,  horz: false, burger: false },  // homepage keeps the full stack on mobile
       spot:  { open: true, horz: false },
       note:  { open: true, horz: false },
 
@@ -42,6 +48,7 @@
 
     document.body.classList.toggle('nav-open', mode.open);
     document.body.classList.toggle('nav-horz', mode.horz);
+    document.body.classList.toggle('nav-burger', mode.burger !== false);
   })();
 </script>
 

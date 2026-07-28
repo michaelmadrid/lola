@@ -75,6 +75,14 @@
   --logo-pad-x: 24px;
   --logo-pad-y: 20px;
 
+  /* Mobile burger geometry. Kept as whole pixels on purpose — fractional
+     bar heights or positions land off the device pixel grid and each bar
+     antialiases to a different apparent weight. Container height is
+     derived, so these two are the only numbers to touch. */
+  --burger-w:   16px;
+  --burger-bar: 2px;
+  --burger-gap: 3px;
+
   /* Type */
   --sans:     'ABC Diatype', 'Helvetica Neue', Arial, sans-serif;
   --serif:    'Times Now','Times New Roman', Times, serif;
@@ -243,16 +251,16 @@ body.nav-horz .posto-subnav__item:last-child {
 }
 
 /* ── MOBILE NAV (<=720px) ─────────────────────────────────
-   Phones only. Everything below lives inside the media query,
+   Phones only. Everything positional lives inside the media query,
    so desktop is untouched by construction.
 
-   Resting state is two flush black blocks: [POSTO][burger].
-   The three subnav items are hidden until the burger is tapped.
-   Because .posto-mark is position:fixed, the drop is inherently an
-   overlay — it can never reflow the shelf masonry underneath. */
+   Two modes, chosen per page by NAV_MODE in partials/header.html:
+     burger: true  (default) — [POSTO][x] flush blocks, subnav on tap
+     burger: false           — subnav always open, no burger at all
+   The flag sets body.nav-burger; every rule below is scoped to it. */
 
 .posto-burger {
-  display: none;              /* enabled in the media query below */
+  display: none;              /* enabled per-page in the media query */
   padding: 6px 8px;           /* matches .posto-mark__word */
   background: var(--nav-bg);
   border: 0;
@@ -263,35 +271,40 @@ body.nav-horz .posto-subnav__item:last-child {
 .posto-burger__bars {
   position: relative;
   display: block;
-  width: 16px;
-  height: 11px;
+  width: var(--burger-w);
+  /* three bars + two gaps */
+  height: calc(var(--burger-bar) * 3 + var(--burger-gap) * 2);
 }
 .posto-burger__bars i {
   position: absolute;
   left: 0;
   width: 100%;
-  height: 1.5px;
+  height: var(--burger-bar);
   background: var(--nav-fg);
 }
 .posto-burger__bars i:nth-child(1) { top: 0; }
-.posto-burger__bars i:nth-child(2) { top: 50%; transform: translateY(-50%); }
-.posto-burger__bars i:nth-child(3) { bottom: 0; }
+.posto-burger__bars i:nth-child(2) { top: calc(var(--burger-bar) + var(--burger-gap)); }
+.posto-burger__bars i:nth-child(3) { top: calc((var(--burger-bar) + var(--burger-gap)) * 2); }
 
-/* Open state: bars collapse to an x. Delete these three rules if you'd
+/* Open state: outer bars snap to the middle row and cross, middle bar
+   drops out. No transition — instant. Delete these three rules if you'd
    rather the burger stay inert and let the open subnav be the signal. */
 .posto-mark.is-open .posto-burger__bars i:nth-child(1) {
-  top: 50%; transform: translateY(-50%) rotate(45deg);
+  top: calc(var(--burger-bar) + var(--burger-gap));
+  transform: rotate(45deg);
 }
 .posto-mark.is-open .posto-burger__bars i:nth-child(2) { opacity: 0; }
 .posto-mark.is-open .posto-burger__bars i:nth-child(3) {
-  top: 50%; bottom: auto; transform: translateY(-50%) rotate(-45deg);
+  top: calc(var(--burger-bar) + var(--burger-gap));
+  transform: rotate(-45deg);
 }
 
 @media (max-width: 720px) {
   /* Flex row so the burger stretches to the wordmark's exact height —
      no magic numbers to keep in sync. Row-gap 0 so the subnav's own
      2px margin-top isn't doubled; column-gap 2px matches the gap
-     between stacked subnav boxes. */
+     between stacked subnav boxes. Applies on both modes so the
+     wordmark block reads identically across the site. */
   .posto-mark {
     display: flex;
     flex-wrap: wrap;
@@ -309,17 +322,23 @@ body.nav-horz .posto-subnav__item:last-child {
     color: var(--nav-fg);
   }
 
-  .posto-burger { display: flex; align-items: center; justify-content: center; }
-
-  /* Subnav wraps to its own full-width row beneath the two blocks. */
+  /* Subnav wraps to its own full-width row beneath the blocks. */
   .posto-subnav { flex-basis: 100%; }
 
+  /* ---- burger pages only ---- */
+  body.nav-burger .posto-burger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   /* Closed by default — override every desktop opener. body.nav-open is
-     set on most pages (see NAV_MODE in partials/header.html) and hover /
-     focus-within are unreliable on touch. */
-  body.nav-open .posto-subnav,
-  .posto-mark:hover .posto-subnav,
-  .posto-mark:focus-within .posto-subnav {
+     set on most pages and hover / focus-within are unreliable on touch.
+     On non-burger pages none of this applies, so body.nav-open keeps the
+     subnav open exactly as it does on desktop. */
+  body.nav-burger.nav-open .posto-subnav,
+  body.nav-burger .posto-mark:hover .posto-subnav,
+  body.nav-burger .posto-mark:focus-within .posto-subnav {
     opacity: 0;
     transform: translateY(-4px);
     pointer-events: none;
@@ -327,7 +346,7 @@ body.nav-horz .posto-subnav__item:last-child {
 
   /* Tap is the only opener. Higher specificity than the rules above, so
      it wins regardless of source order. */
-  .posto-mark.is-open .posto-subnav {
+  body.nav-burger .posto-mark.is-open .posto-subnav {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
