@@ -58,9 +58,17 @@
     if (site) {
       links.push('<a href="' + esc(site) + '" target="_blank" rel="noopener">Site</a>');
     }
-    if (s.google_place_id) {
-      const maps = 'https://www.google.com/maps/place/?q=place_id:' + encodeURIComponent(s.google_place_id);
-      links.push('<a href="' + maps + '" target="_blank" rel="noopener">Map</a>');
+    // Documented Maps URLs API form — `query` is required even with a
+    // place id, and it's what the iOS/Android apps parse to deep-link.
+    // The older /maps/place/?q=place_id:… form only resolved on desktop.
+    // Falls back to a name+city search when no place id is stored, so
+    // spots that were never resolved still get a Map link.
+    const mapLabel = [s.place_name, s.city].filter(Boolean).join(', ');
+    if (mapLabel || s.google_place_id) {
+      let maps = 'https://www.google.com/maps/search/?api=1&query=' +
+                 encodeURIComponent(mapLabel || s.place_name || '');
+      if (s.google_place_id) maps += '&query_place_id=' + encodeURIComponent(s.google_place_id);
+      links.push('<a href="' + esc(maps) + '" target="_blank" rel="noopener">Map</a>');
     }
     const ig = igUrl(s.instagram);
     if (ig) {

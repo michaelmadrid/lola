@@ -54,6 +54,19 @@
     return v.startsWith('@') ? v : '@' + v;
   }
 
+  // Google Maps URL — documented Maps URLs API form. `query` is required
+  // even when a place id is supplied; it's what the mobile apps parse to
+  // deep-link. The older /maps/place/?q=place_id:… form resolves in a
+  // desktop browser but the iOS/Android handoff drops it.
+  function mapsUrl(s) {
+    const label = [s.place_name, s.city].filter(Boolean).join(', ');
+    if (!label && !s.google_place_id) return null;
+    let u = 'https://www.google.com/maps/search/?api=1&query=' +
+            encodeURIComponent(label || s.place_name || '');
+    if (s.google_place_id) u += '&query_place_id=' + encodeURIComponent(s.google_place_id);
+    return u;
+  }
+
   fetch(API + encodeURIComponent(key))
     .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
     .then(data => {
@@ -93,12 +106,10 @@
         left.push('<a href="' + esc(ig) + '" target="_blank" rel="noopener">' +
           esc(igHandle(s.instagram)) + '</a>');
       }
-      let right = '';
-      if (s.google_place_id) {
-        right = '<a href="https://www.google.com/maps/place/?q=place_id:' +
-          encodeURIComponent(s.google_place_id) +
-          '" target="_blank" rel="noopener">maps</a>';
-      }
+      const maps = mapsUrl(s);
+      const right = maps
+        ? '<a href="' + esc(maps) + '" target="_blank" rel="noopener">maps</a>'
+        : '';
       if (left.length || right) {
         out.push('<div class="spot-detail__meta">' +
           '<div class="spot-detail__meta-left">' + left.join('') + '</div>' +
