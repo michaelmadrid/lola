@@ -81,7 +81,7 @@
   // =========================================================
   const SHELF = {
     ratio: 1.25,      // fallback image ratio (h/w) if a real one can't be read
-    gutter: 10,       // px between cells
+    gutter: 12,       // px between cells
     ghostHeight: 0.9, // ghost cell height as a ratio of one column's width
     fixedRatio: false,// true = force every frame to `ratio` (uniform crop)
 
@@ -94,8 +94,8 @@
       { maxWidth: 460,  cols: 2, pattern: [1,1,1,2,0,1,1,0,1] },
       { maxWidth: 640,  cols: 3, pattern: [1,1,2,0,1,1,1,2,0,1] },
       { maxWidth: 820,  cols: 4, pattern: [1,2,1,1,0,1,2,1,1,0,1] },
-      { maxWidth: 1100, cols: 5, pattern: [1,0,1,0,2,1,0,1,2,1,0,1,1] },
-      { maxWidth: null, cols: 7, pattern: [1,1,1,2,0,1,1,1,0,2,1,1,0,1,1] }, // desktop
+      { maxWidth: 1100, cols: 5, pattern: [1,0,2,0,1,1,0,1,2,1,0,1,1] },
+      { maxWidth: null, cols: 7, pattern: [1,1,2,1,0,1,1,1,0,2,1,1,0,1,1] }, // desktop
     ],
   };
 
