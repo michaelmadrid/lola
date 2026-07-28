@@ -151,7 +151,7 @@ img { display: block; max-width: 100%; height: auto; }
   top: 0; left: 0;
   z-index: 200;
   padding: var(--logo-pad-y) var(--logo-pad-x);
-  padding:0px;
+  padding:10px 10px;
 }
 
 .posto-mark__word{
