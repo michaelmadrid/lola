@@ -119,19 +119,20 @@
 
       if (s.tip) out.push('<p class="spot-detail__tip">' + esc(s.tip) + '</p>');
 
-      // Finds — two CSS columns.
+      // Finds — a receipt, not a grid. Numbered rows, tiny thumbs.
+      // See "Finds" in shell.css for why this isn't a gallery.
       if (notes.length) {
         out.push('<div class="spot-detail__finds">');
-        notes.forEach(function (n) {
+        out.push('<div class="spot-detail__finds-count">' +
+          notes.length + (notes.length === 1 ? ' find' : ' finds') + '</div>');
+
+        notes.forEach(function (n, i) {
           const noteSpot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
 
           // Provenance is suppressed when the find belongs to THIS spot —
-          // otherwise every item on the page repeats the same
-          // "Casa Bosques, Mexico City" line. Still renders for a find
-          // whose primary spot is somewhere else.
-          // Match on the stored slug where both sides have one; fall back
-          // to name. (The spot objects on a note carry name/slug/city/
-          // city_slug — see provenanceHtml in notes-index.js.)
+          // otherwise every row repeats the same "Casa Bosques, Mexico
+          // City" line. Still renders for a find whose primary spot is
+          // somewhere else. Match on stored slug, fall back to name.
           let sub = '';
           const isSelf = noteSpot && (
             (noteSpot.slug && s.slug && noteSpot.slug === s.slug) ||
@@ -141,9 +142,9 @@
             const bits = [];
             if (noteSpot.name) bits.push(esc(noteSpot.name));
             if (noteSpot.city) bits.push(esc(noteSpot.city));
-            if (bits.length) sub = '<div class="shelf-sub">' + bits.join(', ') + '</div>';
+            if (bits.length) sub = '<div class="spot-find__sub">' + bits.join(', ') + '</div>';
           } else if (!noteSpot && n.reference_title) {
-            sub = '<div class="shelf-sub">' + esc(n.reference_title) + '</div>';
+            sub = '<div class="spot-find__sub">' + esc(n.reference_title) + '</div>';
           }
 
           const href = n.reference_url && /^https?:\/\//i.test(n.reference_url)
@@ -151,13 +152,20 @@
           const tag = href ? 'a' : 'div';
           const attrs = href ? ' href="' + href + '" target="_blank" rel="noopener"' : '';
 
+          // Zero-padded index — reads as a catalogue number, not a count.
+          const num = String(i + 1).padStart(2, '0');
+
           out.push('<' + tag + ' class="spot-find"' + attrs + '>');
-          if (n.image_url) {
-            out.push('<img src="' + esc(imgSrc(n.image_url)) + '" alt="' +
-              esc(n.headline || '') + '" loading="lazy">');
-          }
-          out.push('<div class="shelf-t">' + esc(n.headline || 'Untitled') + '</div>');
-          out.push(sub);
+          out.push('<div class="spot-find__num">' + num + '</div>');
+          out.push('<div class="spot-find__thumb">' +
+            (n.image_url
+              ? '<img src="' + esc(imgSrc(n.image_url)) + '" alt="" loading="lazy">'
+              : '') +
+            '</div>');
+          out.push('<div class="spot-find__body">' +
+            '<div class="spot-find__title">' + esc(n.headline || 'Untitled') + '</div>' +
+            sub +
+            '</div>');
           out.push('</' + tag + '>');
         });
         out.push('</div>');

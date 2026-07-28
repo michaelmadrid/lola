@@ -38,6 +38,7 @@
    }
 
 
+
 /* ── Tokens ────────────────────────────────────────────── */
 :root {
   /* Colors */
@@ -960,27 +961,83 @@ a.notice-text:hover {
   margin-top: var(--space-5);
 }
 
-/* Finds — two columns, balanced. inline-block + break-inside guards
-   against the item splitting across the column gap. */
-.spot-detail__finds {
-  margin-top: var(--space-7);
-  column-count: 2;
-  column-gap: 12px;
+/* Finds — a receipt, not a grid.
+
+   At three to five items a gallery writes a check the content can't
+   cash. This reads as a record of attention instead: numbered rows,
+   tiny thumbs, no rules, no section label.
+
+   The thumb is capped on HEIGHT with width auto, so ratios stay true
+   and every row is the same height regardless of a portrait book
+   sitting next to a square box. Thumb widths come out ragged; the text
+   column is offset by a fixed amount so titles stay flush anyway.
+   Ragged left edge on the images, straight column of type. */
+:root {
+  --find-thumb: 56px;   /* row height — the thumb's cap */
+  --find-indent: 78px;  /* text column offset; > widest expected thumb */
+  --find-num: 22px;     /* index gutter */
 }
+
+.spot-detail__finds { margin-top: var(--space-6); }
+
+/* The count states itself — "five things, and this is them" — which is
+   what turns a short list from a shortfall into a record. */
+.spot-detail__finds-count {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+
 .spot-find {
-  display: inline-block;
-  width: 100%;
-  margin-bottom: 22px;
-  break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  page-break-inside: avoid;
+  display: grid;
+  grid-template-columns: var(--find-num) calc(var(--find-indent) - var(--find-num)) 1fr;
+  align-items: start;
+  column-gap: 0;
+  padding: 7px 0;          /* no rules — spacing does the separating */
   text-decoration: none;
   color: inherit;
 }
-.spot-find img { display: block; width: 100%; height: auto; }
-.spot-find:hover img { opacity: 0.85; transition: opacity 140ms ease; }
-/* Titles reuse .shelf-t / .shelf-sub so the finds read identically
-   here and on the shelf — one place to change that type. */
+.spot-find__num {
+  font-family: var(--sans);
+  font-size: var(--text-tiny);
+  line-height: 1.5;
+  color: var(--ink-3);
+  padding-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.spot-find__thumb {
+  /* Fixed height, auto width — true ratio, even rhythm. */
+  height: var(--find-thumb);
+  display: flex;
+  align-items: flex-start;
+}
+.spot-find__thumb img {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: calc(var(--find-indent) - var(--find-num) - 10px);
+  object-fit: cover;       /* only bites on an extreme panorama */
+}
+.spot-find__body {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.28;       /* tighter than comfortable, on purpose */
+  padding-top: 1px;
+}
+.spot-find__title { color: var(--ink); }
+.spot-find__sub   { color: var(--ink-3); }
+a.spot-find:hover .spot-find__title {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+a.spot-find:hover .spot-find__thumb img { opacity: 0.85; }
+
+/* No thumb — the number and text column hold their positions so the
+   left edge of the type never moves. */
+.spot-find--notext .spot-find__thumb { height: auto; }
 
 .spot-detail__empty {
   font-family: var(--sans);
@@ -991,7 +1048,6 @@ a.notice-text:hover {
 
 @media (max-width: 460px) {
   .spot-detail { padding-top: 120px; }
-  .spot-detail__finds { column-gap: 10px; }
 }
 
 /* ── Spots layout: WALL (immersive kinetic marquee) ─────── */
