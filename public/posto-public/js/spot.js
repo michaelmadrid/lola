@@ -123,10 +123,9 @@
       // See "Finds" in shell.css for why this isn't a gallery.
       if (notes.length) {
         out.push('<div class="spot-detail__finds">');
-        out.push('<div class="spot-detail__finds-count">' +
-          notes.length + (notes.length === 1 ? ' find' : ' finds') + '</div>');
+        out.push('<div class="spot-detail__finds-label">Finds</div>');
 
-        notes.forEach(function (n, i) {
+        notes.forEach(function (n) {
           const noteSpot = Array.isArray(n.spots) && n.spots.length ? n.spots[0] : null;
 
           // Provenance is suppressed when the find belongs to THIS spot —
@@ -152,11 +151,7 @@
           const tag = href ? 'a' : 'div';
           const attrs = href ? ' href="' + href + '" target="_blank" rel="noopener"' : '';
 
-          // Zero-padded index — reads as a catalogue number, not a count.
-          const num = String(i + 1).padStart(2, '0');
-
           out.push('<' + tag + ' class="spot-find"' + attrs + '>');
-          out.push('<div class="spot-find__num">' + num + '</div>');
           out.push('<div class="spot-find__thumb">' +
             (n.image_url
               ? '<img src="' + esc(imgSrc(n.image_url)) + '" alt="" loading="lazy">'

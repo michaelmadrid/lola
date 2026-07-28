@@ -964,8 +964,8 @@ a.notice-text:hover {
 /* Finds — a receipt, not a grid.
 
    At three to five items a gallery writes a check the content can't
-   cash. This reads as a record of attention instead: numbered rows,
-   tiny thumbs, no rules, no section label.
+   cash. This reads as a record of attention instead: tiny thumbs,
+   tight rows, no rules.
 
    The thumb is capped on HEIGHT with width auto, so ratios stay true
    and every row is the same height regardless of a portrait book
@@ -974,15 +974,12 @@ a.notice-text:hover {
    Ragged left edge on the images, straight column of type. */
 :root {
   --find-thumb: 56px;   /* row height — the thumb's cap */
-  --find-indent: 78px;  /* text column offset; > widest expected thumb */
-  --find-num: 22px;     /* index gutter */
+  --find-indent: 68px;  /* text column offset; > widest expected thumb */
 }
 
 .spot-detail__finds { margin-top: var(--space-6); }
 
-/* The count states itself — "five things, and this is them" — which is
-   what turns a short list from a shortfall into a record. */
-.spot-detail__finds-count {
+.spot-detail__finds-label {
   font-family: var(--sans);
   font-size: var(--text-tiny);
   letter-spacing: 0.08em;
@@ -993,20 +990,12 @@ a.notice-text:hover {
 
 .spot-find {
   display: grid;
-  grid-template-columns: var(--find-num) calc(var(--find-indent) - var(--find-num)) 1fr;
+  grid-template-columns: var(--find-indent) 1fr;
   align-items: start;
   column-gap: 0;
   padding: 7px 0;          /* no rules — spacing does the separating */
   text-decoration: none;
   color: inherit;
-}
-.spot-find__num {
-  font-family: var(--sans);
-  font-size: var(--text-tiny);
-  line-height: 1.5;
-  color: var(--ink-3);
-  padding-top: 1px;
-  font-variant-numeric: tabular-nums;
 }
 .spot-find__thumb {
   /* Fixed height, auto width — true ratio, even rhythm. */
@@ -1018,7 +1007,7 @@ a.notice-text:hover {
   display: block;
   height: 100%;
   width: auto;
-  max-width: calc(var(--find-indent) - var(--find-num) - 10px);
+  max-width: calc(var(--find-indent) - 10px);
   object-fit: cover;       /* only bites on an extreme panorama */
 }
 .spot-find__body {
@@ -1035,9 +1024,8 @@ a.spot-find:hover .spot-find__title {
 }
 a.spot-find:hover .spot-find__thumb img { opacity: 0.85; }
 
-/* No thumb — the number and text column hold their positions so the
-   left edge of the type never moves. */
-.spot-find--notext .spot-find__thumb { height: auto; }
+/* A find with no image still gets the empty gutter cell, so the left
+   edge of the type never moves. Nothing more needed. */
 
 .spot-detail__empty {
   font-family: var(--sans);
