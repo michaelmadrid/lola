@@ -886,21 +886,34 @@ a.notice-text:hover {
 @media (max-width: 1100px) { .catalogue { column-count: 4; } }
 @media (max-width: 640px)  { .catalogue { column-count: 2; column-gap: 14px; } }
 
-/* ── Spot detail (permalink) ────────────────────────────── */
-.spot-detail {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: var(--space-6) 0 var(--space-8);
-  margin-top:150px;
+/* ── Spot detail (permalink) ─────────────────────────────
+   Mobile-first, single measure. The page is deliberately narrow:
+   two columns of covers at ~250px each is the specimen rhythm.
+   Wider and it stops reading as a page and starts reading as a
+   gallery. Both knobs are here — nothing else to touch.
+
+   Everything above the finds is a single column. Finds use CSS
+   multi-column (not the shelf's JS masonry) — no spans, no
+   patterns, images keep their own ratio. */
+:root {
+  --spot-max:      520px;   /* page measure */
+  --spot-hero-max: 440px;   /* ceiling on hero image height */
 }
+
+.spot-detail {
+  max-width: var(--spot-max);
+  margin: 0 auto;
+  padding: 150px var(--space-4) var(--space-8);
+}
+
 .spot-detail__name {
   font-family: var(--serif);
-  font-size: var(--text-display);
-  line-height: 1.1;
+  /* Scales with the viewport up to the measure cap. */
+  font-size: clamp(30px, 8.5vw, 38px);
+  line-height: 1.02;
   letter-spacing: -0.02em;
   font-weight: 400;
   color: var(--ink);
-  margin-bottom: var(--space-2);
 }
 .spot-detail__city {
   font-family: var(--sans);
@@ -908,30 +921,77 @@ a.notice-text:hover {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-3);
-  margin-bottom: var(--space-5);
+  margin-top: 4px;
 }
-.spot-detail__image { margin: var(--space-5) 0; }
-.spot-detail__image img { width: 100%; }
+
+/* Hero — capped on BOTH axes with width/height auto, so the image
+   keeps its true ratio and simply gets smaller. No crop, no
+   letterbox. A tall portrait ends up narrower than the measure,
+   which is correct: it's a specimen, not a banner. */
+.spot-detail__hero { margin-top: var(--space-5); }
+.spot-detail__hero img {
+  display: block;
+  max-width: 100%;
+  max-height: var(--spot-hero-max);
+  width: auto;
+  height: auto;
+}
+
+/* Meta row — site/IG left, map right. */
+.spot-detail__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.28;
+}
+.spot-detail__meta-left { display: flex; flex-direction: column; }
+.spot-detail__meta a { color: var(--ink); text-decoration: none; }
+.spot-detail__meta a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
 .spot-detail__tip {
   font-family: var(--serif);
   font-size: var(--text-body);
   line-height: 1.6;
   color: var(--ink-2);
-  margin-bottom: var(--space-5);
+  margin-top: var(--space-5);
 }
-.spot-detail__links {
+
+/* Finds — two columns, balanced. inline-block + break-inside guards
+   against the item splitting across the column gap. */
+.spot-detail__finds {
+  margin-top: var(--space-7);
+  column-count: 2;
+  column-gap: 12px;
+}
+.spot-find {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 22px;
+  break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  page-break-inside: avoid;
+  text-decoration: none;
+  color: inherit;
+}
+.spot-find img { display: block; width: 100%; height: auto; }
+.spot-find:hover img { opacity: 0.85; transition: opacity 140ms ease; }
+/* Titles reuse .shelf-t / .shelf-sub so the finds read identically
+   here and on the shelf — one place to change that type. */
+
+.spot-detail__empty {
   font-family: var(--sans);
-  font-size: var(--text-body);
-}
-.spot-detail__links a {
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.spot-detail__links a:hover { color: var(--ink-2); }
-.spot-detail__sep {
+  font-size: 14px;
   color: var(--ink-3);
-  margin: 0 10px;
+  margin-top: var(--space-6);
+}
+
+@media (max-width: 460px) {
+  .spot-detail { padding-top: 120px; }
+  .spot-detail__finds { column-gap: 10px; }
 }
 
 /* ── Spots layout: WALL (immersive kinetic marquee) ─────── */
@@ -1194,28 +1254,7 @@ a.shelf-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
 }
 .shelf-sub a { color: var(--ink-3); text-decoration: none; }
 .shelf-sub a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-/* ── Spot detail — bare-bones wireframe ─────────────────────────
-   Small image + linked notes list. Design comes later. */
-.spot-detail__image--small { max-width: 240px; margin: 20px 0; }
-.spot-detail__image--small img { width: 100%; height: auto; display: block; }
-.spot-detail__notes { margin-top: 32px; }
-.spot-detail__notes-label {
-  font-family: var(--sans);
-  font-size: var(--text-tiny);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: 12px;
-}
-.spot-detail__notes-list { list-style: none; padding: 0; margin: 0; }
-.spot-detail__note {
-  font-family: var(--sans);
-  font-size: var(--text-body);
-  line-height: 1.4;
-  padding: 6px 0;
-  border-top: 1px solid var(--rule);
-}
-.spot-detail__note a { text-decoration: underline; text-underline-offset: 2px; }
+
 
 /* ── City detail — bare-bones wireframe ─────────────────────────
    Recent finds as small thumbs + spots grouped by category. */
@@ -1280,5 +1319,7 @@ a.shelf-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
 .city-spots__item a:hover { color: var(--ink); text-decoration: underline; }
 
 /* City name link on the spot detail page */
-.spot-detail__city a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--rule); }
+/* City caption link — no rule under it; the caption should read as a
+   caption, not a link. Hover is the only affordance. */
+.spot-detail__city a { color: inherit; text-decoration: none; }
 .spot-detail__city a:hover { color: var(--ink); }
