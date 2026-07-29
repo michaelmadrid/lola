@@ -894,9 +894,11 @@ a.notice-text:hover {
    fixed-height row and reads fine at any width.
 
    The measure is a hard width, not a max-width, so every spot page
-   is identical regardless of how much content it holds. */
+   is identical regardless of how much content it holds — and narrow
+   enough to read as a deliberately centred column rather than
+   something merely filling the viewport. */
 :root {
-  --spot-max:      640px;   /* page measure */
+  --spot-max:      480px;   /* page measure */
   --spot-hero-max: 440px;   /* ceiling on hero image height */
 }
 
@@ -951,6 +953,10 @@ a.notice-text:hover {
 }
 .spot-detail__meta a { color: var(--ink); text-decoration: none; }
 .spot-detail__meta a:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* The map link carries the full street address, which is far longer
+   than the other two. Let it wrap on its own terms rather than forcing
+   the stack wider. */
+.spot-detail__map { max-width: 100%; text-wrap: pretty; }
 
 .spot-detail__tip {
   font-family: var(--serif);

@@ -54,6 +54,20 @@
     return v.startsWith('@') ? v : '@' + v;
   }
 
+  // Address as the map link's label. The city is already stated in the
+  // caption above, so a trailing ", Country" is noise — strip it when it
+  // matches the spot's own country. Everything else is left alone;
+  // address formats are too locale-specific to prune further.
+  function addressLabel(s) {
+    let a = String(s.address || '').trim();
+    if (!a) return '';
+    if (s.country) {
+      const re = new RegExp(',\\s*' + s.country.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i');
+      a = a.replace(re, '');
+    }
+    return a.replace(/,\s*$/, '');
+  }
+
   // Google Maps URL — documented Maps URLs API form. `query` is required
   // even when a place id is supplied; it's what the mobile apps parse to
   // deep-link. The older /maps/place/?q=place_id:… form resolves in a
@@ -99,7 +113,12 @@
       const links = [];
       const maps = mapsUrl(s);
       if (maps) {
-        links.push('<a href="' + esc(maps) + '" target="_blank" rel="noopener">maps</a>');
+        // The address IS the link — it says where the place is and takes
+        // you there. Falls back to a bare "maps" when no places row is
+        // linked and there's no address to show.
+        const label = addressLabel(s) || 'maps';
+        links.push('<a class="spot-detail__map" href="' + esc(maps) +
+          '" target="_blank" rel="noopener">' + esc(label) + '</a>');
       }
       if (s.website) {
         links.push('<a href="' + esc(s.website) + '" target="_blank" rel="noopener">' +
