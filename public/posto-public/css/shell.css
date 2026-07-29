@@ -887,21 +887,21 @@ a.notice-text:hover {
 @media (max-width: 640px)  { .catalogue { column-count: 2; column-gap: 14px; } }
 
 /* ── Spot detail (permalink) ─────────────────────────────
-   Mobile-first, single measure. The page is deliberately narrow:
-   two columns of covers at ~250px each is the specimen rhythm.
-   Wider and it stops reading as a page and starts reading as a
-   gallery. Both knobs are here — nothing else to touch.
+   One fixed measure for the whole page, set by the name and the hero
+   image — the two things that carry it. NOT derived from the finds:
+   they were a two-column cover grid when 520px was chosen, and
+   they're a receipt now, so that rationale is dead. The receipt is a
+   fixed-height row and reads fine at any width.
 
-   Everything above the finds is a single column. Finds use CSS
-   multi-column (not the shelf's JS masonry) — no spans, no
-   patterns, images keep their own ratio. */
+   The measure is a hard width, not a max-width, so every spot page
+   is identical regardless of how much content it holds. */
 :root {
-  --spot-max:      520px;   /* page measure */
+  --spot-max:      640px;   /* page measure */
   --spot-hero-max: 440px;   /* ceiling on hero image height */
 }
 
 .spot-detail {
-  max-width: var(--spot-max);
+  width: min(100%, var(--spot-max));
   margin: 0 auto;
   padding: 150px var(--space-4) var(--space-8);
 }
@@ -937,18 +937,18 @@ a.notice-text:hover {
   height: auto;
 }
 
-/* Meta row — site/IG left, map right. */
+/* Meta — one left-aligned stack, map first. Was site/IG left with the
+   map pushed right; the split made two weak columns out of three short
+   links. Stacked, it reads as a single block of ways in. */
 .spot-detail__meta {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-4);
   margin-top: var(--space-4);
   font-family: var(--sans);
   font-size: 14px;
   line-height: 1.28;
 }
-.spot-detail__meta-left { display: flex; flex-direction: column; }
 .spot-detail__meta a { color: var(--ink); text-decoration: none; }
 .spot-detail__meta a:hover { text-decoration: underline; text-underline-offset: 2px; }
 

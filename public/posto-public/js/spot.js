@@ -95,26 +95,23 @@
           esc(imgSrc(s.image_url)) + '" alt="' + esc(s.place_name) + '"></div>');
       }
 
-      // Meta row — site/IG left, map right.
-      const left = [];
+      // Meta — one stack, map first, then site, then IG.
+      const links = [];
+      const maps = mapsUrl(s);
+      if (maps) {
+        links.push('<a href="' + esc(maps) + '" target="_blank" rel="noopener">maps</a>');
+      }
       if (s.website) {
-        left.push('<a href="' + esc(s.website) + '" target="_blank" rel="noopener">' +
+        links.push('<a href="' + esc(s.website) + '" target="_blank" rel="noopener">' +
           esc(domain(s.website)) + '</a>');
       }
       const ig = igUrl(s.instagram);
       if (ig) {
-        left.push('<a href="' + esc(ig) + '" target="_blank" rel="noopener">' +
+        links.push('<a href="' + esc(ig) + '" target="_blank" rel="noopener">' +
           esc(igHandle(s.instagram)) + '</a>');
       }
-      const maps = mapsUrl(s);
-      const right = maps
-        ? '<a href="' + esc(maps) + '" target="_blank" rel="noopener">maps</a>'
-        : '';
-      if (left.length || right) {
-        out.push('<div class="spot-detail__meta">' +
-          '<div class="spot-detail__meta-left">' + left.join('') + '</div>' +
-          '<div class="spot-detail__meta-right">' + right + '</div>' +
-          '</div>');
+      if (links.length) {
+        out.push('<div class="spot-detail__meta">' + links.join('') + '</div>');
       }
 
       if (s.tip) out.push('<p class="spot-detail__tip">' + esc(s.tip) + '</p>');
