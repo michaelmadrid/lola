@@ -917,14 +917,30 @@ a.notice-text:hover {
   font-weight: 400;
   color: var(--ink);
 }
-.spot-detail__city {
+/* Where-line — street and city on one line, each linking somewhere
+   different: street to the map, city to /city/:slug. Replaced a
+   standalone city caption that duplicated what the address already
+   said. Mixed case is deliberate — the street reads as an address, the
+   city reads as a heading, and the shift between them is what gives
+   the line structure without adding a rule or a label. */
+.spot-detail__where {
   font-family: var(--sans);
   font-size: var(--text-small);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-top: 4px;
+  line-height: 1.4;
+  margin-top: 6px;
+  color: var(--ink-2);
 }
+.spot-detail__where a { color: inherit; text-decoration: none; }
+.spot-detail__street { border-bottom: 0.5px solid var(--rule); }
+.spot-detail__street:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.spot-detail__citylink {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border-bottom: 0.5px solid var(--rule);
+}
+.spot-detail__citylink:hover { border-bottom-color: var(--ink); }
+.spot-detail__dot { color: var(--ink-3); margin: 0 0.45em; }
 
 /* Hero — capped on BOTH axes with width/height auto, so the image
    keeps its true ratio and simply gets smaller. No crop, no
@@ -953,10 +969,7 @@ a.notice-text:hover {
 }
 .spot-detail__meta a { color: var(--ink); text-decoration: none; }
 .spot-detail__meta a:hover { text-decoration: underline; text-underline-offset: 2px; }
-/* The map link carries the full street address, which is far longer
-   than the other two. Let it wrap on its own terms rather than forcing
-   the stack wider. */
-.spot-detail__map { max-width: 100%; text-wrap: pretty; }
+
 
 .spot-detail__tip {
   font-family: var(--serif);
@@ -1368,10 +1381,7 @@ a.shelf-frame:hover img { opacity: 0.85; transition: opacity 140ms ease; }
 .city-spots__item a:hover { color: var(--ink); text-decoration: underline; }
 
 /* City name link on the spot detail page */
-/* City caption link — no rule under it; the caption should read as a
-   caption, not a link. Hover is the only affordance. */
-.spot-detail__city a { color: inherit; text-decoration: none; }
-.spot-detail__city a:hover { color: var(--ink); }
+
 
 /* ── ARCHIVE (/archive/) ──────────────────────────────────
    A second view of the shelf data. The list is the surface you

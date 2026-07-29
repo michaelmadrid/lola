@@ -54,18 +54,22 @@
     return v.startsWith('@') ? v : '@' + v;
   }
 
-  // Address as the map link's label. The city is already stated in the
-  // caption above, so a trailing ", Country" is noise — strip it when it
-  // matches the spot's own country. Everything else is left alone;
-  // address formats are too locale-specific to prune further.
-  function addressLabel(s) {
-    let a = String(s.address || '').trim();
-    if (!a) return '';
-    if (s.country) {
-      const re = new RegExp(',\\s*' + s.country.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i');
-      a = a.replace(re, '');
-    }
-    return a.replace(/,\s*$/, '');
+  // Street portion of the address.
+  //
+  // We can't strip the city by name: the DB holds POSTO's curated name
+  // ("Mexico City") while Google's formatted_address uses the local one
+  // ("Ciudad de México"), so they don't match. But the FIRST comma
+  // segment is reliably the street line across locales —
+  //   Córdoba 25, Roma Nte., Cuauhtémoc, 06700 Ciudad de México, ...
+  //   2 Chome-10-3 Daimyo, Chuo Ward, Fukuoka, Japan
+  //   13 Rue de l'Abbaye, 75006 Paris
+  // — so take segment one and get the neighbourhood from our own
+  // curated column rather than guessing at segment two (which is a
+  // neighbourhood in Mexico City and the city itself in Paris).
+  function streetLine(s) {
+    const first = String(s.address || '').split(',')[0].trim();
+    if (!first) return '';
+    return s.neighborhood ? first + ', ' + s.neighborhood : first;
   }
 
   // Google Maps URL — documented Maps URLs API form. `query` is required
@@ -93,14 +97,29 @@
 
       out.push('<h1 class="spot-detail__name">' + esc(s.place_name) + '</h1>');
 
-      // City caption — city links to /city/:slug, neighborhood sits in
-      // front of it as plain text.
+      // Where-line: street · CITY, each linking somewhere different.
+      // The street goes to the map, the city goes to /city/:slug. This
+      // replaces a separate city caption — that caption and the address
+      // were both naming the city, and stating it twice was most of why
+      // the page read flat.
+      const street = streetLine(s);
+      const mapsHref = mapsUrl(s);
+      const where = [];
+      if (street) {
+        where.push(mapsHref
+          ? '<a class="spot-detail__street" href="' + esc(mapsHref) +
+            '" target="_blank" rel="noopener">' + esc(street) + '</a>'
+          : '<span class="spot-detail__street">' + esc(street) + '</span>');
+      }
       if (s.city) {
-        const cityLink = s.city_slug
-          ? '<a href="/city/' + encodeURIComponent(s.city_slug) + '">' + esc(s.city) + '</a>'
-          : esc(s.city);
-        const line = s.neighborhood ? esc(s.neighborhood) + ', ' + cityLink : cityLink;
-        out.push('<p class="spot-detail__city">' + line + '</p>');
+        where.push(s.city_slug
+          ? '<a class="spot-detail__citylink" href="/city/' +
+            encodeURIComponent(s.city_slug) + '">' + esc(s.city) + '</a>'
+          : '<span class="spot-detail__citylink">' + esc(s.city) + '</span>');
+      }
+      if (where.length) {
+        out.push('<p class="spot-detail__where">' +
+          where.join('<span class="spot-detail__dot">\u00b7</span>') + '</p>');
       }
 
       // Hero. Bounded on both axes by CSS, so nothing to constrain here.
@@ -109,16 +128,12 @@
           esc(imgSrc(s.image_url)) + '" alt="' + esc(s.place_name) + '"></div>');
       }
 
-      // Meta — one stack, map first, then site, then IG.
+      // Meta — site, then IG. The map link lives in the where-line above
+      // as the street address; it only reappears here when there's no
+      // address to hang it on.
       const links = [];
-      const maps = mapsUrl(s);
-      if (maps) {
-        // The address IS the link — it says where the place is and takes
-        // you there. Falls back to a bare "maps" when no places row is
-        // linked and there's no address to show.
-        const label = addressLabel(s) || 'maps';
-        links.push('<a class="spot-detail__map" href="' + esc(maps) +
-          '" target="_blank" rel="noopener">' + esc(label) + '</a>');
+      if (mapsHref && !street) {
+        links.push('<a href="' + esc(mapsHref) + '" target="_blank" rel="noopener">maps</a>');
       }
       if (s.website) {
         links.push('<a href="' + esc(s.website) + '" target="_blank" rel="noopener">' +
